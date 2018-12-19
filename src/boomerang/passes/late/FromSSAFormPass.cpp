@@ -51,7 +51,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     typedef std::map<SharedExp, FirstTypeEnt, lessExpStar> FirstTypesMap;
 
     FirstTypesMap firstTypes;
-    FirstTypesMap::iterator ff;
+
     ConnectionGraph ig; // The interference graph; these can't have the same local variable
     ConnectionGraph pu; // The Phi Unites: these need the same local variable or copies
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
@@ -60,34 +60,31 @@ bool FromSSAFormPass::execute(UserProc *proc)
         LocationSet defs;
         s->getDefinitions(defs, assumeABICompliance);
 
-        for (SharedExp base : defs) {
-            SharedType ty = s->getTypeForExp(base);
+        for (SharedExp defdByS : defs) {
+            SharedType ty = s->getTypeForExp(defdByS);
 
             if (ty == nullptr) { // Can happen e.g. when getting the type for %flags
                 ty = VoidType::get();
             }
 
-            LOG_VERBOSE2("Got type %1 for %2 from %3", ty->getCtype(), base, s);
-            ff            = firstTypes.find(base);
-            SharedExp ref = RefExp::get(base, s);
+            LOG_MSG("Got type %1 for %2 from %3", ty->getCtype(), defdByS, s);
+            FirstTypesMap::iterator ff = firstTypes.find(defdByS);
+            SharedExp ref              = RefExp::get(defdByS, s);
 
             if (ff == firstTypes.end()) {
                 // There is no first type yet. Record it.
-                FirstTypeEnt fte;
-                fte.first        = ty;
-                fte.second       = ref;
-                firstTypes[base] = fte;
+                firstTypes[defdByS] = { ty, ref };
             }
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
                 if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
-                    LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.", base,
-                            s->getNumber(), ty, ff->second.first);
+                    LOG_WARN("Def of %1 at '%2' is not compatible with first type %3.", defdByS,
+                             s->prints(), ff->second.first);
                 }
 
-                // There already is a type for base, and it is different to the type for this
+                // There already is a type for defdByS, and it is different to the type for this
                 // definition. Record an "interference" so it will get a new variable
                 if (!ty->isVoid()) { // just ignore void interferences ??!!
-                    ig.connect(ref, ff->second.second);
+                    ig.add(ref, ff->second.second);
                 }
             }
         }
