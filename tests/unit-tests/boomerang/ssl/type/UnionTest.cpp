@@ -109,6 +109,19 @@ void UnionTest::testIsCompatible()
     QVERIFY(leftU2.isCompatible(*right2, true));
     QVERIFY(leftU2.isCompatible(*right2, false));
 
+    UnionType leftU3{ IntegerType::get(32, Sign::Signed) };
+    UnionType rightU3{ IntegerType::get(32, Sign::Signed) };
+    QVERIFY(leftU3.isCompatible(rightU3, true));
+    QVERIFY(leftU3.isCompatible(rightU3, false));
+    QVERIFY(leftU3.isCompatible(leftU3, true));
+    QVERIFY(leftU3.isCompatible(leftU3, false));
+
+    UnionType leftU4{ FloatType::get(32), IntegerType::get(32, Sign::Signed) };
+    UnionType rightU4{ IntegerType::get(32, Sign::Signed) };
+    QVERIFY(leftU4.isCompatible(rightU4, true));
+    QVERIFY(leftU4.isCompatible(rightU4, false));
+    QVERIFY(rightU4.isCompatible(leftU4, true));
+    QVERIFY(rightU4.isCompatible(leftU4, false));
 
 }
 
