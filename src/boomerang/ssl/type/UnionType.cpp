@@ -16,9 +16,9 @@
 #include <QHash>
 
 
-size_t hashUnionElem::operator()(const UnionElement &e) const
+size_t hashType::operator()(const SharedConstType &ty) const
 {
-    return qHash(e.type->getCtype());
+    return qHash(ty->getCtype());
 }
 
 
@@ -46,7 +46,7 @@ SharedType UnionType::clone() const
 {
     std::shared_ptr<UnionType> u = std::make_shared<UnionType>();
 
-    for (auto &[ty, name] : li) {
+    for (auto &[ty, name] : m_entries) {
         u->addType(ty, name);
     }
 
@@ -58,11 +58,17 @@ size_t UnionType::getSize() const
 {
     size_t max = 0;
 
-    for (const UnionElement &elem : li) {
-        max = std::max(max, elem.type->getSize());
+    for (auto &[ty, name] : m_entries) {
+        max = std::max(max, ty->getSize());
     }
 
     return std::max(max, (size_t)1);
+}
+
+
+size_t UnionType::getNumTypes() const
+{
+    return m_entries.size();
 }
 
 
@@ -74,12 +80,12 @@ bool UnionType::operator==(const Type &other) const
 
     const UnionType &uother = static_cast<const UnionType &>(other);
 
-    if (uother.li.size() != li.size()) {
+    if (uother.getNumTypes() != getNumTypes()) {
         return false;
     }
 
-    for (const UnionElement &el : li) {
-        if (uother.li.find(el) == uother.li.end()) {
+    for (const auto &[ty, name] : m_entries) {
+        if (uother.m_entries.find(ty) == uother.m_entries.end()) {
             return false;
         }
     }
@@ -100,10 +106,7 @@ bool UnionType::operator<(const Type &other) const
 
 bool UnionType::hasType(SharedType ty)
 {
-    UnionElement ue;
-
-    ue.type = ty;
-    return li.find(ue) != li.end();
+    return m_entries.find(ty) != m_entries.end();
 }
 
 
@@ -114,9 +117,17 @@ void UnionType::addType(SharedType newType, const QString &name)
     if (newType->resolvesToUnion()) {
         auto unionTy = newType->as<UnionType>();
         // Note: need to check for name clashes eventually
-        li.insert(unionTy->li.begin(), unionTy->li.end());
+        m_entries.insert(unionTy->m_entries.begin(), unionTy->m_entries.end());
     }
     else {
+        if (newType->resolvesToSize()) {
+            for (auto &[ty, nm] : m_entries) {
+                if (ty->getSize() == newType->getSize()) {
+                    return;
+                }
+            }
+        }
+
         if (newType->isPointer() && newType->as<PointerType>()->getPointsTo()->resolvesToUnion()) {
             // Explicitly disallow meeting unions and pointers to unions.
             // This can happen in binaries containing code similar to this (-> exception handling):
@@ -130,10 +141,7 @@ void UnionType::addType(SharedType newType, const QString &name)
             newType = PointerType::get(VoidType::get());
         }
 
-        UnionElement ue;
-        ue.type = newType;
-        ue.name = name;
-        li.insert(ue);
+        m_entries.insert({ newType, name });
         // TODO: update name if not inserted because of type clash
     }
 }
@@ -143,12 +151,15 @@ QString UnionType::getCtype(bool final) const
 {
     QString tmp("union { ");
 
-    for (const UnionElement &el : li) {
-        tmp += el.type->getCtype(final);
+    for (const auto &[ty, name] : m_entries) {
+        tmp += ty->getCtype(final);
 
-        if (el.name != "") {
-            tmp += " ";
-            tmp += el.name;
+        if (name != "") {
+            if (!ty->isPointer()) {
+                tmp += " ";
+            }
+
+            tmp += name;
         }
 
         tmp += "; ";
@@ -164,32 +175,33 @@ static int nextUnionNumber = 0;
 SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return const_cast<UnionType *>(this)->shared_from_this();
+        return this->simplify(changed);
     }
 
     if (other->resolvesToUnion()) {
-        if (this == other.get()) {                                    // Note: pointer comparison
-            return const_cast<UnionType *>(this)->shared_from_this(); // Avoid infinite recursion
+        if (this == other.get()) {          // Note: pointer comparison
+            return this->simplify(changed); // Avoid infinite recursion
         }
 
         std::shared_ptr<UnionType> otherUnion = other->as<UnionType>();
-        std::shared_ptr<UnionType> result(UnionType::get());
+        SharedType result                     = this->clone();
 
-        *result = *this;
-
-        for (UnionElement elem : otherUnion->li) {
+        for (const auto &[ty, name] : otherUnion->m_entries) {
             bool thisChanged = false;
-            result = result->meetWith(elem.type, thisChanged, useHighestPtr)->as<UnionType>();
+            result           = result->meetWith(ty, thisChanged, useHighestPtr);
             changed |= thisChanged;
         }
 
+        if (result->isUnion()) {
+            result->as<UnionType>()->simplify(changed);
+        }
         return result;
     }
 
     // Other is a non union type
     if (other->resolvesToPointer() && (other->as<PointerType>()->getPointsTo().get() == this)) {
         LOG_WARN("Attempt to union '%1' with pointer to self!", this->getCtype());
-        return const_cast<UnionType *>(this)->shared_from_this();
+        return this->simplify(changed);
     }
 
     //    int subtypes_count = 0;
@@ -215,11 +227,11 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
     // if a new meetWith result is 'better' given simplistic type description length heuristic
     // measure then the meetWith result, and this types field iterator are stored.
 
-    int bestMeetScore                      = INT_MAX;
-    UnionEntrySet::const_iterator bestElem = li.end();
+    int bestMeetScore                     = INT_MAX;
+    UnionEntries::const_iterator bestElem = m_entries.end();
 
-    for (auto it = li.begin(); it != li.end(); ++it) {
-        SharedType v = it->type;
+    for (auto it = m_entries.begin(); it != m_entries.end(); ++it) {
+        SharedType v = it->first;
 
         if (!v->isCompatibleWith(*other)) {
             continue;
@@ -230,7 +242,7 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
 
         if (!thisChanged) {
             // Fully compatible type already present in this union
-            return const_cast<UnionType *>(this)->shared_from_this();
+            return this->simplify(changed);
         }
 
         const int currentScore = meet_res->getCtype().size();
@@ -245,31 +257,26 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
 
     std::shared_ptr<UnionType> result = UnionType::get();
 
-    for (auto it = li.begin(); it != li.end(); ++it) {
+    for (auto it = m_entries.begin(); it != m_entries.end(); ++it) {
         if (it == bestElem) {
             // this is the element to be replaced
             continue;
         }
 
-        result->addType(it->type, it->name);
+        result->addType(it->first, it->second);
     }
 
-    UnionElement ne;
-
-    if (bestElem != li.end()) {
+    if (bestElem != m_entries.end()) {
         // we know this works because the types are compatible
-        ne.type = bestElem->type->meetWith(other, changed, useHighestPtr);
-        ne.name = bestElem->name;
+        result->addType(bestElem->first->meetWith(other, changed, useHighestPtr), bestElem->second);
     }
     else {
         // Other is not compatible with any of my component types. Add a new type.
-        ne.type = other->clone();
-        ne.name = QString("x%1").arg(++nextUnionNumber);
+        result->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
     }
 
-    result->addType(ne.type, ne.name);
     changed = true;
-    return result;
+    return result->simplify(changed);
 }
 
 
@@ -287,16 +294,16 @@ bool UnionType::isCompatible(const Type &other, bool all) const
         const UnionType &otherUnion = static_cast<const UnionType &>(other);
 
         // Unions are compatible if one is a subset of the other
-        if (li.size() < otherUnion.li.size()) {
-            for (const UnionElement &e : li) {
-                if (!otherUnion.isCompatible(*e.type, all)) {
+        if (getNumTypes() < otherUnion.getNumTypes()) {
+            for (const auto &[ty, name] : m_entries) {
+                if (!otherUnion.isCompatible(*ty, all)) {
                     return false;
                 }
             }
         }
         else {
-            for (const UnionElement &e : otherUnion.li) {
-                if (!isCompatible(*e.type, all)) {
+            for (const auto &[ty, name] : otherUnion.m_entries) {
+                if (!isCompatible(*ty, all)) {
                     return false;
                 }
             }
@@ -306,11 +313,27 @@ bool UnionType::isCompatible(const Type &other, bool all) const
     }
 
     // Other is not a UnionType
-    for (const UnionElement &e : li) {
-        if (other.isCompatibleWith(*e.type, all)) {
+    for (const auto &[ty, name] : m_entries) {
+        if (other.isCompatibleWith(*ty, all)) {
             return true;
         }
     }
 
     return false;
+}
+
+
+SharedType UnionType::simplify(bool &changed) const
+{
+    if (getNumTypes() == 0) {
+        changed = true;
+        return VoidType::get();
+    }
+    else if (getNumTypes() == 1) {
+        changed = true;
+        return m_entries.begin()->first->clone();
+    }
+    else {
+        return const_cast<UnionType *>(this)->shared_from_this();
+    }
 }

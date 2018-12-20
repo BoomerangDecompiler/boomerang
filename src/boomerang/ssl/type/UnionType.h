@@ -12,30 +12,27 @@
 
 #include "boomerang/ssl/type/Type.h"
 
-#include <unordered_set>
+#include <unordered_map>
 
 
-// The union type represents the union of any number of any other types
-struct BOOMERANG_API UnionElement
+struct BOOMERANG_API hashType
 {
-    SharedType type;
-    QString name;
-
-    bool operator==(const UnionElement &other) const { return *type == *other.type; }
+    size_t operator()(const SharedConstType &ty) const;
 };
 
-
-struct BOOMERANG_API hashUnionElem
+struct BOOMERANG_API equalType
 {
-    size_t operator()(const UnionElement &e) const;
+    size_t operator()(const SharedConstType &lhs, const SharedConstType &rhs) const
+    {
+        return *lhs == *rhs;
+    }
 };
 
 
 class BOOMERANG_API UnionType : public Type
 {
 public:
-    typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
-    typedef UnionEntrySet::iterator ilUnionElement;
+    typedef std::unordered_map<SharedType, QString, hashType, equalType> UnionEntries;
 
 public:
     /// Create a new empty union type.
@@ -66,16 +63,11 @@ public:
      */
     void addType(SharedType type, const QString &name = "");
 
-    size_t getNumTypes() const { return li.size(); }
+    size_t getNumTypes() const;
 
     // Return true if this type is already in the union. Note: linear search, but number of types is
     // usually small
     bool hasType(SharedType ty); // Return true if ty is already in the union
-
-    ilUnionElement begin() { return li.begin(); }
-    ilUnionElement end() { return li.end(); }
-    // Type        *getType(const char *name);
-    // const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
     virtual SharedType clone() const override;
 
@@ -96,8 +88,15 @@ public:
     {
         return isCompatible(other, all);
     }
+
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    UnionEntrySet li;
+    /// If this union contains only 1 type, return the one and only member type.
+    /// If this union has no types, return VoidType.
+    /// Otherwise, return this.
+    SharedType simplify(bool &changed) const;
+
+private:
+    UnionEntries m_entries;
 };

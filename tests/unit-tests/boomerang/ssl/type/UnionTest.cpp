@@ -22,34 +22,34 @@
 void UnionTest::testConstruct()
 {
     UnionType u1;
+    QCOMPARE(u1.getCtype(), "union { }");
     QCOMPARE(u1.getNumTypes(), 0);
     QCOMPARE(u1.getSize(), 1);
-    QCOMPARE(u1.getCtype(), "union { }");
 
     UnionType u2({ });
+    QCOMPARE(u2.getCtype(), "union { }");
     QCOMPARE(u2.getNumTypes(), 0);
     QCOMPARE(u2.getSize(), 1);
-    QCOMPARE(u2.getCtype(), "union { }");
 
     UnionType u3({ IntegerType::get(32, Sign::Signed) });
+    QCOMPARE(u3.getCtype(), "union { int; }");
     QCOMPARE(u3.getNumTypes(), 1);
     QCOMPARE(u3.getSize(), 32);
-    QCOMPARE(u3.getCtype(), "union { int; }");
 
     UnionType u4({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed) });
+    QCOMPARE(u4.getCtype(), "union { int; }");
     QCOMPARE(u4.getNumTypes(), 1);
     QCOMPARE(u4.getSize(), 32);
-    QCOMPARE(u4.getCtype(), "union { int; }");
 
-//     UnionType u5({ IntegerType::get(32, Sign::Signed), SizeType::get(32) });
-//     QCOMPARE(u5.getNumTypes(), 1);
-//     QCOMPARE(u5.getSize(), 32);
-//     QCOMPARE(u5.getCtype(), "union { int; }");
+    UnionType u5({ IntegerType::get(32, Sign::Signed), SizeType::get(32) });
+    QCOMPARE(u5.getNumTypes(), 1);
+    QCOMPARE(u5.getSize(), 32);
+    QCOMPARE(u5.getCtype(), "union { int; }");
 
     UnionType u6({ IntegerType::get(32, Sign::Signed), FloatType::get(32) });
+    QCOMPARE(u6.getCtype(), "union { float; int; }");
     QCOMPARE(u6.getNumTypes(), 2);
     QCOMPARE(u6.getSize(), 32);
-    QCOMPARE(u6.getCtype(), "union { float; int; }");
 }
 
 
@@ -62,26 +62,26 @@ void UnionTest::testAddType()
 //     QCOMPARE(u1.getCtype(), "union { }");
 
     u1.addType(IntegerType::get(32, Sign::Signed));
+    QCOMPARE(u1.getCtype(), "union { int; }");
     QCOMPARE(u1.getNumTypes(), 1);
     QCOMPARE(u1.getSize(), 32);
-    QCOMPARE(u1.getCtype(), "union { int; }");
 
     u1.addType(IntegerType::get(32, Sign::Signed), "foo");
+    QCOMPARE(u1.getCtype(), "union { int; }");
     QCOMPARE(u1.getNumTypes(), 1);
     QCOMPARE(u1.getSize(), 32);
-    QCOMPARE(u1.getCtype(), "union { int; }");
 
     u1.addType(FloatType::get(32), "bar");
+    QCOMPARE(u1.getCtype(), "union { float bar; int; }");
     QCOMPARE(u1.getNumTypes(), 2);
     QCOMPARE(u1.getSize(), 32);
-    QCOMPARE(u1.getCtype(), "union { float bar; int; }");
 
     std::shared_ptr<UnionType> u2 = UnionType::get();
     std::shared_ptr<PointerType> pty = PointerType::get(u2);
     u2->addType(pty);
+    QCOMPARE(u2->getCtype(), "union { void *; }");
     QCOMPARE(u2->getNumTypes(), 1);
     QCOMPARE(u2->getSize(), 32);
-    QCOMPARE(u2->getCtype(), "union { void *; }");
 
     // TODO: addType(UnionType)
 }

@@ -36,6 +36,8 @@ struct FixSyntax
 // clang-format off
 static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opWild,           { "WILD",       "",         "",         ""      } },
+    { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
+    { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPlus,           { "",           " + ",      "",         ""      } },
     { opMinus,          { "",           " - ",      "",         ""      } },
     { opMult,           { "",           " * ",      "",         ""      } },
@@ -107,8 +109,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLoge,           { "loge(",      "",         "",         ")"     } },
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
-    { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
-    { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPC,             { "%pc",        "",         "",         ""      } },
     { opAFP,            { "%afp",       "",         "",         ""      } },
     { opAGP,            { "%agp",       "",         "",         ""      } },
