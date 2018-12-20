@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     union { int; __size8 *; } eax; 		// r24
     union { int; __size8 *; } esp; 		// r28
-    union { __size8 *; int; } local0; 		// m[esp - 80]
+    union { int; __size8 *; } local0; 		// m[esp - 80]
 
     local0 = 0;
     while (local0 <= 63) {

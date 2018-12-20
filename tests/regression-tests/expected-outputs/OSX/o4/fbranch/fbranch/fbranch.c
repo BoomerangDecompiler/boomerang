@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00001be4 */
 int main(int argc, char *argv[])
 {
-    union { __size32; long long x2; double; } f31; 		// r63
+    union { double; long long x2; __size32; } f31; 		// r63
     __size32 g3; 		// r3
     float local0; 		// m[g1 - 48]
 
