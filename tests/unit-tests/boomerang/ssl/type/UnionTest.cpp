@@ -100,15 +100,14 @@ void UnionTest::testGetCtype()
 
 void UnionTest::testIsCompatible()
 {
-    std::shared_ptr<UnionType> leftU1 = UnionType::get();
-    std::shared_ptr<UnionType> rightU1 = UnionType::get({ VoidType::get() });
-    QVERIFY(leftU1->isCompatible(*rightU1, true));
-    QVERIFY(leftU1->isCompatible(*rightU1, false));
+    UnionType leftU1, rightU1{ VoidType::get() };
+    QVERIFY(leftU1.isCompatible(rightU1, true));
+    QVERIFY(leftU1.isCompatible(rightU1, false));
 
-    std::shared_ptr<UnionType> leftU2 = UnionType::get();
+    UnionType leftU2;
     SharedType right2 = VoidType::get();
-    QVERIFY(leftU2->isCompatible(*right2, true));
-    QVERIFY(leftU2->isCompatible(*right2, false));
+    QVERIFY(leftU2.isCompatible(*right2, true));
+    QVERIFY(leftU2.isCompatible(*right2, false));
 
 
 }

@@ -54,7 +54,7 @@ SharedType NamedType::resolvesTo() const
     SharedType ty = getNamedType(m_name);
 
     if (ty && ty->isNamed()) {
-        return std::static_pointer_cast<NamedType>(ty)->resolvesTo();
+        return ty->as<NamedType>()->resolvesTo();
     }
 
     return ty;

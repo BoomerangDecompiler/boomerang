@@ -157,11 +157,13 @@ void Type::clearNamedTypes()
 #define RESOLVES_TO_TYPE(x)                                                                        \
     bool Type::resolvesTo##x() const                                                               \
     {                                                                                              \
-        auto ty = shared_from_this();                                                              \
-        if (ty->isNamed()) {                                                                       \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                      \
+        if (!isNamed()) {                                                                          \
+            return this->is##x();                                                                  \
         }                                                                                          \
-        return ty && ty->is##x();                                                                  \
+        else {                                                                                     \
+            SharedType ty = this->as<NamedType>()->resolvesTo();                                   \
+            return ty && ty->is##x();                                                              \
+        }                                                                                          \
     }
 
 RESOLVES_TO_TYPE(Void)
@@ -180,7 +182,7 @@ RESOLVES_TO_TYPE(Size)
 SharedType Type::resolveNamedType()
 {
     if (isNamed()) {
-        return std::static_pointer_cast<NamedType>(shared_from_this())->resolvesTo();
+        return this->as<NamedType>()->resolvesTo();
     }
     else {
         return shared_from_this();
@@ -191,7 +193,7 @@ SharedType Type::resolveNamedType()
 SharedConstType Type::resolveNamedType() const
 {
     if (isNamed()) {
-        return std::static_pointer_cast<const NamedType>(shared_from_this())->resolvesTo();
+        return this->as<NamedType>()->resolvesTo();
     }
     else {
         return shared_from_this();
