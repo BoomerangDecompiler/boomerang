@@ -1,8 +1,13 @@
 # Boomerang Decompiler
 
 This is a fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
+Boomerang currently supports:
+ - architectures: x86 (IA-32 only), SPARC (V8/V9), PPC, ST20
+ - file formats: ELF, PE, DOS MZ, DOS/4GW LE, Mach-O
+ - high-level language output: C
+
 Although there are pre-compiled packages available for release versions (`master`),
-it is currently recommended to build the development version (`develop`) of the decompiler from source yourself.
+it is currently recommended to build the development version (`develop`) of the decompiler from source.
 
 
 ## Building
@@ -17,12 +22,13 @@ it is currently recommended to build the development version (`develop`) of the 
 
  - A 64 bit operating system (32 bit might or might not work, but it is not supported.)
  - A C++17 compiler (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
- - [CMake 3.8.0 or newer](https://cmake.org/download/)
+ - [CMake 3.8+](https://cmake.org/download/)
  - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.11+ is known to work, earlier versions should also work)
- - [Capstone 3.0.5 or newer](http://www.capstone-engine.org/)
- - [GNU bison 3.0 or newer](https://www.gnu.org/software/bison/) (3.0.5+ is recommended)
- - [GNU flex 2.6 or newer](https://github.com/westes/flex)
- - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional, for documentation)
+ - [Capstone 3.0.5+](http://www.capstone-engine.org/)
+ - [GNU bison 3.0+](https://www.gnu.org/software/bison/) (3.0.5+ is recommended)
+ - [GNU flex 2.6+](https://github.com/westes/flex)
+ - [CCache 3.2+](https://ccache.samba.org/download.html) (optional, for recompilation speed)
+ - [Doxygen 1.8+](http://www.doxygen.nl/) (optional, for documentation)
  - [Python 3](https://www.python.org/downloads/) (optional, for regression tests)
 
 
@@ -90,4 +96,3 @@ If you want to implement a larger feature, please open an issue about the new fe
 For additional information, please read the [contributing guidelines](https://github.com/BoomerangDecompiler/boomerang/blob/develop/Contributing.md).
 
 Thanks for your interest in the Boomerang Decompiler!
-
