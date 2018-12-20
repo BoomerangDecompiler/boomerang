@@ -300,8 +300,7 @@ bool UnionType::isCompatible(const Type &other, bool all) const
     if (other.resolvesToVoid()) {
         return true;
     }
-
-    if (other.resolvesToUnion()) {
+    else if (other.resolvesToUnion()) {
         if (this == &other) { // Note: pointer comparison
             return true;      // Avoid infinite recursion
         }
@@ -327,7 +326,7 @@ bool UnionType::isCompatible(const Type &other, bool all) const
         return true;
     }
 
-    // Other is not a UnionType
+    // Other is not a UnionType -> return true if any type is compatible
     for (const auto &[ty, name] : m_entries) {
         if (other.isCompatibleWith(*ty, all)) {
             return true;
