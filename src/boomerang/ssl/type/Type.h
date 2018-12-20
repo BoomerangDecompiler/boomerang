@@ -61,7 +61,7 @@ enum class Sign : int8_t
  * Base class for all types.
  * Types contain low level type information.
  * Note that we may have a completely different system for
- * recording high level types
+ * recording high level types (i.e. class hierachy)
  */
 class BOOMERANG_API Type : public std::enable_shared_from_this<Type>
 {

@@ -22,6 +22,12 @@ size_t hashType::operator()(const SharedConstType &ty) const
 }
 
 
+size_t equalType::operator()(const SharedConstType &lhs, const SharedConstType &rhs) const
+{
+    return *lhs == *rhs;
+}
+
+
 UnionType::UnionType()
     : Type(TypeClass::Union)
 {
