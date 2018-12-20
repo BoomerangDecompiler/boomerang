@@ -18,7 +18,6 @@ class UnionTest : public BoomerangTest
 
 private slots:
     void testConstruct();
-    void testAddType();
     void testGetNumTypes();
     void testHasType();
     // meetWith is tested separately

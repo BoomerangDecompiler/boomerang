@@ -32,6 +32,9 @@ struct BOOMERANG_API equalType
 class BOOMERANG_API UnionType : public Type
 {
 public:
+    typedef std::pair<SharedType, QString> Member;
+
+public:
     typedef std::unordered_map<SharedType, QString, hashType, equalType> UnionEntries;
 
 public:
@@ -39,7 +42,8 @@ public:
     UnionType();
 
     /// Create a new union type with unnamed members.
-    UnionType(const std::initializer_list<SharedType> &members);
+    UnionType(const std::initializer_list<SharedType> members);
+    UnionType(const std::initializer_list<Member> members);
 
     UnionType(const UnionType &other) = default;
     UnionType(UnionType &&other)      = default;
@@ -51,17 +55,15 @@ public:
 
 public:
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
-    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> &members)
+    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> members)
     {
         return std::make_shared<UnionType>(members);
     }
 
-    /**
-     * Add a new type to this union
-     * \param type the type of the new member
-     * \param name the name of the new member
-     */
-    void addType(SharedType type, const QString &name = "");
+    static std::shared_ptr<UnionType> get(const std::initializer_list<Member> members)
+    {
+        return std::make_shared<UnionType>(members);
+    }
 
     size_t getNumTypes() const;
 
@@ -92,6 +94,13 @@ public:
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
+    /**
+     * Add a new type to this union
+     * \param type the type of the new member
+     * \param name the name of the new member
+     */
+    void addType(SharedType type, const QString &name = "");
+
     /// If this union contains only 1 type, return the one and only member type.
     /// If this union has no types, return VoidType.
     /// Otherwise, return this.

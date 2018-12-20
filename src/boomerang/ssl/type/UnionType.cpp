@@ -28,11 +28,20 @@ UnionType::UnionType()
 }
 
 
-UnionType::UnionType(const std::initializer_list<SharedType> &members)
+UnionType::UnionType(const std::initializer_list<SharedType> members)
     : Type(TypeClass::Union)
 {
     for (SharedType member : members) {
         addType(member, "");
+    }
+}
+
+
+UnionType::UnionType(const std::initializer_list<UnionType::Member> members)
+    : Type(TypeClass::Union)
+{
+    for (const Member &member : members) {
+        addType(member.first, member.second);
     }
 }
 

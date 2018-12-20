@@ -26,7 +26,7 @@ void UnionTest::testConstruct()
     QCOMPARE(u1.getNumTypes(), 0);
     QCOMPARE(u1.getSize(), 1);
 
-    UnionType u2({ });
+    UnionType u2{ VoidType::get() };
     QCOMPARE(u2.getCtype(), "union { }");
     QCOMPARE(u2.getNumTypes(), 0);
     QCOMPARE(u2.getSize(), 1);
@@ -53,60 +53,31 @@ void UnionTest::testConstruct()
 }
 
 
-void UnionTest::testAddType()
-{
-    UnionType u1;
-//     u1.addType(VoidType::get());
-//     QCOMPARE(u1.getNumTypes(), 0);
-//     QCOMPARE(u1.getSize(), 1);
-//     QCOMPARE(u1.getCtype(), "union { }");
-
-    u1.addType(IntegerType::get(32, Sign::Signed));
-    QCOMPARE(u1.getCtype(), "union { int; }");
-    QCOMPARE(u1.getNumTypes(), 1);
-    QCOMPARE(u1.getSize(), 32);
-
-    u1.addType(IntegerType::get(32, Sign::Signed), "foo");
-    QCOMPARE(u1.getCtype(), "union { int; }");
-    QCOMPARE(u1.getNumTypes(), 1);
-    QCOMPARE(u1.getSize(), 32);
-
-    u1.addType(FloatType::get(32), "bar");
-    QCOMPARE(u1.getCtype(), "union { float bar; int; }");
-    QCOMPARE(u1.getNumTypes(), 2);
-    QCOMPARE(u1.getSize(), 32);
-
-    std::shared_ptr<UnionType> u2 = UnionType::get();
-    std::shared_ptr<PointerType> pty = PointerType::get(u2);
-    u2->addType(pty);
-    QCOMPARE(u2->getCtype(), "union { void *; }");
-    QCOMPARE(u2->getNumTypes(), 1);
-    QCOMPARE(u2->getSize(), 32);
-
-    // TODO: addType(UnionType)
-}
-
-
 void UnionTest::testGetNumTypes()
 {
-    UnionType u;
-    QCOMPARE(u.getNumTypes(), 0);
-    u.addType(SizeType::get(32));
-    QCOMPARE(u.getNumTypes(), 1);
+    UnionType u1;
+//     QCOMPARE(u1.getSize(), 1);
+
+    UnionType u2{ SizeType::get(32) };
+    QCOMPARE(u2.getNumTypes(), 1);
+
+    UnionType u3{ IntegerType::get(32, Sign::Signed), SizeType::get(32) };
+    QCOMPARE(u3.getNumTypes(), 1);
+
 }
 
 
 void UnionTest::testHasType()
 {
-    UnionType u;
-    QVERIFY(!u.hasType(VoidType::get()));
-    QVERIFY(!u.hasType(IntegerType::get(32, Sign::Signed)));
+    UnionType u1;
+    QVERIFY(!u1.hasType(VoidType::get()));
+    QVERIFY(!u1.hasType(IntegerType::get(32, Sign::Signed)));
 
-    u.addType(IntegerType::get(32, Sign::Signed), "foo");
-    QVERIFY(!u.hasType(VoidType::get()));
-    QVERIFY(!u.hasType(FloatType::get(32)));
-    QVERIFY(u.hasType(IntegerType::get(32, Sign::Signed)));
-//     QVERIFY(u.hasType(SizeType::get(32)));
+    UnionType u2{ { IntegerType::get(32, Sign::Signed), "foo" } };
+    QVERIFY(!u2.hasType(VoidType::get()));
+    QVERIFY(!u2.hasType(FloatType::get(32)));
+    QVERIFY(u2.hasType(IntegerType::get(32, Sign::Signed)));
+//     QVERIFY(u2.hasType(SizeType::get(32)));
 }
 
 

@@ -309,11 +309,8 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
         }
     }
 
-    auto u = std::make_shared<UnionType>();
-    u->addType(this->clone());
-    u->addType(other->clone());
     changed = true;
-    return u;
+    return std::make_shared<UnionType>(std::initializer_list<SharedType>{ this->clone(), other->clone() });
 }
 
 
