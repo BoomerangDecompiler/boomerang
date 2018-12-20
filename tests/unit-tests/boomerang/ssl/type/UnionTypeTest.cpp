@@ -7,8 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "UnionTest.h"
-
+#include "UnionTypeTest.h"
 
 #include "boomerang/ssl/type/UnionType.h"
 #include "boomerang/ssl/type/IntegerType.h"
