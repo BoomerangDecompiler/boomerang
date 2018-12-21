@@ -74,6 +74,7 @@ size_t UnionType::getSize() const
     size_t max = 0;
 
     for (auto &[ty, name] : m_entries) {
+        Q_UNUSED(name);
         max = std::max(max, ty->getSize());
     }
 
@@ -100,6 +101,7 @@ bool UnionType::operator==(const Type &other) const
     }
 
     for (const auto &[ty, name] : m_entries) {
+        Q_UNUSED(name);
         if (uother.m_entries.find(ty) == uother.m_entries.end()) {
             return false;
         }
@@ -137,6 +139,7 @@ void UnionType::addType(SharedType newType, const QString &name)
     else {
         if (newType->resolvesToSize()) {
             for (auto &[ty, nm] : m_entries) {
+                Q_UNUSED(nm);
                 if (ty->getSize() == newType->getSize()) {
                     return;
                 }
@@ -202,6 +205,7 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
         SharedType result                     = this->clone();
 
         for (const auto &[ty, name] : otherUnion->m_entries) {
+            Q_UNUSED(name);
             bool thisChanged = false;
             result           = result->meetWith(ty, thisChanged, useHighestPtr);
             changed |= thisChanged;
@@ -310,6 +314,7 @@ bool UnionType::isCompatible(const Type &other, bool all) const
         // Unions are compatible if one is a subset of the other
         if (getNumTypes() < otherUnion.getNumTypes()) {
             for (const auto &[ty, name] : m_entries) {
+                Q_UNUSED(name);
                 if (!otherUnion.isCompatible(*ty, all)) {
                     return false;
                 }
@@ -317,6 +322,7 @@ bool UnionType::isCompatible(const Type &other, bool all) const
         }
         else {
             for (const auto &[ty, name] : otherUnion.m_entries) {
+                Q_UNUSED(name);
                 if (!isCompatible(*ty, all)) {
                     return false;
                 }
@@ -328,6 +334,7 @@ bool UnionType::isCompatible(const Type &other, bool all) const
 
     // Other is not a UnionType -> return true if any type is compatible
     for (const auto &[ty, name] : m_entries) {
+        Q_UNUSED(name);
         if (other.isCompatibleWith(*ty, all)) {
             return true;
         }
