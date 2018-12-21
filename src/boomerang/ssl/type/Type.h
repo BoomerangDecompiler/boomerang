@@ -129,12 +129,6 @@ public:
      */
     virtual bool isCompatibleWith(const Type &other, bool all = false) const;
 
-    /**
-     * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if
-     * so reverses the parameters (this and other) to prevent many tedious repetitions
-     */
-    virtual bool isCompatible(const Type &other, bool all) const = 0;
-
     /// Return true if this is a subset or equal to other
     bool isSubTypeOrEqual(SharedType other);
 
@@ -217,6 +211,12 @@ public:
     virtual SharedType meetWith(SharedType other, bool &changed,
                                 bool useHighestPtr = false) const = 0;
 
+protected:
+    /**
+     * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if
+     * so reverses the parameters (this and other) to prevent many tedious repetitions
+     */
+    virtual bool isCompatible(const Type &other, bool all) const = 0;
 
 protected:
     TypeClass id;
