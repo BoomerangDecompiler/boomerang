@@ -28,7 +28,6 @@ public:
 public:
     static std::shared_ptr<IntegerType> get(unsigned NumBits, Sign sign = Sign::Unknown);
 
-    virtual bool isInteger() const override { return true; }
     virtual bool isComplete() override { return signedness != Sign::Unknown && size != 0; }
 
     virtual SharedType clone() const override;

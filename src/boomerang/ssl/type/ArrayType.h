@@ -35,8 +35,6 @@ public:
     ArrayType &operator=(ArrayType &&other) = default;
 
 public:
-    virtual bool isArray() const override { return true; }
-
     /// \returns the type of elements of this array
     SharedType getBaseType() { return BaseType; }
     const SharedType getBaseType() const { return BaseType; }

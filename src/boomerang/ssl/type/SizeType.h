@@ -43,7 +43,6 @@ public:
     virtual size_t getSize() const override;
 
     virtual void setSize(size_t sz) override;
-    virtual bool isSize() const override;
     virtual bool isComplete() override; // Basic type is unknown
     virtual QString getCtype(bool final = false) const override;
 

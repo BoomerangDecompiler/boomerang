@@ -53,9 +53,6 @@ public:
     UnionType &operator=(UnionType &&other) = default;
 
 public:
-    /// \copydoc Type::isUnion
-    virtual bool isUnion() const override { return true; }
-
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
     static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> &members)
     {

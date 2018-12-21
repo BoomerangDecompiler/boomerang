@@ -78,12 +78,6 @@ void SizeType::setSize(size_t sz)
 }
 
 
-bool SizeType::isSize() const
-{
-    return true;
-}
-
-
 bool SizeType::isComplete()
 {
     return false;

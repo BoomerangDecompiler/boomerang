@@ -26,8 +26,6 @@ public:
     CharType &operator=(CharType &&other) = default;
 
 public:
-    virtual bool isChar() const override { return true; }
-
     virtual SharedType clone() const override;
 
     static std::shared_ptr<CharType> get() { return std::make_shared<CharType>(); }

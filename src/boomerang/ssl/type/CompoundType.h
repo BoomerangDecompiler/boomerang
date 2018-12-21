@@ -44,9 +44,6 @@ public:
     }
 
 public:
-    /// \copydoc Type::isCompound
-    virtual bool isCompound() const override { return true; }
-
     /// \copydoc Type::getSize
     virtual size_t getSize() const override;
 

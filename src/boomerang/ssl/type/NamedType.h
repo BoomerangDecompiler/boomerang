@@ -26,7 +26,6 @@ public:
     NamedType &operator=(NamedType &&other) = default;
 
 public:
-    virtual bool isNamed() const override { return true; }
     QString getName() const { return name; }
 
     SharedType resolvesTo() const;

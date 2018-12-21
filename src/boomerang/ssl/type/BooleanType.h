@@ -26,7 +26,6 @@ public:
     BooleanType &operator=(BooleanType &&other) = default;
 
 public:
-    virtual bool isBoolean() const override { return true; }
     static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
 
     virtual SharedType clone() const override;

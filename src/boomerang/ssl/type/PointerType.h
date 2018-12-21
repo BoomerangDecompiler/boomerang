@@ -26,8 +26,6 @@ public:
     PointerType &operator=(PointerType &&other) = default;
 
 public:
-    virtual bool isPointer() const override { return true; }
-
     /// Set the pointer type of this pointer.
     /// E.g. for a pointer of type 'Foo *' the pointer type is 'Foo'
     void setPointsTo(SharedType p);

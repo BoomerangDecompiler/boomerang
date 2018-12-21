@@ -26,8 +26,6 @@ public:
     VoidType &operator=(VoidType &&other) = default;
 
 public:
-    virtual bool isVoid() const override { return true; }
-
     virtual SharedType clone() const override;
 
     static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }

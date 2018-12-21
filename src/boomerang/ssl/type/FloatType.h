@@ -28,8 +28,6 @@ public:
 public:
     static std::shared_ptr<FloatType> get(int sz = 64);
 
-    virtual bool isFloat() const override { return true; }
-
     virtual SharedType clone() const override;
 
     virtual bool operator==(const Type &other) const override;
