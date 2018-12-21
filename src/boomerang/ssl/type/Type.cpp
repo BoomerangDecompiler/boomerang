@@ -81,19 +81,13 @@ bool Type::operator!=(const Type &other) const
 }
 
 
-QString Type::prints()
-{
-    return getCtype(false); // For debugging
-}
-
-
 void Type::addNamedType(const QString &name, SharedType type)
 {
     if (g_namedTypes.find(name) != g_namedTypes.end()) {
         if (!(*type == *g_namedTypes[name])) {
             LOG_WARN("Redefinition of type %1", name);
-            LOG_WARN(" type     = %1", type->prints());
-            LOG_WARN(" previous = %1", g_namedTypes[name]->prints());
+            LOG_WARN(" type     = %1", type->getCtype());
+            LOG_WARN(" previous = %1", g_namedTypes[name]->getCtype());
             g_namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     }

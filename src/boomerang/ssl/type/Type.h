@@ -77,6 +77,12 @@ public:
     Type &operator=(Type &&other) = default;
 
 public:
+    // Comparisons
+    virtual bool operator==(const Type &other) const = 0; ///< Considers sign
+    virtual bool operator!=(const Type &other) const;     ///< Considers sign
+    virtual bool operator<(const Type &other) const = 0;  ///< Considers sign
+
+public:
     /// \returns the type class of this type.
     TypeClass getId() const { return id; }
 
@@ -142,11 +148,6 @@ public:
     // cloning
     virtual SharedType clone() const = 0;
 
-    // Comparisons
-    virtual bool operator==(const Type &other) const = 0; ///< Considers sign
-    virtual bool operator!=(const Type &other) const;     ///< Considers sign
-    virtual bool operator<(const Type &other) const = 0;  ///< Considers sign
-
 
     // Acccess functions
 
@@ -165,8 +166,6 @@ public:
     /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
     /// information. When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
-
-    QString prints(); // For debugging
 
     /**
      * Return a minimal temporary name for this type. It'd be even

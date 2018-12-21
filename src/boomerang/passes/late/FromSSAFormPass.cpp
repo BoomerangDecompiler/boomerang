@@ -67,7 +67,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 ty = VoidType::get();
             }
 
-            LOG_VERBOSE2("Got type %1 for %2 from %3", ty->prints(), base, s);
+            LOG_VERBOSE2("Got type %1 for %2 from %3", ty->getCtype(), base, s);
             ff            = firstTypes.find(base);
             SharedExp ref = RefExp::get(base, s);
 
