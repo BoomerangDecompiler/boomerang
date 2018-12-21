@@ -69,20 +69,14 @@ SharedType BooleanType::meetWith(SharedType other, bool &changed, bool useHighes
 
 bool BooleanType::isCompatible(const Type &other, bool /*all*/) const
 {
-    if (other.resolvesToVoid()) {
+    if (other.resolvesToVoid() || other.resolvesToBoolean()) {
         return true;
     }
-
-    if (other.resolvesToBoolean()) {
+    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == 1) {
         return true;
     }
-
-    if (other.resolvesToUnion()) {
+    else if (other.resolvesToUnion()) {
         return other.isCompatibleWith(*this);
-    }
-
-    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == 1) {
-        return true;
     }
 
     return false;
