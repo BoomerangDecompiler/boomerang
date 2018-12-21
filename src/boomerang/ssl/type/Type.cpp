@@ -75,13 +75,6 @@ bool Type::isCString() const
 }
 
 
-SharedType Type::parseType(const char *)
-{
-    assert(!"Not implemented");
-    return nullptr;
-}
-
-
 bool Type::operator!=(const Type &other) const
 {
     return !(*this == other);

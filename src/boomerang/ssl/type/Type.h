@@ -93,13 +93,6 @@ public:
      */
     static SharedType getTempType(const QString &name);
 
-    /**
-     * parse a C type from a string.
-     * \param        str string to parse
-     * \returns      constructed type.
-     */
-    static SharedType parseType(const char *str);
-
     /// \returns true if this type is a (const) char* pointer or char array.
     bool isCString() const;
 
