@@ -46,7 +46,7 @@ void UnionTest::testConstruct()
     QCOMPARE(u5.getCtype(), "union { int; }");
 
     UnionType u6({ IntegerType::get(32, Sign::Signed), FloatType::get(32) });
-    QCOMPARE(u6.getCtype(), "union { float; int; }");
+    QCOMPARE(u6.getCtype(), "union { int; float; }");
     QCOMPARE(u6.getNumTypes(), 2);
     QCOMPARE(u6.getSize(), 32);
 }

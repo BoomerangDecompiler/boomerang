@@ -12,17 +12,12 @@
 
 #include "boomerang/ssl/type/Type.h"
 
-#include <unordered_map>
+#include <map>
 
 
-struct BOOMERANG_API hashType
+struct BOOMERANG_API lessType
 {
-    size_t operator()(const SharedConstType &ty) const;
-};
-
-struct BOOMERANG_API equalType
-{
-    size_t operator()(const SharedConstType &lhs, const SharedConstType &rhs) const;
+    bool operator()(const SharedConstType &lhs, const SharedConstType &rhs) const;
 };
 
 
@@ -37,7 +32,7 @@ public:
 
 public:
     /// Maps the type of a union member to its name.
-    typedef std::unordered_map<SharedType, QString, hashType, equalType> UnionEntries;
+    typedef std::map<SharedType, QString, lessType> UnionEntries;
 
 public:
     /// Create a new empty union type.

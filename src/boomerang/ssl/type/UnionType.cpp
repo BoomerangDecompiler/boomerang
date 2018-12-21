@@ -16,15 +16,9 @@
 #include <QHash>
 
 
-size_t hashType::operator()(const SharedConstType &ty) const
+bool lessType::operator()(const SharedConstType &lhs, const SharedConstType &rhs) const
 {
-    return qHash(ty->getCtype());
-}
-
-
-size_t equalType::operator()(const SharedConstType &lhs, const SharedConstType &rhs) const
-{
-    return *lhs == *rhs;
+    return *lhs < *rhs;
 }
 
 
