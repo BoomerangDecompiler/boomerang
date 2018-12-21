@@ -111,7 +111,20 @@ bool UnionType::operator<(const Type &other) const
         return m_id < other.getId();
     }
 
-    return getNumTypes() < static_cast<const UnionType &>(other).getNumTypes();
+    const UnionType &otherUnion = static_cast<const UnionType &>(other);
+    if (getNumTypes() != otherUnion.getNumTypes()) {
+        return getNumTypes() < otherUnion.getNumTypes();
+    }
+
+    for (auto myIt = m_entries.begin(), otherIt = otherUnion.m_entries.begin();
+         myIt != m_entries.end(); ++myIt, ++otherIt) {
+        // treat unions with same types but different names as equal
+        if (*myIt->first != *otherIt->first) {
+            return *myIt->first < *otherIt->first;
+        }
+    }
+
+    return false; // equal
 }
 
 
