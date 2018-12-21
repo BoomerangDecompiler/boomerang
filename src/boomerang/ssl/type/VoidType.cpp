@@ -41,7 +41,7 @@ bool VoidType::operator==(const Type &other) const
 
 bool VoidType::operator<(const Type &other) const
 {
-    return id < other.getId();
+    return m_id < other.getId();
 }
 
 

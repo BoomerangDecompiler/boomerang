@@ -43,12 +43,8 @@ bool BooleanType::operator==(const Type &other) const
 
 bool BooleanType::operator<(const Type &other) const
 {
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
-        return false;
+    if (getId() != other.getId()) {
+        return getId() < other.getId();
     }
 
     return true;

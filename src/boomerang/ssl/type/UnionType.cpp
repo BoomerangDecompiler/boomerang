@@ -94,8 +94,8 @@ bool UnionType::operator==(const Type &other) const
 
 bool UnionType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
     return getNumTypes() < static_cast<const UnionType &>(other).getNumTypes();

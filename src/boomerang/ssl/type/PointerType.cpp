@@ -80,7 +80,7 @@ bool PointerType::operator==(const Type &other) const
 
 bool PointerType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
+    if (m_id != other.getId()) {
         return false;
     }
 
@@ -138,11 +138,11 @@ QString PointerType::getCtype(bool final) const
 SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return const_cast<PointerType *>(this)->shared_from_this();
+        return std::const_pointer_cast<PointerType>(this->as<PointerType>());
     }
 
     if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == STD_SIZE)) {
-        return const_cast<PointerType *>(this)->shared_from_this();
+        return std::const_pointer_cast<PointerType>(this->as<PointerType>());
     }
 
     if (!other->resolvesToPointer()) {
@@ -175,7 +175,7 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
         }
 
         if (otherBase->isSubTypeOrEqual(thisBase)) {
-            return const_cast<PointerType *>(this)->shared_from_this();
+            return std::const_pointer_cast<PointerType>(this->as<PointerType>());
         }
 
         // There may be another type that is a superset of this and other; for now return void*
@@ -195,7 +195,7 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
         }
 
         if (thisBase == otherBase || *thisBase == *otherBase) {
-            return const_cast<PointerType *>(this)->shared_from_this();
+            return std::const_pointer_cast<PointerType>(this->as<PointerType>());
         }
 
         if (getPointerDepth() == otherPtr->getPointerDepth()) {
@@ -208,7 +208,7 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
             SharedType otherFinalType = otherPtr->getFinalPointsTo();
 
             if (otherFinalType->resolvesToVoid() || *finalType == *otherFinalType) {
-                return const_cast<PointerType *>(this)->shared_from_this();
+                return std::const_pointer_cast<PointerType>(this->as<PointerType>());
             }
         }
     }

@@ -102,11 +102,11 @@ bool ArrayType::operator==(const Type &other) const
 
 bool ArrayType::operator<(const Type &other) const
 {
-    if (id < other.getId()) {
+    if (m_id < other.getId()) {
         return true;
     }
 
-    if (id > other.getId()) {
+    if (m_id > other.getId()) {
         return false;
     }
 

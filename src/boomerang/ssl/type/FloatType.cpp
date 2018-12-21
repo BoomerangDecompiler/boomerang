@@ -58,8 +58,8 @@ bool FloatType::operator==(const Type &other) const
 
 bool FloatType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
     return size < static_cast<const FloatType &>(other).size;

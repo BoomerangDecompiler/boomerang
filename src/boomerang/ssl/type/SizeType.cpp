@@ -52,8 +52,8 @@ bool SizeType::operator==(const Type &other) const
 
 bool SizeType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (getId() != other.getId()) {
+        return getId() < other.getId();
     }
 
     return size < static_cast<const SizeType &>(other).size;

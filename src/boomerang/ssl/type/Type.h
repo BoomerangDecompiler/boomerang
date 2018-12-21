@@ -84,7 +84,7 @@ public:
 
 public:
     /// \returns the type class of this type.
-    inline TypeClass getId() const { return id; }
+    inline TypeClass getId() const { return m_id; }
 
     // runtime type information. Deprecated for most situations; use resolvesToTYPE()
     // clang-format off
@@ -142,7 +142,7 @@ public:
     as() const;
 
 public:
-    // cloning
+    /// Clone this type
     virtual SharedType clone() const = 0;
 
     /// \returns the size (in bits) of this type.
@@ -180,14 +180,14 @@ public:
      */
     static SharedType getTempType(const QString &name);
 
-    /// Create a union of this Type and other. Set ch true if any change
+    /// Create a union of this Type and other. Set \p changed to true if any change
     SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 
-    static SharedType newIntegerLikeType(int size, Sign signedness); // Return a new Bool/Char/Int
+    /// \param size Size in bits
+    /// \return a new Bool/Char/Int
+    static SharedType newIntegerLikeType(int size, Sign signedness);
 
-
-    // Acccess functions
-
+public:
     QString toString() const;
 
     /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
@@ -220,7 +220,7 @@ protected:
     virtual bool isCompatible(const Type &other, bool all) const = 0;
 
 protected:
-    TypeClass id;
+    TypeClass m_id;
 };
 
 
