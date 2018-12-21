@@ -14,7 +14,7 @@
 
 NamedType::NamedType(const QString &_name)
     : Type(TypeClass::Named)
-    , name(_name)
+    , m_name(_name)
 {
 }
 
@@ -26,7 +26,7 @@ NamedType::~NamedType()
 
 SharedType NamedType::clone() const
 {
-    return NamedType::get(name);
+    return NamedType::get(m_name);
 }
 
 
@@ -38,20 +38,20 @@ size_t NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_WARN("Unknown size for named type '%1'", name);
+    LOG_WARN("Unknown size for named type '%1'", m_name);
     return 0; // don't know
 }
 
 
 bool NamedType::operator==(const Type &other) const
 {
-    return other.isNamed() && name == static_cast<const NamedType &>(other).name;
+    return other.isNamed() && m_name == static_cast<const NamedType &>(other).m_name;
 }
 
 
 SharedType NamedType::resolvesTo() const
 {
-    SharedType ty = getNamedType(name);
+    SharedType ty = getNamedType(m_name);
 
     if (ty && ty->isNamed()) {
         return std::static_pointer_cast<NamedType>(ty)->resolvesTo();
@@ -67,13 +67,13 @@ bool NamedType::operator<(const Type &other) const
         return m_id < other.getId();
     }
 
-    return name < static_cast<const NamedType &>(other).name;
+    return m_name < static_cast<const NamedType &>(other).m_name;
 }
 
 
 QString NamedType::getCtype(bool /*final*/) const
 {
-    return name;
+    return m_name;
 }
 
 
@@ -105,7 +105,7 @@ SharedType NamedType::meetWith(SharedType other, bool &changed, bool useHighestP
 
 bool NamedType::isCompatible(const Type &other, bool /*all*/) const
 {
-    if (other.isNamed() && (name == static_cast<const NamedType &>(other).getName())) {
+    if (other.isNamed() && (m_name == static_cast<const NamedType &>(other).getName())) {
         return true;
     }
 

@@ -16,7 +16,8 @@
 class BOOMERANG_API NamedType : public Type
 {
 public:
-    NamedType(const QString &_name);
+    explicit NamedType(const QString &name);
+
     NamedType(const NamedType &other) = default;
     NamedType(NamedType &&other)      = default;
 
@@ -26,31 +27,42 @@ public:
     NamedType &operator=(NamedType &&other) = default;
 
 public:
-    QString getName() const { return name; }
-
-    SharedType resolvesTo() const;
-
     static std::shared_ptr<NamedType> get(const QString &_name)
     {
         return std::make_shared<NamedType>(_name);
     }
 
+    /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
+public:
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
+
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-
+public:
+    /// \copydoc Type::getSize
     virtual size_t getSize() const override;
 
+    /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
+
+public:
+    QString getName() const { return m_name; }
+
+    SharedType resolvesTo() const;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    QString name;
+    QString m_name;
 };
 
 
