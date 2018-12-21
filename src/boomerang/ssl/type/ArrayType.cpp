@@ -10,20 +10,17 @@
 #include "ArrayType.h"
 
 
-ArrayType::ArrayType(SharedType baseType, unsigned length)
+ArrayType::ArrayType(SharedType baseType, size_t length)
     : Type(TypeClass::Array)
-    , BaseType(baseType)
+    , m_baseType(baseType)
     , m_length(length)
 {
 }
 
 
-ArrayType::ArrayType()
-    : Type(TypeClass::Array)
-    , BaseType(nullptr)
-    , m_length(0)
-
+bool ArrayType::isCompatibleWith(const Type &other, bool all) const
 {
+    return isCompatible(other, all);
 }
 
 
@@ -37,20 +34,10 @@ size_t ArrayType::convertLength(SharedType b) const
 {
     // MVE: not sure if this is always the right thing to do
     if (m_length != ARRAY_UNBOUNDED) {
-        size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
-
-        if (baseSize == 0) {
-            baseSize = 1; // Count void as size 1
-        }
-
-        baseSize *= m_length; // Old base size (length elements) in bytes
-        size_t newSize = b->getSize() / 8;
-
-        if (newSize == 0) {
-            newSize = 1;
-        }
-
-        return baseSize / newSize; // Preserve same byte size for array
+        // Old base size (one element) in bytes. Count void as size 1
+        const size_t oldSize     = std::max((size_t)1, m_baseType->getSize() / 8) * m_length;
+        const size_t newBaseSize = std::max((size_t)1, b->getSize() / 8);
+        return oldSize / newBaseSize; // Preserve same byte size for array
     }
 
     return ARRAY_UNBOUNDED;
@@ -60,8 +47,8 @@ size_t ArrayType::convertLength(SharedType b) const
 void ArrayType::setBaseType(SharedType b)
 {
     // MVE: not sure if this is always the right thing to do
-    if (m_length != ARRAY_UNBOUNDED) {
-        size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
+    if (m_baseType && m_length != ARRAY_UNBOUNDED) {
+        size_t baseSize = m_baseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
             baseSize = 1; // Count void as size 1
@@ -77,25 +64,25 @@ void ArrayType::setBaseType(SharedType b)
         m_length = baseSize / newElementSize; // Preserve same byte size for array
     }
 
-    BaseType = b;
+    m_baseType = b;
 }
 
 
 SharedType ArrayType::clone() const
 {
-    return ArrayType::get(BaseType->clone(), m_length);
+    return ArrayType::get(m_baseType->clone(), m_length);
 }
 
 
 size_t ArrayType::getSize() const
 {
-    return BaseType->getSize() * getLength();
+    return m_baseType->getSize() * getLength();
 }
 
 
 bool ArrayType::operator==(const Type &other) const
 {
-    return other.isArray() && *BaseType == *static_cast<const ArrayType &>(other).BaseType &&
+    return other.isArray() && *m_baseType == *static_cast<const ArrayType &>(other).m_baseType &&
            static_cast<const ArrayType &>(other).m_length == m_length;
 }
 
@@ -110,31 +97,19 @@ bool ArrayType::operator<(const Type &other) const
         return false;
     }
 
-    return (*BaseType < *static_cast<const ArrayType &>(other).BaseType);
+    return (*m_baseType < *static_cast<const ArrayType &>(other).m_baseType);
 }
 
 
 QString ArrayType::getCtype(bool final) const
 {
-    QString s = BaseType->getCtype(final);
+    QString s = m_baseType->getCtype(final);
 
     if (isUnbounded()) {
         return s + "[]";
     }
 
     return s + "[" + QString::number(m_length) + "]";
-}
-
-
-void ArrayType::fixBaseType(SharedType b)
-{
-    if (BaseType == nullptr) {
-        BaseType = b;
-    }
-    else {
-        assert(BaseType->isArray());
-        BaseType->as<ArrayType>()->fixBaseType(b);
-    }
 }
 
 
@@ -146,11 +121,11 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
 
     if (other->resolvesToArray()) {
         auto otherArr      = other->as<ArrayType>();
-        SharedType newBase = BaseType->clone()->meetWith(otherArr->BaseType, changed,
-                                                         useHighestPtr);
+        SharedType newBase = m_baseType->clone()->meetWith(otherArr->m_baseType, changed,
+                                                           useHighestPtr);
         size_t newLength   = m_length;
 
-        if (*newBase != *BaseType) {
+        if (*newBase != *m_baseType) {
             changed   = true;
             newLength = convertLength(newBase);
         }
@@ -159,7 +134,7 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
         return ArrayType::get(newBase, newLength);
     }
 
-    if (*BaseType == *other) {
+    if (*m_baseType == *other) {
         return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
@@ -173,22 +148,22 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
      * based on new BaseType
      */
     if (isCompatible(*other, false)) { // compatible with all ?
-        size_t bitsize  = BaseType->getSize();
+        size_t bitsize  = m_baseType->getSize();
         size_t new_size = other->getSize();
 
-        if (BaseType->isComplete() && !other->isComplete()) {
+        if (m_baseType->isComplete() && !other->isComplete()) {
             // complete types win
             return std::const_pointer_cast<Type>(this->shared_from_this());
         }
 
         if (bitsize == new_size) {
             // same size, prefer Int/Float over SizeType
-            if (!BaseType->isSize() && other->isSize()) {
+            if (!m_baseType->isSize() && other->isSize()) {
                 return std::const_pointer_cast<Type>(this->shared_from_this());
             }
         }
 
-        auto bt = BaseType->clone();
+        auto bt = m_baseType->clone();
         bool base_changed;
         auto res = bt->meetWith(other, base_changed);
 
@@ -216,7 +191,8 @@ bool ArrayType::isCompatible(const Type &other, bool all) const
         return true;
     }
 
-    if (other.resolvesToArray() && BaseType->isCompatibleWith(*other.as<ArrayType>()->BaseType)) {
+    if (other.resolvesToArray() &&
+        m_baseType->isCompatibleWith(*other.as<ArrayType>()->m_baseType)) {
         return true;
     }
 
@@ -224,7 +200,7 @@ bool ArrayType::isCompatible(const Type &other, bool all) const
         return other.isCompatibleWith(*this);
     }
 
-    if (!all && BaseType->isCompatibleWith(other)) {
+    if (!all && m_baseType->isCompatibleWith(other)) {
         return true; // An array of x is compatible with x
     }
 
