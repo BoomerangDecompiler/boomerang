@@ -16,8 +16,8 @@
 IntegerType::IntegerType(unsigned int NumBits, Sign sign)
     : Type(TypeClass::Integer)
 {
-    size       = NumBits;
-    signedness = sign;
+    m_size = NumBits;
+    m_sign = sign;
 }
 
 
@@ -29,24 +29,24 @@ std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, Sign sign)
 
 SharedType IntegerType::clone() const
 {
-    return IntegerType::get(size, signedness);
+    return IntegerType::get(m_size, m_sign);
 }
 
 
 size_t IntegerType::getSize() const
 {
-    return size;
+    return m_size;
 }
 
 void IntegerType::hintAsSigned()
 {
-    signedness = std::min((Sign)((int)signedness + 1), Sign::SignedStrong);
+    m_sign = std::min((Sign)((int)m_sign + 1), Sign::SignedStrong);
 }
 
 
 void IntegerType::hintAsUnsigned()
 {
-    signedness = std::max((Sign)((int)signedness - 1), Sign::UnsignedStrong);
+    m_sign = std::max((Sign)((int)m_sign - 1), Sign::UnsignedStrong);
 }
 
 
@@ -60,7 +60,7 @@ bool IntegerType::operator==(const Type &other) const
 
     return
         // Note: zero size matches any other size (wild, or unknown, size)
-        (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
+        (m_size == 0 || otherInt.m_size == 0 || m_size == otherInt.m_size) &&
         // Note: actual value of signedness is disregarded, just whether less than, equal to, or
         // greater than 0
         ((isUnsigned() && otherInt.isUnsigned()) || (isSignUnknown() && otherInt.isSignUnknown()) ||
@@ -76,17 +76,17 @@ bool IntegerType::operator<(const Type &other) const
 
     const IntegerType &otherTy = static_cast<const IntegerType &>(other);
 
-    if (size != otherTy.size) {
-        return size < otherTy.size;
+    if (m_size != otherTy.m_size) {
+        return m_size < otherTy.m_size;
     }
 
-    return signedness < otherTy.signedness;
+    return m_sign < otherTy.m_sign;
 }
 
 
 QString IntegerType::getTempName() const
 {
-    switch (size) {
+    switch (m_size) {
     case 1: /* Treat as a tmpb */
     case 8: return "tmpb";
     case 16: return "tmph";
@@ -107,7 +107,7 @@ QString IntegerType::getCtype(bool final) const
             s = "/*signed?*/";
         }
 
-        switch (size) {
+        switch (m_size) {
         case 1: return s + "bool";
         case 8: return s + "char";
         case 16: return s + "short";
@@ -117,7 +117,7 @@ QString IntegerType::getCtype(bool final) const
         }
     }
     else {
-        switch (size) {
+        switch (m_size) {
         case 1: return "bool";
         case 8: return "unsigned char";
         case 16: return "unsigned short";
@@ -153,8 +153,8 @@ SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighes
                    isUnsigned(); // Changed from unsigned to not necessarily unsigned
 
         // Size. Assume 0 indicates unknown size
-        result->size = std::max(size, otherInt->size);
-        changed |= (result->size != size);
+        result->m_size = std::max(m_size, otherInt->m_size);
+        changed |= (result->m_size != m_size);
 
         return result;
     }
@@ -162,20 +162,20 @@ SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighes
         std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
         std::shared_ptr<SizeType> other_sz  = other->as<SizeType>();
 
-        if (size == 0) { // Doubt this will ever happen
-            result->size = other_sz->getSize();
-            changed      = true;
+        if (m_size == 0) { // Doubt this will ever happen
+            result->m_size = other_sz->getSize();
+            changed        = true;
             return result;
         }
 
-        if (size == other_sz->getSize()) {
+        if (m_size == other_sz->getSize()) {
             return result;
         }
 
-        LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", size, other_sz->getSize());
+        LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", m_size, other_sz->getSize());
 
-        result->size = std::max(size, other_sz->getSize());
-        changed      = result->size != size;
+        result->m_size = std::max(m_size, other_sz->getSize());
+        changed        = result->m_size != m_size;
         return result;
     }
 
@@ -193,7 +193,7 @@ bool IntegerType::isCompatible(const Type &other, bool /*all*/) const
         return other.isCompatibleWith(*this);
     }
 
-    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == size) {
+    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == m_size) {
         return true;
     }
 
