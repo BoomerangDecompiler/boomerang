@@ -40,6 +40,16 @@ void MeetTest::testMeet()
     // verify that the source types themselves are not changed by meet
     QCOMPARE(firstOp.ty->toString(), oldFirstOp->toString());
     QCOMPARE(secondOp.ty->toString(), oldSecondOp->toString());
+
+    // verify meet is symmetric
+    changed = false;
+    result = secondOp->meetWith(firstOp, changed, false);
+    QCOMPARE(result->toString(), tgtResult.ty->toString()); // we are just comparing types here, not variable names
+    QCOMPARE(changed, result->getCtype() != secondOp->getCtype());
+
+    // verify that the source types themselves are not changed by meet
+    QCOMPARE(firstOp.ty->toString(), oldFirstOp->toString());
+    QCOMPARE(secondOp.ty->toString(), oldSecondOp->toString());
 }
 
 
