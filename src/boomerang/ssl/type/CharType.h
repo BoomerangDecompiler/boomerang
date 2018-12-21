@@ -32,12 +32,14 @@ public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
+public:
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
+public:
     /// \copydoc Type::getSize
     virtual size_t getSize() const override;
 
