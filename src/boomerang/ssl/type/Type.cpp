@@ -327,7 +327,7 @@ bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const
 }
 
 
-bool Type::isSubTypeOrEqual(SharedType other)
+bool Type::isSubTypeOrEqual(SharedType other) const
 {
     if (resolvesToVoid()) {
         return true;

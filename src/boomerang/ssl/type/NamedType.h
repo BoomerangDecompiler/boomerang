@@ -57,20 +57,14 @@ private:
 template<>
 inline std::shared_ptr<NamedType> Type::as<NamedType>()
 {
-    SharedType ty = shared_from_this();
-    auto res      = std::dynamic_pointer_cast<NamedType>(ty);
-
-    assert(res);
-    return res;
+    assert(std::dynamic_pointer_cast<NamedType>(shared_from_this()) != nullptr);
+    return std::static_pointer_cast<NamedType>(shared_from_this());
 }
 
 
 template<>
 inline std::shared_ptr<const NamedType> Type::as<NamedType>() const
 {
-    auto ty  = shared_from_this();
-    auto res = std::dynamic_pointer_cast<const NamedType>(ty);
-
-    assert(res);
-    return res;
+    assert(std::dynamic_pointer_cast<const NamedType>(shared_from_this()) != nullptr);
+    return std::static_pointer_cast<const NamedType>(shared_from_this());
 }

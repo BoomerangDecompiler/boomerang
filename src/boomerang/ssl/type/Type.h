@@ -130,15 +130,16 @@ public:
     virtual bool isCompatibleWith(const Type &other, bool all = false) const;
 
     /// Return true if this is a subset or equal to other
-    bool isSubTypeOrEqual(SharedType other);
+    bool isSubTypeOrEqual(SharedType other) const;
 
 public:
     /// Typecast this type to another type.
     template<class T>
-    std::shared_ptr<T> as();
+    typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<T>>::type as();
 
     template<class T>
-    std::shared_ptr<const T> as() const;
+    typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<const T>>::type
+    as() const;
 
 public:
     // cloning
@@ -229,7 +230,7 @@ OStream &operator<<(OStream &os, const Type &ty);            ///< Print the Type
 
 
 template<class T>
-inline std::shared_ptr<T> Type::as()
+inline typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<T>>::type Type::as()
 {
     SharedType ty = resolveNamedType();
     assert(std::dynamic_pointer_cast<T>(ty) != nullptr);
@@ -238,7 +239,8 @@ inline std::shared_ptr<T> Type::as()
 
 
 template<class T>
-inline std::shared_ptr<const T> Type::as() const
+inline typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<const T>>::type
+Type::as() const
 {
     SharedConstType ty = resolveNamedType();
     assert(std::dynamic_pointer_cast<const T>(ty) != nullptr);
