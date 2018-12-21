@@ -54,6 +54,35 @@ void UnionTest::testConstruct()
 
 void UnionTest::testCompare()
 {
+    // equality comparison
+    QVERIFY(UnionType({ IntegerType::get(32), FloatType::get(32) })
+        ==  UnionType({ FloatType::get(32),   IntegerType::get(32) }));
+
+    QVERIFY(UnionType({ IntegerType::get(32), FloatType::get(32) })
+        !=  UnionType({ IntegerType::get(32) }));
+
+    QVERIFY(UnionType({ FloatType::get(32) })
+        !=  UnionType({ FloatType::get(32), IntegerType::get(32) }));
+
+    QVERIFY(UnionType({ FloatType::get(32), FloatType::get(64) })
+        !=  UnionType({ FloatType::get(64), IntegerType::get(64) }));
+
+    QVERIFY(UnionType({ IntegerType::get(32) })
+        !=  *IntegerType::get(32));
+
+    QVERIFY(*IntegerType::get(32)
+        != UnionType({ IntegerType::get(32) }));
+
+    // less-than comparison
+    QVERIFY(!(UnionType({ IntegerType::get(32) }) < *IntegerType::get(32)));
+    QVERIFY(*IntegerType::get(32) < UnionType({ IntegerType::get(32) }));
+
+    QVERIFY(UnionType({ IntegerType::get(32) }) < UnionType({ FloatType::get(32)}));
+    QVERIFY(!(UnionType({ FloatType::get(32) }) < UnionType({ FloatType::get(32)})));
+
+    QVERIFY(UnionType({ IntegerType::get(32) })
+        <   UnionType({ FloatType::get(32), SizeType::get(64) }));
+
 }
 
 
