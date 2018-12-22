@@ -222,8 +222,18 @@ type_ident:
         $$->name = $2;
     }
   | type IDENTIFIER array_modifier {
+        std::shared_ptr<ArrayType> arrayTy = $3->as<ArrayType>();
+        SharedType baseType = arrayTy->getBaseType();
+
+        while (baseType && baseType->isArray()) {
+            arrayTy = baseType->as<ArrayType>();
+            baseType = arrayTy->getBaseType();
+        }
+
+        assert(baseType == nullptr);
+        arrayTy->setBaseType($1);
+
         $$.reset(new TypeIdent);
-        $3->as<ArrayType>()->fixBaseType($1);
         $$->ty = $3;
         $$->name = $2;
     }

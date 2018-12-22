@@ -94,8 +94,8 @@ bool UnionType::operator==(const Type &other) const
 
 bool UnionType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
     return getNumTypes() < static_cast<const UnionType &>(other).getNumTypes();
@@ -305,26 +305,4 @@ bool UnionType::isCompatible(const Type &other, bool all) const
     }
 
     return false;
-}
-
-
-// Dereference this union. If it is a union of pointers, return a union of the dereferenced items.
-// Else return VoidType (note: should probably be bottom)
-SharedType UnionType::dereferenceUnion()
-{
-    auto ret = UnionType::get();
-
-    UnionEntrySet::iterator it;
-
-    for (it = li.begin(); it != li.end(); ++it) {
-        SharedType elem = it->type->dereference();
-
-        if (elem->resolvesToVoid()) {
-            return elem; // Return void for the whole thing
-        }
-
-        ret->addType(elem->clone());
-    }
-
-    return ret;
 }

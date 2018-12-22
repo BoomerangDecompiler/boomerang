@@ -28,26 +28,27 @@ PointerType::~PointerType()
 
 void PointerType::setPointsTo(SharedType p)
 {
+    assert(p != nullptr);
+
     // Can't point to self; impossible to compare, print, etc
     if (p.get() == this) {
         LOG_ERROR("Attempted to create pointer to self: %1", HostAddress(this).toString());
-        points_to = VoidType::get();
+        m_pointsTo = VoidType::get();
         return;
     }
 
-    points_to = p;
+    m_pointsTo = p;
 }
 
 
 SharedType PointerType::clone() const
 {
-    return PointerType::get(points_to->clone());
+    return PointerType::get(m_pointsTo->clone());
 }
 
 
 size_t PointerType::getSize() const
 {
-    // points_to->getSize(); // yes, it was a good idea at the time
     return STD_SIZE;
 }
 
@@ -59,45 +60,55 @@ void PointerType::setSize(size_t sz)
 }
 
 
-static int pointerCompareNest = 0;
-
 bool PointerType::operator==(const Type &other) const
 {
     if (!other.isPointer()) {
         return false;
     }
 
-    if (++pointerCompareNest >= 20) {
-        LOG_WARN("PointerType operator== nesting depth exceeded!");
-        return true;
+    SharedType myPointsTo    = m_pointsTo;
+    SharedType otherPointsTo = static_cast<const PointerType &>(other).m_pointsTo;
+
+    int pointerCompareNest = 0;
+
+    while (pointerCompareNest++ < 20) {
+        if (myPointsTo->isPointer() != otherPointsTo->isPointer()) {
+            return false;
+        }
+        else if (myPointsTo->isPointer()) { // both are pointers
+            myPointsTo    = myPointsTo->as<PointerType>()->getPointsTo();
+            otherPointsTo = otherPointsTo->as<PointerType>()->getPointsTo();
+        }
+        else { // neither are pointers
+            return *myPointsTo == *otherPointsTo;
+        }
     }
 
-    bool ret = (*points_to == *static_cast<const PointerType &>(other).points_to);
-    pointerCompareNest--;
-    return ret;
+    LOG_WARN("PointerType operator== nesting depth exceeded!");
+    return true;
 }
 
 
 bool PointerType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
+    if (m_id != other.getId()) {
         return false;
     }
 
-    return *points_to < *static_cast<const PointerType &>(other).points_to;
+    return *m_pointsTo < *static_cast<const PointerType &>(other).m_pointsTo;
 }
 
 
 bool PointerType::isVoidPointer() const
 {
-    return points_to->isVoid();
+    return m_pointsTo->isVoid();
 }
 
 
 int PointerType::getPointerDepth() const
 {
     int d   = 1;
-    auto pt = points_to;
+    auto pt = m_pointsTo;
 
     while (pt->isPointer()) {
         pt = pt->as<PointerType>()->getPointsTo();
@@ -110,7 +121,7 @@ int PointerType::getPointerDepth() const
 
 SharedType PointerType::getFinalPointsTo() const
 {
-    SharedType pt = points_to;
+    SharedType pt = m_pointsTo;
 
     while (pt->isPointer()) {
         pt = pt->as<PointerType>()->getPointsTo();
@@ -122,9 +133,9 @@ SharedType PointerType::getFinalPointsTo() const
 
 QString PointerType::getCtype(bool final) const
 {
-    QString s = points_to->getCtype(final);
+    QString s = m_pointsTo->getCtype(final);
 
-    if (points_to->isPointer()) {
+    if (m_pointsTo->isPointer()) {
         s += "*";
     }
     else {
@@ -138,11 +149,11 @@ QString PointerType::getCtype(bool final) const
 SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return const_cast<PointerType *>(this)->shared_from_this();
+        return std::const_pointer_cast<PointerType>(this->as<PointerType>());
     }
 
     if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == STD_SIZE)) {
-        return const_cast<PointerType *>(this)->shared_from_this();
+        return std::const_pointer_cast<PointerType>(this->as<PointerType>());
     }
 
     if (!other->resolvesToPointer()) {
@@ -165,8 +176,8 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
     }
 
     // We have a meeting of two pointers.
-    SharedType thisBase  = points_to;
-    SharedType otherBase = otherPtr->points_to;
+    SharedType thisBase  = m_pointsTo;
+    SharedType otherBase = otherPtr->m_pointsTo;
 
     if (useHighestPtr) {
         // We want the greatest type of thisBase and otherBase
@@ -175,7 +186,7 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
         }
 
         if (otherBase->isSubTypeOrEqual(thisBase)) {
-            return const_cast<PointerType *>(this)->shared_from_this();
+            return std::const_pointer_cast<PointerType>(this->as<PointerType>());
         }
 
         // There may be another type that is a superset of this and other; for now return void*
@@ -195,7 +206,7 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
         }
 
         if (thisBase == otherBase || *thisBase == *otherBase) {
-            return const_cast<PointerType *>(this)->shared_from_this();
+            return std::const_pointer_cast<PointerType>(this->as<PointerType>());
         }
 
         if (getPointerDepth() == otherPtr->getPointerDepth()) {
@@ -208,14 +219,14 @@ SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighes
             SharedType otherFinalType = otherPtr->getFinalPointsTo();
 
             if (otherFinalType->resolvesToVoid() || *finalType == *otherFinalType) {
-                return const_cast<PointerType *>(this)->shared_from_this();
+                return std::const_pointer_cast<PointerType>(this->as<PointerType>());
             }
         }
     }
 
     if (thisBase->isCompatibleWith(*otherBase)) {
         // meet recursively if the types are compatible
-        return PointerType::get(points_to->meetWith(otherBase, changed, useHighestPtr));
+        return PointerType::get(m_pointsTo->meetWith(otherBase, changed, useHighestPtr));
     }
 
     // The bases did not meet successfully. Union the pointers.
@@ -241,5 +252,5 @@ bool PointerType::isCompatible(const Type &other, bool /*all*/) const
         return false;
     }
 
-    return points_to->isCompatibleWith(*other.as<PointerType>()->points_to);
+    return m_pointsTo->isCompatibleWith(*other.as<PointerType>()->m_pointsTo);
 }

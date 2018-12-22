@@ -557,10 +557,10 @@ void ProgTest::testMakeArrayType()
 
     // type of hello world
     ty = m_project.getProg()->makeArrayType(Address(0x80483FC), CharType::get());
-    QCOMPARE(ty->prints(), QString("char[15]"));
+    QCOMPARE(ty->getCtype(), QString("char[15]"));
 
     ty = m_project.getProg()->makeArrayType(Address(0x80483FC), VoidType::get());
-    QCOMPARE(ty->prints(), QString("void[15]"));
+    QCOMPARE(ty->getCtype(), QString("void[15]"));
 }
 
 
@@ -587,12 +587,12 @@ void ProgTest::testGlobalType()
 
     SharedType ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
-    QCOMPARE(ty->prints(), QString("char[15]"));
+    QCOMPARE(ty->getCtype(), QString("char[15]"));
 
     m_project.getProg()->setGlobalType("helloworld", IntegerType::get(32, Sign::Signed));
     ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
-    QCOMPARE(ty->prints(), QString("int"));
+    QCOMPARE(ty->getCtype(), QString("int"));
 }
 
 

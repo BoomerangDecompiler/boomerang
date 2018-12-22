@@ -15,7 +15,7 @@
 
 FloatType::FloatType(int sz)
     : Type(TypeClass::Float)
-    , size(sz)
+    , m_size(sz)
 {
 }
 
@@ -33,13 +33,19 @@ FloatType::~FloatType()
 
 SharedType FloatType::clone() const
 {
-    return FloatType::get(size);
+    return FloatType::get(m_size);
 }
 
 
 size_t FloatType::getSize() const
 {
-    return size;
+    return m_size;
+}
+
+
+void FloatType::setSize(size_t sz)
+{
+    m_size = sz;
 }
 
 
@@ -48,27 +54,27 @@ bool FloatType::operator==(const Type &other) const
     if (!other.isFloat()) {
         return false;
     }
-    else if (size == 0 || static_cast<const FloatType &>(other).size == 0) {
+    else if (m_size == 0 || static_cast<const FloatType &>(other).m_size == 0) {
         return true;
     }
 
-    return size == static_cast<const FloatType &>(other).size;
+    return m_size == static_cast<const FloatType &>(other).m_size;
 }
 
 
 bool FloatType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
-    return size < static_cast<const FloatType &>(other).size;
+    return m_size < static_cast<const FloatType &>(other).m_size;
 }
 
 
 QString FloatType::getCtype(bool /*final*/) const
 {
-    switch (size) {
+    switch (m_size) {
     case 32: return "float";
     case 64: return "double";
     default: return "double";
@@ -78,7 +84,7 @@ QString FloatType::getCtype(bool /*final*/) const
 
 QString FloatType::getTempName() const
 {
-    switch (size) {
+    switch (m_size) {
     case 32: return "tmpf";
     case 64: return "tmpd";
     case 80: return "tmpF";
@@ -96,8 +102,8 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
     }
 
     if (other->resolvesToFloat() || other->resolvesToSize()) {
-        const size_t newSize = std::max(size, other->getSize());
-        changed |= (newSize != size);
+        const size_t newSize = std::max(m_size, other->getSize());
+        changed |= (newSize != m_size);
         return FloatType::get(newSize);
     }
 
@@ -116,7 +122,7 @@ bool FloatType::isCompatible(const Type &other, bool /*all*/) const
     else if (other.resolvesToArray()) {
         return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
-    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == size) {
+    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == m_size) {
         return true;
     }
 

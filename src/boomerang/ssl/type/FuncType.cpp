@@ -15,7 +15,7 @@
 
 FuncType::FuncType(const std::shared_ptr<Signature> &sig)
     : Type(TypeClass::Func)
-    , signature(sig)
+    , m_signature(sig)
 {
 }
 
@@ -27,7 +27,7 @@ FuncType::~FuncType()
 
 SharedType FuncType::clone() const
 {
-    return FuncType::get(signature);
+    return FuncType::get(m_signature);
 }
 
 
@@ -46,18 +46,18 @@ bool FuncType::operator==(const Type &other) const
 
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been
     // successfully analysed)
-    if (!signature) {
-        return otherFunc.signature == nullptr;
+    if (!m_signature) {
+        return otherFunc.m_signature == nullptr;
     }
 
-    return *signature == *otherFunc.signature;
+    return *m_signature == *otherFunc.m_signature;
 }
 
 
 bool FuncType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (getId() != other.getId()) {
+        return getId() < other.getId();
     }
 
     // FIXME: Need to compare signatures
@@ -67,27 +67,27 @@ bool FuncType::operator<(const Type &other) const
 
 QString FuncType::getCtype(bool final) const
 {
-    if (signature == nullptr) {
+    if (m_signature == nullptr) {
         return "void (void)";
     }
 
     QString s;
 
-    if (signature->getNumReturns() == 0) {
+    if (m_signature->getNumReturns() == 0) {
         s += "void";
     }
     else {
-        s += signature->getReturnType(0)->getCtype(final);
+        s += m_signature->getReturnType(0)->getCtype(final);
     }
 
     s += " (";
 
-    for (int i = 0; i < signature->getNumParams(); i++) {
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
         if (i != 0) {
             s += ", ";
         }
 
-        s += signature->getParamType(i)->getCtype(final);
+        s += m_signature->getParamType(i)->getCtype(final);
     }
 
     s += ")";
@@ -97,28 +97,28 @@ QString FuncType::getCtype(bool final) const
 
 void FuncType::getReturnAndParam(QString &ret, QString &param)
 {
-    if (signature == nullptr) {
+    if (m_signature == nullptr) {
         ret   = "void";
         param = "(void)";
         return;
     }
 
-    if (signature->getNumReturns() == 0) {
+    if (m_signature->getNumReturns() == 0) {
         ret = "void";
     }
     else {
-        ret = signature->getReturnType(0)->getCtype();
+        ret = m_signature->getReturnType(0)->getCtype();
     }
 
     QString s;
     s += " (";
 
-    for (int i = 0; i < signature->getNumParams(); i++) {
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
         if (i != 0) {
             s += ", ";
         }
 
-        s += signature->getParamType(i)->getCtype();
+        s += m_signature->getParamType(i)->getCtype();
     }
 
     s += ")";
@@ -143,7 +143,7 @@ SharedType FuncType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
 bool FuncType::isCompatible(const Type &other, bool /*all*/) const
 {
-    assert(signature);
+    assert(m_signature != nullptr);
 
     if (other.resolvesToVoid()) {
         return true;
@@ -162,9 +162,9 @@ bool FuncType::isCompatible(const Type &other, bool /*all*/) const
     }
 
     if (other.resolvesToFunc()) {
-        assert(other.as<FuncType>()->signature);
+        assert(other.as<FuncType>()->m_signature != nullptr);
 
-        if (*other.as<FuncType>()->signature == *signature) {
+        if (*other.as<FuncType>()->m_signature == *m_signature) {
             return true;
         }
     }

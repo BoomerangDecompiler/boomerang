@@ -258,15 +258,12 @@ bool CompoundType::operator==(const Type &other) const
 
 bool CompoundType::operator<(const Type &other) const
 {
-    if (id < other.getId()) {
-        return true;
+    if (getId() != other.getId()) {
+        return getId() < other.getId();
     }
 
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return getSize() < other.getSize(); // This won't separate structs of the same size!! MVE
+    // FIXME This won't separate structs of the same size!! MVE
+    return getSize() < other.getSize();
 }
 
 

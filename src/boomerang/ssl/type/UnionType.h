@@ -53,9 +53,6 @@ public:
     UnionType &operator=(UnionType &&other) = default;
 
 public:
-    /// \copydoc Type::isUnion
-    virtual bool isUnion() const override { return true; }
-
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
     static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> &members)
     {
@@ -99,9 +96,6 @@ public:
         return isCompatible(other, all);
     }
     virtual bool isCompatible(const Type &other, bool all) const override;
-
-    // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
-    SharedType dereferenceUnion();
 
 private:
     // Note: list, not vector, as it is occasionally desirable to insert elements without affecting

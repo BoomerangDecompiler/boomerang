@@ -44,7 +44,7 @@ static QMap<QString, SharedType> g_namedTypes;
 
 
 Type::Type(TypeClass _class)
-    : id(_class)
+    : m_id(_class)
 {
 }
 
@@ -75,22 +75,9 @@ bool Type::isCString() const
 }
 
 
-SharedType Type::parseType(const char *)
-{
-    assert(!"Not implemented");
-    return nullptr;
-}
-
-
 bool Type::operator!=(const Type &other) const
 {
     return !(*this == other);
-}
-
-
-QString Type::prints()
-{
-    return getCtype(false); // For debugging
 }
 
 
@@ -99,8 +86,8 @@ void Type::addNamedType(const QString &name, SharedType type)
     if (g_namedTypes.find(name) != g_namedTypes.end()) {
         if (!(*type == *g_namedTypes[name])) {
             LOG_WARN("Redefinition of type %1", name);
-            LOG_WARN(" type     = %1", type->prints());
-            LOG_WARN(" previous = %1", g_namedTypes[name]->prints());
+            LOG_WARN(" type     = %1", type->getCtype());
+            LOG_WARN(" previous = %1", g_namedTypes[name]->getCtype());
             g_namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     }
@@ -340,7 +327,7 @@ bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const
 }
 
 
-bool Type::isSubTypeOrEqual(SharedType other)
+bool Type::isSubTypeOrEqual(SharedType other) const
 {
     if (resolvesToVoid()) {
         return true;
@@ -356,18 +343,4 @@ bool Type::isSubTypeOrEqual(SharedType other)
 
     // Not really sure here
     return false;
-}
-
-
-SharedType Type::dereference()
-{
-    if (resolvesToPointer()) {
-        return as<PointerType>()->getPointsTo();
-    }
-
-    if (resolvesToUnion()) {
-        return as<UnionType>()->dereferenceUnion();
-    }
-
-    return VoidType::get(); // Can't dereference this type. Note: should probably be bottom
 }

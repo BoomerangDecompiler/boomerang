@@ -272,7 +272,7 @@ bool Unary::descendType(SharedType newType)
 
             if (l1Type->resolvesToPointer()) {
                 // This is a struct reference m[ptr + K]; ptr points to the struct and K is an
-                // offset into it First find out if we already have struct information
+                // offset into it. First find out if we already have struct information
                 SharedType st(l1Type->as<PointerType>()->getPointsTo());
 
                 if (st->resolvesToCompound()) {

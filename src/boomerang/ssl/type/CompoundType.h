@@ -22,7 +22,8 @@ class BOOMERANG_API CompoundType : public Type
 {
 public:
     /// Constructs an empty compound type.
-    CompoundType(bool isGeneric = false);
+    explicit CompoundType(bool isGeneric = false);
+
     CompoundType(CompoundType &other)  = default;
     CompoundType(CompoundType &&other) = default;
 
@@ -32,9 +33,13 @@ public:
     CompoundType &operator=(CompoundType &&other) = default;
 
 public:
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
+
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
+public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
@@ -44,9 +49,6 @@ public:
     }
 
 public:
-    /// \copydoc Type::isCompound
-    virtual bool isCompound() const override { return true; }
-
     /// \copydoc Type::getSize
     virtual size_t getSize() const override;
 
@@ -67,25 +69,20 @@ public:
 
     bool isGeneric() const;
 
-    /**
-     * Return true if this is a superstructure of other,
-     * i.e. we have the same types at the same offsets as other
-     */
+    /// \returns true if this is a superstructure of \p other,
+    /// i.e. we have the same types at the same offsets as \p other
     bool isSuperStructOf(const SharedType &other) const;
 
-    /**
-     * Return true if this is a substructure of other,
-     * i.e. other has the same types at the same offsets as this
-     */
+    /// \returns true if this is a substructure of other,
+    /// i.e. other has the same types at the same offsets as this
     bool isSubStructOf(const SharedType &other) const;
 
-    /**
-     * Append a new member variable to this struct/class.
-     * \param memberType the type of the new member variable.
-     * \param memberName the new name of the member variable.
-     */
+    /// Append a new member variable to this struct/class.
+    /// \param memberType the type of the new member variable.
+    /// \param memberName the new name of the member variable.
     void addMember(SharedType memberType, const QString &memberName);
 
+    /// \returns the number of member variables in this structure type
     int getNumMembers() const { return m_types.size(); }
 
     SharedType getMemberTypeByIdx(int idx);
