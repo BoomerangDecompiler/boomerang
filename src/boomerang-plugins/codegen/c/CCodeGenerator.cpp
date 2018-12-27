@@ -585,11 +585,10 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             name = "??";
         }
 
-        if (ty->isPointer() &&
-            std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
+        if (ty->isPointer() && ty->as<PointerType>()->getPointsTo()->isArray()) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
-            ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
+            ty = ty->as<PointerType>()->getPointsTo();
 
             SharedExp foo = Const::get("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
@@ -946,17 +945,15 @@ void CCodeGenerator::addGlobal(const QString &name, SharedType type, const Share
     // they are printed
     if (type->isArray()) {
         // Get the component type
-        SharedType base = std::static_pointer_cast<ArrayType>(type)->getBaseType();
+        SharedType base = type->as<ArrayType>()->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << std::static_pointer_cast<ArrayType>(type)->getLength() << "]";
+        s << " " << name << "[" << type->as<ArrayType>()->getLength() << "]";
     }
-    else if (type->isPointer() &&
-             std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
+    else if (type->isPointer() && type->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
         // void (void)* global0 = foo__1B;     ->
         // void (*global0)(void) = foo__1B;
-        auto pt                      = std::static_pointer_cast<PointerType>(type);
-        std::shared_ptr<FuncType> ft = std::static_pointer_cast<FuncType>(pt->getPointsTo());
+        std::shared_ptr<FuncType> ft = type->as<PointerType>()->getPointsTo()->as<FuncType>();
         QString ret, param;
         ft->getReturnAndParam(ret, param);
         s << ret << "(*" << name << ")" << param;
@@ -1098,7 +1095,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         if (sub->isGlobal()) {
             Prog *prog = m_proc->getProg();
 
-            auto con      = std::static_pointer_cast<const Const>(sub->getSubExp1());
+            auto con      = sub->access<const Const, 1>();
             SharedType gt = prog->getGlobalType(con->getStr());
 
             if (gt && (gt->isArray() ||
@@ -1652,9 +1649,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             std::shared_ptr<const PointerType> xType = nullptr; // type of "x"
             if (x->isTypedExp()) {
                 // x is of type pointer-to-type
-                auto ptrTy = std::static_pointer_cast<const TypedExp>(x)->getType();
-                xType      = ptrTy->isPointer() ? std::static_pointer_cast<const PointerType>(ptrTy)
-                                           : nullptr;
+                auto ptrTy = x->access<const TypedExp>()->getType();
+                xType      = ptrTy->isPointer() ? ptrTy->as<const PointerType>() : nullptr;
             }
 
             if (xType && (*tt == *xType->getPointsTo() ||
@@ -2402,7 +2398,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     if (bb->getNumSuccessors() > 1) {
         const BasicBlock *other = bb->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
-        std::shared_ptr<Const> constDest = std::static_pointer_cast<Const>(bb->getDest());
+        std::shared_ptr<Const> constDest = bb->getDest()->access<Const>();
 
         if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
             std::swap(other, succ);
