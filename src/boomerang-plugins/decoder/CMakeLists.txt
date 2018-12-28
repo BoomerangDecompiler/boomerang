@@ -31,6 +31,8 @@ if (MSVC AND BOOMERANG_BUILD_DECODER_CapstoneX86)
             "${Capstone_DLL}"
             "${BOOMERANG_OUTPUT_DIR}/bin/"
     )
+
+    install(FILES "${Capstone_DLL}" DESTINATION "bin/")
 endif ()
 
 BOOMERANG_ADD_DECODER(
