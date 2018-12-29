@@ -95,9 +95,9 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     project->alertDiscovered(proc);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
-    if (proc->getStatus() >= ProcStatus::FinalDone) {
-        LOG_WARN("Proc %1 already has status PROC_FINAL", proc->getName());
-        return ProcStatus::FinalDone; // Already decompiled
+    if (proc->isDecompiled()) {
+        LOG_WARN("Not decompiling '%1' because it is already decompiled.", proc->getName());
+        return ProcStatus::FinalDone;
     }
 
     if (proc->getStatus() < ProcStatus::Decoded) {
@@ -141,7 +141,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                 continue;
             }
 
-            if (callee->getStatus() == ProcStatus::FinalDone) {
+            if (callee->isDecompiled()) {
                 // Already decompiled, but the return statement still needs to be set for this call
                 call->setCalleeReturn(callee->getRetStmt());
                 continue;
@@ -202,7 +202,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         }
     }
 
-    // if no child involved in recursion
+    // if no callee is involved in recursion
     if (proc->getStatus() != ProcStatus::InCycle) {
         project->alertDecompiling(proc);
         LOG_MSG("Decompiling procedure '%1'", proc->getName());
@@ -222,7 +222,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
     else if (m_recursionGroups.find(proc) != m_recursionGroups.end()) {
         // This proc's callees, and hence this proc, is/are involved in recursion.
-        // Find first element f in path that is also in our recursion group
+        // Find first element f in the call stack that is also in our recursion group
         ProcList::iterator f = std::find_if(
             m_callStack.begin(), m_callStack.end(), [proc](UserProc *func) {
                 return proc->getRecursionGroup()->find(func) != proc->getRecursionGroup()->end();
@@ -337,14 +337,14 @@ void ProcDecompiler::earlyDecompile(UserProc *proc)
     Project *project = proc->getProg()->getProject();
 
     project->alertStartDecompile(proc);
-    project->alertDecompileDebugPoint(proc, "Before Initialise");
+    project->alertDecompileDebugPoint(proc, "Before Initialize");
 
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::BBSimplify, proc); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, proc);
 
-    proc->debugPrintAll("After Decoding");
-    project->alertDecompileDebugPoint(proc, "After Initialise");
+    proc->debugPrintAll("After Initialize");
+    project->alertDecompileDebugPoint(proc, "After Initialize");
 
     if (proc->getStatus() >= ProcStatus::MiddleDone) {
         return;
