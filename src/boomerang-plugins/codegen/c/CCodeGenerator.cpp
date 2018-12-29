@@ -474,7 +474,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
         removeUnusedLabels();
     }
 
-    proc->setStatus(PROC_CODE_GENERATED);
+    proc->setStatus(ProcStatus::CodegenDone);
 }
 
 

@@ -190,7 +190,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
-    proc->setStatus(PROC_FINAL);
+    proc->setStatus(ProcStatus::FinalDone);
 }
 
 

@@ -122,7 +122,7 @@ void UserProc::setStatus(ProcStatus s)
 
 void UserProc::setDecoded()
 {
-    setStatus(PROC_DECODED);
+    setStatus(ProcStatus::Decoded);
 }
 
 

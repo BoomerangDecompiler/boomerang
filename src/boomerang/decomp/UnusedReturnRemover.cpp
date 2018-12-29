@@ -264,7 +264,7 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
     // additional parameters to printf/scanf), and removing unused statements is unsafe without full
     // use information
-    if (proc->getStatus() < PROC_FINAL) {
+    if (proc->getStatus() < ProcStatus::FinalDone) {
         PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
 
         // Now that locals are identified, redo the dataflow

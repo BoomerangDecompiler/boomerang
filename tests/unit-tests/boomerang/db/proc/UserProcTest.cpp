@@ -40,7 +40,7 @@ void UserProcTest::testIsNoReturn()
     UserProc testProc(Address(0x1000), "test", nullptr);
     QCOMPARE(testProc.isNoReturn(), false);
 
-    testProc.setStatus(PROC_DECODED);
+    testProc.setStatus(ProcStatus::Decoded);
     QCOMPARE(testProc.isNoReturn(), true);
 
     ReturnStatement *retStmt = new ReturnStatement();
@@ -51,7 +51,7 @@ void UserProcTest::testIsNoReturn()
     QCOMPARE(testProc.isNoReturn(), false);
 
     UserProc noReturnProc(Address(0x2000), "noReturn", nullptr);
-    noReturnProc.setStatus(PROC_DECODED);
+    noReturnProc.setStatus(ProcStatus::Decoded);
 
     CallStatement *call = new CallStatement();
     call->setDestProc(&noReturnProc);
