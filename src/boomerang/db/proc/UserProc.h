@@ -295,8 +295,8 @@ public:
     /// or saves and restores the value of \p exp.
     bool preservesExp(const SharedExp &exp);
 
-    /// Same as \ref preservesExp, but \p exp is restored tp \p exp + \p offset
-    /// (e.g. x86 esp is restored to esp+4)
+    /// Same as \ref preservesExp, but \p exp is preserved to \p exp + \p offset
+    /// (e.g. x86 esp is preserved to esp+4)
     bool preservesExpWithOffset(const SharedExp &exp, int offset);
 
 public:
