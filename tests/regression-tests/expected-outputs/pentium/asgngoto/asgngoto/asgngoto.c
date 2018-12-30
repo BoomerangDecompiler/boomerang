@@ -1,12 +1,12 @@
-int main(int argc, union { char *[] *; __size32; } argv);
-__size32 atexit(union { atexitfunc; __size32; } param1);
+int main(int argc, char *argv[]);
+__size32 atexit(atexitfunc param1);
 void MAIN__(__size32 param1);
 
 /** address: 0x08048824 */
-int main(int argc, union { char *[] *; __size32; } argv)
+int main(int argc, char *argv[])
 {
     __size32 eax; 		// r24
-    union { void *; unsigned int; } ebp; 		// r29
+    int ebp; 		// r29
     int ecx; 		// r25
     int edx; 		// r26
     int esp; 		// r28
@@ -15,13 +15,14 @@ int main(int argc, union { char *[] *; __size32; } argv)
     f_setsig();
     f_init();
     eax = atexit(0x8048584); /* Warning: also results in ecx, edx */
-    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, esp - 12 < 16, argc, argv, ebp, argv, 0x8048584, pc);
+    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16, argc, argv, ebp, argv, 0x8048584, pc);
 }
 
 /** address: 0x08048904 */
-__size32 atexit(union { atexitfunc; __size32; } param1)
+__size32 atexit(atexitfunc param1)
 {
-    int eax; 		// r24
+    void *eax; 		// r24
+    int eax_1; 		// r24
     int ecx; 		// r25
     int edx; 		// r26
 
@@ -29,8 +30,8 @@ __size32 atexit(union { atexitfunc; __size32; } param1)
     if (edx != 0) {
         eax = *edx;
     }
-    eax = __cxa_atexit(param1, 0, eax); /* Warning: also results in ecx, edx */
-    return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+    eax_1 = __cxa_atexit(param1, 0, eax); /* Warning: also results in ecx, edx */
+    return eax_1; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }
 
 /** address: 0x080486cc */

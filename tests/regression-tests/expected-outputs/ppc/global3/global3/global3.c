@@ -1,10 +1,10 @@
 int b = 7;
-int main(int argc, union { long long x2; char *[] *; __size32; } argv);
+int main(int argc, union { char *[] *; long long; } argv);
 void foo1(long long param1);
 void foo2(long long param1);
 
 /** address: 0x100004a0 */
-int main(int argc, union { long long x2; char *[] *; __size32; } argv)
+int main(int argc, union { char *[] *; long long; } argv)
 {
     foo1(argv);
     printf("b = %i\n", b);

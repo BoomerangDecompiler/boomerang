@@ -100,6 +100,11 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
     if (other->resolvesToVoid()) {
         return const_cast<SizeType *>(this)->shared_from_this();
     }
+    else if (other->resolvesToPointer() && other->getSize() == getSize()) {
+        // e.g. size32 meet void *
+        changed = true;
+        return other->clone();
+    }
 
     if (other->resolvesToSize()) {
         SharedType result = this->clone();

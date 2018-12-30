@@ -7,13 +7,13 @@ int main(int argc, char *argv[])
 {
     int edx; 		// r26
     int local0; 		// m[esp - 12]
-    union { __size32; char *; } local2; 		// m[esp - 16]
-    union { void *; int; } local3; 		// m[esp - 8]
+    char *local2; 		// m[esp - 16]
+    int local3; 		// m[esp - 8]
 
     local0 = 0;
     mid(0x8049654);
     fst(0x804964a);
-    local2 = 0x8049654;
+    local2 = "\2\4\6\b\n";
     local3 = 0;
     while (local3 <= 4) {
         edx = (int) *local2;

@@ -3,8 +3,8 @@ int main(int argc, char *argv[]);
 /** address: 0x08048948 */
 int main(int argc, char *argv[])
 {
-    union { void *; int; } local0; 		// m[esp - 8]
-    union { void *; unsigned int; } local1; 		// m[esp - 12]
+    int local0; 		// m[esp - 8]
+    unsigned int local1; 		// m[esp - 12]
 
     scanf("%d", &local0);
     scanf("%d", &local1);

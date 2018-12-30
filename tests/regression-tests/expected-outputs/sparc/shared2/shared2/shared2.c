@@ -8,16 +8,16 @@ void _ZN1D3fooEv();
 int main(int argc, char *argv[])
 {
     __size32 i0; 		// r24
-    union { char *[] *; __size32; } i1; 		// r25
+    char * *i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
     __size32 i4; 		// r28
     __size32 i5; 		// r29
     __size32 i6; 		// r30
     __size32 i7; 		// r31
-    union { union { void *; __size32; } *; __size32; } l0; 		// r16
+    void **l0; 		// r16
     __size32 l1; 		// r17
-    union { __size32; union { void *; __size32; } *; } l2; 		// r18
+    void *l2; 		// r18
     __size32 l3; 		// r19
     __size32 l4; 		// r20
     __size32 l5; 		// r21
@@ -98,66 +98,68 @@ int main(int argc, char *argv[])
     int local74; 		// m[o6 + 60]{35}
     __size32 local8; 		// m[o6 + 36]
     __size32 local9; 		// m[o6 + 40]
-    union { __size32; union { void *; __size32; } *; } o0; 		// r8
+    int o0; 		// r8
+    void **o0_1; 		// r8
     int o1; 		// r9
     int o2; 		// r10
-    union { void *; __size32; } o2_1; 		// r10{7}
-    union { void *; __size32; } o2_2; 		// r10{7}
-    union { void *; __size32; } o2_3; 		// r10{7}
-    union { void *; __size32; } o2_4; 		// r10{13}
-    union { void *; __size32; } o2_5; 		// r10{13}
-    union { void *; __size32; } o2_6; 		// r10{13}
+    void *o2_1; 		// r10{7}
+    void *o2_2; 		// r10{7}
+    void *o2_3; 		// r10{7}
+    void *o2_4; 		// r10{13}
+    void *o2_5; 		// r10{13}
+    void *o2_6; 		// r10{13}
     __size32 o2_7; 		// r10{0}
     __size32 o2_8; 		// r10{0}
     int o3; 		// r11
-    union { __size32; union { void *; __size32; } *; } o3_1; 		// r11{9}
+    __size32 *o3_1; 		// r11
+    int o3_2; 		// r11{9}
     int o4; 		// r12
     int o5; 		// r13
     int o6; 		// r14
     int o7; 		// r15
-    union { __size32; union { void *; __size32; } *; } o7_1; 		// r15{15}
-    union { __size32; union { void *; __size32; } *; } o7_2; 		// r15{15}
-    union { __size32; union { void *; __size32; } *; } o7_3; 		// r15{15}
+    int o7_1; 		// r15{15}
+    int o7_2; 		// r15{15}
+    int o7_3; 		// r15{15}
     __size32 o7_4; 		// r15{0}
     __size32 o7_5; 		// r15{0}
 
-    o0 = _Znwj(52);
-    *(__size32*)(o0 + 36) = 100;
-    *(__size32*)(o0 + 48) = 2;
-    *(__size32*)(o0 + 40) = 101;
-    *(__size32*)(o0 + 44) = 1;
-    *(__size32*)(o0 + 32) = 0x217d8;
+    o0_1 = _Znwj(52);
+    *(__size32*)(o0_1 + 36) = 100;
+    *(__size32*)(o0_1 + 48) = 2;
+    *(__size32*)(o0_1 + 40) = 101;
+    *(__size32*)(o0_1 + 44) = 1;
+    *(__size32*)(o0_1 + 32) = 0x217d8;
     o2_1 = *0x21740;
-    *(union { __size32; void *; }*)o0 = o2_1;
-    o3_1 = *(o2_1 - 12);
-    *(__size32*)(o0 + o3_1) = global_0x00021744;
-    *(__size32*)(o0 + 8) = 4;
-    *(__size32*)(o0 + 4) = 3;
+    *(void **)o0_1 = o2_1;
+    o3_2 = *(o2_1 - 12);
+    *(__size32*)(o0_1 + o3_2) = global_0x00021744;
+    *(__size32*)(o0_1 + 8) = 4;
+    *(__size32*)(o0_1 + 4) = 3;
     o2_4 = *0x21748;
-    *(union { __size32; void *; }*)(o0 + 12) = o2_4;
+    *(void **)(o0_1 + 12) = o2_4;
     o7_1 = *(o2_4 - 12);
-    *(__size32*)(o0 + o7_1 + 12) = global_0x0002174c;
-    *(__size32*)(o0 + 16) = 5;
-    *(__size32*)(o0 + 20) = 6;
-    *(__size32*)(o0 + 32) = 0x217c8;
-    *(__size32*)(o0 + 12) = 0x217b8;
-    *(__size32*)o0 = 0x217a4;
-    *(__size32*)(o0 + 28) = 8;
-    *(__size32*)(o0 + 24) = 7;
-    o3 = _ZN1D3fooEv(o0, global_0x000217a8, 8, 0x217a4, 0x21740, global_0x0002174c, o7_1, o0, l1, o0 + 12, l3, l4, l5, l6, l7, 0, argv, o2_7, o3, o4, o5, o6, o7_4, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7); /* Warning: also results in o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7 */
+    *(__size32*)(o0_1 + o7_1 + 12) = global_0x0002174c;
+    *(__size32*)(o0_1 + 16) = 5;
+    *(__size32*)(o0_1 + 20) = 6;
+    *(__size32*)(o0_1 + 32) = 0x217c8;
+    *(__size32*)(o0_1 + 12) = 0x217b8;
+    *(void **)o0_1 = 0x217a4;
+    *(__size32*)(o0_1 + 28) = 8;
+    *(__size32*)(o0_1 + 24) = 7;
+    o3 = _ZN1D3fooEv(o0_1, global_0x000217a8, 8, 0x217a4, 0x21740, global_0x0002174c, o7_1, o0_1, l1, o0_1 + 12, l3, l4, l5, l6, l7, 0, argv, o2_7, o3, o4, o5, o6, o7_4, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7); /* Warning: also results in o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7 */
     o2 = *l0;
     o1 = *o2;
     (*o1)(l0, o1, o2, o3, o4, o5, o7, l0, l2, i0, i1, i2, i3, i4, i5, i6, i7, <all>, l1, l3, l4, l5, l6, l7, local15, local19, local23, local27, local31, local35, local39, local43, local47, local51, local55, local59, local63, local67, local71);
     o2 = *(l0 + 12);
     o1 = *o2;
     (*o1)(l2, o1, o2, o3, o4, o5, o7, l0, l2, i0, i1, i2, i3, i4, i5, i6, i7, <all>, l1, l3, l4, l5, l6, l7, local16, local20, local24, local28, local32, local36, local40, local44, local48, local52, local56, local60, local64, local68, local72);
-    o0 = *l0;
-    o1 = *(o0 - 12);
+    o0_1 = *l0;
+    o1 = *(o0_1 - 12);
     o2 = *(l0 + o1);
     o3 = *o2;
     (*o3)(l0 + o1, o1, o2, o3, o4, o5, o7, l0, l2, l0 + o1, i0, i1, i2, i3, i4, i5, i6, i7, <all>, l1, l4, l5, l6, l7, local17, local21, local25, local29, local33, local37, local41, local45, local49, local53, local57, local61, local65, local69, local73);
-    o0 = *(l0 + 12);
-    l1 = *(o0 - 12);
+    o0_1 = *(l0 + 12);
+    l1 = *(o0_1 - 12);
     o1 = *(l2 + l1);
     o2 = *o1;
     (*o2)(l2 + l1, o1, o2, o3, o4, o5, o7, l0, l1, l2, l2 + l1, i0, i1, i2, i3, i4, i5, i6, i7, <all>, l4, l5, l6, l7, local18, local22, local26, local30, local34, local38, local42, local46, local50, local54, local58, local62, local66, local70, local74);

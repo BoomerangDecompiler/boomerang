@@ -1,7 +1,7 @@
-int main(int argc, union { char *[] *; __size32; } argv);
+int main(int argc, char *argv[]);
 
 /** address: 0x0804835c */
-int main(int argc, union { char *[] *; __size32; } argv)
+int main(int argc, char *argv[])
 {
     int eax; 		// r24
     struct stat local0; 		// m[esp - 108]
@@ -9,7 +9,7 @@ int main(int argc, union { char *[] *; __size32; } argv)
     int local10; 		// m[esp - 52]
     int local11; 		// m[esp - 44]
     int local12; 		// m[esp - 36]
-    union { __size32; char *; } local13; 		// m[esp - 120]
+    char *local13; 		// m[esp - 120]
     int local2; 		// m[esp - 92]
     int local3; 		// m[esp - 88]
     int local4; 		// m[esp - 84]

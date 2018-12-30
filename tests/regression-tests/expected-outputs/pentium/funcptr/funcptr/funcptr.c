@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
     __size32 eax; 		// r24
     union { void *; unsigned int; } ebp; 		// r29
     union { void *; unsigned int; } esp; 		// r28
-    union { void *; __size32; } esp_1; 		// r28{1}
+    void *esp_1; 		// r28{1}
     __size32 local0; 		// m[esp - 4]
     int local1; 		// m[esp - 8]
     unsigned int local2; 		// m[esp - 16]

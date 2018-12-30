@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-void rux_encrypt(union { unsigned int; void *; } param1);
+void rux_encrypt(void *param1);
 
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
@@ -11,26 +11,26 @@ int main(int argc, char *argv[])
     for(;;) {
         eax = read(0, &local0, 4);
         if (eax == 4) {
-            rux_encrypt(esp - 8);
+            rux_encrypt(&local0);
             write(1, &local0, 4);
         }
     }
     if (eax != 0) {
         memset(esp + eax - 8, 0, 4 - eax);
-        rux_encrypt(esp - 8);
+        rux_encrypt(&local0);
         write(1, &local0, 4);
     }
     return 0;
 }
 
 /** address: 0x08048504 */
-void rux_encrypt(union { unsigned int; void *; } param1)
+void rux_encrypt(void *param1)
 {
     unsigned char bl; 		// r11
     unsigned char bl_1; 		// r11{8}
     unsigned char bl_4; 		// r11{11}
     unsigned char cl; 		// r9
-    union { void *; __size32; } esp; 		// r28
+    void *esp; 		// r28
     unsigned int local0; 		// m[esp - 6]
 
     local0 = 0;
