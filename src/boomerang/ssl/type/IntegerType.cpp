@@ -131,7 +131,7 @@ QString IntegerType::getCtype(bool final) const
 
 SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
-    if (other->resolvesToVoid()) {
+    if (other->resolvesToVoid() || other->resolvesToChar()) {
         return const_cast<IntegerType *>(this)->shared_from_this();
     }
 

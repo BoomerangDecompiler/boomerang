@@ -74,7 +74,7 @@ void MeetTest::testMeet_data()
     TEST_MEET("i64", "s32", IntegerType::get(64, Sign::Signed), SizeType::get(32),                    IntegerType::get(64, Sign::Signed));
     TEST_MEET("i64", "s16", IntegerType::get(64, Sign::Signed), SizeType::get(16),                    IntegerType::get(64, Sign::Signed));
     TEST_MEET("i64", "s8",  IntegerType::get(64, Sign::Signed), SizeType::get(8),                     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "c",   IntegerType::get(64, Sign::Signed), CharType::get(),                      UnionType::get({ IntegerType::get(64, Sign::Signed), CharType::get() }));
+    TEST_MEET("i64", "c",   IntegerType::get(64, Sign::Signed), CharType::get(),                      IntegerType::get(64, Sign::Signed));
     TEST_MEET("i64", "f64", IntegerType::get(64, Sign::Signed), FloatType::get(64),                   UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(64) }));
     TEST_MEET("i64", "f32", IntegerType::get(64, Sign::Signed), FloatType::get(32),                   UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(32) }));
     TEST_MEET("i64", "p",   IntegerType::get(64, Sign::Signed), PointerType::get(VoidType::get()),    UnionType::get({ IntegerType::get(64, Sign::Signed), PointerType::get(VoidType::get()) }));

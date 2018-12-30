@@ -4,7 +4,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int XERCA; 		// r203
-    union { unsigned int; char; } g0; 		// r0
+    unsigned int g0; 		// r0
     int g1; 		// r1
     int g10; 		// r10
     int g11; 		// r11
