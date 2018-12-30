@@ -20,9 +20,7 @@
 class Statement;
 
 
-/**
- * Rewrites Statements in BasicBlocks into SSA form.
- */
+/// Rewrites Statements in BasicBlocks into SSA form.
 class BlockVarRenamePass final : public IPass
 {
 public:

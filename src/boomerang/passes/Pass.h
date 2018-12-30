@@ -49,10 +49,8 @@ enum class PassID
 };
 
 
-/**
- * Passes run during the decompilation process
- * and update statements in a UserProc.
- */
+/// Passes run during the decompilation process
+/// and update statements in a UserProc.
 class IPass
 {
 public:

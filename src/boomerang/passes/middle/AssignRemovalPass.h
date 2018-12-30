@@ -17,9 +17,7 @@
 using SharedExp = std::shared_ptr<class Exp>;
 
 
-/**
- * Removes unused or tautological assignments.
- */
+/// Removes unused or tautological assignments.
 class AssignRemovalPass final : public IPass
 {
 public:

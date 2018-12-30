@@ -13,9 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
-/**
- * Calculates dominators for each Basic Block
- */
+/// Calculates dominators for each Basic Block
 class DominatorPass final : public IPass
 {
 public:

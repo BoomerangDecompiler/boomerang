@@ -13,19 +13,17 @@
 #include "boomerang/passes/Pass.h"
 
 
-/**
- * Simplifies branch condions.
- * Example:
- * if (cond1) {
- *   if (cond2) {
- *     ...
- *   }
- * }
- *  ->
- * if (cond1 && cond2) {
- *   ...
- * }
- */
+/// Simplifies branch condions.
+/// Example:
+///   if (cond1) {
+///     if (cond2) {
+///       ...
+///     }
+///   }
+/// ->
+///   if (cond1 && cond2) {
+///     ...
+///   }
 class BranchAnalysisPass final : public IPass
 {
 public:

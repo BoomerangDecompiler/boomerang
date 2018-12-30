@@ -16,9 +16,7 @@
 class UserProc;
 
 
-/**
- * Update arguments in calls
- */
+/// Update arguments in calls
 class CallArgumentUpdatePass final : public IPass
 {
 public:

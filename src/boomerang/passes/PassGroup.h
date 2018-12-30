@@ -18,10 +18,8 @@
 class IPass;
 
 
-/**
- * PassGroups are immutable aggregations of Passes with a name.
- * The passes contained within a single pass group are executed sequentially.
- */
+/// PassGroups are immutable aggregations of Passes with a name.
+/// The passes contained within a single pass group are executed sequentially on a single UserProc.
 class PassGroup
 {
     typedef std::vector<IPass *> Passes;
