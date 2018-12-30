@@ -3,14 +3,14 @@ int main(int argc, char *argv[]);
 /** address: 0x00010704 */
 int main(int argc, char *argv[])
 {
-    int local0; 		// m[o6 - 32]
-    int local1; 		// m[o6 - 36]
-    int local2; 		// m[o6 - 44]
+    union { void *; int; } local0; 		// m[o6 - 32]
+    union { void *; int; } local1; 		// m[o6 - 36]
+    union { void *; int; } local2; 		// m[o6 - 44]
     char local3; 		// m[o6 - 128]
     __size32 local4; 		// m[o6 - 20]
-    __size32 local5; 		// m[o6 - 24]
-    int local6; 		// m[o6 - 40]
-    int local7; 		// m[o6 - 28]
+    union { __size32; union { int; char *; } *; } local5; 		// m[o6 - 24]
+    union { void *; int; } local6; 		// m[o6 - 40]
+    union { void *; int; } local7; 		// m[o6 - 28]
     __size32 local8; 		// m[o6 - 20]{10}
     int o0; 		// r8
     int o1; 		// r9

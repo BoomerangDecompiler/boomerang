@@ -1,12 +1,12 @@
-int main(int argc, char *argv[]);
+int main(int argc, union { char *[] *; __size32; } argv);
 __size32 atexit(union { atexitfunc; __size32; } param1);
 void MAIN__(__size32 param1);
 
 /** address: 0x08048824 */
-int main(int argc, char *argv[])
+int main(int argc, union { char *[] *; __size32; } argv)
 {
     __size32 eax; 		// r24
-    int ebp; 		// r29
+    union { void *; unsigned int; } ebp; 		// r29
     int ecx; 		// r25
     int edx; 		// r26
     int esp; 		// r28
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     f_setsig();
     f_init();
     eax = atexit(0x8048584); /* Warning: also results in ecx, edx */
-    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16, argc, argv, ebp, argv, 0x8048584, pc);
+    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, esp - 12 < 16, argc, argv, ebp, argv, 0x8048584, pc);
 }
 
 /** address: 0x08048904 */

@@ -6,7 +6,7 @@ void fst(__size32 param1);
 int main(int argc, char *argv[])
 {
     int local0; 		// m[o6 - 24]
-    __size32 local1; 		// m[o6 - 28]
+    union { unsigned char *; __size32; char *[] *; } local1; 		// m[o6 - 28]
     int local2; 		// m[o6 - 20]
     int o0; 		// r8
 

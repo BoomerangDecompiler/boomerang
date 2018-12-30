@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int edx; 		// r26
     int local0; 		// m[esp - 12]
-    int local1; 		// m[esp - 8]
+    union { void *; int; } local1; 		// m[esp - 8]
 
     local0 = 0;
     local1 = 0;

@@ -20,8 +20,8 @@ void proc1(int param1, union { __size32; char *; } param2, int param3)
     int local1; 		// m[o6 - 20]
     int local2; 		// param3{15}
     int o0; 		// r8
-    int o0_2; 		// r8{6}
-    int o0_5; 		// r8{8}
+    int o0_1; 		// r8{6}
+    int o0_4; 		// r8{8}
 
     local2 = param3;
     if (param1 <= 2) {
@@ -29,12 +29,12 @@ void proc1(int param1, union { __size32; char *; } param2, int param3)
         local0 = o0;
     }
     else {
-        o0_2 = strlen(param2);
-        local0 = o0_2;
-        o0_5 = strlen(param2);
-        local1 = o0_5;
+        o0_1 = strlen(param2);
+        local0 = o0_1;
+        o0_4 = strlen(param2);
+        local1 = o0_4;
         local2 = local1;
-        printf("%d", o0_2 + o0_5);
+        printf("%d", o0_1 + o0_4);
     }
     param3 = local2;
     printf("%d, %d", local0, param3);

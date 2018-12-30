@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x08048918 */
 int main(int argc, char *argv[])
 {
-    __size32 local0; 		// m[esp - 8]
+    union { __size32; char *; } local0; 		// m[esp - 8]
 
     if ((unsigned int)(argc - 2) > 5) {
         local0 = 0x8049482;

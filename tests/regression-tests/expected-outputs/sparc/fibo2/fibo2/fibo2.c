@@ -5,12 +5,12 @@ void fib1();
 int main(int argc, union { __size32; char *[] *; } argv)
 {
     __size32 i0; 		// r24
-    __size32 i1; 		// r25
+    union { char *[] *; __size32; } i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
     __size32 i4; 		// r28
     __size32 i5; 		// r29
-    __size32 i6; 		// r30
+    union { __size32; void *; } i6; 		// r30
     __size32 i7; 		// r31
     __size32 l0; 		// r16
     __size32 l1; 		// r17

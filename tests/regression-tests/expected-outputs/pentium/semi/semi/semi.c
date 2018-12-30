@@ -1,7 +1,7 @@
-int main(int argc, char *argv[]);
+int main(union { void *; int; } argc, char *argv[]);
 
 /** address: 0x08048328 */
-int main(int argc, char *argv[])
+int main(union { void *; int; } argc, char *argv[])
 {
     int eax; 		// r24
     __size32 local0; 		// m[esp - 28]

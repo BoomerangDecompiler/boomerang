@@ -280,8 +280,10 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
 
     // Put all the hard union logic in one place
     if (other->resolvesToUnion()) {
-        return other->meetWith(const_cast<Type *>(this)->shared_from_this(), changed, useHighestPtr)
-            ->clone();
+        SharedType result = const_cast<Type *>(this)->shared_from_this();
+        result            = other->meetWith(result, changed, useHighestPtr)->clone();
+        changed           = true;
+        return result;
     }
 
     // Check for anytype meet compound with anytype as first element

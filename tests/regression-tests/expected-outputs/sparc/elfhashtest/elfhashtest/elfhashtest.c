@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 /** address: 0x000106b4 */
 __size32 elf_hash(union { __size32; char *; } param1, int param2)
 {
-    __size32 g1; 		// r1
-    __size32 g1_1; 		// r1{7}
+    union { char *; __size32; } g1; 		// r1
+    union { __size32; char *; } g1_1; 		// r1{7}
     int local0; 		// param2{8}
     int local1; 		// o2{17}
     int local2; 		// o3{18}

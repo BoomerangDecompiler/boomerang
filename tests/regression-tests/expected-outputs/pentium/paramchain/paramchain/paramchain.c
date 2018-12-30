@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-void passem(__size32 param1, __size32 param2, __size32 param3, __size32 param4);
+void passem(__size32 param1, __size32 param2, __size32 param3, union { __size32; __size32 *; } param4);
 void addem(__size32 param1, __size32 param2, __size32 param3, union { __size32 *; __size32; } param4);
 
 /** address: 0x08048950 */
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x08048938 */
-void passem(__size32 param1, __size32 param2, __size32 param3, __size32 param4)
+void passem(__size32 param1, __size32 param2, __size32 param3, union { __size32; __size32 *; } param4)
 {
     addem(param1, param2, param3, param4);
     return;

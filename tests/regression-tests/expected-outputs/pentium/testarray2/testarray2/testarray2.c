@@ -7,8 +7,8 @@ int main(int argc, char *argv[])
 {
     int edx; 		// r26
     int local0; 		// m[esp - 12]
-    __size32 local2; 		// m[esp - 16]
-    int local3; 		// m[esp - 8]
+    union { __size32; char *; } local2; 		// m[esp - 16]
+    union { void *; int; } local3; 		// m[esp - 8]
 
     local0 = 0;
     mid(0x8049654);

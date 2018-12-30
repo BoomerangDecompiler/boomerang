@@ -217,11 +217,11 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
             continue;
         }
 
-        changed             = false;
-        SharedType meet_res = v->meetWith(other, changed, useHighestPtr);
+        bool thisChanged    = false;
+        SharedType meet_res = v->meetWith(other, thisChanged, useHighestPtr);
 
-        if (!changed) {
-            // Fully compatible type alerady present in this union
+        if (!thisChanged) {
+            // Fully compatible type already present in this union
             return const_cast<UnionType *>(this)->shared_from_this();
         }
 
@@ -249,14 +249,14 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
     UnionElement ne;
 
     if (bestElem != li.end()) {
+        // we know this works because the types are compatible
+        ne.type = bestElem->type->meetWith(other, changed, useHighestPtr);
         ne.name = bestElem->name;
-        ne.type = bestElem->type->meetWith(
-            other, changed, useHighestPtr); // we know this works because the types are compatible
     }
     else {
         // Other is not compatible with any of my component types. Add a new type.
-        ne.name = QString("x%1").arg(++nextUnionNumber);
         ne.type = other->clone();
+        ne.name = QString("x%1").arg(++nextUnionNumber);
     }
 
     result->addType(ne.type, ne.name);

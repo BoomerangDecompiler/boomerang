@@ -1,4 +1,4 @@
-__size32 a = 0x4014cccc;// 4 bytes
+union { double; __size32; } a;
 int b = 7;
 int main(int argc, char *argv[]);
 void foo1();

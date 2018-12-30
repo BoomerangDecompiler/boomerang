@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-void rux_encrypt(__size32 param1);
+void rux_encrypt(union { unsigned int; void *; } param1);
 
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
@@ -24,13 +24,13 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x08048504 */
-void rux_encrypt(__size32 param1)
+void rux_encrypt(union { unsigned int; void *; } param1)
 {
     unsigned char bl; 		// r11
     unsigned char bl_1; 		// r11{8}
     unsigned char bl_4; 		// r11{11}
     unsigned char cl; 		// r9
-    __size32 esp; 		// r28
+    union { void *; __size32; } esp; 		// r28
     unsigned int local0; 		// m[esp - 6]
 
     local0 = 0;

@@ -5,19 +5,19 @@ int main(int argc, char *argv[])
 {
     int XERCA; 		// r203
     unsigned int g0; 		// r0
-    int g1; 		// r1
+    union { __size8 *; int; } g1; 		// r1
     int g10; 		// r10
     int g11; 		// r11
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 112]
-    int local1; 		// m[g1 - 120]
-    int local2; 		// m[g1 - 124]
+    union { int; __size8 *; } local1; 		// m[g1 - 120]
+    union { int; __size8 *; } local2; 		// m[g1 - 124]
     char local3; 		// m[g1 - 96]
     __size32 local4; 		// m[g1 - 136]
-    __size32 local5; 		// m[g1 - 132]
+    union { __size32; union { int; char *; } *; } local5; 		// m[g1 - 132]
     int local6; 		// m[g1 - 116]
-    int local7; 		// m[g1 - 128]
+    union { int; void *; } local7; 		// m[g1 - 128]
     __size32 local8; 		// m[g1 - 136]{15}
 
     g3 = malloc(12);

@@ -17,8 +17,8 @@ int main(int argc, union { __size32; char *[] *; } argv)
 void proc1(int param1, union { __size32; char *; } param2, int param3)
 {
     int g3; 		// r3
-    int g3_2; 		// r3{6}
-    int g3_5; 		// r3{8}
+    int g3_1; 		// r3{6}
+    int g3_4; 		// r3{8}
     int local0; 		// m[g1 - 40]
     int local1; 		// m[g1 - 32]
     int local2; 		// param3{14}
@@ -29,12 +29,12 @@ void proc1(int param1, union { __size32; char *; } param2, int param3)
         local0 = g3;
     }
     else {
-        g3_2 = strlen(param2);
-        local0 = g3_2;
-        g3_5 = strlen(param2);
-        local1 = g3_5;
+        g3_1 = strlen(param2);
+        local0 = g3_1;
+        g3_4 = strlen(param2);
+        local1 = g3_4;
         local2 = local1;
-        printf("%d", g3_2 + g3_5);
+        printf("%d", g3_1 + g3_4);
     }
     param3 = local2;
     printf("%d, %d", local0, param3);

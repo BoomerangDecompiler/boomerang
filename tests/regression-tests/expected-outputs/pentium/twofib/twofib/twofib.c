@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 /** address: 0x0804839c */
 void twofib(__size32 param3, __size32 param4, union { __size32 *; __size32; } param3, __size32 param4)
 {
-    __size32 esp; 		// r28
+    union { __size32; __size32 *; } esp; 		// r28
     __size32 local10; 		// m[esp - 88]
     __size32 local11; 		// m[esp - 52]
     __size32 local12; 		// m[esp - 48]

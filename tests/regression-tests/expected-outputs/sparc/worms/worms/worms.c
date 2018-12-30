@@ -10,7 +10,7 @@ void proc_0x000120a8();
 int main(int argc, union { __size32; char *[] *; } argv)
 {
     int i0; 		// r24
-    __size32 i1; 		// r25
+    union { char *[] *; __size32; } i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
     __size32 i4; 		// r28

@@ -5,8 +5,8 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     union { __size32; float; } f3; 		// r35
-    union { __size32; float; } local0; 		// m[o6 - 20]
-    __size32 local1; 		// m[o6 - 12]
+    union { float; int; } local0; 		// m[o6 - 20]
+    union { __size32; double; } local1; 		// m[o6 - 12]
 
     scanf("%f", &local0);
     f3 = *0x10938;

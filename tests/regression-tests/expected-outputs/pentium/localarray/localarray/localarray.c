@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x08048334 */
 int main(int argc, char *argv[])
 {
-    int local0; 		// m[esp - 272]
+    union { void *; int; } local0; 		// m[esp - 272]
 
     local0 = 0;
     while (local0 <= 63) {

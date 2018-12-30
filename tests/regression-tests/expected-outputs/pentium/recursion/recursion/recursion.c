@@ -1,16 +1,16 @@
-int global_0x080486c4[9999999];
+union { void *; int; } global_0x080486c4[9999999];
 int main(int argc, char *argv[]);
 __size32 b(int param1);
-__size32 c(unsigned int param1);
-__size32 d(int param1);
-__size32 f(int param1);
-__size32 h(int param1);
-__size32 j(int param1);
-__size32 l(int param1);
+__size32 c(union { unsigned int; void *; } param1);
+__size32 d(union { int; void *; } param1);
+__size32 f(union { int; void *; } param1);
+__size32 h(union { void *; int; } param1);
+__size32 j(union { int; void *; } param1);
+__size32 l(union { int; void *; } param1);
 __size32 e(int param1);
-__size32 g(int param1);
+__size32 g(union { int; void *; } param1);
 __size32 i(int param1);
-__size32 k(int param1);
+__size32 k(union { int; void *; } param1);
 
 /** address: 0x0804837c */
 int main(int argc, char *argv[])
@@ -33,7 +33,7 @@ __size32 b(int param1)
 }
 
 /** address: 0x080483f2 */
-__size32 c(unsigned int param1)
+__size32 c(union { unsigned int; void *; } param1)
 {
     int eax; 		// r24
     int ecx; 		// r25
@@ -66,7 +66,7 @@ __size32 c(unsigned int param1)
 }
 
 /** address: 0x0804846a */
-__size32 d(int param1)
+__size32 d(union { int; void *; } param1)
 {
     int eax; 		// r24
     int ecx; 		// r25
@@ -80,7 +80,7 @@ __size32 d(int param1)
 }
 
 /** address: 0x080484c7 */
-__size32 f(int param1)
+__size32 f(union { int; void *; } param1)
 {
     int eax; 		// r24
     int ecx; 		// r25
@@ -94,23 +94,23 @@ __size32 f(int param1)
 }
 
 /** address: 0x08048529 */
-__size32 h(int param1)
+__size32 h(union { void *; int; } param1)
 {
     int eax; 		// r24
     int ecx; 		// r25
     int edx; 		// r26
-    int local2; 		// m[esp - 28]
+    char *local0; 		// m[esp - 28]
 
     eax = printf("h(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 0) {
-        local2 = param1 - 1;
+        local0 = param1 - 1;
         eax = i(param1 - 1); /* Warning: also results in ecx, edx */
     }
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }
 
 /** address: 0x08048575 */
-__size32 j(int param1)
+__size32 j(union { int; void *; } param1)
 {
     int eax; 		// r24
     int ecx; 		// r25
@@ -124,7 +124,7 @@ __size32 j(int param1)
 }
 
 /** address: 0x080485d5 */
-__size32 l(int param1)
+__size32 l(union { int; void *; } param1)
 {
     int eax; 		// r24
     __size32 ecx; 		// r25
@@ -150,7 +150,7 @@ __size32 e(int param1)
 }
 
 /** address: 0x080484f8 */
-__size32 g(int param1)
+__size32 g(union { int; void *; } param1)
 {
     int eax; 		// r24
     __size32 ecx; 		// r25
@@ -175,7 +175,7 @@ __size32 i(int param1)
 }
 
 /** address: 0x080485a4 */
-__size32 k(int param1)
+__size32 k(union { int; void *; } param1)
 {
     int eax; 		// r24
     __size32 ecx; 		// r25
