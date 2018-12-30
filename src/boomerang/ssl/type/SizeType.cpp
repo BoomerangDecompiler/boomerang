@@ -108,8 +108,9 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
             LOG_VERBOSE("Size %1 meet with size %2!", m_size, other->as<SizeType>()->m_size);
         }
 
-        result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
-
+        const size_t newSize = std::max(result->getSize(), other->as<SizeType>()->getSize());
+        changed |= (newSize != result->getSize());
+        result->setSize(newSize);
         return result;
     }
 
