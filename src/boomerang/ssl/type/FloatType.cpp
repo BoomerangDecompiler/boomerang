@@ -100,11 +100,18 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
     if (other->resolvesToVoid()) {
         return const_cast<FloatType *>(this)->shared_from_this();
     }
-
-    if (other->resolvesToFloat() || other->resolvesToSize()) {
-        const size_t newSize = std::max(m_size, other->getSize());
-        changed |= (newSize != m_size);
-        return FloatType::get(newSize);
+    else if (other->resolvesToFloat()) {
+        const size_t newSize = std::max(getSize(), other->getSize());
+        if (newSize != getSize()) {
+            changed = true;
+            return FloatType::get(newSize);
+        }
+        else {
+            return const_cast<FloatType *>(this)->shared_from_this();
+        }
+    }
+    else if (other->resolvesToSize() && other->getSize() == getSize()) {
+        return const_cast<FloatType *>(this)->shared_from_this();
     }
 
     return createUnion(other, changed, useHighestPtr);
