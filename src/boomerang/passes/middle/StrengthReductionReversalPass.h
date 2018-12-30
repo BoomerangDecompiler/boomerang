@@ -13,11 +13,12 @@
 #include "boomerang/passes/Pass.h"
 
 
-class StrengthReductionReversalPass : public IPass
+class StrengthReductionReversalPass final : public IPass
 {
 public:
     StrengthReductionReversalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

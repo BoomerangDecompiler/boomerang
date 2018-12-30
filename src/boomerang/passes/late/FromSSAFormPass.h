@@ -17,12 +17,13 @@ class ConnectionGraph;
 
 
 /// Transforms the statements a proc out of SSA form
-class FromSSAFormPass : public IPass
+class FromSSAFormPass final : public IPass
 {
 public:
     FromSSAFormPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

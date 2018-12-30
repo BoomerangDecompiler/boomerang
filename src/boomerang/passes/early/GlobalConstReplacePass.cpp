@@ -36,12 +36,10 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
         if (assgn == nullptr) {
             continue;
         }
-
-        if (!assgn->getRight()->isMemOf()) {
+        else if (!assgn->getRight()->isMemOf()) {
             continue;
         }
-
-        if (!assgn->getRight()->getSubExp1()->isIntConst()) {
+        else if (!assgn->getRight()->getSubExp1()->isIntConst()) {
             continue;
         }
 

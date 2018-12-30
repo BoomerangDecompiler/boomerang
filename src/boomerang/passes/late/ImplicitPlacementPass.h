@@ -23,12 +23,13 @@
  * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment
  * for r28{-} with a null reference, when other pieces of code add r28{0}
  */
-class ImplicitPlacementPass : public IPass
+class ImplicitPlacementPass final : public IPass
 {
 public:
     ImplicitPlacementPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

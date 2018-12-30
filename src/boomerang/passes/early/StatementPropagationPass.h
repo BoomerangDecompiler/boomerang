@@ -17,12 +17,13 @@ class LocationSet;
 class UseCollector;
 
 
-class StatementPropagationPass : public IPass
+class StatementPropagationPass final : public IPass
 {
 public:
     StatementPropagationPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

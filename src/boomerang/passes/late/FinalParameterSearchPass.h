@@ -20,11 +20,12 @@
  * from implicit references, not from the use collector at the start of the proc,
  * which include some caused by recursive calls
  */
-class FinalParameterSearchPass : public IPass
+class FinalParameterSearchPass final : public IPass
 {
 public:
     FinalParameterSearchPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

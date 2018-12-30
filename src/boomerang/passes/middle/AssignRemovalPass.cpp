@@ -30,12 +30,7 @@ AssignRemovalPass::AssignRemovalPass()
 bool AssignRemovalPass::execute(UserProc *proc)
 {
     bool change = false;
-
     change |= removeSpAssigns(proc);
-
-    // The problem with removing %flags and %CF is that %CF is a subset of %flags
-    // removeMatchingAssignsIfPossible(Terminal::get(opFlags));
-    // removeMatchingAssignsIfPossible(Terminal::get(opCF));
     change |= removeMatchingAssigns(proc, Unary::get(opTemp, Terminal::get(opWildStrConst)));
     change |= removeMatchingAssigns(proc, Terminal::get(opPC));
     return change;
@@ -52,10 +47,9 @@ bool AssignRemovalPass::removeSpAssigns(UserProc *proc)
     bool foundone = false;
 
     StatementList stmts;
-
     proc->getStatements(stmts);
 
-    for (auto stmt : stmts) {
+    for (Statement *stmt : stmts) {
         if (stmt->isAssign() && (*static_cast<Assign *>(stmt)->getLeft() == *sp)) {
             foundone = true;
         }

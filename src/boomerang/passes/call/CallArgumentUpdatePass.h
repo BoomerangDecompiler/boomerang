@@ -19,11 +19,12 @@ class UserProc;
 /**
  * Update arguments in calls
  */
-class CallArgumentUpdatePass : public IPass
+class CallArgumentUpdatePass final : public IPass
 {
 public:
     CallArgumentUpdatePass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

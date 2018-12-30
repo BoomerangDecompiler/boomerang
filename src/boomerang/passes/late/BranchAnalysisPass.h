@@ -26,12 +26,13 @@
  *   ...
  * }
  */
-class BranchAnalysisPass : public IPass
+class BranchAnalysisPass final : public IPass
 {
 public:
     BranchAnalysisPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

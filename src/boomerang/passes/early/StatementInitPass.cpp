@@ -36,8 +36,8 @@ bool StatementInitPass::execute(UserProc *proc)
                 call->setSigArguments();
 
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() &&
-                    (bb->getNumSuccessors() == 1)) {
+                if ((bb->getNumSuccessors() == 1) && call->getDestProc() &&
+                    call->getDestProc()->isNoReturn()) {
                     BasicBlock *nextBB = bb->getSuccessor(0);
 
                     if ((nextBB != proc->getCFG()->getExitBB()) ||

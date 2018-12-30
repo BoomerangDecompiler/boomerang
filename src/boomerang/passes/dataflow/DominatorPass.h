@@ -16,7 +16,7 @@
 /**
  * Calculates dominators for each Basic Block
  */
-class DominatorPass : public IPass
+class DominatorPass final : public IPass
 {
 public:
     DominatorPass();

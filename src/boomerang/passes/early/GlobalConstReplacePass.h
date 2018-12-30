@@ -26,11 +26,15 @@
  *      $tmp_val = prog->readNative($tmp_addr,statement.type.bitwidth/8);
  *      statement.rhs.replace_with(Const($tmp_val))
  */
-class GlobalConstReplacePass : public IPass
+class GlobalConstReplacePass final : public IPass
 {
 public:
     GlobalConstReplacePass();
 
 public:
+    /// \copydoc IPass::isProcLocal
+    bool isProcLocal() const override { return true; }
+
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };
