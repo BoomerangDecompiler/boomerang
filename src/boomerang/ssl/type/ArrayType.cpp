@@ -130,7 +130,11 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
             newLength = convertLength(newBase);
         }
 
-        newLength = std::min(newLength, other->as<ArrayType>()->getLength());
+        if (other->as<ArrayType>()->getLength() < newLength) {
+            newLength = other->as<ArrayType>()->getLength();
+            changed   = true;
+        }
+
         return ArrayType::get(newBase, newLength);
     }
 

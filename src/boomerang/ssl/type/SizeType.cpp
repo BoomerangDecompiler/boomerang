@@ -133,6 +133,14 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
         return other->clone();
     }
+    else if (other->resolvesToChar() && getSize() == other->getSize()) {
+        changed = true;
+        return other->clone();
+    }
+    else if (other->resolvesToFloat() && getSize() == other->getSize()) {
+        changed = true;
+        return other->clone();
+    }
 
     return createUnion(other, changed, useHighestPtr);
 }

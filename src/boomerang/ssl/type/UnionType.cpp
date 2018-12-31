@@ -128,6 +128,7 @@ void UnionType::addType(SharedType n, const QString &name)
         UnionElement ue;
         ue.type = n;
         ue.name = name;
+        LOG_MSG("Adding type '%1' to union '%2'", n->getCtype(), this->getCtype());
         li.insert(ue);
     }
 }

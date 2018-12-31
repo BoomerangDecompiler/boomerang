@@ -11,13 +11,17 @@
 
 
 #include "boomerang/ssl/type/ArrayType.h"
-#include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/ssl/type/UnionType.h"
+#include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/NamedType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/UnionType.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 #include <QDebug>
 #include <sstream>
@@ -34,7 +38,7 @@ void MeetTest::testMeet()
 
     bool       changed = false;
     SharedType result  = firstOp->meetWith(secondOp, changed, false);
-    QCOMPARE(result->toString(), tgtResult.ty->toString()); // we are just comparing types here, not variable names
+    QCOMPARE(result->toString(), tgtResult.ty->toString());
     QCOMPARE(changed, result->getCtype() != firstOp->getCtype());
 
     // verify that the source types themselves are not changed by meet
@@ -43,9 +47,9 @@ void MeetTest::testMeet()
 }
 
 
-#define TEST_MEET(firstName, secondName, firstOp, secondOp, result) \
-    QTest::newRow(firstName " M " secondName) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(result); \
-    QTest::newRow(secondName " M " firstName) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(result);
+#define TEST_MEET(firstOp, secondOp, result) \
+    QTest::newRow(qPrintable(QString("%1 M %2").arg(firstOp->getCtype()).arg(secondOp->getCtype()))) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(result); \
+    QTest::newRow(qPrintable(QString("%1 M %2").arg(secondOp->getCtype()).arg(firstOp->getCtype()))) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(result);
 
 
 void MeetTest::testMeet_data()
@@ -56,76 +60,373 @@ void MeetTest::testMeet_data()
 
     std::shared_ptr<ArrayType> intArr(new ArrayType(IntegerType::get(64, Sign::Signed), 3));
 
-    // 64 bit int
-    TEST_MEET("i64", "v",       IntegerType::get(64, Sign::Signed),     VoidType::get(),                        IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "i64",     IntegerType::get(64, Sign::Signed),     IntegerType::get(64, Sign::Signed),     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "j64",     IntegerType::get(64, Sign::Signed),     IntegerType::get(64, Sign::Unknown),    IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "u64",     IntegerType::get(64, Sign::Signed),     IntegerType::get(64, Sign::Unsigned),   IntegerType::get(64, Sign::Unknown));
-    TEST_MEET("i64", "i32",     IntegerType::get(64, Sign::Signed),     IntegerType::get(32, Sign::Signed),     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "j32",     IntegerType::get(64, Sign::Signed),     IntegerType::get(32, Sign::Unknown),    IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "u32",     IntegerType::get(64, Sign::Signed),     IntegerType::get(32, Sign::Unsigned),   IntegerType::get(64, Sign::Unknown));
-    TEST_MEET("i64", "i16",     IntegerType::get(64, Sign::Signed),     IntegerType::get(16, Sign::Signed),     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "j16",     IntegerType::get(64, Sign::Signed),     IntegerType::get(16, Sign::Unknown),    IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "u16",     IntegerType::get(64, Sign::Signed),     IntegerType::get(16, Sign::Unsigned),   IntegerType::get(64, Sign::Unknown));
-    TEST_MEET("i64", "i8",      IntegerType::get(64, Sign::Signed),     IntegerType::get(8, Sign::Signed),      IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "j8",      IntegerType::get(64, Sign::Signed),     IntegerType::get(8, Sign::Unknown),     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "u8",      IntegerType::get(64, Sign::Signed),     IntegerType::get(8, Sign::Unsigned),    IntegerType::get(64, Sign::Unknown));
-    TEST_MEET("i64", "s64",     IntegerType::get(64, Sign::Signed),     SizeType::get(64),                      IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "s32",     IntegerType::get(64, Sign::Signed),     SizeType::get(32),                      IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "s16",     IntegerType::get(64, Sign::Signed),     SizeType::get(16),                      IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "s8",      IntegerType::get(64, Sign::Signed),     SizeType::get(8),                       IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "c",       IntegerType::get(64, Sign::Signed),     CharType::get(),                        IntegerType::get(64, Sign::Signed));
-    TEST_MEET("i64", "f64",     IntegerType::get(64, Sign::Signed),     FloatType::get(64),                     UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(64) }));
-    TEST_MEET("i64", "f32",     IntegerType::get(64, Sign::Signed),     FloatType::get(32),                     UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(32) }));
-    TEST_MEET("i64", "p",       IntegerType::get(64, Sign::Signed),     PointerType::get(VoidType::get()),      UnionType::get({ IntegerType::get(64, Sign::Signed), PointerType::get(VoidType::get()) }));
-    TEST_MEET("i64", "a3i64",   IntegerType::get(64, Sign::Signed),     intArr,                                 intArr);
+    // void
+    TEST_MEET(
+        VoidType::get(),
+        VoidType::get(),
+        VoidType::get());
 
-    TEST_MEET("j64", "i64",     IntegerType::get(64, Sign::Unknown),    IntegerType::get(64, Sign::Signed),     IntegerType::get(64, Sign::Signed));
-    TEST_MEET("j64", "u64",     IntegerType::get(64, Sign::Unknown),    IntegerType::get(64, Sign::Unsigned),   IntegerType::get(64, Sign::Unsigned));
+    TEST_MEET(
+        VoidType::get(),
+        ArrayType::get(VoidType::get()),
+        ArrayType::get(VoidType::get()));
+
+    TEST_MEET(
+        VoidType::get(),
+        BooleanType::get(),
+        BooleanType::get());
+
+    TEST_MEET(
+        VoidType::get(),
+        CharType::get(),
+        CharType::get());
+
+    TEST_MEET(
+        VoidType::get(),
+        CompoundType::get(),
+        CompoundType::get());
+
+    TEST_MEET(
+        VoidType::get(),
+        FloatType::get(32),
+        FloatType::get(32));
+
+    TEST_MEET(
+        VoidType::get(),
+        FloatType::get(64),
+        FloatType::get(64));
+
+    TEST_MEET(
+        VoidType::get(),
+        FuncType::get(),
+        FuncType::get());
+
+    TEST_MEET(
+        VoidType::get(),
+        IntegerType::get(32, Sign::Signed),
+        IntegerType::get(32, Sign::Signed));
+
+    TEST_MEET(
+        VoidType::get(),
+        IntegerType::get(32, Sign::Unknown),
+        IntegerType::get(32, Sign::Unknown));
+
+    TEST_MEET(
+        VoidType::get(),
+        IntegerType::get(16, Sign::Unsigned),
+        IntegerType::get(16, Sign::Unsigned));
+
+    TEST_MEET(
+        VoidType::get(),
+        NamedType::get("foo"),
+        NamedType::get("foo"));
+
+    TEST_MEET(
+        VoidType::get(),
+        PointerType::get(VoidType::get()),
+        PointerType::get(VoidType::get()));
+
+    TEST_MEET(
+        VoidType::get(),
+        SizeType::get(16),
+        SizeType::get(16));
+
+    TEST_MEET(
+        VoidType::get(),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), VoidType::get() }),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), VoidType::get() }));
+
+    // Array
+    TEST_MEET(
+        ArrayType::get(VoidType::get()),
+        ArrayType::get(VoidType::get()),
+        ArrayType::get(VoidType::get()));
+
+    TEST_MEET(
+        ArrayType::get(VoidType::get()),
+        ArrayType::get(IntegerType::get(32, Sign::Signed)),
+        ArrayType::get(IntegerType::get(32, Sign::Signed)));
+
+    TEST_MEET(
+        ArrayType::get(IntegerType::get(32, Sign::Signed)),
+        ArrayType::get(IntegerType::get(32, Sign::Unsigned)),
+        ArrayType::get(IntegerType::get(32, Sign::Unknown)));
+
+    TEST_MEET(
+        ArrayType::get(VoidType::get()),
+        ArrayType::get(VoidType::get(), 10),
+        ArrayType::get(VoidType::get(), 10));
+
+    TEST_MEET(
+        ArrayType::get(IntegerType::get(16, Sign::Unsigned)),
+        IntegerType::get(16, Sign::Unsigned),
+        ArrayType::get(IntegerType::get(16, Sign::Unsigned)));
+
+    TEST_MEET(
+        ArrayType::get(IntegerType::get(8, Sign::Unsigned), 4),
+        FloatType::get(32),
+        UnionType::get({ ArrayType::get(IntegerType::get(8, Sign::Unsigned), 4), FloatType::get(32) }));
+
+    // Boolean
+    TEST_MEET(
+        BooleanType::get(),
+        BooleanType::get(),
+        BooleanType::get());
+
+    TEST_MEET(
+        BooleanType::get(),
+        CharType::get(),
+        UnionType::get({ BooleanType::get(), CharType::get() }));
+
+    // Char
+    TEST_MEET(
+        CharType::get(),
+        CharType::get(),
+        CharType::get());
+
+    TEST_MEET(
+        CharType::get(),
+        IntegerType::get(8, Sign::Unknown),
+        IntegerType::get(8, Sign::Unknown));
+
+    TEST_MEET(
+        CharType::get(),
+        SizeType::get(8),
+        CharType::get());
+
+    TEST_MEET(
+        CharType::get(),
+        SizeType::get(32),
+        UnionType::get({ CharType::get(), SizeType::get(32) }));
+
+
+    // Compound
+    TEST_MEET(
+        CompoundType::get(),
+        CompoundType::get(),
+        CompoundType::get());
+
+    TEST_MEET(
+        FloatType::get(64),
+        FloatType::get(64),
+        FloatType::get(64));
+
+    TEST_MEET(
+        FloatType::get(64),
+        FloatType::get(32),
+        FloatType::get(64));
+
+    TEST_MEET(
+        FloatType::get(32),
+        SizeType::get(32),
+        FloatType::get(32));
+
+    TEST_MEET(
+        FloatType::get(32),
+        SizeType::get(64),
+        UnionType::get({ FloatType::get(32), SizeType::get(64) }));
+
+    // Func
+    TEST_MEET(
+        FuncType::get(),
+        FuncType::get(),
+        FuncType::get());
+
+    // Integer
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(64, Sign::Unknown),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(64, Sign::Unsigned),
+        IntegerType::get(64, Sign::Unknown));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(32, Sign::Signed),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(32, Sign::Unknown),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(32, Sign::Unsigned),
+        IntegerType::get(64, Sign::Unknown));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(16, Sign::Signed),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(16, Sign::Unknown),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(16, Sign::Unsigned),
+        IntegerType::get(64, Sign::Unknown));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(8, Sign::Signed),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(8, Sign::Unknown),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(8, Sign::Unsigned),
+        IntegerType::get(64, Sign::Unknown));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        SizeType::get(64),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        SizeType::get(32),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        SizeType::get(16),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        SizeType::get(8),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        CharType::get(),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        FloatType::get(64),
+        UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(64) }));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        FloatType::get(32),
+        UnionType::get({ IntegerType::get(64, Sign::Signed), FloatType::get(32) }));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        PointerType::get(VoidType::get()),
+        UnionType::get({ IntegerType::get(64, Sign::Signed), PointerType::get(VoidType::get()) }));
+
+    TEST_MEET(IntegerType::get(64, Sign::Signed),
+              intArr,
+              intArr);
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Unknown),
+        IntegerType::get(64, Sign::Signed),
+        IntegerType::get(64, Sign::Signed));
+
+    TEST_MEET(
+        IntegerType::get(64, Sign::Unknown),
+        IntegerType::get(64, Sign::Unsigned),
+        IntegerType::get(64, Sign::Unsigned));
+
 
     // size
-    TEST_MEET("s32", "i32",     SizeType::get(32),                      IntegerType::get(32, Sign::Signed),     IntegerType::get(32, Sign::Signed));
-    TEST_MEET("s32", "s16",     SizeType::get(32),                      SizeType::get(16),                      SizeType::get(32));
-    TEST_MEET("s16", "f32",     SizeType::get(16),                      FloatType::get(32),                     UnionType::get({ SizeType::get(16), FloatType::get(32) }));
-    TEST_MEET("s16", "v",       SizeType::get(16),                      VoidType::get(),                        SizeType::get(16));
+    TEST_MEET(
+        SizeType::get(32),
+        IntegerType::get(32, Sign::Signed),
+        IntegerType::get(32, Sign::Signed));
 
-    // pointer types
-    TEST_MEET("pi32", "v",
-              PointerType::get(IntegerType::get(32, Sign::Signed)),
-              VoidType::get(),
-              PointerType::get(IntegerType::get(32, Sign::Signed)));
-    TEST_MEET("pi32", "pv",
-              PointerType::get(IntegerType::get(32, Sign::Signed)),
-              PointerType::get(VoidType::get()),
-              PointerType::get(IntegerType::get(32, Sign::Signed)));
-    TEST_MEET("pi32", "pu32",
-              PointerType::get(IntegerType::get(32, Sign::Signed)),
-              PointerType::get(IntegerType::get(32, Sign::Unsigned)),
-              PointerType::get(IntegerType::get(32, Sign::Unknown)));
-    TEST_MEET("pi32", "i32",
-              PointerType::get(IntegerType::get(32, Sign::Signed)),
-              IntegerType::get(32, Sign::Signed),
-              UnionType::get({ PointerType::get(IntegerType::get(32, Sign::Signed)), IntegerType::get(32, Sign::Signed) }));
-    TEST_MEET("pv", "s32",
-              PointerType::get(VoidType::get()),
-              SizeType::get(32),
-              PointerType::get(VoidType::get()));
+    TEST_MEET(
+        SizeType::get(32),
+        SizeType::get(16),
+        SizeType::get(32));
 
-    // Union types
+    TEST_MEET(
+        SizeType::get(16),
+        FloatType::get(32),
+        UnionType::get({ SizeType::get(16), FloatType::get(32) }));
+
+    TEST_MEET(
+        SizeType::get(16),
+        VoidType::get(),
+        SizeType::get(16));
+
+    // pointer
+    TEST_MEET(
+        PointerType::get(IntegerType::get(32, Sign::Signed)),
+        VoidType::get(),
+        PointerType::get(IntegerType::get(32, Sign::Signed)));
+
+    TEST_MEET(
+        PointerType::get(IntegerType::get(32, Sign::Signed)),
+        PointerType::get(VoidType::get()),
+        PointerType::get(IntegerType::get(32, Sign::Signed)));
+
+    TEST_MEET(
+        PointerType::get(IntegerType::get(32, Sign::Signed)),
+        PointerType::get(IntegerType::get(32, Sign::Unsigned)),
+        PointerType::get(IntegerType::get(32, Sign::Unknown)));
+
+    TEST_MEET(
+        PointerType::get(IntegerType::get(32, Sign::Signed)),
+        IntegerType::get(32, Sign::Signed),
+        UnionType::get({ PointerType::get(IntegerType::get(32, Sign::Signed)), IntegerType::get(32, Sign::Signed) }));
+
+    TEST_MEET(
+        PointerType::get(VoidType::get()),
+        SizeType::get(32),
+        PointerType::get(VoidType::get()));
+
+    // union
     std::shared_ptr<UnionType> ut = UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) });
 
-    TEST_MEET("u", "i32",       ut,     IntegerType::get(32, Sign::Signed),         ut);
-    TEST_MEET("u", "j32",       ut,     IntegerType::get(32, Sign::Unknown),        ut);
-    TEST_MEET("u", "f32",       ut,     FloatType::get(32), ut);
-    TEST_MEET("u", "u32",       ut,     IntegerType::get(32, Sign::Unsigned),
-              UnionType::get({ IntegerType::get(32, Sign::Unsigned), FloatType::get(32) }));
-    TEST_MEET("u", "u",         ut,     UnionType::get({ PointerType::get(VoidType::get()) }),
-              UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32), PointerType::get(VoidType::get()) }));
+    TEST_MEET(
+        ut,
+        ut,
+        ut);
 
-    // floating point types
-    TEST_MEET("f32", "f32", FloatType::get(32), FloatType::get(32), FloatType::get(32));
-    TEST_MEET("f32", "v",   FloatType::get(32), VoidType::get(),    FloatType::get(32));
-    TEST_MEET("f32", "f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
+    TEST_MEET(
+        ut,
+        IntegerType::get(32, Sign::Signed),
+        ut);
+
+    TEST_MEET(
+        ut,
+        IntegerType::get(32, Sign::Unknown),
+        ut);
+
+    TEST_MEET(
+        ut,
+        FloatType::get(32),
+        ut);
+
+    TEST_MEET(
+        ut,
+        IntegerType::get(32, Sign::Unsigned),
+        UnionType::get({ IntegerType::get(32, Sign::Unsigned), FloatType::get(32) }));
+
+    TEST_MEET(
+        ut,
+        UnionType::get({ PointerType::get(VoidType::get()) }),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32), PointerType::get(VoidType::get()) }));
 }
 
 QTEST_GUILESS_MAIN(MeetTest)
