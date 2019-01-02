@@ -327,6 +327,13 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return exp->getSubExp1();
     }
 
+    // Check for exp OR -1 (bitwise OR)
+    if (exp->getOper() == opBitOr && opSub2 == opIntConst &&
+        exp->access<Const, 2>()->getInt() == -1) {
+        changed = true;
+        return exp->getSubExp2();
+    }
+
     // Check for exp AND TRUE (logical AND)
     if (exp->getOper() == opAnd &&
         // Is the below really needed?
