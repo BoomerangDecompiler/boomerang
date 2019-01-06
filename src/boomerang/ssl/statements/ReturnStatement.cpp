@@ -288,7 +288,7 @@ void ReturnStatement::getDefinitions(LocationSet &ls, bool assumeABICompliance) 
 }
 
 
-SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
+SharedConstType ReturnStatement::getTypeForExp(SharedConstExp e) const
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
@@ -300,7 +300,7 @@ SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
 }
 
 
-SharedType ReturnStatement::getTypeFor(SharedExp e)
+SharedType ReturnStatement::getTypeForExp(SharedExp e)
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
@@ -312,7 +312,7 @@ SharedType ReturnStatement::getTypeFor(SharedExp e)
 }
 
 
-void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
+void ReturnStatement::setTypeForExp(SharedExp e, SharedType ty)
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {

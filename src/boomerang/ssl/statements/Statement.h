@@ -316,11 +316,11 @@ public:
 
     /// Get the type for the definition, if any, for expression e in this statement
     /// Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual SharedConstType getTypeFor(SharedConstExp) const { return nullptr; }
-    virtual SharedType getTypeFor(SharedExp) { return nullptr; }
+    virtual SharedConstType getTypeForExp(SharedConstExp) const { return nullptr; }
+    virtual SharedType getTypeForExp(SharedExp) { return nullptr; }
 
-    /// Set the type for the definition of e in this Statement
-    virtual void setTypeFor(SharedExp, SharedType);
+    /// Set the type for the definition of \p e in this Statement to \p ty
+    virtual void setTypeForExp(SharedExp exp, SharedType ty);
 
     /// Parameter convert is set true if an indirect call is converted to direct
     /// Return true if a change made

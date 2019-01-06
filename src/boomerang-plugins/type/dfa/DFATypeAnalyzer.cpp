@@ -94,7 +94,7 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
     }
 
     assert(defIt->getDef());
-    SharedType meetOfArgs = defIt->getDef()->getTypeFor(stmt->getLeft());
+    SharedType meetOfArgs = defIt->getDef()->getTypeForExp(stmt->getLeft());
 
     bool ch = false;
 
@@ -106,7 +106,7 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
         }
 
         assert(phinf.getDef() != nullptr);
-        SharedType typeOfDef = phinf.getDef()->getTypeFor(phinf.getSubExp1());
+        SharedType typeOfDef = phinf.getDef()->getTypeForExp(phinf.getSubExp1());
         meetOfArgs           = meetOfArgs->meetWith(typeOfDef, ch);
     }
 

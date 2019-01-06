@@ -55,7 +55,7 @@ void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofTyp
 
     if (addr->isSubscript()) {
         SharedExp addrBase      = addr->getSubExp1();
-        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeFor(addrBase);
+        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeForExp(addrBase);
         SharedType expectedType = PointerType::get(memofType);
 
         if (!actType->isCompatibleWith(*expectedType)) {
@@ -78,7 +78,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp> &exp)
             return exp;
         }
 
-        SharedType memofType = def->getTypeFor(base);
+        SharedType memofType = def->getTypeForExp(base);
         checkMemofType(base, memofType);
     }
 

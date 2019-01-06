@@ -177,16 +177,14 @@ public:
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedType getTypeForExp(SharedExp exp) override;
 
-    /// \copydoc Statement::setTypeFor
-    virtual void
-    setTypeFor(SharedExp e,
-               SharedType ty) override; // Set the type for this location, defined in this statement
+    /// \copydoc Statement::setTypeForExp
+    virtual void setTypeForExp(SharedExp exp, SharedType ty) override;
 
     /// \returns pointer to the def collector object
     const DefCollector *getDefCollector() const { return &m_defCol; }

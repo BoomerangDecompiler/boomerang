@@ -165,7 +165,7 @@ SharedType RefExp::ascendType()
         return VoidType::get();
     }
 
-    return m_def->getTypeFor(subExp1);
+    return m_def->getTypeForExp(subExp1);
 }
 
 
