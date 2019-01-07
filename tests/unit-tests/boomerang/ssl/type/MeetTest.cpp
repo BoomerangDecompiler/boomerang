@@ -58,8 +58,6 @@ void MeetTest::testMeet_data()
     QTest::addColumn<SharedTypeWrapper>("secondOp");
     QTest::addColumn<SharedTypeWrapper>("tgtResult");
 
-    std::shared_ptr<ArrayType> intArr(new ArrayType(IntegerType::get(64, Sign::Signed), 3));
-
     // void
     TEST_MEET(
         VoidType::get(),
@@ -206,6 +204,8 @@ void MeetTest::testMeet_data()
         CompoundType::get(),
         CompoundType::get());
 
+
+    // Float
     TEST_MEET(
         FloatType::get(64),
         FloatType::get(64),
@@ -226,11 +226,13 @@ void MeetTest::testMeet_data()
         SizeType::get(64),
         UnionType::get({ FloatType::get(32), SizeType::get(64) }));
 
+
     // Func
     TEST_MEET(
         FuncType::get(),
         FuncType::get(),
         FuncType::get());
+
 
     // Integer
     TEST_MEET(
@@ -333,9 +335,10 @@ void MeetTest::testMeet_data()
         PointerType::get(VoidType::get()),
         UnionType::get({ IntegerType::get(64, Sign::Signed), PointerType::get(VoidType::get()) }));
 
-    TEST_MEET(IntegerType::get(64, Sign::Signed),
-              intArr,
-              intArr);
+    TEST_MEET(
+        IntegerType::get(64, Sign::Signed),
+        ArrayType::get(IntegerType::get(64, Sign::Signed), 3),
+        ArrayType::get(IntegerType::get(64, Sign::Signed), 3));
 
     TEST_MEET(
         IntegerType::get(64, Sign::Unknown),
@@ -364,17 +367,8 @@ void MeetTest::testMeet_data()
         FloatType::get(32),
         UnionType::get({ SizeType::get(16), FloatType::get(32) }));
 
-    TEST_MEET(
-        SizeType::get(16),
-        VoidType::get(),
-        SizeType::get(16));
 
-    // pointer
-    TEST_MEET(
-        PointerType::get(IntegerType::get(32, Sign::Signed)),
-        VoidType::get(),
-        PointerType::get(IntegerType::get(32, Sign::Signed)));
-
+    // Pointer
     TEST_MEET(
         PointerType::get(IntegerType::get(32, Sign::Signed)),
         PointerType::get(VoidType::get()),
@@ -395,37 +389,41 @@ void MeetTest::testMeet_data()
         SizeType::get(32),
         PointerType::get(VoidType::get()));
 
-    // union
-    std::shared_ptr<UnionType> ut = UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) });
+
+    // Union
+    TEST_MEET(
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }));
 
     TEST_MEET(
-        ut,
-        ut,
-        ut);
-
-    TEST_MEET(
-        ut,
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
         IntegerType::get(32, Sign::Signed),
-        ut);
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }));
 
     TEST_MEET(
-        ut,
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
         IntegerType::get(32, Sign::Unknown),
-        ut);
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }));
 
     TEST_MEET(
-        ut,
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
         FloatType::get(32),
-        ut);
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }));
 
     TEST_MEET(
-        ut,
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
         IntegerType::get(32, Sign::Unsigned),
         UnionType::get({ IntegerType::get(32, Sign::Unsigned), FloatType::get(32) }));
 
     TEST_MEET(
-        ut,
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
         UnionType::get({ PointerType::get(VoidType::get()) }),
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32), PointerType::get(VoidType::get()) }));
+
+    TEST_MEET(
+        UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) }),
+        PointerType::get(UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32) })),
         UnionType::get({ IntegerType::get(32, Sign::Signed), FloatType::get(32), PointerType::get(VoidType::get()) }));
 }
 
