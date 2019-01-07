@@ -111,24 +111,30 @@ bool UnionType::findType(SharedType ty)
 }
 
 
-void UnionType::addType(SharedType n, const QString &name)
+void UnionType::addType(SharedType newType, const QString &name)
 {
-    if (n->isUnion()) {
-        auto utp = std::static_pointer_cast<UnionType>(n);
+    if (newType->resolvesToUnion()) {
+        auto utp = std::static_pointer_cast<UnionType>(newType);
         // Note: need to check for name clashes eventually
         li.insert(utp->li.begin(), utp->li.end());
     }
     else {
-        if (n->isPointer() &&
-            (n->as<PointerType>()->getPointsTo().get() == this)) { // Note: pointer comparison
-            n = PointerType::get(VoidType::get());
-            LOG_WARN("Attempt to union with pointer to self!");
+        if (newType->isPointer() && newType->as<PointerType>()->getPointsTo()->resolvesToUnion()) {
+            // Explicitly disallow meeting unions and pointers to unions.
+            // This can happen in binaries containing code similar to this (-> exception handling):
+            //   1  x1 = ...
+            //   2  x2 = phi(x1, x3)
+            //   3  x3 = m[x2]
+            //   4  goto 2
+            // Repeatedly analyzing types for the above snippet will just result in nested
+            // union types and pointers to union types ad infinitum.
+            LOG_VERBOSE("Attempting to meet union with pointer to union - Not supported!");
+            newType = PointerType::get(VoidType::get());
         }
 
         UnionElement ue;
-        ue.type = n;
+        ue.type = newType;
         ue.name = name;
-        LOG_MSG("Adding type '%1' to union '%2'", n->getCtype(), this->getCtype());
         li.insert(ue);
     }
 }

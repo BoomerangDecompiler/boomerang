@@ -137,7 +137,7 @@ SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighes
 
     if (other->resolvesToInteger()) {
         std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
-        std::shared_ptr<IntegerType> result = this->clone()->as<IntegerType>();
+        std::shared_ptr<IntegerType> result   = this->clone()->as<IntegerType>();
 
         // Signedness
         if (otherInt->isSigned()) {
