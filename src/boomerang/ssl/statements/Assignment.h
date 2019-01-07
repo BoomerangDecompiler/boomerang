@@ -43,14 +43,14 @@ public:
     /// Like print, but print without statement number
     virtual void printCompact(OStream &os) const = 0;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedConstType getTypeForExp(SharedConstExp e) const override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedType getTypeForExp(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
-    virtual void setTypeFor(SharedExp e, SharedType ty) override;
+    virtual void setTypeForExp(SharedExp e, SharedType ty) override;
 
     /// \copydoc Statement::usesExp
     /// \internal PhiAssign and ImplicitAssign don't override

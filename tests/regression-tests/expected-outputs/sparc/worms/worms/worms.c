@@ -1,4 +1,4 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
 __size32 proc_0x00001400(__size32 param1, __size32 param2);
 void proc_0x000120d8();
 void proc_0x000120fc();
@@ -7,10 +7,10 @@ void proc_0x00012078();
 void proc_0x000120a8();
 
 /** address: 0x00000a40 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     int i0; 		// r24
-    __size32 i1; 		// r25
+    char * *i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
     __size32 i4; 		// r28

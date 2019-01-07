@@ -395,7 +395,7 @@ QString UserProc::lookupParam(SharedConstExp e) const
         return "";
     }
 
-    SharedConstType ty = def->getTypeFor(e);
+    SharedConstType ty = def->getTypeForExp(e);
     return lookupSym(RefExp::get(std::const_pointer_cast<Exp>(e), def), ty);
 }
 
@@ -529,7 +529,7 @@ void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp> &ref)
     }
 
     SharedExp base = ref->getSubExp1();
-    SharedType ty  = def->getTypeFor(base);
+    SharedType ty  = def->getTypeForExp(base);
     // No, get its name from the front end
     QString locName = nullptr;
 
@@ -758,7 +758,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp> &ref) con
     }
 
     SharedConstExp base = ref->getSubExp1();
-    SharedConstType ty  = def->getTypeFor(base);
+    SharedConstType ty  = def->getTypeForExp(base);
     return lookupSym(ref, ty);
 }
 
@@ -773,7 +773,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp> &ref) 
     }
 
     SharedConstExp base = ref->getSubExp1();
-    SharedConstType ty  = def->getTypeFor(base);
+    SharedConstType ty  = def->getTypeForExp(base);
 
     // Check for specific symbol
     const QString ret = lookupSym(ref, ty);

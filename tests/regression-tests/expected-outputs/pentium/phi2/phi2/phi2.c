@@ -1,12 +1,12 @@
 int main(int argc, char *argv[]);
-__size32 proc1(size_t param1, int param2, union { char *; __size32; } param3);
+__size32 proc1(size_t param1, int param2, char *param3);
 
 /** address: 0x080483cf */
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
     size_t local0; 		// m[esp - 40]
-    __size32 local1; 		// m[esp - 24]
+    char *local1; 		// m[esp - 24]
 
     local1 = *(argv + 4);
     eax = proc1(local0, argc, local1);
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x0804835c */
-__size32 proc1(size_t param1, int param2, union { char *; __size32; } param3)
+__size32 proc1(size_t param1, int param2, char *param3)
 {
     int eax; 		// r24
     size_t eax_1; 		// r24{6}

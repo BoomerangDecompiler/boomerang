@@ -1,7 +1,7 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
 
 /** address: 0x00001b90 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     int g3; 		// r3
     struct stat local0; 		// m[g1 - 128]

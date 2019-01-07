@@ -131,13 +131,13 @@ QString IntegerType::getCtype(bool final) const
 
 SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
-    if (other->resolvesToVoid()) {
+    if (other->resolvesToVoid() || other->resolvesToChar()) {
         return const_cast<IntegerType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToInteger()) {
         std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
-        std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
+        std::shared_ptr<IntegerType> result   = this->clone()->as<IntegerType>();
 
         // Signedness
         if (otherInt->isSigned()) {
@@ -147,10 +147,10 @@ SharedType IntegerType::meetWith(SharedType other, bool &changed, bool useHighes
             result->hintAsUnsigned();
         }
 
-        changed |= result->isSigned() !=
-                   isSigned(); // Changed from signed to not necessarily signed
-        changed |= result->isUnsigned() !=
-                   isUnsigned(); // Changed from unsigned to not necessarily unsigned
+        // Changed from signed to not necessarily signed
+        changed |= result->isSigned() != isSigned();
+        // Changed from unsigned to not necessarily unsigned
+        changed |= result->isUnsigned() != isUnsigned();
 
         // Size. Assume 0 indicates unknown size
         result->m_size = std::max(m_size, otherInt->m_size);

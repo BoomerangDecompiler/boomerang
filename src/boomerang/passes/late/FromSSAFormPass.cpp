@@ -61,7 +61,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         s->getDefinitions(defs, assumeABICompliance);
 
         for (SharedExp base : defs) {
-            SharedType ty = s->getTypeFor(base);
+            SharedType ty = s->getTypeForExp(base);
 
             if (ty == nullptr) { // Can happen e.g. when getting the type for %flags
                 ty = VoidType::get();
@@ -152,7 +152,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
             }
         }
 
-        SharedType ty   = rename->getDef()->getTypeFor(rename->getSubExp1());
+        SharedType ty   = rename->getDef()->getTypeForExp(rename->getSubExp1());
         SharedExp local = proc->createLocal(ty, rename);
 
         if (proc->getProg()->getProject()->getSettings()->debugLiveness) {

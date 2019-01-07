@@ -100,6 +100,11 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
     if (other->resolvesToVoid()) {
         return const_cast<SizeType *>(this)->shared_from_this();
     }
+    else if (other->resolvesToPointer() && other->getSize() == getSize()) {
+        // e.g. size32 meet void *
+        changed = true;
+        return other->clone();
+    }
 
     if (other->resolvesToSize()) {
         SharedType result = this->clone();
@@ -108,8 +113,9 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
             LOG_VERBOSE("Size %1 meet with size %2!", m_size, other->as<SizeType>()->m_size);
         }
 
-        result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
-
+        const size_t newSize = std::max(result->getSize(), other->as<SizeType>()->getSize());
+        changed |= (newSize != result->getSize());
+        result->setSize(newSize);
         return result;
     }
 
@@ -125,6 +131,14 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
             LOG_VERBOSE("Size %1 meet with %2; allowing temporarily", m_size, other->getCtype());
         }
 
+        return other->clone();
+    }
+    else if (other->resolvesToChar() && getSize() == other->getSize()) {
+        changed = true;
+        return other->clone();
+    }
+    else if (other->resolvesToFloat() && getSize() == other->getSize()) {
+        changed = true;
         return other->clone();
     }
 

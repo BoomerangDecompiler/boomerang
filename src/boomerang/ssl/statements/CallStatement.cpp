@@ -865,7 +865,7 @@ void CallStatement::removeArgument(int i)
 }
 
 
-SharedConstType CallStatement::getTypeFor(SharedConstExp e) const
+SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 {
     // The defines "cache" what the destination proc is defining
     const Assignment *as = m_defines.findOnLeft(e);
@@ -883,7 +883,7 @@ SharedConstType CallStatement::getTypeFor(SharedConstExp e) const
 }
 
 
-SharedType CallStatement::getTypeFor(SharedExp e)
+SharedType CallStatement::getTypeForExp(SharedExp e)
 {
     // The defines "cache" what the destination proc is defining
     Assignment *as = m_defines.findOnLeft(e);
@@ -901,7 +901,7 @@ SharedType CallStatement::getTypeFor(SharedExp e)
 }
 
 
-void CallStatement::setTypeFor(SharedExp e, SharedType ty)
+void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
 {
     Assignment *as = m_defines.findOnLeft(e);
 
@@ -922,7 +922,7 @@ void CallStatement::setTypeFor(SharedExp e, SharedType ty)
         return;
     }
 
-    def->setTypeFor(e, ty);
+    def->setTypeForExp(e, ty);
 }
 
 

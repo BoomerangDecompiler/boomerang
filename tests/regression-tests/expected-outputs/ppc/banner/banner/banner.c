@@ -5,17 +5,17 @@ int main(int argc, char *argv[])
 {
     int XERCA; 		// r203
     unsigned int g0; 		// r0
-    int g1; 		// r1
+    union { int; __size8 *; } g1; 		// r1
     int g10; 		// r10
     int g11; 		// r11
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 112]
-    int local1; 		// m[g1 - 120]
-    int local2; 		// m[g1 - 124]
+    union { __size8 *; int; } local1; 		// m[g1 - 120]
+    union { __size8 *; int; } local2; 		// m[g1 - 124]
     char local3; 		// m[g1 - 96]
     __size32 local4; 		// m[g1 - 136]
-    __size32 local5; 		// m[g1 - 132]
+    char **local5; 		// m[g1 - 132]
     int local6; 		// m[g1 - 116]
     int local7; 		// m[g1 - 128]
     __size32 local8; 		// m[g1 - 136]{15}
@@ -72,7 +72,7 @@ bb0x10000564:
             goto bb0x10000500;
         }
         puts("");
-        local5 += 4;
+        local5++;
         local8 = local4;
         local4 = local8 - 1;
     }

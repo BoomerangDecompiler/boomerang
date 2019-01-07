@@ -34,6 +34,9 @@ public:
     TypedExp &operator=(TypedExp &&other) = default;
 
 public:
+    static std::shared_ptr<TypedExp> get(SharedExp exp);
+    static std::shared_ptr<TypedExp> get(SharedType ty, SharedExp exp);
+
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 

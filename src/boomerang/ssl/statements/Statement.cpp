@@ -379,7 +379,7 @@ bool Statement::propagateFlagsTo(Settings *settings)
 }
 
 
-void Statement::setTypeFor(SharedExp, SharedType)
+void Statement::setTypeForExp(SharedExp, SharedType)
 {
     assert(false);
 }
@@ -612,14 +612,14 @@ void Statement::dfaMapLocals()
 SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed)
 {
     bool thisCh        = false;
-    SharedType typeFor = getTypeFor(e);
+    SharedType typeFor = getTypeForExp(e);
 
     assert(typeFor);
     SharedType newType = typeFor->meetWith(ty, thisCh);
 
     if (thisCh) {
         changed = true;
-        setTypeFor(e, newType->clone());
+        setTypeForExp(e, newType->clone());
     }
 
     return newType;

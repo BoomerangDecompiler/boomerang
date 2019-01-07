@@ -36,7 +36,7 @@ static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
             std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
 
         newtype->setSignedness(reqSignedness);
-        return std::make_shared<TypedExp>(newtype, e);
+        return TypedExp::get(newtype, e);
     }
 
     return e;
@@ -55,11 +55,11 @@ void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofTyp
 
     if (addr->isSubscript()) {
         SharedExp addrBase      = addr->getSubExp1();
-        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeFor(addrBase);
+        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeForExp(addrBase);
         SharedType expectedType = PointerType::get(memofType);
 
         if (!actType->isCompatibleWith(*expectedType)) {
-            memof->setSubExp1(std::make_shared<TypedExp>(expectedType, addrBase));
+            memof->setSubExp1(TypedExp::get(expectedType, addrBase));
         }
     }
 }
@@ -78,7 +78,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp> &exp)
             return exp;
         }
 
-        SharedType memofType = def->getTypeFor(base);
+        SharedType memofType = def->getTypeForExp(base);
         checkMemofType(base, memofType);
     }
 
@@ -133,8 +133,8 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const> &exp)
         SharedType ty              = exp->getType();
 
         if (naturallySigned && ty->isInteger() && ty->as<IntegerType>()->isUnsigned()) {
-            return std::make_shared<TypedExp>(
-                IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned), exp);
+            return TypedExp::get(IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned),
+                                 exp);
         }
     }
 

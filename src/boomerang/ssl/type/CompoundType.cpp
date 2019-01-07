@@ -354,22 +354,20 @@ SharedType CompoundType::meetWith(SharedType other, bool &changed, bool useHighe
         return createUnion(other, changed, useHighestPtr);
     }
 
-    auto otherCmp = other->as<CompoundType>();
+    std::shared_ptr<CompoundType> otherCmp = other->as<CompoundType>();
 
-    if (otherCmp->isSuperStructOf(const_cast<CompoundType *>(this)->shared_from_this())) {
+    if (*this == *other) {
+        return const_cast<CompoundType *>(this)->shared_from_this();
+    }
+    else if (otherCmp->isSuperStructOf(const_cast<CompoundType *>(this)->shared_from_this())) {
         // The other structure has a superset of my struct's offsets. Preserve the names etc of the
         // bigger struct.
         changed = true;
         return other;
     }
-
-    if (isSubStructOf(otherCmp)) {
+    else if (isSubStructOf(otherCmp)) {
         // This is a superstruct of other
         changed = true;
-        return const_cast<CompoundType *>(this)->shared_from_this();
-    }
-
-    if (*this == *other) {
         return const_cast<CompoundType *>(this)->shared_from_this();
     }
 

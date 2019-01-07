@@ -4,18 +4,18 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int XERCA; 		// r203
-    union { unsigned int; char; } g0; 		// r0
-    int g1; 		// r1
+    unsigned int g0; 		// r0
+    union { int; __size8 *; } g1; 		// r1
     int g10; 		// r10
     int g11; 		// r11
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 104]
-    int local1; 		// m[g1 - 112]
-    int local2; 		// m[g1 - 116]
+    union { __size8 *; int; } local1; 		// m[g1 - 112]
+    union { __size8 *; int; } local2; 		// m[g1 - 116]
     char local3; 		// m[g1 - 96]
     __size32 local4; 		// m[g1 - 128]
-    __size32 local5; 		// m[g1 - 124]
+    char **local5; 		// m[g1 - 124]
     int local6; 		// m[g1 - 108]
     int local7; 		// m[g1 - 120]
     __size32 local8; 		// m[g1 - 128]{15}
@@ -71,7 +71,7 @@ bb0x2874:
             goto bb0x2810;
         }
         puts(/* machine specific */ (int) LR + 1108);
-        local5 += 4;
+        local5++;
         local8 = local4;
         local4 = local8 - 1;
     }

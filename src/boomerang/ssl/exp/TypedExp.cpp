@@ -36,6 +36,18 @@ TypedExp::TypedExp(const TypedExp &o)
 }
 
 
+std::shared_ptr<TypedExp> TypedExp::get(SharedExp exp)
+{
+    return std::make_shared<TypedExp>(exp);
+}
+
+
+std::shared_ptr<TypedExp> TypedExp::get(SharedType ty, SharedExp exp)
+{
+    return std::make_shared<TypedExp>(ty, exp);
+}
+
+
 SharedExp TypedExp::clone() const
 {
     return std::make_shared<TypedExp>(m_type, subExp1->clone());

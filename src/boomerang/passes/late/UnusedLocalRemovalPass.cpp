@@ -102,7 +102,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         s->getDefinitions(ls, assumeABICompliance);
 
         for (const SharedExp &loc : ls) {
-            SharedType ty = s->getTypeFor(loc);
+            SharedType ty = s->getTypeForExp(loc);
             QString name  = proc->findLocal(loc, ty);
 
             if (name.isEmpty()) {

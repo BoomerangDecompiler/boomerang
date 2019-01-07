@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00001bb8 */
 int main(int argc, char *argv[])
 {
-    __size32 g1; 		// r1
+    void *g1; 		// r1
     float local0; 		// m[g1 - 44]
 
     scanf(/* machine specific */ (int) LR + 972);

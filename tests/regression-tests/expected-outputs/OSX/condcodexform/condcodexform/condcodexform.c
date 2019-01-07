@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     int CR4; 		// r68
     int CR5; 		// r69
     int CR6; 		// r70
-    __size4 CR7; 		// r71
+    __size32 CR7; 		// r71
     __size32 g0; 		// r0
     int g9; 		// r9
     __size32 local0; 		// m[g1 - 40]

@@ -1,8 +1,8 @@
-int main(int argc, union { __size32; char *[] *; } argv);
-void proc1(int param1, union { __size32; char *; } param2, int param3);
+int main(int argc, char *argv[]);
+void proc1(int param1, char *param2, int param3);
 
 /** address: 0x00010760 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     int local0; 		// m[o6 - 132]
     int o1; 		// r9
@@ -14,7 +14,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
 }
 
 /** address: 0x000106c4 */
-void proc1(int param1, union { __size32; char *; } param2, int param3)
+void proc1(int param1, char *param2, int param3)
 {
     int local0; 		// m[o6 + 68]
     int local1; 		// m[o6 - 20]

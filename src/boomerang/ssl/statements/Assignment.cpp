@@ -50,21 +50,21 @@ Assignment::~Assignment()
 }
 
 
-SharedConstType Assignment::getTypeFor(SharedConstExp) const
+SharedConstType Assignment::getTypeForExp(SharedConstExp) const
 {
     // assert(*lhs == *e); // No: local vs base expression
     return m_type;
 }
 
 
-SharedType Assignment::getTypeFor(SharedExp /*e*/)
+SharedType Assignment::getTypeForExp(SharedExp /*e*/)
 {
     // assert(*lhs == *e); // No: local vs base expression
     return m_type;
 }
 
 
-void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
+void Assignment::setTypeForExp(SharedExp /*e*/, SharedType ty)
 {
     m_type = ty;
 }

@@ -104,7 +104,7 @@ void ExpTest::testIsAfpTerm()
     QVERIFY(!m_rof2->isAfpTerm());
 
     // Now with typed expressions
-    SharedExp tafp = std::make_shared<TypedExp>(IntegerType::get(Address::getSourceBits()), afp->clone());
+    SharedExp tafp = TypedExp::get(IntegerType::get(Address::getSourceBits()), afp->clone());
     // Unary tafp  (opTypedExp, afp.clone());
     SharedExp tplus  = Unary::get(opTypedExp, plus->clone());
     SharedExp tminus = Unary::get(opTypedExp, minus->clone());

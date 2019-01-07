@@ -1,7 +1,7 @@
-int main(int argc, union { char *[] *; int; } argv);
+int main(union { char *[] *; int; } argc, union { int; char *[] *; } argv);
 
 /** address: 0x10000418 */
-int main(int argc, union { char *[] *; int; } argv)
+int main(union { char *[] *; int; } argc, union { int; char *[] *; } argv)
 {
     int CR0; 		// r64
     int CR1; 		// r65
@@ -10,10 +10,11 @@ int main(int argc, union { char *[] *; int; } argv)
     int CR4; 		// r68
     int CR5; 		// r69
     int CR6; 		// r70
-    __size4 CR7; 		// r71
+    __size32 CR7; 		// r71
     unsigned int g0; 		// r0
     unsigned int g0_1; 		// r0{46}
     int g3; 		// r3
+    char * *g3_1; 		// r3
     int g5; 		// r5
     int local6; 		// m[g1 - 28]
 
@@ -27,8 +28,8 @@ bb0x100006e8:
                     local6 = 1;
                 }
                 else {
-                    g3 = main(-61, ROTL(g0) & 0xff);
-                    g3 = main(0, g3);
+                    g3_1 = main(-61, ROTL(g0) & 0xff);
+                    g3 = main(0, g3_1);
                     if (g3 != 0) {
                         goto bb0x100006e8;
                     }
