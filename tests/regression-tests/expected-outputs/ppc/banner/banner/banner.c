@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 112]
-    union { __size8 *; int; } local1; 		// m[g1 - 120]
+    union { int; __size8 *; } local1; 		// m[g1 - 120]
     union { int; __size8 *; } local2; 		// m[g1 - 124]
     char local3; 		// m[g1 - 96]
     __size32 local4; 		// m[g1 - 136]

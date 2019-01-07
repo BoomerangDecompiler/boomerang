@@ -1,7 +1,7 @@
-int main(union { char *[] *; int; } argc, union { int; char *[] *; } argv);
+int main(union { int; char *[] *; } argc, union { int; char *[] *; } argv);
 
 /** address: 0x10000418 */
-int main(union { char *[] *; int; } argc, union { int; char *[] *; } argv)
+int main(union { int; char *[] *; } argc, union { int; char *[] *; } argv)
 {
     int CR0; 		// r64
     int CR1; 		// r65

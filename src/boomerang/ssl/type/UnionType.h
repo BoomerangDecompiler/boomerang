@@ -100,6 +100,11 @@ public:
     /// \returns true if this type is already in the union.
     bool hasType(SharedType ty);
 
+    /// If this union contains only 1 type, return the one and only member type.
+    /// If this union has no types, return VoidType.
+    /// Otherwise, return this.
+    SharedType simplify(bool &changed) const;
+
 private:
     /**
      * Add a new type to this union.
@@ -107,11 +112,6 @@ private:
      * \param name the name of the new member
      */
     void addType(SharedType type, const QString &name = "");
-
-    /// If this union contains only 1 type, return the one and only member type.
-    /// If this union has no types, return VoidType.
-    /// Otherwise, return this.
-    SharedType simplify(bool &changed) const;
 
 private:
     UnionEntries m_entries;

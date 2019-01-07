@@ -5,7 +5,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     union { int; float; } local0; 		// m[o6 - 20]
-    union { __size32; double; } local1; 		// m[o6 - 12]
+    union { double; __size32; } local1; 		// m[o6 - 12]
 
     scanf("%f", &local0);
     printf("a is %f, b is %f\n", global_0x00010938, local1);
