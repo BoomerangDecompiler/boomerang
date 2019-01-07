@@ -138,6 +138,9 @@ void UnionType::addType(SharedType newType, const QString &name)
 {
     assert(newType != nullptr);
 
+    if (newType->resolvesToVoid()) {
+        return;
+    }
     if (newType->resolvesToUnion()) {
         auto unionTy = newType->as<UnionType>();
         // Note: need to check for name clashes eventually
