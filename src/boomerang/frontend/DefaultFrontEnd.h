@@ -147,9 +147,9 @@ private:
     Address getAddrOfLibraryThunk(CallStatement *call, UserProc *proc);
 
 protected:
-    IDecoder *m_decoder;
-    BinaryFile *m_binaryFile;
-    Prog *m_program;
+    IDecoder *m_decoder      = nullptr;
+    BinaryFile *m_binaryFile = nullptr;
+    Prog *m_program          = nullptr;
 
     TargetQueue m_targetQueue; ///< Holds the addresses that still need to be processed
 

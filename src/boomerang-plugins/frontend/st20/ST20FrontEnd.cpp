@@ -24,12 +24,10 @@ ST20FrontEnd::ST20FrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("ST20 decoder plugin");
-    if (!plugin) {
-        throw "Decoder plugin not found";
+    if (plugin) {
+        m_decoder = plugin->getIfc<IDecoder>();
+        m_decoder->initialize(project);
     }
-
-    m_decoder = plugin->getIfc<IDecoder>();
-    m_decoder->initialize(project);
 }
 
 

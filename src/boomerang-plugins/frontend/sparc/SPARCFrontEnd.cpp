@@ -1275,12 +1275,10 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("SPARC decoder plugin");
-    if (!plugin) {
-        throw "Decoder plugin not found";
+    if (plugin) {
+        m_decoder = plugin->getIfc<IDecoder>();
+        m_decoder->initialize(project);
     }
-
-    m_decoder = plugin->getIfc<IDecoder>();
-    m_decoder->initialize(project);
 
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;

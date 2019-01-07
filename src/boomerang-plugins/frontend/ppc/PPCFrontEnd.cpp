@@ -28,12 +28,10 @@ PPCFrontEnd::PPCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("PPC decoder plugin");
-    if (!plugin) {
-        throw "Decoder plugin not found";
+    if (plugin) {
+        m_decoder = plugin->getIfc<IDecoder>();
+        m_decoder->initialize(project);
     }
-
-    m_decoder = plugin->getIfc<IDecoder>();
-    m_decoder->initialize(project);
 }
 
 

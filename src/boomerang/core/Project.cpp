@@ -283,11 +283,13 @@ IFrontEnd *Project::createFrontEnd()
         }
 
         IFrontEnd *fe = plugin->getIfc<IFrontEnd>();
-        fe->initialize(this);
+        if (!fe->initialize(this)) {
+            throw std::runtime_error("FrontEnd initialization failed.");
+        }
         return fe;
     }
     catch (const std::runtime_error &err) {
-        LOG_ERROR("Cannot create frontend: %1", err.what());
+        LOG_ERROR("Cannot create FrontEnd: %1", err.what());
     }
 
     return nullptr;

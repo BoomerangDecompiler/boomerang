@@ -52,6 +52,10 @@ bool DefaultFrontEnd::initialize(Project *project)
     m_program    = project->getProg();
     m_binaryFile = project->getLoadedBinaryFile();
 
+    if (!m_decoder) {
+        return false;
+    }
+
     return m_decoder->initialize(project);
 }
 

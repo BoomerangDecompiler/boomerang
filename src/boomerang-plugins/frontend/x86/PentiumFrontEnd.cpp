@@ -155,7 +155,7 @@ bool PentiumFrontEnd::initialize(Project *project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone x86 decoder plugin");
     if (!plugin) {
-        throw "Decoder plugin not found";
+        throw std::runtime_error("Decoder plugin not found.");
     }
 
     m_decoder = plugin->getIfc<IDecoder>();

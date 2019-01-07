@@ -26,13 +26,13 @@ PluginHandle::PluginHandle(const QString &filePath)
     m_handle = LoadLibrary(qPrintable(filePath));
 
     if (m_handle == nullptr) {
-        throw "Failed to LoadLibrary!";
+        throw std::runtime_error("Failed to LoadLibrary!");
     }
 #else
     m_handle = dlopen(qPrintable(filePath), RTLD_NOW);
 
     if (m_handle == nullptr) {
-        throw dlerror();
+        throw std::runtime_error(dlerror());
     }
 #endif
 }
