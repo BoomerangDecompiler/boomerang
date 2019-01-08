@@ -350,7 +350,7 @@ struct Elf64_Rela
 #define R_386_PC32           2  ///< word32     S+A-P
 #define R_386_GOT32          3  ///< word32     G + A
 #define R_386_PLT32          4  ///< word32     L+A-P
-#define R_386_COPY     		 5  ///< None
+#define R_386_COPY           5  ///< None
 #define R_386_GLOB_DAT       6  ///< word32     S
 #define R_386_JMP_SLOT       7  ///< word32     S
 #define R_386_RELATIVE       8  ///< word32     B + A

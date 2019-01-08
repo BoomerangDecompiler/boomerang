@@ -11,8 +11,8 @@ set(CMAKE_AUTOMOC ON)
 
 # Include directories needed for all test modules
 include_directories(
-	"${CMAKE_SOURCE_DIR}/src/"
-	"${CMAKE_BINARY_DIR}/src/"
+    "${CMAKE_SOURCE_DIR}/src/"
+    "${CMAKE_BINARY_DIR}/src/"
 )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
