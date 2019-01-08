@@ -233,24 +233,6 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
         return this->simplify(changed);
     }
 
-    //    int subtypes_count = 0;
-    //    for (it = li.begin(); it != li.end(); ++it) {
-    //        Type &v(*it->type);
-    //        if(v.isCompound()) {
-    //            subtypes_count += ((CompoundType &)v).getNumTypes();
-    //        }
-    //        else if(v.isUnion()) {
-    //            subtypes_count += ((UnionType &)v).getNumTypes();
-    //        }
-    //        else
-    //            subtypes_count+=1;
-    //    }
-    //    if(subtypes_count>9) {
-    //        qDebug() << getCtype();
-    //        qDebug() << other->getCtype();
-    //        qDebug() << "*****";
-    //    }
-
     // Match 'other' agains all fields of 'this' UnionType
     // if a field is found that requires no change to 'meet', this type is returned unchanged
     // if a new meetWith result is 'better' given simplistic type description length heuristic
