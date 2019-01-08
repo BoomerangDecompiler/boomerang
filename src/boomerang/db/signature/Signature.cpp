@@ -86,6 +86,31 @@ bool Signature::operator==(const Signature &other) const
 }
 
 
+bool Signature::operator<(const Signature& other) const
+{
+    if (m_params.size() != other.m_params.size()) {
+        return m_params.size() < other.m_params.size();
+    }
+    else if (m_returns.size() != m_params.size()) {
+        return m_returns.size() < other.m_returns.size();
+    }
+
+    for (size_t i = 0; i < m_params.size(); ++i) {
+        if (*m_params[i] != *other.m_params[i]) {
+            return *m_params[i] < *other.m_params[i];
+        }
+    }
+
+    for (size_t i = 0; i < m_returns.size(); ++i) {
+        if (*m_returns[i] != *other.m_returns[i]) {
+            return *m_returns[i] < *other.m_returns[i];
+        }
+    }
+
+    return false; // equal
+}
+
+
 QString Signature::getName() const
 {
     return m_name;

@@ -23,7 +23,10 @@ public:
 
 public:
     bool operator==(const Return &other) const;
+    bool operator!=(const Return &other) const { return !(*this == other); }
+    bool operator<(const Return &other) const;
 
+public:
     std::shared_ptr<Return> clone() const;
 
     /// \returns the type of this function return.

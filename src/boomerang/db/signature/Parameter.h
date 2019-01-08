@@ -24,7 +24,10 @@ public:
 
 public:
     bool operator==(const Parameter &other) const;
+    bool operator!=(const Parameter &other) const { return !(*this == other); }
+    bool operator<(const Parameter &other) const;
 
+public:
     /// Make a deep copy clone of this Parameter
     std::shared_ptr<Parameter> clone() const;
 
