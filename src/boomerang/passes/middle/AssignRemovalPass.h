@@ -17,15 +17,14 @@
 using SharedExp = std::shared_ptr<class Exp>;
 
 
-/**
- * Removes unused or tautological assignments.
- */
-class AssignRemovalPass : public IPass
+/// Removes unused or tautological assignments.
+class AssignRemovalPass final : public IPass
 {
 public:
     AssignRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

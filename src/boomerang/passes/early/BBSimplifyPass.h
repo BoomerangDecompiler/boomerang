@@ -14,11 +14,15 @@
 
 
 /// Simplifies basic blocks of a function.
-class BBSimplifyPass : public IPass
+class BBSimplifyPass final : public IPass
 {
 public:
     BBSimplifyPass();
 
 public:
+    /// \copydoc IPass::isProcLocal
+    bool isProcLocal() const override { return true; }
+
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

@@ -13,16 +13,15 @@
 #include "boomerang/passes/Pass.h"
 
 
-/**
- * Removes unused local variables.
- * \note call the below after translating from SSA form
- * FIXME: this can be done before transforming out of SSA form now, surely...
- */
-class UnusedLocalRemovalPass : public IPass
+/// Removes unused local variables.
+/// \note call the below after translating from SSA form
+/// FIXME: this can be done before transforming out of SSA form now, surely...
+class UnusedLocalRemovalPass final : public IPass
 {
 public:
     UnusedLocalRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

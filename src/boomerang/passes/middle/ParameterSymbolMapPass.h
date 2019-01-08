@@ -13,11 +13,12 @@
 #include "boomerang/passes/Pass.h"
 
 
-class ParameterSymbolMapPass : public IPass
+class ParameterSymbolMapPass final : public IPass
 {
 public:
     ParameterSymbolMapPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

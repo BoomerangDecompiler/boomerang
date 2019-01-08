@@ -122,7 +122,7 @@ void UserProc::setStatus(ProcStatus s)
 
 void UserProc::setDecoded()
 {
-    setStatus(PROC_DECODED);
+    setStatus(ProcStatus::Decoded);
 }
 
 
@@ -1032,8 +1032,7 @@ bool UserProc::existsLocal(const QString &name) const
 
 QString UserProc::newLocalName(const SharedExp &e)
 {
-    QString tgt;
-    OStream ost(&tgt);
+    QString localName;
 
     if (e->isSubscript() && e->getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
@@ -1041,16 +1040,13 @@ QString UserProc::newLocalName(const SharedExp &e)
         int tag         = 0;
 
         do {
-            ost.flush();
-            tgt.clear();
-            ost << regName << "_" << ++tag;
-        } while (m_locals.find(tgt) != m_locals.end());
+            localName = QString("%1_%2").arg(regName).arg(++tag);
+        } while (m_locals.find(localName) != m_locals.end());
 
-        return tgt;
+        return localName;
     }
 
-    ost << "local" << m_nextLocal++;
-    return tgt;
+    return QString("local%1").arg(m_nextLocal++);
 }
 
 

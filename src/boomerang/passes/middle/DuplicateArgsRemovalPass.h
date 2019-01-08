@@ -14,11 +14,12 @@
 
 
 /// Eliminates duplicate arguments of calls.
-class DuplicateArgsRemovalPass : public IPass
+class DuplicateArgsRemovalPass final : public IPass
 {
 public:
     DuplicateArgsRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

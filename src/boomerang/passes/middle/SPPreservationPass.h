@@ -14,11 +14,12 @@
 
 
 /// Analyze whether the stack pointer is preserved by a function.
-class SPPreservationPass : public IPass
+class SPPreservationPass final : public IPass
 {
 public:
     SPPreservationPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

@@ -67,7 +67,10 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 ty = VoidType::get();
             }
 
-            LOG_MSG("Got type %1 for %2 from %3", ty->getCtype(), defdByS, s);
+            if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
+                LOG_MSG("Got type %1 for %2 from %3", ty->getCtype(), defdByS, s);
+            }
+
             FirstTypesMap::iterator ff = firstTypes.find(defdByS);
             SharedExp ref              = RefExp::get(defdByS, s);
 

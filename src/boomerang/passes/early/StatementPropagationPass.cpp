@@ -65,7 +65,6 @@ bool StatementPropagationPass::execute(UserProc *proc)
         }
     }
 
-    PassManager::get()->executePass(PassID::BBSimplify, proc);
     propagateToCollector(&proc->getUseCollector());
 
     return change || convert;

@@ -13,25 +13,24 @@
 #include "boomerang/passes/Pass.h"
 
 
-/**
- * Simplifies branch condions.
- * Example:
- * if (cond1) {
- *   if (cond2) {
- *     ...
- *   }
- * }
- *  ->
- * if (cond1 && cond2) {
- *   ...
- * }
- */
-class BranchAnalysisPass : public IPass
+/// Simplifies branch condions.
+/// Example:
+///   if (cond1) {
+///     if (cond2) {
+///       ...
+///     }
+///   }
+/// ->
+///   if (cond1 && cond2) {
+///     ...
+///   }
+class BranchAnalysisPass final : public IPass
 {
 public:
     BranchAnalysisPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:
