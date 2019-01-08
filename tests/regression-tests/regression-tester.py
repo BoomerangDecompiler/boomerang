@@ -337,9 +337,12 @@ def compare_directories(dir_expected, dir_actual):
                     tofile  =file_expected.name)
 
                 print("")
+                sys.stdout.flush()
                 for line in diff:
                     sys.stderr.write(line)
+                sys.stderr.flush()
                 print("")
+                sys.stdout.flush();
 
         for sub_dcmp in dcmp.subdirs.values():
             directories_equal &= compare_directories_internal(sub_dcmp)
@@ -418,6 +421,8 @@ def perform_smoke_tests(base_dir, test_input_base, test_list):
     test_results = defaultdict();
 
     sys.stdout.write("Testing for crashes ")
+    sys.stdout.flush()
+
     for test_file in test_list:
         input_file = os.path.join(test_input_base, test_file)
         output_dir = os.path.join(base_dir, "outputs", test_file)
