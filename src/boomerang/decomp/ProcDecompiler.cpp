@@ -90,8 +90,9 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
     Project *project = proc->getProg()->getProject();
 
-    LOG_MSG("%1 procedure '%2'", (proc->getStatus() >= ProcStatus::Visited)
-        ? "Re-visiting" : "Visiting", proc->getName());
+    LOG_MSG("%1 procedure '%2'",
+            (proc->getStatus() >= ProcStatus::Visited) ? "Re-visiting" : "Visiting",
+            proc->getName());
     project->alertDiscovered(proc);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
@@ -109,7 +110,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     if (proc->getStatus() < ProcStatus::Visited) {
-        proc->setStatus(ProcStatus::Visited); // We have at least visited this proc "on the way down"
+        proc->setStatus(
+            ProcStatus::Visited); // We have at least visited this proc "on the way down"
     }
 
     m_callStack.push_back(proc);
@@ -149,7 +151,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
             // check if the callee has already been visited but not done (apart from global
             // analyses). This means that we have found a new cycle or a part of an existing cycle
-            if ((callee->getStatus() >= ProcStatus::Visited) && (callee->getStatus() <= ProcStatus::MiddleDone)) {
+            if ((callee->getStatus() >= ProcStatus::Visited) &&
+                (callee->getStatus() <= ProcStatus::MiddleDone)) {
                 // if callee is in callStack
                 ProcList::iterator calleeIt = std::find(m_callStack.begin(), m_callStack.end(),
                                                         callee);
