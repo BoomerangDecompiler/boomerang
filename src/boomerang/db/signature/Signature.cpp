@@ -90,7 +90,7 @@ bool Signature::operator==(const Signature &other) const
 }
 
 
-bool Signature::operator<(const Signature& other) const
+bool Signature::operator<(const Signature &other) const
 {
     if (m_name != other.m_name) {
         return m_name < other.m_name;

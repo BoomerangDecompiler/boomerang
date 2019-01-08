@@ -32,7 +32,7 @@ bool Return::operator==(const Return &other) const
 }
 
 
-bool Return::operator<(const Return& other) const
+bool Return::operator<(const Return &other) const
 {
     if (*m_type != *other.m_type) {
         return *m_type < *other.m_type;
@@ -49,4 +49,3 @@ std::shared_ptr<Return> Return::clone() const
 {
     return std::make_shared<Return>(m_type->clone(), SharedExp(m_exp->clone()));
 }
-

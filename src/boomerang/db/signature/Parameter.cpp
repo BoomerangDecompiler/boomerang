@@ -40,7 +40,7 @@ bool Parameter::operator==(const Parameter &other) const
 }
 
 
-bool Parameter::operator<(const Parameter& other) const
+bool Parameter::operator<(const Parameter &other) const
 {
     if (*m_type != *other.m_type) {
         return *m_type < *other.m_type;
