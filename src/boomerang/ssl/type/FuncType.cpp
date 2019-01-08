@@ -42,6 +42,7 @@ bool FuncType::operator==(const Type &other) const
     if (!other.isFunc()) {
         return false;
     }
+
     const FuncType &otherFunc = static_cast<const FuncType &>(other);
 
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been
@@ -60,8 +61,14 @@ bool FuncType::operator<(const Type &other) const
         return getId() < other.getId();
     }
 
-    // FIXME: Need to compare signatures
-    return true;
+    // Note: Functions without signatures are less than functions with signatures
+    const FuncType &otherFunc = static_cast<const FuncType &>(other);
+    if (m_signature) {
+        return otherFunc.m_signature ? *m_signature < *otherFunc.m_signature : false;
+    }
+    else {
+        return false;
+    }
 }
 
 

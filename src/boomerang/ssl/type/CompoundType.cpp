@@ -236,18 +236,20 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 
 bool CompoundType::operator==(const Type &other) const
 {
-    if (!other.isCompound()) {
+    if (getId() != other.getId()) {
+        return false;
+    }
+    else if (getSize() != other.getSize()) {
         return false;
     }
 
-    const CompoundType &cother = static_cast<const CompoundType &>(other);
-
-    if (cother.m_types.size() != m_types.size()) {
+    const CompoundType &otherCompound = static_cast<const CompoundType &>(other);
+    if (getNumMembers() != otherCompound.getNumMembers()) {
         return false;
     }
 
-    for (size_t i = 0; i < m_types.size(); i++) {
-        if (!(*m_types[i] == *cother.m_types[i])) {
+    for (int i = 0; i < getNumMembers(); ++i) {
+        if (*m_types[i] != *otherCompound.m_types[i]) {
             return false;
         }
     }
@@ -262,8 +264,23 @@ bool CompoundType::operator<(const Type &other) const
         return getId() < other.getId();
     }
 
-    // FIXME This won't separate structs of the same size!! MVE
-    return getSize() < other.getSize();
+    if (getSize() != other.getSize()) {
+        return getSize() < other.getSize();
+    }
+
+    const CompoundType &otherCompound = static_cast<const CompoundType &>(other);
+    if (getNumMembers() != otherCompound.getNumMembers()) {
+        return getNumMembers() < otherCompound.getNumMembers();
+    }
+
+    for (int i = 0; i < getNumMembers(); ++i) {
+        const bool less = *m_types[i] < *otherCompound.m_types[i];
+        if (!less) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

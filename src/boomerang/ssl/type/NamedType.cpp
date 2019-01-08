@@ -49,6 +49,16 @@ bool NamedType::operator==(const Type &other) const
 }
 
 
+bool NamedType::operator<(const Type &other) const
+{
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
+    }
+
+    return m_name < static_cast<const NamedType &>(other).m_name;
+}
+
+
 SharedType NamedType::resolvesTo() const
 {
     SharedType ty = getNamedType(m_name);
@@ -58,16 +68,6 @@ SharedType NamedType::resolvesTo() const
     }
 
     return ty;
-}
-
-
-bool NamedType::operator<(const Type &other) const
-{
-    if (m_id != other.getId()) {
-        return m_id < other.getId();
-    }
-
-    return m_name < static_cast<const NamedType &>(other).m_name;
 }
 
 
