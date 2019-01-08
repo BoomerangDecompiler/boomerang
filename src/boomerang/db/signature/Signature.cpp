@@ -71,6 +71,10 @@ std::shared_ptr<Signature> Signature::clone() const
 
 bool Signature::operator==(const Signature &other) const
 {
+    if (m_name != other.m_name) {
+        return false;
+    }
+
     if (m_params.size() != other.m_params.size() || m_returns.size() != other.m_returns.size()) {
         return false;
     }
@@ -88,6 +92,10 @@ bool Signature::operator==(const Signature &other) const
 
 bool Signature::operator<(const Signature& other) const
 {
+    if (m_name != other.m_name) {
+        return m_name < other.m_name;
+    }
+
     if (m_params.size() != other.m_params.size()) {
         return m_params.size() < other.m_params.size();
     }
