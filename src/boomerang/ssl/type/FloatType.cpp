@@ -120,8 +120,11 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
 
 bool FloatType::isCompatible(const Type &other, bool /*all*/) const
 {
-    if (other.resolvesToVoid() || other.resolvesToFloat()) {
+    if (other.resolvesToVoid()) {
         return true;
+    }
+    else if (other.resolvesToFloat()) {
+        return getSize() == other.getSize();
     }
     else if (other.resolvesToUnion()) {
         return other.isCompatibleWith(*this);

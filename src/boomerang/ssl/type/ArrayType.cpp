@@ -82,22 +82,23 @@ size_t ArrayType::getSize() const
 
 bool ArrayType::operator==(const Type &other) const
 {
-    return other.isArray() && *m_baseType == *static_cast<const ArrayType &>(other).m_baseType &&
-           static_cast<const ArrayType &>(other).m_length == m_length;
+    if (!other.isArray()) {
+        return false;
+    }
+
+    const ArrayType &otherArr = static_cast<const ArrayType &>(other);
+    return m_length == otherArr.getLength() && *m_baseType == *otherArr.getBaseType();
 }
 
 
 bool ArrayType::operator<(const Type &other) const
 {
-    if (m_id < other.getId()) {
-        return true;
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
-    if (m_id > other.getId()) {
-        return false;
-    }
-
-    return (*m_baseType < *static_cast<const ArrayType &>(other).m_baseType);
+    const ArrayType &otherArr = static_cast<const ArrayType &>(other);
+    return *m_baseType < *otherArr.getBaseType() || m_length < otherArr.getLength();
 }
 
 

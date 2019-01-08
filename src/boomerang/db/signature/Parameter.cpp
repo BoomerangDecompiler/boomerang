@@ -23,17 +23,36 @@ Parameter::Parameter(SharedType type, const QString &name, SharedExp exp, const 
 
 bool Parameter::operator==(const Parameter &other) const
 {
-    if (!(*m_type == *other.m_type)) {
+    if (*m_type != *other.m_type) {
         return false;
     }
 
     // Do we really care about a parameter's name?
-    if (!(m_name == other.m_name)) {
+    if (m_name != other.m_name) {
         return false;
     }
 
-    if (!(*m_exp == *other.m_exp)) {
+    if (*m_exp != *other.m_exp) {
         return false;
+    }
+
+    return true;
+}
+
+
+bool Parameter::operator<(const Parameter &other) const
+{
+    if (*m_type != *other.m_type) {
+        return *m_type < *other.m_type;
+    }
+
+    // Do we really care about a parameter's name?
+    if (m_name != other.m_name) {
+        return m_name < other.m_name;
+    }
+
+    if (*m_exp != *other.m_exp) {
+        return *m_exp < *other.m_exp;
     }
 
     return true;

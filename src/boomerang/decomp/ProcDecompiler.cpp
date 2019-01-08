@@ -185,9 +185,12 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                 LOG_VERBOSE("Preparing to decompile callee '%1' of '%2'", callee->getName(),
                             proc->getName());
 
-                callee->promoteSignature();
+                if (project->getSettings()->usePromotion) {
+                    callee->promoteSignature();
+                }
+
                 tryDecompileRecursive(callee);
-                // Child has at least done middleDecompile(), possibly more
+                // Callee has at least done middleDecompile(), possibly more
                 call->setCalleeReturn(callee->getRetStmt());
 
                 if (proc->getStatus() != PROC_INCYCLE &&

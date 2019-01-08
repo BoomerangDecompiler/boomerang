@@ -27,26 +27,34 @@
 #include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
 
 
+// clang-format off
 // Switch High Level patterns
 
 // With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
-static const SharedConstExp form_a = RefExp::get(
-    Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), STMT_WILD), Terminal::get(opWild)),
-    STMT_WILD);
+static const SharedConstExp form_a =
+    RefExp::get(Binary::get(opArrayIndex,
+                            RefExp::get(Terminal::get(opWild), STMT_WILD),
+                            Terminal::get(opWild)),
+                STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ]
 static const SharedConstExp form_A = Location::memOf(
-    Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
+    Binary::get(opPlus,
+                Binary::get(opMult,
+                            Terminal::get(opWild),
+                            Const::get(4)),
                 Terminal::get(opWildIntConst)));
 
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static const SharedConstExp form_o = RefExp::get(
-    Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), STMT_WILD), Terminal::get(opWild)),
-    STMT_WILD);
+static const SharedConstExp form_o =
+    RefExp::get(Binary::get(opArrayIndex,
+                            RefExp::get(Terminal::get(opWild), STMT_WILD),
+                            Terminal::get(opWild)),
+                STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ] + T
 static const SharedConstExp form_O = Binary::get(
@@ -57,22 +65,31 @@ static const SharedConstExp form_O = Binary::get(
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static const SharedConstExp form_R = Binary::get(
-    opPlus, Terminal::get(opPC),
-    Location::memOf(
-        Binary::get(opPlus, Terminal::get(opPC),
-                    Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
-                                Const::get(opWildIntConst)))));
+static const SharedConstExp form_R =
+    Binary::get(opPlus,
+                Terminal::get(opPC),
+                Location::memOf(Binary::get(opPlus,
+                                            Terminal::get(opPC),
+                                            Binary::get(opPlus,
+                                                        Binary::get(opMult,
+                                                                    Terminal::get(opWild),
+                                                                    Const::get(4)),
+                                                        Const::get(opWildIntConst)))));
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static const SharedConstExp form_r = Binary::get(
-    opPlus, Terminal::get(opPC),
-    Location::memOf(
-        Binary::get(opPlus, Terminal::get(opPC),
-                    Binary::get(opMinus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
-                                Terminal::get(opWildIntConst)))));
+static const SharedConstExp form_r =
+    Binary::get(opPlus,
+                Terminal::get(opPC),
+                Location::memOf(Binary::get(opPlus,
+                                            Terminal::get(opPC),
+                                            Binary::get(opMinus,
+                                                        Binary::get(opMult,
+                                                                    Terminal::get(opWild),
+                                                                    Const::get(4)),
+                                                        Terminal::get(opWildIntConst)))));
 
+// clang-format on
 
 struct SwitchForm
 {
@@ -357,11 +374,11 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                         if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(),
                                            prog->getLimitTextHigh())) {
                             if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-                                LOG_MSG("Truncating type A indirect jump array to %1 entries "
-                                        "due to finding an array entry pointing outside valid "
-                                        "code; %2 isn't in %3..%4",
-                                        entryIdx, switchEntryAddr, prog->getLimitTextLow(),
-                                        prog->getLimitTextHigh());
+                                LOG_WARN("Truncating type A indirect jump array to %1 entries "
+                                         "due to finding an array entry pointing outside valid "
+                                         "code; %2 isn't in %3..%4",
+                                         entryIdx, switchEntryAddr, prog->getLimitTextLow(),
+                                         prog->getLimitTextHigh());
                             }
 
                             // Found an array that isn't a pointer-to-code. Assume array has ended.

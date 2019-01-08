@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     int local0; 		// m[g1 + 4]
     __size32 local1; 		// m[g1 - 4]
     int local2; 		// m[g1 - 24]
-    union { void *; int; } local3; 		// m[g1 - 32]
+    union { int; void *; } local3; 		// m[g1 - 32]
 
     (*/* machine specific */ (int) CTR)(0x10000418, 0x10000000, g1 - 32, /* machine specific */ (int) LR, g31, 0x10000418, g1, argc, argv);
     *(__size32*)(g31 + 8) = 0x10000450;

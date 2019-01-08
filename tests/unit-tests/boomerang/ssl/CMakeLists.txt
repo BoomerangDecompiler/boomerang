@@ -15,6 +15,7 @@ set(TESTS
     type/MeetTest
     RegDBTest
     RTLTest
+    type/UnionTypeTest
 )
 
 # These tests require the ELF loader

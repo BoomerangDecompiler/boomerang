@@ -57,6 +57,8 @@ public:
     virtual bool operator==(const Signature &other) const;
     bool operator!=(const Signature &other) const { return !(*this == other); }
 
+    bool operator<(const Signature &other) const;
+
     /// clone this signature
     virtual std::shared_ptr<Signature> clone() const;
 

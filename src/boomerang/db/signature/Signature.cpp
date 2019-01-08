@@ -71,6 +71,10 @@ std::shared_ptr<Signature> Signature::clone() const
 
 bool Signature::operator==(const Signature &other) const
 {
+    if (m_name != other.m_name) {
+        return false;
+    }
+
     if (m_params.size() != other.m_params.size() || m_returns.size() != other.m_returns.size()) {
         return false;
     }
@@ -83,6 +87,35 @@ bool Signature::operator==(const Signature &other) const
            std::equal(m_returns.begin(), m_returns.end(), other.m_returns.begin(),
                       [](const std::shared_ptr<Return> &ret,
                          const std::shared_ptr<Return> &otherRet) { return *ret == *otherRet; });
+}
+
+
+bool Signature::operator<(const Signature &other) const
+{
+    if (m_name != other.m_name) {
+        return m_name < other.m_name;
+    }
+
+    if (m_params.size() != other.m_params.size()) {
+        return m_params.size() < other.m_params.size();
+    }
+    else if (m_returns.size() != m_params.size()) {
+        return m_returns.size() < other.m_returns.size();
+    }
+
+    for (size_t i = 0; i < m_params.size(); ++i) {
+        if (*m_params[i] != *other.m_params[i]) {
+            return *m_params[i] < *other.m_params[i];
+        }
+    }
+
+    for (size_t i = 0; i < m_returns.size(); ++i) {
+        if (*m_returns[i] != *other.m_returns[i]) {
+            return *m_returns[i] < *other.m_returns[i];
+        }
+    }
+
+    return false; // equal
 }
 
 
@@ -366,23 +399,23 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 {
     // FIXME: the whole promotion idea needs a redesign...
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(*this));
+        return std::make_shared<CallingConvention::Win32Signature>(*this);
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PentiumSignature>(*this);
     }
 
     if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::SPARCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::SPARCSignature>(*this);
     }
 
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PPCSignature>(*this);
     }
 
     if (CallingConvention::StdC::ST20Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(*this));
+        return std::make_shared<CallingConvention::StdC::ST20Signature>(*this);
     }
 
     return shared_from_this();

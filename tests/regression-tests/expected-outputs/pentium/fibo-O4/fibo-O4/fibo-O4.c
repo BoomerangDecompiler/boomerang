@@ -5,7 +5,7 @@ __size32 fib(int param1);
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
-    union { void *; int; } eax_1; 		// r24{6}
+    union { int; void *; } eax_1; 		// r24{6}
     union { int; void *; } local0; 		// m[esp - 8]
 
     printf("Input number: ");

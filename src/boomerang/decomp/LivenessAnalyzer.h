@@ -29,8 +29,8 @@ public:
     bool calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserProc *proc);
 
     /// Locations that are live at the end of this BB are the union of the locations that are live
-    /// at the start of its successors liveout gets all the livenesses, and phiLocs gets a subset of
-    /// these, which are due to phi statements at the top of successors
+    /// at the start of its successors. \p live gets all the livenesses,
+    /// and phiLocs gets a subset of these, which are due to phi statements at the top of successors
     void getLiveOut(BasicBlock *bb, LocationSet &live, LocationSet &phiLocs);
 
 private:

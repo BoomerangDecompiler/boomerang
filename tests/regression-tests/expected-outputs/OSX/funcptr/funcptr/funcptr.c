@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     __size32 local1; 		// m[g1 - 4]
     __size32 local2; 		// m[g1 - 8]
     __size32 local3; 		// m[g1 - 32]
-    union { void *; int; } local4; 		// m[g1 - 96]
+    union { int; void *; } local4; 		// m[g1 - 96]
     __size32 tmp + 30; 		// r[tmp + 30]
 
     g0 = *(/* machine specific */ (int) LR + 728);

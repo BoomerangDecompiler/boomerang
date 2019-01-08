@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
     union { int; char *; } local2; 		// m[o6 - 44]
     char local3; 		// m[o6 - 128]
     __size32 local4; 		// m[o6 - 20]
-    union { char *; int; } *local5; 		// m[o6 - 24]
-    union { char *; int; } local6; 		// m[o6 - 40]
+    union { int; char *; } *local5; 		// m[o6 - 24]
+    union { int; char *; } local6; 		// m[o6 - 40]
     union { int; char *; } local7; 		// m[o6 - 28]
     __size32 local8; 		// m[o6 - 20]{10}
     int o0; 		// r8

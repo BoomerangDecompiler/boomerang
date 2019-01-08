@@ -49,18 +49,6 @@ bool NamedType::operator==(const Type &other) const
 }
 
 
-SharedType NamedType::resolvesTo() const
-{
-    SharedType ty = getNamedType(m_name);
-
-    if (ty && ty->isNamed()) {
-        return std::static_pointer_cast<NamedType>(ty)->resolvesTo();
-    }
-
-    return ty;
-}
-
-
 bool NamedType::operator<(const Type &other) const
 {
     if (m_id != other.getId()) {
@@ -68,6 +56,18 @@ bool NamedType::operator<(const Type &other) const
     }
 
     return m_name < static_cast<const NamedType &>(other).m_name;
+}
+
+
+SharedType NamedType::resolvesTo() const
+{
+    SharedType ty = getNamedType(m_name);
+
+    if (ty && ty->isNamed()) {
+        return ty->as<NamedType>()->resolvesTo();
+    }
+
+    return ty;
 }
 
 

@@ -47,6 +47,7 @@ bool CharType::operator<(const Type &other) const
     return m_id < other.getId();
 }
 
+
 QString CharType::getCtype(bool /*final*/) const
 {
     return "char";

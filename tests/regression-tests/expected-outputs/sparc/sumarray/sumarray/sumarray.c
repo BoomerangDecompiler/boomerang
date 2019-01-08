@@ -4,7 +4,7 @@ int main(int argc, char *argv[]);
 /** address: 0x0001069c */
 int main(int argc, char *argv[])
 {
-    union { char *[] *; int; } local0; 		// m[o6 - 20]
+    union { int; char *[] *; } local0; 		// m[o6 - 20]
     int local1; 		// m[o6 - 24]
 
     local0 = 0;

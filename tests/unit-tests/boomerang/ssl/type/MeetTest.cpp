@@ -132,7 +132,8 @@ void MeetTest::testMeet_data()
     TEST_MEET(
         VoidType::get(),
         UnionType::get({ IntegerType::get(32, Sign::Signed), VoidType::get() }),
-        UnionType::get({ IntegerType::get(32, Sign::Signed), VoidType::get() }));
+        IntegerType::get(32, Sign::Signed));
+
 
     // Array
     TEST_MEET(
@@ -165,6 +166,7 @@ void MeetTest::testMeet_data()
         FloatType::get(32),
         UnionType::get({ ArrayType::get(IntegerType::get(8, Sign::Unsigned), 4), FloatType::get(32) }));
 
+
     // Boolean
     TEST_MEET(
         BooleanType::get(),
@@ -175,6 +177,7 @@ void MeetTest::testMeet_data()
         BooleanType::get(),
         CharType::get(),
         UnionType::get({ BooleanType::get(), CharType::get() }));
+
 
     // Char
     TEST_MEET(
