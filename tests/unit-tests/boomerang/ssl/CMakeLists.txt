@@ -14,6 +14,7 @@ set(TESTS
     parser/ParserTest
     type/ArrayTypeTest
     type/BooleanTypeTest
+    type/CharTypeTest
     type/MeetTest
     RegDBTest
     RTLTest
