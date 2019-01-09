@@ -173,13 +173,6 @@ public:
      */
     static void clearNamedTypes();
 
-    /**
-     * Given the name of a temporary variable, return its Type
-     * \param   name reference to a string (e.g. "tmp", "tmpd")
-     * \returns Ptr to a new Type object
-     */
-    static SharedType getTempType(const QString &name);
-
     /// Create a union of this Type and other. Set \p changed to true if any change
     SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 

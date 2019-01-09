@@ -115,29 +115,7 @@ SharedType Type::getNamedType(const QString &name)
 }
 
 
-SharedType Type::getTempType(const QString &name)
-{
-    SharedType ty;
-    QChar ctype = ' ';
 
-    if (name.size() > 3) {
-        ctype = name[3];
-    }
-
-    switch (ctype.toLatin1()) {
-    // They are all int32, except for a few specials
-    case 'f': ty = FloatType::get(32); break;
-    case 'd': ty = FloatType::get(64); break;
-    case 'F': ty = FloatType::get(80); break;
-    case 'D': ty = FloatType::get(128); break;
-    case 'l': ty = IntegerType::get(64); break;
-    case 'h': ty = IntegerType::get(16); break;
-    case 'b': ty = IntegerType::get(8); break;
-    default: ty = IntegerType::get(32); break;
-    }
-
-    return ty;
-}
 
 
 void Type::clearNamedTypes()
