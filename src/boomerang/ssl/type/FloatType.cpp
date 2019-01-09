@@ -77,7 +77,8 @@ QString FloatType::getCtype(bool /*final*/) const
     switch (m_size) {
     case 32: return "float";
     case 64: return "double";
-    default: return "double";
+    case 80: return "long double";
+    default: return QString("__float%1").arg(m_size);
     }
 }
 
@@ -105,7 +106,7 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
 }
 
 
-bool FloatType::isCompatible(const Type &other, bool /*all*/) const
+bool FloatType::isCompatible(const Type &other, bool all) const
 {
     if (other.resolvesToVoid()) {
         return true;
@@ -116,7 +117,7 @@ bool FloatType::isCompatible(const Type &other, bool /*all*/) const
     else if (other.resolvesToUnion()) {
         return other.isCompatibleWith(*this);
     }
-    else if (other.resolvesToArray()) {
+    else if (!all && other.resolvesToArray()) {
         return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
     else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == m_size) {

@@ -15,6 +15,7 @@ set(TESTS
     type/ArrayTypeTest
     type/BooleanTypeTest
     type/CharTypeTest
+    type/FloatTypeTest
     type/MeetTest
     RegDBTest
     RTLTest
