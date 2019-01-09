@@ -127,7 +127,7 @@ bool PhiAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) cons
 
 bool PhiAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
-    bool change;
+    bool change = false;
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 
