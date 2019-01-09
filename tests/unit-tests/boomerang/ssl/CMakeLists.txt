@@ -13,6 +13,7 @@ set(TESTS
     exp/ExpTest
     parser/ParserTest
     type/ArrayTypeTest
+    type/BooleanTypeTest
     type/MeetTest
     RegDBTest
     RTLTest
