@@ -56,22 +56,8 @@ Type::~Type()
 
 bool Type::isCString() const
 {
-    if (!resolvesToPointer()) {
-        return false;
-    }
-
-    SharedType p = as<PointerType>()->getPointsTo();
-
-    if (p->resolvesToChar()) {
-        return true;
-    }
-
-    if (!p->resolvesToArray()) {
-        return false;
-    }
-
-    p = p->as<ArrayType>()->getBaseType();
-    return p->resolvesToChar();
+    return (resolvesToPointer() && this->as<PointerType>()->getPointsTo()->resolvesToChar()) ||
+           (resolvesToArray() && this->as<ArrayType>()->getBaseType()->resolvesToChar());
 }
 
 
@@ -113,9 +99,6 @@ SharedType Type::getNamedType(const QString &name)
 
     return (iter != g_namedTypes.end()) ? *iter : nullptr;
 }
-
-
-
 
 
 void Type::clearNamedTypes()

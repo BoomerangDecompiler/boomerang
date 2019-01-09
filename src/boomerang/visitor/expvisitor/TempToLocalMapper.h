@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/ssl/type/Type.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 class UserProc;

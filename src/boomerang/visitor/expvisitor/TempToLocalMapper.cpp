@@ -37,7 +37,7 @@ bool TempToLocalMapper::preVisit(const std::shared_ptr<Location> &exp, bool &vis
 }
 
 
-SharedType TempToLocalMapper::getTempType(const QString& name)
+SharedType TempToLocalMapper::getTempType(const QString &name)
 {
     if (name.size() <= 3) {
         return IntegerType::get(32);
