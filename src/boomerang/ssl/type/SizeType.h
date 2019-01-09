@@ -21,7 +21,7 @@ class BOOMERANG_API SizeType : public Type
 {
 public:
     SizeType();
-    SizeType(unsigned sz);
+    SizeType(Size sz);
 
     SizeType(const SizeType &other) = default;
     SizeType(SizeType &&other)      = default;
@@ -46,10 +46,10 @@ public:
     virtual bool operator<(const Type &other) const override;
 
     /// \copydoc Type::getSize
-    virtual size_t getSize() const override;
+    virtual Size getSize() const override;
 
     /// \copydoc Type::setSize
-    virtual void setSize(size_t sz) override;
+    virtual void setSize(Size sz) override;
 
     /// \copydoc Type::isComplete
     virtual bool isComplete() override;
@@ -65,5 +65,5 @@ protected:
     virtual bool isCompatible(const Type &other, bool) const override;
 
 private:
-    size_t m_size; ///< Size in bits, e.g. 16
+    Size m_size; ///< Size in bits, e.g. 16
 };

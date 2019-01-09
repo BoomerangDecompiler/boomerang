@@ -31,7 +31,7 @@ SharedType FuncType::clone() const
 }
 
 
-size_t FuncType::getSize() const
+Type::Size FuncType::getSize() const
 {
     return 0; /* always nagged me */
 }

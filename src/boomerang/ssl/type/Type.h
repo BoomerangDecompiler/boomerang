@@ -10,6 +10,7 @@
 #pragma once
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
@@ -65,6 +66,9 @@ enum class Sign : int8_t
  */
 class BOOMERANG_API Type : public std::enable_shared_from_this<Type>
 {
+public:
+    typedef uint64 Size;
+
 public:
     // Constructors
     Type(TypeClass id);
@@ -146,14 +150,14 @@ public:
     virtual SharedType clone() const = 0;
 
     /// \returns the size (in bits) of this type.
-    virtual size_t getSize() const = 0;
+    virtual Size getSize() const = 0;
 
     /// \returns the size (in bytes) of this type.
     /// Does not include struct padding.
-    size_t getSizeInBytes() const { return (getSize() + 7) / 8; }
+    Size getSizeInBytes() const { return (getSize() + 7) / 8; }
 
     /// Changes the bit size of this type.
-    virtual void setSize(size_t /*sz*/) { assert(false); /* Redefined in subclasses. */ }
+    virtual void setSize(Size newSize);
 
 public:
     /// Resolve the original type across named types.

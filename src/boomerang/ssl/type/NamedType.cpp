@@ -30,7 +30,7 @@ SharedType NamedType::clone() const
 }
 
 
-size_t NamedType::getSize() const
+Type::Size NamedType::getSize() const
 {
     SharedType ty = resolvesTo();
 

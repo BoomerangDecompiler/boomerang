@@ -37,7 +37,7 @@ SharedType CompoundType::clone() const
 }
 
 
-size_t CompoundType::getSize() const
+Type::Size CompoundType::getSize() const
 {
     int n = 0;
 

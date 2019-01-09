@@ -63,16 +63,16 @@ SharedType UnionType::clone() const
 }
 
 
-size_t UnionType::getSize() const
+Type::Size UnionType::getSize() const
 {
-    size_t max = 0;
+    Size max = 0;
 
     for (auto &[ty, name] : m_entries) {
         Q_UNUSED(name);
         max = std::max(max, ty->getSize());
     }
 
-    return std::max(max, (size_t)1);
+    return std::max(max, 1UL);
 }
 
 

@@ -47,13 +47,13 @@ SharedType PointerType::clone() const
 }
 
 
-size_t PointerType::getSize() const
+Type::Size PointerType::getSize() const
 {
     return STD_SIZE;
 }
 
 
-void PointerType::setSize(size_t sz)
+void PointerType::setSize(Type::Size sz)
 {
     Q_UNUSED(sz);
     assert(sz == STD_SIZE);

@@ -35,8 +35,8 @@ size_t ArrayType::convertLength(SharedType b) const
     // MVE: not sure if this is always the right thing to do
     if (m_length != ARRAY_UNBOUNDED) {
         // Old base size (one element) in bytes. Count void as size 1
-        const size_t oldSize     = std::max((size_t)1, m_baseType->getSize() / 8) * m_length;
-        const size_t newBaseSize = std::max((size_t)1, b->getSize() / 8);
+        const Size oldSize     = std::max(1UL, m_baseType->getSize() / 8) * m_length;
+        const Size newBaseSize = std::max(1UL, b->getSize() / 8);
         return oldSize / newBaseSize; // Preserve same byte size for array
     }
 
@@ -48,14 +48,14 @@ void ArrayType::setBaseType(SharedType b)
 {
     // MVE: not sure if this is always the right thing to do
     if (m_baseType && m_length != ARRAY_UNBOUNDED) {
-        size_t baseSize = m_baseType->getSize() / 8; // Old base size (one element) in bytes
+        Size baseSize = m_baseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
             baseSize = 1; // Count void as size 1
         }
 
         baseSize *= m_length; // Old base size (length elements) in bytes
-        size_t newElementSize = b->getSize() / 8;
+        Size newElementSize = b->getSize() / 8;
 
         if (newElementSize == 0) {
             newElementSize = 1;
@@ -74,7 +74,7 @@ SharedType ArrayType::clone() const
 }
 
 
-size_t ArrayType::getSize() const
+Type::Size ArrayType::getSize() const
 {
     return m_baseType->getSize() * getLength();
 }

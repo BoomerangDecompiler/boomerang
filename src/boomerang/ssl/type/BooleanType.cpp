@@ -29,7 +29,7 @@ SharedType BooleanType::clone() const
 }
 
 
-size_t BooleanType::getSize() const
+Type::Size BooleanType::getSize() const
 {
     return 1;
 }

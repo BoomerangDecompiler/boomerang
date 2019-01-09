@@ -30,7 +30,7 @@ SharedType CharType::clone() const
 }
 
 
-size_t CharType::getSize() const
+Type::Size CharType::getSize() const
 {
     return 8;
 }

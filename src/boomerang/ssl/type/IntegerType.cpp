@@ -13,15 +13,15 @@
 #include "boomerang/util/log/Log.h"
 
 
-IntegerType::IntegerType(unsigned int NumBits, Sign sign)
+IntegerType::IntegerType(Size numBits, Sign sign)
     : Type(TypeClass::Integer)
+    , m_size(numBits)
+    , m_sign(sign)
 {
-    m_size = NumBits;
-    m_sign = sign;
 }
 
 
-std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, Sign sign)
+std::shared_ptr<IntegerType> IntegerType::get(Size numBits, Sign sign)
 {
     return std::make_shared<IntegerType>(numBits, sign);
 }
@@ -33,10 +33,11 @@ SharedType IntegerType::clone() const
 }
 
 
-size_t IntegerType::getSize() const
+Type::Size IntegerType::getSize() const
 {
     return m_size;
 }
+
 
 void IntegerType::hintAsSigned()
 {

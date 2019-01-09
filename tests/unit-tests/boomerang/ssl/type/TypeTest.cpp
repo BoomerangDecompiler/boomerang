@@ -71,7 +71,7 @@ std::unique_ptr<ComplexTypeCompList> compForAddress(Address addr, DataIntervalMa
         }
         else if (curType->isArray()) {
             curType = curType->as<ArrayType>()->getBaseType();
-            unsigned baseSize = curType->getSize();
+            Type::Size baseSize = curType->getSize();
             unsigned index    = bitOffset / baseSize;
             startCurrent += index * baseSize / 8;
             ComplexTypeComp ctc;

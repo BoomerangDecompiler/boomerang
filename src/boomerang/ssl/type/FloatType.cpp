@@ -13,14 +13,14 @@
 #include "boomerang/ssl/type/SizeType.h"
 
 
-FloatType::FloatType(int sz)
+FloatType::FloatType(Size sz)
     : Type(TypeClass::Float)
     , m_size(sz)
 {
 }
 
 
-std::shared_ptr<FloatType> FloatType::get(int sz)
+std::shared_ptr<FloatType> FloatType::get(Size sz)
 {
     return std::make_shared<FloatType>(sz);
 }
@@ -37,13 +37,13 @@ SharedType FloatType::clone() const
 }
 
 
-size_t FloatType::getSize() const
+Type::Size FloatType::getSize() const
 {
     return m_size;
 }
 
 
-void FloatType::setSize(size_t sz)
+void FloatType::setSize(Type::Size sz)
 {
     m_size = sz;
 }
@@ -89,7 +89,7 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
         return const_cast<FloatType *>(this)->shared_from_this();
     }
     else if (other->resolvesToFloat()) {
-        const size_t newSize = std::max(getSize(), other->getSize());
+        const Size newSize = std::max(getSize(), other->getSize());
         if (newSize != getSize()) {
             changed = true;
             return FloatType::get(newSize);

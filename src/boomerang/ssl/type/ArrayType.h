@@ -54,7 +54,7 @@ public:
     virtual SharedType clone() const override;
 
     /// \copydoc Type::getSize
-    virtual size_t getSize() const override;
+    virtual Size getSize() const override;
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;

@@ -54,6 +54,12 @@ Type::~Type()
 }
 
 
+void Type::setSize(Type::Size)
+{
+    assert(false); /* Redefined in subclasses. */
+}
+
+
 bool Type::isCString() const
 {
     return (resolvesToPointer() && this->as<PointerType>()->getPointsTo()->resolvesToChar()) ||
