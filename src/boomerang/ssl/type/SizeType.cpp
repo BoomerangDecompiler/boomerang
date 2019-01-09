@@ -20,7 +20,7 @@ SizeType::SizeType()
 }
 
 
-SizeType::SizeType(Size sz)
+SizeType::SizeType(Type::Size sz)
     : Type(TypeClass::Size)
     , m_size(sz)
 {
@@ -60,7 +60,7 @@ bool SizeType::operator<(const Type &other) const
 }
 
 
-std::shared_ptr<SizeType> SizeType::get(unsigned int sz)
+std::shared_ptr<SizeType> SizeType::get(Type::Size sz)
 {
     return std::make_shared<SizeType>(sz);
 }

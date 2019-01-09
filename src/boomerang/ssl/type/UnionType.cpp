@@ -72,7 +72,7 @@ Type::Size UnionType::getSize() const
         max = std::max(max, ty->getSize());
     }
 
-    return std::max(max, 1UL);
+    return std::max(max, (Size)1);
 }
 
 

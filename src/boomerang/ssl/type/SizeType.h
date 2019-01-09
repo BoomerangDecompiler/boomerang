@@ -33,7 +33,7 @@ public:
 
 public:
     static std::shared_ptr<SizeType> get();
-    static std::shared_ptr<SizeType> get(unsigned sz);
+    static std::shared_ptr<SizeType> get(Size sz);
 
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
