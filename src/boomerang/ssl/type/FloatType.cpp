@@ -82,19 +82,6 @@ QString FloatType::getCtype(bool /*final*/) const
 }
 
 
-QString FloatType::getTempName() const
-{
-    switch (m_size) {
-    case 32: return "tmpf";
-    case 64: return "tmpd";
-    case 80: return "tmpF";
-    case 128: return "tmpD";
-    }
-
-    return "tmp";
-}
-
-
 SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {

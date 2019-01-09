@@ -140,12 +140,6 @@ SharedType Type::getTempType(const QString &name)
 }
 
 
-QString Type::getTempName() const
-{
-    return "tmp"; // what else can we do? (besides panic)
-}
-
-
 void Type::clearNamedTypes()
 {
     g_namedTypes.clear();

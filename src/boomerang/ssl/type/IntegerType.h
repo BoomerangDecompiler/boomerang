@@ -74,9 +74,6 @@ public:
     /// \coypdoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
 
-    /// \copydoc Type::getTempName
-    virtual QString getTempName() const override;
-
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 

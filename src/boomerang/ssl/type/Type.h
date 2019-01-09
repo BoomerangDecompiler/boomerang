@@ -183,9 +183,8 @@ public:
     /// Create a union of this Type and other. Set \p changed to true if any change
     SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 
-    /// \param size Size in bits
-    /// \return a new Bool/Char/Int
-    static SharedType newIntegerLikeType(int size, Sign signedness);
+    /// \returns a new Bool/Char/Int
+    static SharedType newIntegerLikeType(int sizeInBits, Sign signedness);
 
 public:
     QString toString() const;
@@ -193,14 +192,6 @@ public:
     /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
     /// information. When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
-
-    /**
-     * Return a minimal temporary name for this type. It'd be even
-     * nicer to return a unique name, but we don't know scope at
-     * this point, and even so we could still clash with a user-defined
-     * name later on. :(
-     */
-    virtual QString getTempName() const; // Get a temporary name for the type
 
     /**
      * For data-flow-based type analysis only: implement the meet operator.

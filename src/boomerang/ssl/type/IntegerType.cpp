@@ -84,20 +84,6 @@ bool IntegerType::operator<(const Type &other) const
 }
 
 
-QString IntegerType::getTempName() const
-{
-    switch (m_size) {
-    case 1: /* Treat as a tmpb */
-    case 8: return "tmpb";
-    case 16: return "tmph";
-    case 32: return "tmpi";
-    case 64: return "tmpl";
-    }
-
-    return "tmp";
-}
-
-
 QString IntegerType::getCtype(bool final) const
 {
     if (isMaybeSigned()) {
