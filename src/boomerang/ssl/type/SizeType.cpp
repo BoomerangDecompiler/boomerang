@@ -133,7 +133,7 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
         return other->clone();
     }
-    else if (other->resolvesToChar() && getSize() == other->getSize()) {
+    else if (other->resolvesToChar() && other->getSize() <= getSize()) {
         changed = true;
         return other->clone();
     }

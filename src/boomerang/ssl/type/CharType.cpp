@@ -66,7 +66,7 @@ SharedType CharType::meetWith(SharedType other, bool &changed, bool useHighestPt
         return other->clone();
     }
 
-    if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == 8)) {
+    if (other->resolvesToSize() && getSize() <= (other->as<SizeType>()->getSize())) {
         return const_cast<CharType *>(this)->shared_from_this();
     }
 
