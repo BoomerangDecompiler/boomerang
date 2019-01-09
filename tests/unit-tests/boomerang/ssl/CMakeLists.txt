@@ -12,6 +12,7 @@ include(boomerang-utils)
 set(TESTS
     exp/ExpTest
     parser/ParserTest
+    type/ArrayTypeTest
     type/MeetTest
     RegDBTest
     RTLTest

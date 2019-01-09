@@ -47,11 +47,9 @@ public:
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
     /// \copydoc Type::isCompatibleWith
     virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
-public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
@@ -76,16 +74,17 @@ public:
     size_t getLength() const { return m_length; }
     void setLength(unsigned n) { m_length = n; }
 
-    /// \returns the new number of elements that fit in this array when converting
-    /// the base type to \p newBaseType
-    size_t convertLength(SharedType newBaseType) const;
-
     /// \returns true iff we do not know the length of the array (yet)
     bool isUnbounded() const;
 
 protected:
     /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
+
+private:
+    /// \returns the new number of elements that fit in this array when converting
+    /// the base type to \p newBaseType
+    size_t convertLength(SharedType newBaseType) const;
 
 private:
     SharedType m_baseType;

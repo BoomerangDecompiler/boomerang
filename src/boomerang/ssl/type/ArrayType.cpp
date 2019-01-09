@@ -104,13 +104,14 @@ bool ArrayType::operator<(const Type &other) const
 
 QString ArrayType::getCtype(bool final) const
 {
-    QString s = m_baseType->getCtype(final);
+    const QString baseType = m_baseType->getCtype(final);
 
     if (isUnbounded()) {
-        return s + "[]";
+        return baseType + "[]";
     }
-
-    return s + "[" + QString::number(m_length) + "]";
+    else {
+        return baseType + "[" + QString::number(m_length, 10) + "]";
+    }
 }
 
 
