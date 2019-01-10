@@ -10,6 +10,7 @@
 #include "CompoundType.h"
 
 #include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/util/Util.h"
 
 
 CompoundType::CompoundType()
@@ -37,14 +38,14 @@ SharedType CompoundType::clone() const
 
 Type::Size CompoundType::getSize() const
 {
-    int n = 0;
+    Size size = 0;
 
     for (auto &elem : m_types) {
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
-        n += elem->getSize();
+        size += elem->getSize();
     }
 
-    return n;
+    return size;
 }
 
 
@@ -55,13 +56,11 @@ bool CompoundType::isSuperStructOf(const SharedConstType &other) const
     }
 
     auto otherCmp = other->as<CompoundType>();
-    size_t n      = otherCmp->m_types.size();
-
-    if (n > m_types.size()) {
+    if (otherCmp->getNumMembers() > getNumMembers()) {
         return false;
     }
 
-    for (unsigned i = 0; i < n; i++) {
+    for (int i = 0; i < otherCmp->getNumMembers(); i++) {
         if (otherCmp->m_types[i] != m_types[i]) {
             return false;
         }
@@ -83,7 +82,7 @@ bool CompoundType::isSubStructOf(const SharedConstType &other) const
 
 SharedType CompoundType::getMemberTypeByName(const QString &name)
 {
-    for (unsigned i = 0; i < m_types.size(); i++) {
+    for (int i = 0; i < getNumMembers(); i++) {
         if (m_names[i] == name) {
             return m_types[i];
         }
@@ -93,12 +92,12 @@ SharedType CompoundType::getMemberTypeByName(const QString &name)
 }
 
 
-SharedType CompoundType::getMemberTypeByOffset(unsigned bitOffset)
+SharedType CompoundType::getMemberTypeByOffset(uint64 bitOffset)
 {
-    unsigned offset = 0;
+    uint64 offset = 0;
 
     for (auto &elem : m_types) {
-        if ((offset <= bitOffset) && (bitOffset < offset + elem->getSize())) {
+        if (Util::inRange(bitOffset, offset, offset + elem->getSize())) {
             return elem;
         }
 
@@ -109,12 +108,12 @@ SharedType CompoundType::getMemberTypeByOffset(unsigned bitOffset)
 }
 
 
-void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
+void CompoundType::setMemberTypeByOffset(uint64 bitOffset, SharedType ty)
 {
-    unsigned offset = 0;
+    uint64 offset = 0;
 
-    for (unsigned i = 0; i < m_types.size(); i++) {
-        if ((offset <= bitOffset) && (bitOffset < offset + m_types[i]->getSize())) {
+    for (int i = 0; i < getNumMembers(); i++) {
+        if (Util::inRange(bitOffset, offset, offset + m_types[i]->getSize())) {
             unsigned oldsz = m_types[i]->getSize();
             m_types[i]     = ty;
 
@@ -122,7 +121,7 @@ void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
                 m_types.push_back(m_types[m_types.size() - 1]);
                 m_names.push_back(m_names[m_names.size() - 1]);
 
-                for (size_t _n = m_types.size() - 1; _n > i; _n--) {
+                for (int _n = getNumMembers() - 1; _n > i; _n--) {
                     m_types[_n] = m_types[_n - 1];
                     m_names[_n] = m_names[_n - 1];
                 }
@@ -139,12 +138,12 @@ void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
 }
 
 
-void CompoundType::setMemberNameByOffset(unsigned n, const QString &name)
+void CompoundType::setMemberNameByOffset(uint64 bitOffset, const QString &name)
 {
-    unsigned offset = 0;
+    uint64 offset = 0;
 
-    for (unsigned i = 0; i < m_types.size(); i++) {
-        if ((offset <= n) && (n < offset + m_types[i]->getSize())) {
+    for (int i = 0; i < getNumMembers(); i++) {
+        if (Util::inRange(bitOffset, offset, offset + m_types[i]->getSize())) {
             m_names[i] = name;
             return;
         }
@@ -156,9 +155,9 @@ void CompoundType::setMemberNameByOffset(unsigned n, const QString &name)
 
 QString CompoundType::getMemberNameByOffset(size_t n)
 {
-    unsigned offset = 0;
+    uint64 offset = 0;
 
-    for (unsigned i = 0; i < m_types.size(); i++) {
+    for (int i = 0; i < getNumMembers(); i++) {
         // if (offset >= n && n < offset + types[i]->getSize())
         if ((offset <= n) && (n < offset + m_types[i]->getSize())) {
             // return getName(offset == n ? i : i - 1);
@@ -168,11 +167,11 @@ QString CompoundType::getMemberNameByOffset(size_t n)
         offset += m_types[i]->getSize();
     }
 
-    return nullptr;
+    return "";
 }
 
 
-unsigned CompoundType::getMemberOffsetByIdx(int n)
+uint64 CompoundType::getMemberOffsetByIdx(int n)
 {
     unsigned offset = 0;
 
@@ -184,9 +183,9 @@ unsigned CompoundType::getMemberOffsetByIdx(int n)
 }
 
 
-unsigned CompoundType::getMemberOffsetByName(const QString &member)
+uint64 CompoundType::getMemberOffsetByName(const QString &member)
 {
-    unsigned offset = 0;
+    uint64 offset = 0;
 
     for (unsigned i = 0; i < m_types.size(); i++) {
         if (m_names[i] == member) {
@@ -200,22 +199,22 @@ unsigned CompoundType::getMemberOffsetByName(const QString &member)
 }
 
 
-unsigned CompoundType::getOffsetRemainder(unsigned n)
+uint64 CompoundType::getOffsetRemainder(uint64 bitSize)
 {
-    unsigned r      = n;
-    unsigned offset = 0;
+    uint64 remainder = bitSize;
+    uint64 offset    = 0;
 
     for (auto &elem : m_types) {
         offset += elem->getSize();
 
-        if (offset > n) {
+        if (offset > bitSize) {
             break;
         }
 
-        r -= elem->getSize();
+        remainder -= elem->getSize();
     }
 
-    return r;
+    return remainder;
 }
 
 

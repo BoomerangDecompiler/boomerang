@@ -85,18 +85,18 @@ public:
 
     SharedType getMemberTypeByIdx(int idx);
     SharedType getMemberTypeByName(const QString &name);
-    SharedType getMemberTypeByOffset(unsigned offsetInBits);
+    SharedType getMemberTypeByOffset(uint64 offsetInBits);
 
     QString getMemberNameByIdx(int idx);
-    QString getMemberNameByOffset(size_t offsetInBits);
+    QString getMemberNameByOffset(uint64 offsetInBits);
 
-    unsigned getMemberOffsetByIdx(int idx);
-    unsigned getMemberOffsetByName(const QString &name);
+    uint64 getMemberOffsetByIdx(int idx);
+    uint64 getMemberOffsetByName(const QString &name);
 
-    void setMemberTypeByOffset(unsigned offsetInBits, SharedType ty);
-    void setMemberNameByOffset(unsigned offsetInBits, const QString &name);
+    void setMemberTypeByOffset(uint64 offsetInBits, SharedType ty);
+    void setMemberNameByOffset(uint64 offsetInBits, const QString &name);
 
-    unsigned getOffsetRemainder(unsigned n);
+    uint64 getOffsetRemainder(uint64 bitOffset);
 
 private:
     std::vector<SharedType> m_types;
