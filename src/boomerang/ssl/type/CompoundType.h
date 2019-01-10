@@ -69,11 +69,11 @@ public:
 
     /// \returns true if this is a superstructure of \p other,
     /// i.e. we have the same types at the same offsets as \p other
-    bool isSuperStructOf(const SharedType &other) const;
+    bool isSuperStructOf(const SharedConstType &other) const;
 
     /// \returns true if this is a substructure of other,
     /// i.e. other has the same types at the same offsets as this
-    bool isSubStructOf(const SharedType &other) const;
+    bool isSubStructOf(const SharedConstType &other) const;
 
     /// Append a new member variable to this struct/class.
     /// \param memberType the type of the new member variable.

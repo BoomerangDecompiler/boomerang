@@ -48,7 +48,7 @@ Type::Size CompoundType::getSize() const
 }
 
 
-bool CompoundType::isSuperStructOf(const SharedType &other) const
+bool CompoundType::isSuperStructOf(const SharedConstType &other) const
 {
     if (!other->isCompound()) {
         return false;
@@ -71,26 +71,13 @@ bool CompoundType::isSuperStructOf(const SharedType &other) const
 }
 
 
-bool CompoundType::isSubStructOf(const SharedType &other) const
+bool CompoundType::isSubStructOf(const SharedConstType &other) const
 {
     if (!other->isCompound()) {
         return false;
     }
 
-    auto otherCmp = other->as<CompoundType>();
-    unsigned n    = m_types.size();
-
-    if (n > otherCmp->m_types.size()) {
-        return false;
-    }
-
-    for (unsigned i = 0; i < n; i++) {
-        if (otherCmp->m_types[i] != m_types[i]) {
-            return false;
-        }
-    }
-
-    return true;
+    return other->as<CompoundType>()->isSuperStructOf(shared_from_this());
 }
 
 
