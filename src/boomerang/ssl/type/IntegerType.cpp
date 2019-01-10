@@ -75,13 +75,24 @@ bool IntegerType::operator<(const Type &other) const
         return m_id < other.getId();
     }
 
-    const IntegerType &otherTy = static_cast<const IntegerType &>(other);
+    const IntegerType &otherInt = static_cast<const IntegerType &>(other);
 
-    if (m_size != otherTy.m_size) {
-        return m_size < otherTy.m_size;
+    if (m_size != otherInt.m_size) {
+        return m_size < otherInt.m_size;
     }
 
-    return m_sign < otherTy.m_sign;
+    // note: We cannot compare the sign directly here, because otherwise e.g.
+    //  IntegerType(32, Sign::Signed) == IntegerType(32, Sign::SignedStrong)
+    // would be true, while
+    //  IntegerType(32, Sign::Signed) <  IntegerType(32, Sign::SignedStrong)
+    // would also be true.
+    return (isUnsigned() && otherInt.isMaybeSigned()) || (isSignUnknown() && otherInt.isSigned());
+}
+
+
+bool IntegerType::isComplete()
+{
+    return m_sign != Sign::Unknown && m_size != 0;
 }
 
 

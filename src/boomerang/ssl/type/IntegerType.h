@@ -41,7 +41,7 @@ public:
 
 public:
     /// \copydoc Type::isComplete
-    virtual bool isComplete() override { return m_sign != Sign::Unknown && m_size != 0; }
+    virtual bool isComplete() override;
 
     /// \copydoc Type::getSize
     virtual Size getSize() const override;
