@@ -15,6 +15,7 @@ set(TESTS
     type/ArrayTypeTest
     type/BooleanTypeTest
     type/CharTypeTest
+    type/CompoundTypeTest
     type/FloatTypeTest
     type/IntegerTypeTest
     type/PointerTypeTest

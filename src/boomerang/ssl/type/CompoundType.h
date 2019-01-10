@@ -43,10 +43,7 @@ public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
-    static std::shared_ptr<CompoundType> get()
-    {
-        return std::make_shared<CompoundType>();
-    }
+    static std::shared_ptr<CompoundType> get() { return std::make_shared<CompoundType>(); }
 
 public:
     /// \copydoc Type::getSize
@@ -59,13 +56,7 @@ public:
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::isCompatibleWith
-    virtual bool isCompatibleWith(const Type &other, bool all = false) const override
-    {
-        return isCompatible(other, all);
-    }
-
-    /// \copydoc Type::isCompatible
-    virtual bool isCompatible(const Type &other, bool all) const override;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
     /// \returns true if this is a superstructure of \p other,
     /// i.e. we have the same types at the same offsets as \p other
@@ -97,6 +88,10 @@ public:
     void setMemberNameByOffset(uint64 offsetInBits, const QString &name);
 
     uint64 getOffsetRemainder(uint64 bitOffset);
+
+protected:
+    /// \copydoc Type::isCompatible
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
     std::vector<SharedType> m_types;

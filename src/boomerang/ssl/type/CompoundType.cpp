@@ -36,6 +36,12 @@ SharedType CompoundType::clone() const
 }
 
 
+bool CompoundType::isCompatibleWith(const Type &other, bool all) const
+{
+    return isCompatible(other, all);
+}
+
+
 Type::Size CompoundType::getSize() const
 {
     Size size = 0;
@@ -56,12 +62,12 @@ bool CompoundType::isSuperStructOf(const SharedConstType &other) const
     }
 
     auto otherCmp = other->as<CompoundType>();
-    if (otherCmp->getNumMembers() > getNumMembers()) {
+    if (otherCmp->getNumMembers() < getNumMembers()) {
         return false;
     }
 
-    for (int i = 0; i < otherCmp->getNumMembers(); i++) {
-        if (otherCmp->m_types[i] != m_types[i]) {
+    for (int i = 0; i < getNumMembers(); i++) {
+        if (*otherCmp->m_types[i] != *m_types[i]) {
             return false;
         }
     }
@@ -173,8 +179,9 @@ QString CompoundType::getMemberNameByOffset(size_t n)
 
 uint64 CompoundType::getMemberOffsetByIdx(int n)
 {
-    unsigned offset = 0;
+    assert(n < getNumMembers());
 
+    uint64 offset = 0;
     for (int i = 0; i < n; i++) {
         offset += m_types[i]->getSize();
     }
@@ -187,7 +194,7 @@ uint64 CompoundType::getMemberOffsetByName(const QString &member)
 {
     uint64 offset = 0;
 
-    for (unsigned i = 0; i < m_types.size(); i++) {
+    for (int i = 0; i < getNumMembers(); i++) {
         if (m_names[i] == member) {
             return offset;
         }
@@ -258,13 +265,12 @@ bool CompoundType::operator<(const Type &other) const
     }
 
     for (int i = 0; i < getNumMembers(); ++i) {
-        const bool less = *m_types[i] < *otherCompound.m_types[i];
-        if (!less) {
-            return false;
+        if (*m_types[i] != *otherCompound.m_types[i]) {
+            return *m_types[i] < *otherCompound.m_types[i];
         }
     }
 
-    return true;
+    return false; // equal
 }
 
 
@@ -361,23 +367,22 @@ bool CompoundType::isCompatible(const Type &other, bool all) const
     }
 
     if (other.resolvesToUnion()) {
-        return other.isCompatibleWith(*this);
+        return other.isCompatibleWith(*this, all);
     }
 
     if (!other.resolvesToCompound()) {
         // Used to always return false here. But in fact, a struct is compatible with its first
         // member (if all is false)
-        return !all && m_types[0]->isCompatibleWith(other);
+        return !all && getNumMembers() > 0 && m_types[0]->isCompatibleWith(other);
     }
 
     auto otherComp = other.as<CompoundType>();
-    size_t n       = otherComp->getNumMembers();
-
-    if (n != m_types.size()) {
+    if (otherComp->getNumMembers() != getNumMembers()) {
         return false; // Is a subcompound compatible with a supercompound?
     }
 
-    for (size_t i = 0; i < n; i++) {
+    const int n = otherComp->getNumMembers();
+    for (int i = 0; i < n; i++) {
         if (!m_types[i]->isCompatibleWith(*otherComp->m_types[i])) {
             return false;
         }

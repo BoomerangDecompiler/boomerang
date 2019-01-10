@@ -264,24 +264,25 @@ bool Unary::descendType(SharedType newType)
             Prog *prog                = this->access<Location>()->getProc()->getProg();
             changed |= K2->descendType(prog->makeArrayType(K2->getAddr(), newType));
         }
-//        else if (match_l1_K(shared_from_this(), matches)) {
-//            // m[l1 + K]
-//            auto l1           = matches[0]->access<Location, 1>();
-//            SharedType l1Type = l1->ascendType();
-//            const int K       = matches[1]->access<Const>()->getInt();
-//
-//             if (l1Type->resolvesToPointer()) {
-//                 // This is a struct reference m[ptr + K]; ptr points to the struct and K is an
-//                 // offset into it.
-//                 // TODO
-//             }
-//             else {
-//                 // K must be the pointer, so this is a global array
-//                 // FIXME: finish this case
-//             }
-//
-//             // FIXME: many other cases
-//        }
+        //        else if (match_l1_K(shared_from_this(), matches)) {
+        //            // m[l1 + K]
+        //            auto l1           = matches[0]->access<Location, 1>();
+        //            SharedType l1Type = l1->ascendType();
+        //            const int K       = matches[1]->access<Const>()->getInt();
+        //
+        //             if (l1Type->resolvesToPointer()) {
+        //                 // This is a struct reference m[ptr + K]; ptr points to the struct and K
+        //                 is an
+        //                 // offset into it.
+        //                 // TODO
+        //             }
+        //             else {
+        //                 // K must be the pointer, so this is a global array
+        //                 // FIXME: finish this case
+        //             }
+        //
+        //             // FIXME: many other cases
+        //        }
         else {
             changed |= subExp1->descendType(PointerType::get(newType));
         }
