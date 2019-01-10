@@ -92,7 +92,7 @@ bool PointerType::operator==(const Type &other) const
 bool PointerType::operator<(const Type &other) const
 {
     if (m_id != other.getId()) {
-        return false;
+        return m_id < other.getId();
     }
 
     return *m_pointsTo < *static_cast<const PointerType &>(other).m_pointsTo;

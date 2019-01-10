@@ -266,7 +266,7 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
         SharedType elemTy = otherArr->getBaseType();
 
         if (elemTy->isCompatibleWith(*this)) {
-            // x meet array[x] == array
+            // x meet array[x] == array[x]
             changed = true; // since 'this' type is not an array, but the returned type is
             return other->clone();
         }
