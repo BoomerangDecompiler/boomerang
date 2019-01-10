@@ -22,7 +22,7 @@ class BOOMERANG_API CompoundType : public Type
 {
 public:
     /// Constructs an empty compound type.
-    explicit CompoundType(bool isGeneric = false);
+    explicit CompoundType();
 
     CompoundType(CompoundType &other)  = default;
     CompoundType(CompoundType &&other) = default;
@@ -43,9 +43,9 @@ public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
-    static std::shared_ptr<CompoundType> get(bool generic = false)
+    static std::shared_ptr<CompoundType> get()
     {
-        return std::make_shared<CompoundType>(generic);
+        return std::make_shared<CompoundType>();
     }
 
 public:
@@ -66,8 +66,6 @@ public:
 
     /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
-
-    bool isGeneric() const;
 
     /// \returns true if this is a superstructure of \p other,
     /// i.e. we have the same types at the same offsets as \p other
@@ -98,16 +96,9 @@ public:
     void setMemberTypeByOffset(unsigned offsetInBits, SharedType ty);
     void setMemberNameByOffset(unsigned offsetInBits, const QString &name);
 
-    /// Update this compound to use the fact that offset off has type ty
-    /// \param off offset in bytes of the member type from the start of the type
-    /// \param ty new type of the member
-    void updateGenericMember(int off, SharedType ty, bool &changed);
-
     unsigned getOffsetRemainder(unsigned n);
 
 private:
     std::vector<SharedType> m_types;
     std::vector<QString> m_names;
-    bool m_isGeneric;
-    int m_nextGenericMemberNum;
 };

@@ -12,10 +12,8 @@
 #include "boomerang/ssl/type/SizeType.h"
 
 
-CompoundType::CompoundType(bool is_generic /* = false */)
+CompoundType::CompoundType()
     : Type(TypeClass::Compound)
-    , m_isGeneric(is_generic)
-    , m_nextGenericMemberNum(1)
 {
 }
 
@@ -301,30 +299,6 @@ QString CompoundType::getCtype(bool final) const
 
     tmp += "}";
     return tmp;
-}
-
-
-void CompoundType::updateGenericMember(int off, SharedType ty, bool &changed)
-{
-    assert(m_isGeneric);
-    int bit_offset          = off * 8;
-    SharedType existingType = getMemberTypeByOffset(bit_offset);
-
-    if (existingType) {
-        existingType = existingType->meetWith(ty, changed);
-        setMemberTypeByOffset(bit_offset, existingType);
-    }
-    else {
-        QString name = QString("member") + QString::number(m_nextGenericMemberNum++);
-        setMemberTypeByOffset(bit_offset, ty);
-        setMemberNameByOffset(bit_offset, name);
-    }
-}
-
-
-bool CompoundType::isGeneric() const
-{
-    return m_isGeneric;
 }
 
 
