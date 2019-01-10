@@ -16,7 +16,7 @@
 class BOOMERANG_API FloatType : public Type
 {
 public:
-    explicit FloatType(Size numBits = 64);
+    explicit FloatType(Size numBits);
 
     FloatType(const FloatType &other) = default;
     FloatType(FloatType &&other)      = default;
@@ -34,7 +34,7 @@ public:
     virtual bool operator<(const Type &other) const override;
 
 public:
-    static std::shared_ptr<FloatType> get(Size sz = 64);
+    static std::shared_ptr<FloatType> get(Size numBits);
 
     /// \copydoc Type::clone
     virtual SharedType clone() const override;

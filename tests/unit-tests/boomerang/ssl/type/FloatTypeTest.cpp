@@ -31,7 +31,7 @@ void FloatTypeTest::testConstruct()
 
 void FloatTypeTest::testEquals()
 {
-    QVERIFY(FloatType() == FloatType());
+    QVERIFY(FloatType(64) == FloatType(64));
     QVERIFY(FloatType(32) != FloatType(64));
     QVERIFY(FloatType(0) == FloatType(64));
     QVERIFY(FloatType(32) == FloatType(0));
@@ -45,17 +45,17 @@ void FloatTypeTest::testLess()
 {
     QCOMPARE(FloatType(32) < IntegerType(32), false);
     QCOMPARE(FloatType(32) < FloatType(32), false);
-    QCOMPARE(FloatType(0) < FloatType(), true);
+    QCOMPARE(FloatType(0) < FloatType(64), true);
     QCOMPARE(FloatType(32) < FloatType(64), true);
-    QCOMPARE(FloatType() < FloatType(0), false);
-    QCOMPARE(FloatType() < *PointerType::get(VoidType::get()), true);
+    QCOMPARE(FloatType(64) < FloatType(0), false);
+    QCOMPARE(FloatType(64) < *PointerType::get(VoidType::get()), true);
 }
 
 
 void FloatTypeTest::testGetCtype()
 {
-    QCOMPARE(FloatType().getCtype(true), "double");
-    QCOMPARE(FloatType().getCtype(false), "double");
+    QCOMPARE(FloatType(64).getCtype(true), "double");
+    QCOMPARE(FloatType(64).getCtype(false), "double");
     QCOMPARE(FloatType(32).getCtype(true), "float");
     QCOMPARE(FloatType(32).getCtype(false), "float");
     QCOMPARE(FloatType(80).getCtype(true), "long double");
@@ -67,15 +67,16 @@ void FloatTypeTest::testGetCtype()
 
 void FloatTypeTest::testIsCompatibleWith()
 {
-    QVERIFY(FloatType().isCompatibleWith(VoidType()));
-    QVERIFY(FloatType().isCompatibleWith(FloatType(64)));
-    QVERIFY(!FloatType().isCompatibleWith(FloatType(32)));
-    QVERIFY(FloatType().isCompatibleWith(*UnionType::get({ FloatType::get(64), IntegerType::get(64) })));
-    QVERIFY(!FloatType().isCompatibleWith(*UnionType::get({ IntegerType::get(64) })));
-    QVERIFY(FloatType().isCompatibleWith(*ArrayType::get(FloatType::get())));
-    QVERIFY(FloatType().isCompatibleWith(SizeType(64)));
-    QVERIFY(!FloatType().isCompatibleWith(SizeType(32)));
-    QVERIFY(!FloatType().isCompatibleWith(IntegerType(64)));
+    QVERIFY(FloatType(64).isCompatibleWith(VoidType()));
+    QVERIFY(FloatType(64).isCompatibleWith(FloatType(64)));
+    QVERIFY(!FloatType(32).isCompatibleWith(FloatType(64)));
+    QVERIFY(!FloatType(64).isCompatibleWith(FloatType(32)));
+    QVERIFY(FloatType(64).isCompatibleWith(*UnionType::get({ FloatType::get(64), IntegerType::get(64) })));
+    QVERIFY(!FloatType(64).isCompatibleWith(*UnionType::get({ IntegerType::get(64) })));
+    QVERIFY(FloatType(64).isCompatibleWith(*ArrayType::get(FloatType::get(64))));
+    QVERIFY(FloatType(64).isCompatibleWith(SizeType(64)));
+    QVERIFY(!FloatType(64).isCompatibleWith(SizeType(32)));
+    QVERIFY(!FloatType(64).isCompatibleWith(IntegerType(64)));
 }
 
 
