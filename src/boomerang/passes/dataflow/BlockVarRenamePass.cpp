@@ -271,14 +271,13 @@ bool BlockVarRenamePass::renameBlockVars(
                 continue;
             }
 
-            // if ((*dd)->getMemDepth() == memDepth)
-            auto ss = stacks.find(def);
+            auto stackIt = stacks.find(def);
 
-            if (ss == stacks.end()) {
+            if (stackIt == stacks.end()) {
                 LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", def);
             }
 
-            ss->second.pop_back();
+            stackIt->second.pop_back();
         }
 
         // Pop all defs due to childless calls
