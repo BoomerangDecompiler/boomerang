@@ -443,7 +443,7 @@ void ExpTest::testSimplifyBinary()
                                                                       Location::regOf(REG_PENT_EBP),
                                                                       Const::get(-4)))));
     as->simplify();
-    QCOMPARE(as->prints(), QString("   0 *v* r27 := m[r29 - 4]"));
+    QCOMPARE(as->toString(), QString("   0 *v* r27 := m[r29 - 4]"));
 }
 
 
@@ -582,7 +582,7 @@ void ExpTest::testParen()
                                      Const::get(1))));
 
 
-    QCOMPARE(a.prints(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
+    QCOMPARE(a.toString(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
 }
 
 
@@ -648,13 +648,13 @@ void ExpTest::testSubscriptVar()
     def1->setNumber(12);
     def1->subscriptVar(lhs, def1); // Should do nothing
 
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28 - 4] := r28 + r29"));
+    QCOMPARE(ae->toString(), QString("   0 *v* m[r28 - 4] := r28 + r29"));
 
     // m[r28 - 4]
 
     // Subtest 2: Ordinary substitution, on LHS and RHS
     ae->subscriptVar(r28, def1);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+    QCOMPARE(ae->toString(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
 
 
     // Subtest 3: change to a different definition
@@ -663,7 +663,7 @@ void ExpTest::testSubscriptVar()
     Statement *def3 = new Assign(Location::regOf(REG_PENT_ESP), Const::get(0));
     def3->setNumber(99);
     ae->subscriptVar(r28, def3);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+    QCOMPARE(ae->toString(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
 
     delete def1;
     delete def3;

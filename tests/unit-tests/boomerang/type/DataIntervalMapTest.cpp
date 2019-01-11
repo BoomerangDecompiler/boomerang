@@ -102,7 +102,7 @@ void DataIntervalMapTest::testDataInterval()
 
     dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
-    QCOMPARE(dim.prints(), QString(
+    QCOMPARE(dim.toString(), QString(
         "0x00001000-0x00001004 first int\n"
         "0x00001004-0x0000100c second double\n"));
 
@@ -175,7 +175,7 @@ void DataIntervalMapTest::testDataIntervalOverlaps()
     ct->addMember(IntegerType::get(32, Sign::Signed), "int3");
     ct->addMember(FloatType::get(32), "float3");
     dim.insertItem(Address(0x00001010), "newStruct", ct);
-    QCOMPARE(dim.prints(), QString(
+    QCOMPARE(dim.toString(), QString(
         "0x00001000-0x00001004 firstInt int\n"
         "0x00001004-0x00001008 firstFloat float\n"
         "0x00001008-0x0000100c secondInt int\n"
@@ -190,7 +190,7 @@ void DataIntervalMapTest::testDataIntervalOverlaps()
 
     const TypedVariable *var = dim.find(Address(0x1008));
     QCOMPARE(var->type->getCtype(), QString("struct { int newInt; float newFloat; }"));
-    QCOMPARE(dim.prints(), QString(
+    QCOMPARE(dim.toString(), QString(
         "0x00001000-0x00001004 firstInt int\n"
         "0x00001004-0x00001008 firstFloat float\n"
         "0x00001008-0x00001010 replacementStruct struct { int newInt; float newFloat; }\n"
@@ -303,12 +303,12 @@ void DataIntervalMapTest::testInsert()
 
     // overlapped non-forced
     QVERIFY(dim.insertItem(Address(0x1002), "second", IntegerType::get(32, Sign::Signed)) == dim.end());
-    QCOMPARE(dim.prints(), QString("0x00001000-0x00001004 first int\n"));
+    QCOMPARE(dim.toString(), QString("0x00001000-0x00001004 first int\n"));
 
     // overlapped forced
     DataIntervalMap::iterator it2 = dim.insertItem(Address(0x1002), "second", IntegerType::get(32, Sign::Signed), true);
     QVERIFY(it2 != dim.end());
-    QCOMPARE(dim.prints(), QString("0x00001002-0x00001006 second int\n"));
+    QCOMPARE(dim.toString(), QString("0x00001002-0x00001006 second int\n"));
 }
 
 

@@ -63,7 +63,7 @@ void AssignSetTest::testInsert()
 
     AssignSet::iterator it = set.begin();
     QVERIFY(it != set.end());
-    QCOMPARE((*it)->prints(), QString("   0 *v* r25 := r24"));
+    QCOMPARE((*it)->toString(), QString("   0 *v* r25 := r24"));
 
     set.insert(&assign);
     QVERIFY(set.size() == 1); // don't insert twice
@@ -101,7 +101,7 @@ void AssignSetTest::testMakeUnion()
 
     QVERIFY(set1.size() == 1);
     QVERIFY(set2.empty());
-    QCOMPARE((*set1.begin())->prints(), QString("   0 *v* r25 := r24"));
+    QCOMPARE((*set1.begin())->toString(), QString("   0 *v* r25 := r24"));
 
     set2.insert(&assign2);
     set1.makeUnion(set2);

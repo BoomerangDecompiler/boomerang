@@ -81,7 +81,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
                 if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
                     LOG_WARN("Def of %1 at '%2' is not compatible with first type %3.", defdByS,
-                             s->prints(), ff->second.first);
+                             s->toString(), ff->second.first);
                 }
 
                 // There already is a type for defdByS, and it is different to the type for this

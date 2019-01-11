@@ -99,7 +99,7 @@ public:
     void deleteItem(Address addr);
 
     /// For test and debug
-    QString prints();
+    QString toString();
 
 private:
     /// We are inserting an item that already exists in a larger type.

@@ -40,7 +40,7 @@ LocationSet::LocationSet(const LocationSet &o)
 }
 
 
-QString LocationSet::prints() const
+QString LocationSet::toString() const
 {
     QString tgt;
     OStream ost(&tgt);

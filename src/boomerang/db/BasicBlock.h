@@ -269,7 +269,7 @@ public:
      */
     void print(OStream &os) const;
 
-    QString prints() const;
+    QString toString() const;
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.

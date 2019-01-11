@@ -86,7 +86,7 @@ public:
     void print(OStream &os) const;
 
     // Print to a static buffer (mainly for debugging)
-    QString prints() const;
+    QString toString() const;
 
     /// Is this RTL a call instruction?
     bool isCall() const;

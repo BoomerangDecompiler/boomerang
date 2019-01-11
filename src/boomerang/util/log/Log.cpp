@@ -172,7 +172,7 @@ void Log::truncateFileName(char *dstBuffer, size_t dstCharacters, const char *fi
 
 QString Log::collectArg(const QString &msg, const Statement *s)
 {
-    return msg.arg(s->prints());
+    return msg.arg(s->toString());
 }
 
 
@@ -199,7 +199,7 @@ QString Log::collectArg(const QString &msg, const Type &ty)
 
 QString Log::collectArg(const QString &msg, const RTL *r)
 {
-    return msg.arg(r->prints());
+    return msg.arg(r->toString());
 }
 
 
@@ -211,7 +211,7 @@ QString Log::collectArg(const QString &msg, Address a)
 
 QString Log::collectArg(const QString &msg, const LocationSet *l)
 {
-    return msg.arg(l->prints());
+    return msg.arg(l->toString());
 }
 
 

@@ -103,7 +103,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
                 checkForOverlap(liveLocs, uses, ig, myProc);
 
                 if (myProc->getProg()->getProject()->getSettings()->debugLiveness) {
-                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.prints());
+                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.toString());
                 }
             }
         }

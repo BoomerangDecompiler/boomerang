@@ -202,27 +202,27 @@ void RegDBTest::testProcessOverlappedRegs()
 
     // assign another register
     Assign as(Location::regOf(REG_PENT_AX), Location::regOf(REG_PENT_DX));
-    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_EAX, REG_PENT_AX, REG_PENT_DX, REG_PENT_AH })->prints(),
+    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_EAX, REG_PENT_AX, REG_PENT_DX, REG_PENT_AH })->toString(),
              "0x00000000    0 *j32* r24 := (r24 & 0xffffffffffff0000) | zfill(16, 32, r0)\n              0 *j8* r12 := r0@8:15\n");
 
     // No other regs are used -> empty RTL
-    QCOMPARE(db.processOverlappedRegs(&as, { })->prints(),
+    QCOMPARE(db.processOverlappedRegs(&as, { })->toString(),
              "0x00000000\n");
 
     // assign const
     as.setRight(Const::get(-5));
-    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_EAX, REG_PENT_AX, REG_PENT_AH, REG_PENT_AL })->prints(),
+    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_EAX, REG_PENT_AX, REG_PENT_AH, REG_PENT_AL })->toString(),
              "0x00000000    0 *j32* r24 := (r24 & 0xffffffffffff0000) | zfill(16, 32, r0)\n              0 *j8* r12 := r0@8:15\n              0 *j8* r8 := r0@0:7\n");
 
     // assign with register offset
     as.setLeft(Location::regOf(REG_PENT_AH));
     as.setRight(Ternary::get(opAt, Location::regOf(REG_PENT_DX), Const::get(5), Const::get(12)));
-    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_AX, REG_PENT_AH, REG_PENT_DX })->prints(),
+    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_AX, REG_PENT_AH, REG_PENT_DX })->toString(),
              "0x00000000    0 *j16* r0 := (r0 & 0xffffffffffff00ff) | (zfill(8, 16, r12) << 8)\n");
 
     // verify guard expressions are propagated
     as.setGuard(Binary::get(opGtr, Location::regOf(REG_PENT_DX), Const::get(0)));
-    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_AX, REG_PENT_AH, REG_PENT_DX })->prints(),
+    QCOMPARE(db.processOverlappedRegs(&as, { REG_PENT_AX, REG_PENT_AH, REG_PENT_DX })->toString(),
              "0x00000000    0 *j16* r2 > 0 => r0 := (r0 & 0xffffffffffff00ff) | (zfill(8, 16, r12) << 8)\n");
 
     // lhs not a constant register -> fail

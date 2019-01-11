@@ -15,7 +15,7 @@
 
 /**
  * An ordinary assignment with left and right hand sides.
- * Example: r25 := 5
+ * Example: *i32* r25 := 5
  */
 class BOOMERANG_API Assign : public Assignment
 {

@@ -187,7 +187,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         unionOfCallerLiveLocs.print(ost);
         LOG_MSG("%%%  union of caller live locations for %1: %2", proc->getName(), tgt);
         LOG_MSG("%%%  final returns for %1: %2", proc->getName(),
-                proc->getRetStmt()->getReturns().prints());
+                proc->getRetStmt()->getReturns().toString());
     }
 
     // removing returns might result in params that can be removed, might as well do it now.

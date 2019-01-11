@@ -172,7 +172,7 @@ bool Statement::isFlagAssign() const
 }
 
 
-QString Statement::prints() const
+QString Statement::toString() const
 {
     QString tgt;
     OStream ost(&tgt);

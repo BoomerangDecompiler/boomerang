@@ -199,7 +199,8 @@ public:
      */
     virtual void print(OStream &os) const = 0;
 
-    QString prints() const; // For logging, was also for debugging
+    /// Print this statement to a string
+    QString toString() const;
 
     /// general search
     virtual bool search(const Exp &pattern, SharedExp &result) const = 0;
