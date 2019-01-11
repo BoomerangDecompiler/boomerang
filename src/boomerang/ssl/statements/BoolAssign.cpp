@@ -140,17 +140,6 @@ bool BoolAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void BoolAssign::generateCode(ICodeGenerator *gen) const
-{
-    assert(m_lhs);
-    assert(m_cond);
-    // lhs := (m_cond) ? 1 : 0
-    Assign as(m_lhs->clone(),
-              std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
-    gen->addAssignmentStatement(&as);
-}
-
-
 void BoolAssign::simplify()
 {
     if (m_cond) {

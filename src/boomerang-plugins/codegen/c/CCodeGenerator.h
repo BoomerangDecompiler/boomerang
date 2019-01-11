@@ -29,6 +29,7 @@ class BasicBlock;
 class Exp;
 class LocationSet;
 class BinaryImage;
+class Statement;
 
 
 /// Operator precedence
@@ -284,6 +285,8 @@ private:
     /// \returns true if all predecessors of this BB have had their code generated.
     bool isAllParentsGenerated(const BasicBlock *bb) const;
     bool isGenerated(const BasicBlock *bb) const;
+
+    void emitCodeForStmt(const Statement *stmt);
 
 private:
     void print(const Module *module);

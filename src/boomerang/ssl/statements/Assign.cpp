@@ -187,12 +187,6 @@ bool Assign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/
 }
 
 
-void Assign::generateCode(ICodeGenerator *gen) const
-{
-    gen->addAssignmentStatement(this);
-}
-
-
 bool Assign::usesExp(const Exp &e) const
 {
     SharedExp where = nullptr;

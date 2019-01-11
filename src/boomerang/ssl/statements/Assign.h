@@ -63,9 +63,6 @@ public:
     /// \copydoc Assignment::searchAndReplace
     virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
-    /// \copydoc Assignment::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
-
     /// \copydoc Assignment::simplify
     virtual void simplify() override;
 

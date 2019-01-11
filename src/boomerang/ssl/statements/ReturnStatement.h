@@ -112,9 +112,6 @@ public:
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override;
 
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
-
     /// \returns pointer to the collector object
     DefCollector *getCollector() { return &m_col; }
 

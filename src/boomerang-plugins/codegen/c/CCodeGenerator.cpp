@@ -24,8 +24,10 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
@@ -2499,8 +2501,8 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
                 LOG_MSG("%1", rtl->getAddress());
             }
 
-            for (Statement *st : *rtl) {
-                st->generateCode(this);
+            for (const Statement *st : *rtl) {
+                emitCodeForStmt(st);
             }
         }
     }
@@ -2545,6 +2547,66 @@ bool CCodeGenerator::isGenerated(const BasicBlock *bb) const
 {
     return m_generatedBBs.find(bb) != m_generatedBBs.end();
 }
+
+
+void CCodeGenerator::emitCodeForStmt(const Statement *st)
+{
+    switch (st->getKind()) {
+    case StmtType::Assign: {
+        this->addAssignmentStatement(static_cast<const Assign *>(st));
+        break;
+    }
+    case StmtType::Call: {
+        const CallStatement *call = static_cast<const CallStatement *>(st);
+        const Function *dest = call->getDestProc();
+
+        if ((dest == nullptr) && call->isComputed()) {
+            addIndCallStatement(call->getDest(), call->getArguments(), *call->calcResults());
+            return;
+        }
+
+        std::unique_ptr<StatementList> results = call->calcResults();
+        assert(dest);
+
+        if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
+            addCallStatement(dest, dest->getSignature()->getPreferredName(), call->getArguments(),
+                                *results);
+        }
+        else {
+            addCallStatement(dest, dest->getName(), call->getArguments(), *results);
+        }
+        break;
+    }
+    case StmtType::Ret: {
+        addReturnStatement(&static_cast<const ReturnStatement *>(st)->getReturns());
+        break;
+    }
+    case StmtType::BoolAssign: {
+        const BoolAssign *bas = static_cast<const BoolAssign *>(st);
+
+        // lhs := (m_cond) ? 1 : 0
+        Assign as(bas->getLeft()->clone(), Ternary::get(opTern,
+            bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
+        addAssignmentStatement(&as);
+        break;
+    }
+    case StmtType::Branch:
+    case StmtType::Goto:
+    case StmtType::Case:
+        // these will be handled by the BB
+        break;
+    case StmtType::PhiAssign:
+        LOG_ERROR("Encountered Phi Assign in back end");
+        break;
+    case StmtType::ImpAssign:
+        LOG_ERROR("Encountered Implicit Assign in back end");
+        break;
+    case StmtType::INVALID:
+        LOG_ERROR("Encountered Invalid Statement in back end");
+        break;
+    }
+}
+
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::CodeGenerator, CCodeGenerator, "C Code Generator plugin",
                         BOOMERANG_VERSION, "Boomerang developers")

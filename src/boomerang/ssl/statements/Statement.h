@@ -249,9 +249,6 @@ public:
     /// without tests about complexity or the propagation limiting heuristic
     bool propagateFlagsTo(Settings *settings);
 
-    /// Generate code for this statement
-    virtual void generateCode(ICodeGenerator *gen) const = 0;
-
     /// simpify internal expressions
     virtual void simplify() = 0;
 

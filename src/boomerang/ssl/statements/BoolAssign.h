@@ -84,9 +84,6 @@ public:
     /// \copydoc Assignment::printCompact
     virtual void printCompact(OStream &os) const override;
 
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
-
     /// \copydoc Statement::simplify
     virtual void simplify() override;
 

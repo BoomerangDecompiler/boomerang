@@ -118,12 +118,6 @@ bool CaseStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void CaseStatement::generateCode(ICodeGenerator *) const
-{
-    // don't generate any code for switches, they will be handled by the bb
-}
-
-
 bool CaseStatement::usesExp(const Exp &e) const
 {
     // Before a switch statement is recognised, m_dest is non null
