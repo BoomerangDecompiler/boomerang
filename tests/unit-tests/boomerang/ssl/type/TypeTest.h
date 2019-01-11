@@ -18,4 +18,7 @@ class TypeTest : public BoomerangTest
     Q_OBJECT
 
 private slots:
+    void testNotEqual();
+    void testIsCString();
+    void testNewIntegerLikeType();
 };

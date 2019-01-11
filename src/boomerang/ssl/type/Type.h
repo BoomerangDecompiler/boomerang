@@ -181,7 +181,7 @@ public:
     SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 
     /// \returns a new Bool/Char/Int
-    static SharedType newIntegerLikeType(int sizeInBits, Sign signedness);
+    static SharedType newIntegerLikeType(Size sizeInBits, Sign signedness);
 
 public:
     QString toString() const;

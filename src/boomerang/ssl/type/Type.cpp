@@ -223,7 +223,7 @@ OStream &operator<<(OStream &os, const SharedConstType &t)
 }
 
 
-SharedType Type::newIntegerLikeType(int size, Sign signedness)
+SharedType Type::newIntegerLikeType(Size size, Sign signedness)
 {
     if (size == 1) {
         return BooleanType::get();
@@ -292,15 +292,10 @@ bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const
 
 bool Type::isSubTypeOrEqual(SharedType other) const
 {
-    if (resolvesToVoid()) {
+    if (resolvesToVoid() || *this == *other) {
         return true;
     }
-
-    if (*this == *other) {
-        return true;
-    }
-
-    if (this->resolvesToCompound() && other->resolvesToCompound()) {
+    else if (this->resolvesToCompound() && other->resolvesToCompound()) {
         return this->as<CompoundType>()->isSubStructOf(other);
     }
 
