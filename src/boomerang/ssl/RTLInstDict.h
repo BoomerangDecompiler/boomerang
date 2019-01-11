@@ -109,6 +109,9 @@ private:
     /// Print a textual representation of the dictionary.
     void print(OStream &os);
 
+    /// Replace opSuccessor by real semantics in \p stmt.
+    void fixSuccessorForStmt(Statement *stmt);
+
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;

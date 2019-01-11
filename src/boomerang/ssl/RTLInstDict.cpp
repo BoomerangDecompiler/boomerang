@@ -170,7 +170,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
             ++arg;
         }
         assert(arg == args.end());
-        ss->fixSuccessor();
+        fixSuccessorForStmt(ss);
 
         if (m_verboseOutput) {
             OStream q_cout(stdout);
@@ -184,6 +184,18 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
     }
 
     return newList;
+}
+
+
+void RTLInstDict::fixSuccessorForStmt(Statement *stmt)
+{
+    if (!stmt->isAssign()) {
+        return;
+    }
+
+    Assign *asgn = static_cast<Assign *>(stmt);
+    asgn->setLeft(asgn->getLeft()->fixSuccessor());
+    asgn->setRight(asgn->getRight()->fixSuccessor());
 }
 
 

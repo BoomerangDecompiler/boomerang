@@ -111,13 +111,6 @@ void Assign::simplify()
 }
 
 
-void Assign::fixSuccessor()
-{
-    m_lhs = m_lhs->fixSuccessor();
-    m_rhs = m_rhs->fixSuccessor();
-}
-
-
 void Assign::simplifyAddr()
 {
     m_lhs = m_lhs->simplifyAddr();

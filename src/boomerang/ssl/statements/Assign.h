@@ -66,9 +66,6 @@ public:
     /// \copydoc Assignment::simplifyAddr
     virtual void simplifyAddr() override;
 
-    /// \copydoc Statement::fixSuccessor
-    virtual void fixSuccessor() override;
-
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return m_rhs; }
 

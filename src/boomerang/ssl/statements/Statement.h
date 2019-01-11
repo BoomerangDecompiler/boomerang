@@ -262,9 +262,6 @@ public:
     /// insert casts where needed, since fromSSA will erase type information
     void insertCasts();
 
-    // Only Assign overrides at present
-    virtual void fixSuccessor() {}
-
     /// Meet the type associated with \p e with \p ty
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);
 
