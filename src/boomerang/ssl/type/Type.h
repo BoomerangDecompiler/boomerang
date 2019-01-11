@@ -10,6 +10,7 @@
 #pragma once
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
@@ -65,6 +66,9 @@ enum class Sign : int8_t
  */
 class BOOMERANG_API Type : public std::enable_shared_from_this<Type>
 {
+public:
+    typedef uint64 Size;
+
 public:
     // Constructors
     Type(TypeClass id);
@@ -146,14 +150,14 @@ public:
     virtual SharedType clone() const = 0;
 
     /// \returns the size (in bits) of this type.
-    virtual size_t getSize() const = 0;
+    virtual Size getSize() const = 0;
 
     /// \returns the size (in bytes) of this type.
     /// Does not include struct padding.
-    size_t getSizeInBytes() const { return (getSize() + 7) / 8; }
+    Size getSizeInBytes() const { return (getSize() + 7) / 8; }
 
     /// Changes the bit size of this type.
-    virtual void setSize(size_t /*sz*/) { assert(false); /* Redefined in subclasses. */ }
+    virtual void setSize(Size newSize);
 
 public:
     /// Resolve the original type across named types.
@@ -173,19 +177,11 @@ public:
      */
     static void clearNamedTypes();
 
-    /**
-     * Given the name of a temporary variable, return its Type
-     * \param   name reference to a string (e.g. "tmp", "tmpd")
-     * \returns Ptr to a new Type object
-     */
-    static SharedType getTempType(const QString &name);
-
     /// Create a union of this Type and other. Set \p changed to true if any change
     SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 
-    /// \param size Size in bits
-    /// \return a new Bool/Char/Int
-    static SharedType newIntegerLikeType(int size, Sign signedness);
+    /// \returns a new Bool/Char/Int
+    static SharedType newIntegerLikeType(Size sizeInBits, Sign signedness);
 
 public:
     QString toString() const;
@@ -193,14 +189,6 @@ public:
     /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
     /// information. When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
-
-    /**
-     * Return a minimal temporary name for this type. It'd be even
-     * nicer to return a unique name, but we don't know scope at
-     * this point, and even so we could still clash with a user-defined
-     * name later on. :(
-     */
-    virtual QString getTempName() const; // Get a temporary name for the type
 
     /**
      * For data-flow-based type analysis only: implement the meet operator.

@@ -54,24 +54,16 @@ Type::~Type()
 }
 
 
+void Type::setSize(Type::Size)
+{
+    assert(false); /* Redefined in subclasses. */
+}
+
+
 bool Type::isCString() const
 {
-    if (!resolvesToPointer()) {
-        return false;
-    }
-
-    SharedType p = as<PointerType>()->getPointsTo();
-
-    if (p->resolvesToChar()) {
-        return true;
-    }
-
-    if (!p->resolvesToArray()) {
-        return false;
-    }
-
-    p = p->as<ArrayType>()->getBaseType();
-    return p->resolvesToChar();
+    return (resolvesToPointer() && this->as<PointerType>()->getPointsTo()->resolvesToChar()) ||
+           (resolvesToArray() && this->as<ArrayType>()->getBaseType()->resolvesToChar());
 }
 
 
@@ -112,37 +104,6 @@ SharedType Type::getNamedType(const QString &name)
     auto iter = g_namedTypes.find(name);
 
     return (iter != g_namedTypes.end()) ? *iter : nullptr;
-}
-
-
-SharedType Type::getTempType(const QString &name)
-{
-    SharedType ty;
-    QChar ctype = ' ';
-
-    if (name.size() > 3) {
-        ctype = name[3];
-    }
-
-    switch (ctype.toLatin1()) {
-    // They are all int32, except for a few specials
-    case 'f': ty = FloatType::get(32); break;
-    case 'd': ty = FloatType::get(64); break;
-    case 'F': ty = FloatType::get(80); break;
-    case 'D': ty = FloatType::get(128); break;
-    case 'l': ty = IntegerType::get(64); break;
-    case 'h': ty = IntegerType::get(16); break;
-    case 'b': ty = IntegerType::get(8); break;
-    default: ty = IntegerType::get(32); break;
-    }
-
-    return ty;
-}
-
-
-QString Type::getTempName() const
-{
-    return "tmp"; // what else can we do? (besides panic)
 }
 
 
@@ -262,7 +223,7 @@ OStream &operator<<(OStream &os, const SharedConstType &t)
 }
 
 
-SharedType Type::newIntegerLikeType(int size, Sign signedness)
+SharedType Type::newIntegerLikeType(Size size, Sign signedness)
 {
     if (size == 1) {
         return BooleanType::get();
@@ -305,7 +266,7 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
         SharedType elemTy = otherArr->getBaseType();
 
         if (elemTy->isCompatibleWith(*this)) {
-            // x meet array[x] == array
+            // x meet array[x] == array[x]
             changed = true; // since 'this' type is not an array, but the returned type is
             return other->clone();
         }
@@ -331,15 +292,10 @@ bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const
 
 bool Type::isSubTypeOrEqual(SharedType other) const
 {
-    if (resolvesToVoid()) {
+    if (resolvesToVoid() || *this == *other) {
         return true;
     }
-
-    if (*this == *other) {
-        return true;
-    }
-
-    if (this->resolvesToCompound() && other->resolvesToCompound()) {
+    else if (this->resolvesToCompound() && other->resolvesToCompound()) {
         return this->as<CompoundType>()->isSubStructOf(other);
     }
 

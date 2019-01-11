@@ -12,17 +12,20 @@
 
 #include "TestUtils.h"
 
-class UnionTest : public BoomerangTest
+
+class CompoundTypeTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
     void testConstruct();
-    void testCompare(); // operator==, operator<
-    void testGetSize();
+    void testEquals();
+    void testLess();
     void testGetCtype();
-    // meetWith is tested separately by MeetTest
+    void testIsSuperStructOf(); // testIsSuperStructOf / isSubStructOf
+    void testMemberType();
+    void testMemberName();
+    void testMemberOffset();
+    void testGetOffsetRemainder();
     void testIsCompatibleWith();
-    void testGetNumTypes();
-    void testHasType();
 };

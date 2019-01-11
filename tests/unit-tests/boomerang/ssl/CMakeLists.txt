@@ -12,11 +12,21 @@ include(boomerang-utils)
 set(TESTS
     exp/ExpTest
     parser/ParserTest
+    type/ArrayTypeTest
+    type/BooleanTypeTest
+    type/CharTypeTest
+    type/CompoundTypeTest
+    type/FloatTypeTest
+    type/FuncTypeTest
+    type/NamedTypeTest
+    type/IntegerTypeTest
+    type/PointerTypeTest
     type/MeetTest
     RegDBTest
     RTLTest
     type/UnionTypeTest
 )
+
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF

@@ -13,15 +13,15 @@
 #include "boomerang/util/log/Log.h"
 
 
-IntegerType::IntegerType(unsigned int NumBits, Sign sign)
+IntegerType::IntegerType(Size numBits, Sign sign)
     : Type(TypeClass::Integer)
+    , m_size(numBits)
+    , m_sign(sign)
 {
-    m_size = NumBits;
-    m_sign = sign;
 }
 
 
-std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, Sign sign)
+std::shared_ptr<IntegerType> IntegerType::get(Size numBits, Sign sign)
 {
     return std::make_shared<IntegerType>(numBits, sign);
 }
@@ -33,10 +33,11 @@ SharedType IntegerType::clone() const
 }
 
 
-size_t IntegerType::getSize() const
+Type::Size IntegerType::getSize() const
 {
     return m_size;
 }
+
 
 void IntegerType::hintAsSigned()
 {
@@ -74,27 +75,24 @@ bool IntegerType::operator<(const Type &other) const
         return m_id < other.getId();
     }
 
-    const IntegerType &otherTy = static_cast<const IntegerType &>(other);
+    const IntegerType &otherInt = static_cast<const IntegerType &>(other);
 
-    if (m_size != otherTy.m_size) {
-        return m_size < otherTy.m_size;
+    if (m_size != otherInt.m_size) {
+        return m_size < otherInt.m_size;
     }
 
-    return m_sign < otherTy.m_sign;
+    // note: We cannot compare the sign directly here, because otherwise e.g.
+    //  IntegerType(32, Sign::Signed) == IntegerType(32, Sign::SignedStrong)
+    // would be true, while
+    //  IntegerType(32, Sign::Signed) <  IntegerType(32, Sign::SignedStrong)
+    // would also be true.
+    return (isUnsigned() && otherInt.isMaybeSigned()) || (isSignUnknown() && otherInt.isSigned());
 }
 
 
-QString IntegerType::getTempName() const
+bool IntegerType::isComplete()
 {
-    switch (m_size) {
-    case 1: /* Treat as a tmpb */
-    case 8: return "tmpb";
-    case 16: return "tmph";
-    case 32: return "tmpi";
-    case 64: return "tmpl";
-    }
-
-    return "tmp";
+    return m_sign != Sign::Unknown && m_size != 0;
 }
 
 

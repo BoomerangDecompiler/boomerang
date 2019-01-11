@@ -20,7 +20,7 @@ SizeType::SizeType()
 }
 
 
-SizeType::SizeType(unsigned sz)
+SizeType::SizeType(Type::Size sz)
     : Type(TypeClass::Size)
     , m_size(sz)
 {
@@ -38,7 +38,7 @@ SharedType SizeType::clone() const
 }
 
 
-size_t SizeType::getSize() const
+Type::Size SizeType::getSize() const
 {
     return m_size;
 }
@@ -60,7 +60,7 @@ bool SizeType::operator<(const Type &other) const
 }
 
 
-std::shared_ptr<SizeType> SizeType::get(unsigned int sz)
+std::shared_ptr<SizeType> SizeType::get(Type::Size sz)
 {
     return std::make_shared<SizeType>(sz);
 }
@@ -72,7 +72,7 @@ std::shared_ptr<SizeType> SizeType::get()
 }
 
 
-void SizeType::setSize(size_t sz)
+void SizeType::setSize(Size sz)
 {
     m_size = sz;
 }
@@ -113,7 +113,7 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
             LOG_VERBOSE("Size %1 meet with size %2!", m_size, other->as<SizeType>()->m_size);
         }
 
-        const size_t newSize = std::max(result->getSize(), other->as<SizeType>()->getSize());
+        const Size newSize = std::max(result->getSize(), other->as<SizeType>()->getSize());
         changed |= (newSize != result->getSize());
         result->setSize(newSize);
         return result;
@@ -133,7 +133,7 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
         return other->clone();
     }
-    else if (other->resolvesToChar() && getSize() == other->getSize()) {
+    else if (other->resolvesToChar() && other->getSize() <= getSize()) {
         changed = true;
         return other->clone();
     }
@@ -152,7 +152,7 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const
         return true;
     }
 
-    size_t otherSize = other.getSize();
+    const Size otherSize = other.getSize();
 
     if (other.resolvesToFunc()) {
         return false;

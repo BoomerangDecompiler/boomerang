@@ -29,7 +29,7 @@ SharedType VoidType::clone() const
 }
 
 
-size_t VoidType::getSize() const
+Type::Size VoidType::getSize() const
 {
     return 0;
 }

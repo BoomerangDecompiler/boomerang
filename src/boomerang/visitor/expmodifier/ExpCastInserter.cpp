@@ -33,7 +33,7 @@ static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
     if (isInt && (currSignedness != reqSignedness)) {
         // Transfer size
         std::shared_ptr<IntegerType> newtype = IntegerType::get(
-            std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
+            ty->as<const IntegerType>()->getSize(), reqSignedness);
 
         newtype->setSignedness(reqSignedness);
         return TypedExp::get(newtype, e);

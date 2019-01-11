@@ -25,13 +25,19 @@ FuncType::~FuncType()
 }
 
 
+std::shared_ptr<FuncType> FuncType::get(const std::shared_ptr<Signature> &sig)
+{
+    return std::make_shared<FuncType>(sig);
+}
+
+
 SharedType FuncType::clone() const
 {
     return FuncType::get(m_signature);
 }
 
 
-size_t FuncType::getSize() const
+Type::Size FuncType::getSize() const
 {
     return 0; /* always nagged me */
 }
@@ -47,11 +53,11 @@ bool FuncType::operator==(const Type &other) const
 
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been
     // successfully analysed)
-    if (!m_signature) {
-        return otherFunc.m_signature == nullptr;
+    if (m_signature.get() != otherFunc.getSignature()) {
+        return false;
     }
 
-    return *m_signature == *otherFunc.m_signature;
+    return m_signature ? *m_signature == *otherFunc.m_signature : true;
 }
 
 
@@ -67,7 +73,7 @@ bool FuncType::operator<(const Type &other) const
         return otherFunc.m_signature ? *m_signature < *otherFunc.m_signature : false;
     }
     else {
-        return false;
+        return otherFunc.getSignature() != nullptr;
     }
 }
 

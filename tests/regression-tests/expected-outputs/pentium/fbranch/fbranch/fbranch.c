@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int eax; 		// r24
     float local0; 		// m[esp - 8]
-    double st; 		// r32
+    long double st; 		// r32
 
     scanf("%f", &local0);
     eax = printf("a is %f, b is %f\n", 0, 2.3125);

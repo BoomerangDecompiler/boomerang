@@ -198,7 +198,7 @@ void MeetTest::testMeet_data()
     TEST_MEET(
         CharType::get(),
         SizeType::get(32),
-        UnionType::get({ CharType::get(), SizeType::get(32) }));
+        CharType::get());
 
 
     // Compound

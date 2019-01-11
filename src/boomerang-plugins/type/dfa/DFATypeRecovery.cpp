@@ -353,7 +353,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                             Assign *assgn = dynamic_cast<Assign *>(s);
 
                             if (assgn && s->isAssign() && assgn->getType()) {
-                                size_t bits = assgn->getType()->getSize();
+                                Type::Size bits = assgn->getType()->getSize();
 
                                 if ((ty == nullptr) || (ty->getSize() == 0)) {
                                     _prog->setGlobalType(gloName, IntegerType::get(bits));

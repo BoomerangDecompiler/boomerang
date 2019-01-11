@@ -35,10 +35,7 @@ public:
     ArrayType &operator=(ArrayType &&other) = default;
 
 public:
-    static std::shared_ptr<ArrayType> get(SharedType p, size_t length = ARRAY_UNBOUNDED)
-    {
-        return std::make_shared<ArrayType>(p, length);
-    }
+    static std::shared_ptr<ArrayType> get(SharedType p, size_t length = ARRAY_UNBOUNDED);
 
 public:
     /// \copydoc Type::operator==
@@ -47,19 +44,17 @@ public:
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
-    /// \copydoc Type::isCompatibleWith
-    virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
-
-public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
     /// \copydoc Type::getSize
-    virtual size_t getSize() const override;
+    virtual Size getSize() const override;
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
+
+    /// \copydoc Type::isCompatibleWith
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
@@ -76,16 +71,17 @@ public:
     size_t getLength() const { return m_length; }
     void setLength(unsigned n) { m_length = n; }
 
-    /// \returns the new number of elements that fit in this array when converting
-    /// the base type to \p newBaseType
-    size_t convertLength(SharedType newBaseType) const;
-
     /// \returns true iff we do not know the length of the array (yet)
     bool isUnbounded() const;
 
 protected:
     /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
+
+private:
+    /// \returns the new number of elements that fit in this array when converting
+    /// the base type to \p newBaseType
+    size_t convertLength(SharedType newBaseType) const;
 
 private:
     SharedType m_baseType;

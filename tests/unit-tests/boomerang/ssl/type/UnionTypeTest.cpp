@@ -126,44 +126,40 @@ void UnionTest::testGetCtype()
 }
 
 
-void UnionTest::testIsCompatible()
+void UnionTest::testIsCompatibleWith()
 {
     UnionType leftU1, rightU1{ VoidType::get() };
-    QVERIFY(leftU1.isCompatible(rightU1, true));
-    QVERIFY(leftU1.isCompatible(rightU1, false));
+    QVERIFY(leftU1.isCompatibleWith(rightU1, true));
+    QVERIFY(leftU1.isCompatibleWith(rightU1, false));
 
     UnionType leftU2;
     SharedType right2 = VoidType::get();
-    QVERIFY(leftU2.isCompatible(*right2, true));
-    QVERIFY(leftU2.isCompatible(*right2, false));
+    QVERIFY(leftU2.isCompatibleWith(*right2, true));
+    QVERIFY(leftU2.isCompatibleWith(*right2, false));
 
     UnionType leftU3{ IntegerType::get(32, Sign::Signed) };
     UnionType rightU3{ IntegerType::get(32, Sign::Signed) };
-    QVERIFY(leftU3.isCompatible(rightU3, true));
-    QVERIFY(leftU3.isCompatible(rightU3, false));
-    QVERIFY(leftU3.isCompatible(leftU3, true));
-    QVERIFY(leftU3.isCompatible(leftU3, false));
+    QVERIFY(leftU3.isCompatibleWith(rightU3, true));
+    QVERIFY(leftU3.isCompatibleWith(rightU3, false));
+    QVERIFY(leftU3.isCompatibleWith(leftU3, true));
+    QVERIFY(leftU3.isCompatibleWith(leftU3, false));
 
     UnionType leftU4{ FloatType::get(32), IntegerType::get(32, Sign::Signed) };
     UnionType rightU4{ IntegerType::get(32, Sign::Signed) };
-    QVERIFY(leftU4.isCompatible(rightU4, true));
-    QVERIFY(leftU4.isCompatible(rightU4, false));
-    QVERIFY(rightU4.isCompatible(leftU4, true));
-    QVERIFY(rightU4.isCompatible(leftU4, false));
-
+    QVERIFY(leftU4.isCompatibleWith(rightU4, true));
+    QVERIFY(leftU4.isCompatibleWith(rightU4, false));
+    QVERIFY(rightU4.isCompatibleWith(leftU4, true));
+    QVERIFY(rightU4.isCompatibleWith(leftU4, false));
 }
 
 
 void UnionTest::testGetNumTypes()
 {
-    UnionType u1;
-//     QCOMPARE(u1.getSize(), 1);
+    UnionType u1{ SizeType::get(32) };
+    QCOMPARE(u1.getNumTypes(), 1);
 
-    UnionType u2{ SizeType::get(32) };
+    UnionType u2{ IntegerType::get(32, Sign::Signed), SizeType::get(32) };
     QCOMPARE(u2.getNumTypes(), 1);
-
-    UnionType u3{ IntegerType::get(32, Sign::Signed), SizeType::get(32) };
-    QCOMPARE(u3.getNumTypes(), 1);
 }
 
 
@@ -177,7 +173,6 @@ void UnionTest::testHasType()
     QVERIFY(!u2.hasType(VoidType::get()));
     QVERIFY(!u2.hasType(FloatType::get(32)));
     QVERIFY(u2.hasType(IntegerType::get(32, Sign::Signed)));
-//     QVERIFY(u2.hasType(SizeType::get(32)));
 }
 
 

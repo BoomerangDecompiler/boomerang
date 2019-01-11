@@ -25,6 +25,11 @@ PointerType::~PointerType()
 {
 }
 
+std::shared_ptr<PointerType> PointerType::get(SharedType pointsTo)
+{
+    return std::make_shared<PointerType>(pointsTo);
+}
+
 
 void PointerType::setPointsTo(SharedType p)
 {
@@ -47,13 +52,13 @@ SharedType PointerType::clone() const
 }
 
 
-size_t PointerType::getSize() const
+Type::Size PointerType::getSize() const
 {
     return STD_SIZE;
 }
 
 
-void PointerType::setSize(size_t sz)
+void PointerType::setSize(Type::Size sz)
 {
     Q_UNUSED(sz);
     assert(sz == STD_SIZE);
@@ -92,7 +97,7 @@ bool PointerType::operator==(const Type &other) const
 bool PointerType::operator<(const Type &other) const
 {
     if (m_id != other.getId()) {
-        return false;
+        return m_id < other.getId();
     }
 
     return *m_pointsTo < *static_cast<const PointerType &>(other).m_pointsTo;

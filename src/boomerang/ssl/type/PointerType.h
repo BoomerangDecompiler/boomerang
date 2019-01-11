@@ -27,10 +27,7 @@ public:
     PointerType &operator=(PointerType &&other) = default;
 
 public:
-    static std::shared_ptr<PointerType> get(SharedType t)
-    {
-        return std::make_shared<PointerType>(t);
-    }
+    static std::shared_ptr<PointerType> get(SharedType pointsTo);
 
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
@@ -44,10 +41,10 @@ public:
 
 public:
     /// \copydoc Type::getSize
-    virtual size_t getSize() const override;
+    virtual Size getSize() const override;
 
     /// \copydoc Type::setSize
-    virtual void setSize(size_t sz) override;
+    virtual void setSize(Size sz) override;
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;

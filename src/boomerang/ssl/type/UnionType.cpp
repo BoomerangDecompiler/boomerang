@@ -50,6 +50,23 @@ UnionType::~UnionType()
 {
 }
 
+std::shared_ptr<UnionType> UnionType::get()
+{
+    return std::make_shared<UnionType>();
+}
+
+
+std::shared_ptr<UnionType> UnionType::get(const std::initializer_list<SharedType> members)
+{
+    return std::make_shared<UnionType>(members);
+}
+
+
+std::shared_ptr<UnionType> UnionType::get(const std::initializer_list<Member> members)
+{
+    return std::make_shared<UnionType>(members);
+}
+
 
 SharedType UnionType::clone() const
 {
@@ -63,16 +80,16 @@ SharedType UnionType::clone() const
 }
 
 
-size_t UnionType::getSize() const
+Type::Size UnionType::getSize() const
 {
-    size_t max = 0;
+    Size max = 0;
 
     for (auto &[ty, name] : m_entries) {
         Q_UNUSED(name);
         max = std::max(max, ty->getSize());
     }
 
-    return std::max(max, (size_t)1);
+    return std::max(max, (Size)1);
 }
 
 
@@ -349,4 +366,10 @@ SharedType UnionType::simplify(bool &changed) const
     else {
         return const_cast<UnionType *>(this)->shared_from_this();
     }
+}
+
+
+bool UnionType::isCompatibleWith(const Type &other, bool all) const
+{
+    return isCompatible(other, all);
 }

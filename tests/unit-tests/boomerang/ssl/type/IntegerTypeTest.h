@@ -13,15 +13,16 @@
 #include "TestUtils.h"
 
 
-class DataIntervalMapTest : public BoomerangTestWithPlugins
+class IntegerTypeTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void testDataInterval();
-    void testDataIntervalOverlaps();
-
-    void testIsClear();
-    void testFind();
-    void testInsert();
+    void testConstruct();
+    void testEquals();
+    void testLess();
+    void testIsComplete();
+    void testSigned(); // isSigned/isMaybeUnsigned etc.
+    void testGetCtype();
+    void testIsCompatibleWith();
 };

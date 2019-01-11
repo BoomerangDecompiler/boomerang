@@ -53,30 +53,21 @@ public:
     UnionType &operator=(UnionType &&other) = default;
 
 public:
-    static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
-    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> members)
-    {
-        return std::make_shared<UnionType>(members);
-    }
+    static std::shared_ptr<UnionType> get();
+    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> members);
+    static std::shared_ptr<UnionType> get(const std::initializer_list<Member> members);
 
-    static std::shared_ptr<UnionType> get(const std::initializer_list<Member> members)
-    {
-        return std::make_shared<UnionType>(members);
-    }
-
-public:
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
     /// \copydoc Type::getSize
-    virtual size_t getSize() const override;
+    virtual Size getSize() const override;
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
@@ -85,13 +76,7 @@ public:
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
     /// \copydoc Type::isCompatibleWith
-    virtual bool isCompatibleWith(const Type &other, bool all) const override
-    {
-        return isCompatible(other, all);
-    }
-
-    /// \copydoc Type::isCompatible
-    virtual bool isCompatible(const Type &other, bool all) const override;
+    virtual bool isCompatibleWith(const Type &other, bool all) const override;
 
 public:
     /// \returns the number of distinct types in this union.
@@ -104,6 +89,10 @@ public:
     /// If this union has no types, return VoidType.
     /// Otherwise, return this.
     SharedType simplify(bool &changed) const;
+
+protected:
+    /// \copydoc Type::isCompatible
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
     /**
