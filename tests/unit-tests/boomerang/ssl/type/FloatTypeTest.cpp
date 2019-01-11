@@ -31,13 +31,13 @@ void FloatTypeTest::testConstruct()
 
 void FloatTypeTest::testEquals()
 {
-    QVERIFY(FloatType(64) == FloatType(64));
-    QVERIFY(FloatType(32) != FloatType(64));
-    QVERIFY(FloatType(0) == FloatType(64));
-    QVERIFY(FloatType(32) == FloatType(0));
-    QVERIFY(FloatType(7) == FloatType(7));
+    QCOMPARE(FloatType(64) == FloatType(64), true);
+    QCOMPARE(FloatType(32) == FloatType(64), false);
+    QCOMPARE(FloatType(0)  == FloatType(64), true);
+    QCOMPARE(FloatType(32) == FloatType(0),  true);
+    QCOMPARE(FloatType(7)  == FloatType(7),  true);
 
-    QVERIFY(FloatType(32) != IntegerType(32));
+    QCOMPARE(FloatType(32) == IntegerType(32), false);
 }
 
 
