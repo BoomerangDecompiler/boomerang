@@ -22,7 +22,11 @@
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/ExpCastInserter.h"
+#include "boomerang/visitor/expvisitor/ExpRegMapper.h"
 #include "boomerang/visitor/stmtmodifier/StmtSSAXFormer.h"
+#include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtRegMapper.h"
 
 
 FromSSAFormPass::FromSSAFormPass()
@@ -40,9 +44,11 @@ bool FromSSAFormPass::execute(UserProc *proc)
 
     for (Statement *s : stmts) {
         // Map registers to initial local variables
-        s->mapRegistersToLocals();
+        mapRegistersToLocals(s);
+
         // Insert casts where needed, as types are about to become inaccessible
-        s->insertCasts();
+        insertCastsForStmt(s);
+
     }
 
     // First split the live ranges where needed by reason of type incompatibility, i.e. when the
@@ -469,4 +475,26 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
             pu.connect(reLhs, re);
         }
     }
+}
+
+
+void FromSSAFormPass::insertCastsForStmt(Statement* stmt)
+{
+    // First we postvisit expressions using a StmtModifier and an ExpCastInserter
+    ExpCastInserter eci;
+    StmtModifier sm(&eci, true); // True to ignore collectors
+    stmt->accept(&sm);
+
+    // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
+    StmtCastInserter sci;
+    stmt->accept(&sci);
+}
+
+
+void FromSSAFormPass::mapRegistersToLocals(Statement* stmt)
+{
+    ExpRegMapper erm(stmt->getProc());
+    StmtRegMapper srm(&erm);
+
+    stmt->accept(&srm);
 }

@@ -14,6 +14,7 @@
 
 
 class ConnectionGraph;
+class Statement;
 
 
 /// Transforms the statements a proc out of SSA form
@@ -47,4 +48,9 @@ private:
 
     /// Find the locations united by Phi-functions
     void findPhiUnites(UserProc *proc, ConnectionGraph &pu);
+
+    void insertCastsForStmt(Statement *stmt);
+
+    /// map registers and temporaries to local variables
+    void mapRegistersToLocals(Statement *stmt);
 };

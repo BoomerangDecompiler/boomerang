@@ -129,7 +129,6 @@ public:
     virtual void setNumber(int num) { m_number = num; }
 
     StmtType getKind() const { return m_kind; }
-    void setKind(StmtType k) { m_kind = k; }
 
     /// Accept a visitor (of various kinds) to this Statement.
     /// \return true to continue visiting
@@ -256,12 +255,6 @@ public:
     /// Only Assignments override at present
     virtual void simplifyAddr() {}
 
-    /// map registers and temporaries to local variables
-    void mapRegistersToLocals();
-
-    /// insert casts where needed, since fromSSA will erase type information
-    void insertCasts();
-
     /// Meet the type associated with \p e with \p ty
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);
 
@@ -277,10 +270,6 @@ public:
      * \param memOnly   only add memory references.
      */
     void addUsedLocs(LocationSet &used, bool countCols = false, bool memOnly = false);
-
-    /// Special version of Statement::addUsedLocs for finding used locations.
-    /// \return true if defineAll was found
-    bool addUsedLocals(LocationSet &used);
 
     /// Fix references to the returns of call statements
     /// Bypass calls for references in this statement

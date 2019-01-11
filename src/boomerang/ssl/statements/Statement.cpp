@@ -537,16 +537,6 @@ void Statement::addUsedLocs(LocationSet &used, bool cc /* = false */, bool memOn
 }
 
 
-bool Statement::addUsedLocals(LocationSet &used)
-{
-    UsedLocalFinder ulf(used, m_proc);
-    UsedLocsVisitor ulv(&ulf, false);
-
-    accept(&ulv);
-    return ulf.wasAllFound();
-}
-
-
 void Statement::subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */)
 {
     ExpSubscripter es(e, def /*, cfg*/);
@@ -562,28 +552,6 @@ void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
     StmtConstFinder scf(&cf);
 
     accept(&scf);
-}
-
-
-void Statement::mapRegistersToLocals()
-{
-    ExpRegMapper erm(m_proc);
-    StmtRegMapper srm(&erm);
-
-    accept(&srm);
-}
-
-
-void Statement::insertCasts()
-{
-    // First we postvisit expressions using a StmtModifier and an ExpCastInserter
-    ExpCastInserter eci;
-    StmtModifier sm(&eci, true); // True to ignore collectors
-    accept(&sm);
-
-    // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
-    StmtCastInserter sci;
-    accept(&sci);
 }
 
 
