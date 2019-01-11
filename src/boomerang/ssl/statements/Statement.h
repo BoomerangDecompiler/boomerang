@@ -262,10 +262,6 @@ public:
     /// map registers and temporaries to local variables
     void mapRegistersToLocals();
 
-    /// The last part of the fromSSA logic: replace subscripted locations with suitable local
-    /// variables
-    void replaceSubscriptsWithLocals();
-
     /// insert casts where needed, since fromSSA will erase type information
     void insertCasts();
 
@@ -323,11 +319,10 @@ public:
     /// Set the type for the definition of \p e in this Statement to \p ty
     virtual void setTypeForExp(SharedExp exp, SharedType ty);
 
+    /// Propagate to e from definition statement def.
     /// Parameter convert is set true if an indirect call is converted to direct
     /// Return true if a change made
     /// Note: this procedure does not control what part of this statement is propagated to
-    /// Propagate to e from definition statement def.
-    /// Set convert to true if convert a call from indirect to direct.
     bool doPropagateTo(const SharedExp &e, Assignment *def, bool &convert, Settings *settings);
 
     /// returns true if e1 may alias e2

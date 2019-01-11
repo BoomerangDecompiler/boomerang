@@ -236,7 +236,12 @@ bool FromSSAFormPass::execute(UserProc *proc)
     removeSubscriptsFromParameters(proc);
 
     for (Statement *s : stmts) {
-        s->replaceSubscriptsWithLocals();
+        // The last part of the fromSSA logic:
+        // replace subscripted locations with suitable local variables
+        ExpSSAXformer esx(proc);
+        StmtSSAXformer ssx(&esx, proc);
+
+        accept(&ssx);
     }
 
     // Now remove the phis

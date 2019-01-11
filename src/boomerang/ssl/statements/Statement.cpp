@@ -587,15 +587,6 @@ void Statement::insertCasts()
 }
 
 
-void Statement::replaceSubscriptsWithLocals()
-{
-    ExpSSAXformer esx(m_proc);
-    StmtSSAXformer ssx(&esx, m_proc);
-
-    accept(&ssx);
-}
-
-
 void Statement::dfaMapLocals()
 {
     DfaLocalMapper dlm(m_proc);
