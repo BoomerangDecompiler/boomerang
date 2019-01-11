@@ -18,10 +18,6 @@ class TypeTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
-    void testTypeLong();
-    void testNotEqual();
-    void testCompound();
-
     // Test the DataIntervalMap class
     void testDataInterval();
     void testDataIntervalOverlaps();

@@ -89,67 +89,6 @@ std::unique_ptr<ComplexTypeCompList> compForAddress(Address addr, DataIntervalMa
 }
 
 
-void TypeTest::testTypeLong()
-{
-    QCOMPARE(IntegerType::get(64, Sign::Unsigned)->getCtype(), QString("unsigned long long"));
-}
-
-
-void TypeTest::testNotEqual()
-{
-    auto t1(IntegerType::get(32, Sign::Unsigned));
-    auto t2(IntegerType::get(32, Sign::Unsigned));
-    auto t3(IntegerType::get(16, Sign::Unsigned));
-
-    QVERIFY(!(*t1 != *t2));
-    QVERIFY(*t2 != *t3);
-}
-
-
-void TypeTest::testCompound()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
-
-    Prog *prog = m_project.getProg();
-    prog->readDefaultLibraryCatalogues();
-
-    std::shared_ptr<Signature> paintSig = prog->getLibSignature("BeginPaint");
-    const SharedType paramType = paintSig->getParamType(1);
-
-    QVERIFY(paramType != nullptr);
-    QCOMPARE(paramType->getCtype(), QString("LPPAINTSTRUCT"));
-
-    const SharedType paintStructType = paramType->as<PointerType>()->getPointsTo();
-    QVERIFY(paintStructType != nullptr);
-    QCOMPARE(paintStructType->getCtype(), QString("PAINTSTRUCT"));
-
-    // Offset 8 should have a RECT
-    SharedType subTy    = paintStructType->as<CompoundType>()->getMemberTypeByOffset(8 * 8);
-    QString    expected = "struct { "
-                          "unsigned int left; "
-                          "unsigned int top; "
-                          "unsigned int right; "
-                          "unsigned int bottom; "
-                          "}";
-    QCOMPARE(subTy->getCtype(true), expected);
-
-    // Name at offset 0x0C should be bottom
-    QCOMPARE(subTy->as<CompoundType>()->getMemberNameByOffset(0x0C * 8), QString("bottom"));
-
-    // Now figure out the name at offset 8+C
-    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 0x0C) * 8), QString("rcPaint"));
-
-    // Also at offset 8
-    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 0) * 8), QString("rcPaint"));
-
-    // Also at offset 8+4
-    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 4) * 8), QString("rcPaint"));
-
-    // And at offset 8+8
-    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 8) * 8), QString("rcPaint"));
-}
-
-
 void TypeTest::testDataInterval()
 {
     Prog            *prog = new Prog("test", &m_project);
