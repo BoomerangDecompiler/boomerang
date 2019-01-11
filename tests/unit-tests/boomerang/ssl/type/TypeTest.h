@@ -13,12 +13,9 @@
 #include "TestUtils.h"
 
 
-class TypeTest : public BoomerangTestWithPlugins
+class TypeTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    // Test the DataIntervalMap class
-    void testDataInterval();
-    void testDataIntervalOverlaps();
 };
