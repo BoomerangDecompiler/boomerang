@@ -47,11 +47,11 @@ bool FuncType::operator==(const Type &other) const
 
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been
     // successfully analysed)
-    if (!m_signature) {
-        return otherFunc.m_signature == nullptr;
+    if (m_signature.get() != otherFunc.getSignature()) {
+        return false;
     }
 
-    return *m_signature == *otherFunc.m_signature;
+    return m_signature ? *m_signature == *otherFunc.m_signature : true;
 }
 
 
@@ -67,7 +67,7 @@ bool FuncType::operator<(const Type &other) const
         return otherFunc.m_signature ? *m_signature < *otherFunc.m_signature : false;
     }
     else {
-        return false;
+        return otherFunc.getSignature() != nullptr;
     }
 }
 

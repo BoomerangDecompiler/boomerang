@@ -17,6 +17,7 @@ set(TESTS
     type/CharTypeTest
     type/CompoundTypeTest
     type/FloatTypeTest
+    type/FuncTypeTest
     type/IntegerTypeTest
     type/PointerTypeTest
     type/MeetTest
@@ -24,6 +25,7 @@ set(TESTS
     RTLTest
     type/UnionTypeTest
 )
+
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
