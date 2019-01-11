@@ -276,12 +276,13 @@ public:
      * Find the locations used by expressions in this Statement.
      * Use the StmtExpVisitor and UsedLocsFinder visitor classes
      * Adds (inserts) all locations (registers or memory etc) used by this statement
-     * Set \a cc to true to count the uses in collectors
-     * \param used set of used locations
-     * \param cc count collectors
-     * \param memOnly - only add memory references.
+     * Set \p coutCols to true to count the uses in collectors
+     *
+     * \param used      set of used locations
+     * \param countCols count collectors
+     * \param memOnly   only add memory references.
      */
-    void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
+    void addUsedLocs(LocationSet &used, bool countCols = false, bool memOnly = false);
 
     /// Special version of Statement::addUsedLocs for finding used locations.
     /// \return true if defineAll was found
