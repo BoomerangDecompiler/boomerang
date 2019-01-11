@@ -24,7 +24,7 @@ NamedType::~NamedType()
 }
 
 
-std::shared_ptr<NamedType> NamedType::get(const QString& name)
+std::shared_ptr<NamedType> NamedType::get(const QString &name)
 {
     return std::make_shared<NamedType>(name);
 }
@@ -111,19 +111,19 @@ SharedType NamedType::meetWith(SharedType other, bool &changed, bool useHighestP
 
 bool NamedType::isCompatible(const Type &other, bool /*all*/) const
 {
-    if (other.isNamed() && (m_name == static_cast<const NamedType &>(other).getName())) {
+    if (*this == other) {
         return true;
     }
 
     SharedType resTo = resolvesTo();
 
     if (resTo) {
-        return resolvesTo()->isCompatibleWith(other);
+        return resTo->isCompatibleWith(other);
     }
 
     if (other.resolvesToVoid()) {
         return true;
     }
 
-    return *this == other;
+    return false; // was *this == other, but this case is already handled above
 }

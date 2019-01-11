@@ -18,6 +18,7 @@ set(TESTS
     type/CompoundTypeTest
     type/FloatTypeTest
     type/FuncTypeTest
+    type/NamedTypeTest
     type/IntegerTypeTest
     type/PointerTypeTest
     type/MeetTest

@@ -369,7 +369,7 @@ SharedType UnionType::simplify(bool &changed) const
 }
 
 
-bool UnionType::isCompatibleWith(const Type& other, bool all) const
+bool UnionType::isCompatibleWith(const Type &other, bool all) const
 {
     return isCompatible(other, all);
 }

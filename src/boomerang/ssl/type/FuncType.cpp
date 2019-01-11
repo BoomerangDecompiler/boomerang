@@ -25,7 +25,7 @@ FuncType::~FuncType()
 }
 
 
-std::shared_ptr<FuncType> FuncType::get(const std::shared_ptr<Signature>& sig)
+std::shared_ptr<FuncType> FuncType::get(const std::shared_ptr<Signature> &sig)
 {
     return std::make_shared<FuncType>(sig);
 }
