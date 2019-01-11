@@ -30,22 +30,17 @@ public:
     FuncType &operator=(FuncType &&other) = default;
 
 public:
-    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature> &sig = nullptr)
-    {
-        return std::make_shared<FuncType>(sig);
-    }
+    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature> &sig = nullptr);
 
-    /// \copydoc Type::clone
-    virtual SharedType clone() const override;
-
-public:
     ///\copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
+
     /// \copydoc Type::getSize
     virtual Size getSize() const override;
 

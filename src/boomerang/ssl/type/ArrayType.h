@@ -35,10 +35,7 @@ public:
     ArrayType &operator=(ArrayType &&other) = default;
 
 public:
-    static std::shared_ptr<ArrayType> get(SharedType p, size_t length = ARRAY_UNBOUNDED)
-    {
-        return std::make_shared<ArrayType>(p, length);
-    }
+    static std::shared_ptr<ArrayType> get(SharedType p, size_t length = ARRAY_UNBOUNDED);
 
 public:
     /// \copydoc Type::operator==
@@ -46,9 +43,6 @@ public:
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
-
-    /// \copydoc Type::isCompatibleWith
-    virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
@@ -58,6 +52,9 @@ public:
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
+
+    /// \copydoc Type::isCompatibleWith
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;

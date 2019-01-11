@@ -35,15 +35,14 @@ public:
     static std::shared_ptr<SizeType> get();
     static std::shared_ptr<SizeType> get(Size sz);
 
-    /// \copydoc Type::clone
-    virtual SharedType clone() const override;
-
-public:
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
+
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
 
     /// \copydoc Type::getSize
     virtual Size getSize() const override;

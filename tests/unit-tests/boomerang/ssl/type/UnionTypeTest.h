@@ -22,7 +22,7 @@ private slots:
     void testGetSize();
     void testGetCtype();
     // meetWith is tested separately by MeetTest
-    void testIsCompatible();
+    void testIsCompatibleWith();
     void testGetNumTypes();
     void testHasType();
 };

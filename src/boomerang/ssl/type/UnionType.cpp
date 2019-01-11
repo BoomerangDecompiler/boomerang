@@ -50,6 +50,23 @@ UnionType::~UnionType()
 {
 }
 
+std::shared_ptr<UnionType> UnionType::get()
+{
+    return std::make_shared<UnionType>();
+}
+
+
+std::shared_ptr<UnionType> UnionType::get(const std::initializer_list<SharedType> members)
+{
+    return std::make_shared<UnionType>(members);
+}
+
+
+std::shared_ptr<UnionType> UnionType::get(const std::initializer_list<Member> members)
+{
+    return std::make_shared<UnionType>(members);
+}
+
 
 SharedType UnionType::clone() const
 {
@@ -349,4 +366,10 @@ SharedType UnionType::simplify(bool &changed) const
     else {
         return const_cast<UnionType *>(this)->shared_from_this();
     }
+}
+
+
+bool UnionType::isCompatibleWith(const Type& other, bool all) const
+{
+    return isCompatible(other, all);
 }

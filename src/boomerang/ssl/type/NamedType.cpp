@@ -12,15 +12,21 @@
 #include "boomerang/util/log/Log.h"
 
 
-NamedType::NamedType(const QString &_name)
+NamedType::NamedType(const QString &name)
     : Type(TypeClass::Named)
-    , m_name(_name)
+    , m_name(name)
 {
 }
 
 
 NamedType::~NamedType()
 {
+}
+
+
+std::shared_ptr<NamedType> NamedType::get(const QString& name)
+{
+    return std::make_shared<NamedType>(name);
 }
 
 

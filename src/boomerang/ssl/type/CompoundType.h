@@ -33,24 +33,19 @@ public:
     CompoundType &operator=(CompoundType &&other) = default;
 
 public:
+    static std::shared_ptr<CompoundType> get() { return std::make_shared<CompoundType>(); }
+
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
-    static std::shared_ptr<CompoundType> get() { return std::make_shared<CompoundType>(); }
-
-public:
     /// \copydoc Type::getSize
     virtual Size getSize() const override;
-
-    /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
     /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
@@ -58,6 +53,10 @@ public:
     /// \copydoc Type::isCompatibleWith
     virtual bool isCompatibleWith(const Type &other, bool all = false) const override;
 
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+public:
     /// \returns true if this is a superstructure of \p other,
     /// i.e. we have the same types at the same offsets as \p other
     bool isSuperStructOf(const SharedConstType &other) const;

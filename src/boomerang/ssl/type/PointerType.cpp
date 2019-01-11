@@ -25,6 +25,11 @@ PointerType::~PointerType()
 {
 }
 
+std::shared_ptr<PointerType> PointerType::get(SharedType pointsTo)
+{
+    return std::make_shared<PointerType>(pointsTo);
+}
+
 
 void PointerType::setPointsTo(SharedType p)
 {

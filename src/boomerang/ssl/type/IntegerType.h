@@ -29,19 +29,20 @@ public:
 public:
     static std::shared_ptr<IntegerType> get(Size numBits, Sign sign = Sign::Unknown);
 
-    /// \copydoc Type::clone
-    virtual SharedType clone() const override;
-
-public:
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
+
     /// \copydoc Type::isComplete
     virtual bool isComplete() override;
+
+    /// \copydoc Type::getCtype
+    virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::getSize
     virtual Size getSize() const override;
@@ -49,6 +50,10 @@ public:
     /// \copydoc Type::setSize
     virtual void setSize(Size sz) override { m_size = sz; }
 
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+public:
     /// \returns true if definitely signed
     bool isSigned() const { return m_sign > Sign::Unknown; }
 
@@ -70,12 +75,6 @@ public:
 
     void setSignedness(Sign sign) { m_sign = sign; }
     Sign getSign() const { return m_sign; }
-
-    /// \coypdoc Type::getCtype
-    virtual QString getCtype(bool final = false) const override;
-
-    /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
 protected:
     /// \copydoc Type::isCompatible

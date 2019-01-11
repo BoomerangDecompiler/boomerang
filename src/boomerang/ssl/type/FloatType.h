@@ -27,19 +27,17 @@ public:
     FloatType &operator=(FloatType &&other) = default;
 
 public:
+    static std::shared_ptr<FloatType> get(Size numBits);
+
     /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-public:
-    static std::shared_ptr<FloatType> get(Size numBits);
-
     /// \copydoc Type::clone
     virtual SharedType clone() const override;
 
-public:
     /// \copydoc Type::getSize
     virtual Size getSize() const override;
 

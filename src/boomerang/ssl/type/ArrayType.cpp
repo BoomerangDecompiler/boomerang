@@ -18,6 +18,12 @@ ArrayType::ArrayType(SharedType baseType, size_t length)
 }
 
 
+std::shared_ptr<ArrayType> ArrayType::get(SharedType p, size_t length)
+{
+    return std::make_shared<ArrayType>(p, length);
+}
+
+
 bool ArrayType::isCompatibleWith(const Type &other, bool all) const
 {
     return isCompatible(other, all);
