@@ -28,7 +28,7 @@ SharedType CompoundType::clone() const
 {
     auto t = CompoundType::get();
 
-    for (unsigned i = 0; i < m_types.size(); i++) {
+    for (int i = 0; i < getNumMembers(); i++) {
         t->addMember(m_types[i]->clone(), m_names[i]);
     }
 
@@ -46,7 +46,7 @@ Type::Size CompoundType::getSize() const
 {
     Size size = 0;
 
-    for (auto &elem : m_types) {
+    for (const SharedConstType &elem : m_types) {
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
         size += elem->getSize();
     }
