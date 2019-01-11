@@ -193,12 +193,6 @@ void Assign::generateCode(ICodeGenerator *gen) const
 }
 
 
-int Assign::getMemDepth() const
-{
-    return std::max(m_lhs->getMemDepth(), m_rhs->getMemDepth());
-}
-
-
 bool Assign::usesExp(const Exp &e) const
 {
     SharedExp where = nullptr;

@@ -116,11 +116,6 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
             const Assignment *as  = static_cast<const Assignment *>(s);
             SharedConstExp asLeft = as->getLeft();
 
-            // If depth < 0, consider all depths
-            // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-            //    ++ll;
-            //    continue;
-            // }
             if (asLeft && (asLeft->getOper() == opGlobal)) {
                 // assignments to globals must always be kept
                 ++ll;

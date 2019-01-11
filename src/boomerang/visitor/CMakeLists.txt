@@ -15,7 +15,6 @@ list(APPEND boomerang-visitor-sources
     visitor/expvisitor/ExpRegMapper
     visitor/expvisitor/ExpVisitor
     visitor/expvisitor/FlagsFinder
-    visitor/expvisitor/MemDepthFinder
     visitor/expvisitor/PrimitiveTester
     visitor/expvisitor/UsedLocalFinder
     visitor/expvisitor/UsedLocsFinder

@@ -41,7 +41,6 @@
 #include "boomerang/visitor/expvisitor/BadMemofFinder.h"
 #include "boomerang/visitor/expvisitor/ComplexityFinder.h"
 #include "boomerang/visitor/expvisitor/FlagsFinder.h"
-#include "boomerang/visitor/expvisitor/MemDepthFinder.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 
 #include <QRegularExpression>
@@ -512,15 +511,6 @@ int Exp::getComplexityDepth(UserProc *proc)
 
     acceptVisitor(&cf);
     return cf.getDepth();
-}
-
-
-int Exp::getMemDepth()
-{
-    MemDepthFinder mdf;
-
-    acceptVisitor(&mdf);
-    return mdf.getDepth();
 }
 
 
