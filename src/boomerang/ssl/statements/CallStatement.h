@@ -162,9 +162,6 @@ public:
     Function *getDestProc();
     const Function *getDestProc() const;
 
-    /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp &exp) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 

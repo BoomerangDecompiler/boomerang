@@ -82,14 +82,6 @@ bool Assignment::definesLoc(SharedExp loc) const
 }
 
 
-bool Assignment::usesExp(const Exp &e) const
-{
-    SharedExp where = nullptr;
-
-    return (m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where);
-}
-
-
 void Assignment::getDefinitions(LocationSet &defs, bool) const
 {
     if (m_lhs->getOper() == opAt) { // foo@[m:n] really only defines foo

@@ -188,9 +188,6 @@ public:
     /// \returns true if this Statement defines loc
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }
 
-    /// returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp &exp) const = 0;
-
     /**
      * Display a text reprentation of this statement to the given stream
      * \note  Usually called from RTL::print, in which case the first 9

@@ -52,10 +52,6 @@ public:
     /// \copydoc Statement::setTypeFor
     virtual void setTypeForExp(SharedExp e, SharedType ty) override;
 
-    /// \copydoc Statement::usesExp
-    /// \internal PhiAssign and ImplicitAssign don't override
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 

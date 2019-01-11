@@ -104,9 +104,6 @@ public:
     // simplify all the uses/defs in this Statement
     virtual void simplify() override;
 
-    // Statement virtual functions
-    virtual bool usesExp(const Exp &) const override;
-
 protected:
     /// Destination of a jump or call. This is the absolute destination
     /// for both static and dynamic CTIs.

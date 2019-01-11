@@ -51,9 +51,6 @@ public:
     /// \copydoc Assignment::printCompact
     virtual void printCompact(OStream &os) const override;
 
-    /// \copydoc Assignment::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Assignment::search
     virtual bool search(const Exp &search, SharedExp &result) const override;
 

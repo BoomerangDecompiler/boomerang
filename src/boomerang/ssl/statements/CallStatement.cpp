@@ -607,28 +607,6 @@ void CallStatement::simplify()
 }
 
 
-bool CallStatement::usesExp(const Exp &e) const
-{
-    if (GotoStatement::usesExp(e)) {
-        return true;
-    }
-
-    for (const Statement *arg : m_arguments) {
-        if (arg->usesExp(e)) {
-            return true;
-        }
-    }
-
-    for (const Statement *def : m_defines) {
-        if (def->usesExp(e)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
 void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
 {
     for (Statement *def : m_defines) {

@@ -73,9 +73,6 @@ public:
     /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
-    /// \copydoc Statement::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 

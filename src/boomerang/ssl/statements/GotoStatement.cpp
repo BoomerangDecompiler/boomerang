@@ -180,14 +180,6 @@ void GotoStatement::simplify()
 }
 
 
-bool GotoStatement::usesExp(const Exp &e) const
-{
-    SharedExp where;
-
-    return m_dest->search(e, where);
-}
-
-
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;

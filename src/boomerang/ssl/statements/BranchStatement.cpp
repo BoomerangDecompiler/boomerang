@@ -261,14 +261,6 @@ bool BranchStatement::accept(StmtVisitor *visitor) const
 }
 
 
-bool BranchStatement::usesExp(const Exp &e) const
-{
-    SharedExp tmp;
-
-    return m_cond && m_cond->search(e, tmp);
-}
-
-
 void BranchStatement::simplify()
 {
     if (m_cond) {

@@ -154,15 +154,6 @@ void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 }
 
 
-bool BoolAssign::usesExp(const Exp &e) const
-{
-    assert(m_lhs && m_cond);
-    SharedExp where = nullptr;
-    return (m_cond->search(e, where) ||
-            (m_lhs->isMemOf() && m_lhs->getSubExp1()->search(e, where)));
-}
-
-
 bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 {
     assert(m_lhs);

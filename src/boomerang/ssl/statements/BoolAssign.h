@@ -93,9 +93,6 @@ public:
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return getCondExpr(); }
 
-    /// \copydoc Assignment::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::search
     virtual bool search(const Exp &search, SharedExp &result) const override;
 

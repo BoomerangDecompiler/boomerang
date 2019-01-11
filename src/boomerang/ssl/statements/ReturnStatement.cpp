@@ -148,20 +148,6 @@ bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result
 }
 
 
-bool ReturnStatement::usesExp(const Exp &e) const
-{
-    SharedExp where;
-
-    for (Statement *ret : m_returns) {
-        if (ret->search(e, where)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
 bool ReturnStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
