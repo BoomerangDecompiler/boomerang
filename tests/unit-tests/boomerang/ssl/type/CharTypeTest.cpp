@@ -27,9 +27,9 @@ void CharTypeTest::testConstruct()
 
 void CharTypeTest::testEquals()
 {
-    QVERIFY(CharType() == CharType());
-    QVERIFY(CharType() != VoidType());
-    QVERIFY(CharType() != SizeType(8));
+    QCOMPARE(CharType() == CharType(), true);
+    QCOMPARE(CharType() == VoidType(), false);
+    QCOMPARE(CharType() == SizeType(8), false);
 }
 
 
@@ -62,7 +62,6 @@ void CharTypeTest::testIsCompatibleWith()
     QVERIFY(!CharType().isCompatibleWith(UnionType({ SizeType::get(32) })));
     QVERIFY(CharType().isCompatibleWith(ArrayType(CharType::get())));
     QVERIFY(!CharType().isCompatibleWith(ArrayType(SizeType::get(32))));
-
 }
 
 

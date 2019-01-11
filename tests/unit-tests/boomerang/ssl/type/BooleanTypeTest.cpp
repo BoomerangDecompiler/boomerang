@@ -29,9 +29,9 @@ void BooleanTypeTest::testConstruct()
 
 void BooleanTypeTest::testEquals()
 {
-    QVERIFY(BooleanType() == BooleanType());
-    QVERIFY(BooleanType() != IntegerType(1));
-    QVERIFY(BooleanType() != SizeType(1));
+    QCOMPARE(BooleanType() == BooleanType(), true);
+    QCOMPARE(BooleanType() == IntegerType(1), false);
+    QCOMPARE(BooleanType() == SizeType(1), false);
 }
 
 
