@@ -199,14 +199,16 @@ public:
     /// Print this statement to a string
     QString toString() const;
 
-    /// general search
+    /// Search for the expression \p pattern in this statement.
+    /// If found, put the found expression into \p result and return true.
+    /// Otherwise, return false.
     virtual bool search(const Exp &pattern, SharedExp &result) const = 0;
 
     /**
-     * Find all instances of \p pattern and adds all found expressions
+     * Find all instances of \p pattern and add all found expressions
      * to \p result in reverse nesting order.
      *
-     * \param   pattern an expression to search for
+     * \param   pattern the expression pattern to search for
      * \param   result  a list which will have any matching exps
      *                  appended to it in reverse nesting order.
      * \returns true if there were any matches
@@ -214,14 +216,15 @@ public:
     virtual bool searchAll(const Exp &pattern, std::list<SharedExp> &result) const = 0;
 
     /**
-     * Replace all instances of search with replace.
-     * \param pattern a location to search for
-     * \param replace the expression with which to replace it
-     * \param cc      Set to true to change collectors as well.
+     * Replace all instances of \p pattern with \p replacement.
+     * \param pattern       an expression pattern to search for
+     * \param replacement   the expression with which to replace it
+     * \param cc            Set to true to change collectors as well.
      * \returns True if any change
      * \todo consider constness
      */
-    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) = 0;
+    virtual bool searchAndReplace(const Exp &pattern, SharedExp replacement,
+                                  bool changeCols = false) = 0;
 
     /**
      * \returns true if can propagate to \p exp (must be a RefExp to return true)
