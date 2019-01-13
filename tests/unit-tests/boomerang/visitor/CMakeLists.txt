@@ -7,3 +7,4 @@
 #
 
 add_subdirectory(expmodifier)
+add_subdirectory(stmtmodifier)

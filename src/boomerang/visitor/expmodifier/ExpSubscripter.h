@@ -16,10 +16,8 @@
 class Statement;
 
 
-/**
- *
- */
-class ExpSubscripter : public ExpModifier
+/// replaces expression e with e{def}
+class BOOMERANG_API ExpSubscripter : public ExpModifier
 {
 public:
     ExpSubscripter(const SharedExp &s, Statement *d);
