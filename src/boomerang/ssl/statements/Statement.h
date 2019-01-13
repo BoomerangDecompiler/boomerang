@@ -284,9 +284,6 @@ public:
     /// Find all constants in this statement
     void findConstants(std::list<std::shared_ptr<Const>> &lc);
 
-    /// Strip all size casts
-    void stripSizes();
-
     // End Statement visitation functions
 
     /// Get the type for the definition, if any, for expression e in this statement

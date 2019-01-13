@@ -1138,37 +1138,6 @@ void StatementTest::testBypass()
 }
 
 
-void StatementTest::testStripSizes()
-{
-    // *v* r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
-    // The double size casting happens as a result of substitution
-    SharedExp lhs = Location::regOf(REG_PENT_EAX);
-    SharedExp rhs = Binary::get(
-        opDiv,
-        Binary::get(opSize,
-                    Const::get(8),
-                    Binary::get(opSize, Const::get(8),
-                                Location::memOf(Binary::get(opPlus,
-                                                            std::make_shared<Ternary>(opZfill,
-                                                                                      Const::get(8),
-                                                                                      Const::get(32),
-                                                                                      Location::local("local5", nullptr)),
-                                                            Location::local("param6", nullptr))))),
-        Const::get(16));
-
-    Statement *s = new Assign(lhs, rhs);
-
-    s->stripSizes();
-    QString     expected("   0 *v* r24 := m[zfill(8, 32, local5) + param6] / 16");
-    QString     actual;
-    OStream ost(&actual);
-    ost << s;
-    QCOMPARE(actual, expected);
-
-    delete s;
-}
-
-
 void StatementTest::testFindConstants()
 {
     Assign a(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));

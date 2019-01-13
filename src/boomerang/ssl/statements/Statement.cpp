@@ -441,15 +441,6 @@ bool Statement::isNullStatement() const
 }
 
 
-void Statement::stripSizes()
-{
-    SizeStripper ss;
-    StmtModifier sm(&ss);
-
-    accept(&sm);
-}
-
-
 void Statement::bypass()
 {
     // Use the Part modifier so we don't change the top level of LHS of assigns etc
