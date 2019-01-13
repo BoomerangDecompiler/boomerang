@@ -290,7 +290,7 @@ public:
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement
-    /// replaces a use in this statement with an expression from an ordinary assignment
+    /// \param convert set to true if an indirect call was converted to a direct call
     /// \returns true if change
     bool replaceRef(SharedExp e, Assignment *def, bool &convert);
 
