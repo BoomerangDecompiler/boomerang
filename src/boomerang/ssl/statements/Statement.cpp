@@ -555,19 +555,6 @@ void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
 }
 
 
-void Statement::dfaMapLocals()
-{
-    DfaLocalMapper dlm(m_proc);
-    StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
-
-    accept(&sm);
-
-    if (dlm.change) {
-        LOG_VERBOSE2("Statement '%1' mapped with new local(s)", this);
-    }
-}
-
-
 SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed)
 {
     bool thisCh        = false;
