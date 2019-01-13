@@ -464,15 +464,6 @@ void Statement::addUsedLocs(LocationSet &used, bool cc /* = false */, bool memOn
 }
 
 
-void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
-{
-    ConstFinder cf(lc);
-    StmtConstFinder scf(&cf);
-
-    accept(&scf);
-}
-
-
 SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed)
 {
     bool thisCh        = false;

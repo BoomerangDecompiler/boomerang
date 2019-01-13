@@ -1138,26 +1138,4 @@ void StatementTest::testBypass()
 }
 
 
-void StatementTest::testFindConstants()
-{
-    Assign a(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
-
-    std::list<std::shared_ptr<Const>> lc;
-    a.findConstants(lc);
-
-    QString     actual;
-    OStream ost(&actual);
-
-    for (auto it = lc.begin(); it != lc.end();) {
-        ost << *it;
-
-        if (++it != lc.end()) {
-            ost << ", ";
-        }
-    }
-
-    QCOMPARE(actual, QString("3, 4"));
-}
-
-
 QTEST_GUILESS_MAIN(StatementTest)

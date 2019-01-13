@@ -14,12 +14,16 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 
+#include <list>
+#include <memory>
+
 
 class ProcCFG;
 class Signature;
 class Statement;
 class StatementList;
 class UserProc;
+class Const;
 
 
 /**
@@ -67,4 +71,6 @@ private:
      * \returns true if any signature types so added.
      */
     bool doEllipsisProcessing(UserProc *proc);
+
+    void findConstantsInStmt(Statement *stmt, std::list<std::shared_ptr<Const>> &constants);
 };

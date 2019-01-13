@@ -56,7 +56,4 @@ private slots:
 
     /// Test the visitor code that fixes references that were to locations defined by calls
     void testBypass();
-
-    /// Test the visitor code that finds constants
-    void testFindConstants();
 };

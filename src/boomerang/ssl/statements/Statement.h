@@ -281,9 +281,6 @@ public:
     /// \note Internal use only
     bool replaceRef(SharedExp e, Assignment *def, bool &convert);
 
-    /// Find all constants in this statement
-    void findConstants(std::list<std::shared_ptr<Const>> &lc);
-
     // End Statement visitation functions
 
     /// Get the type for the definition, if any, for expression e in this statement
