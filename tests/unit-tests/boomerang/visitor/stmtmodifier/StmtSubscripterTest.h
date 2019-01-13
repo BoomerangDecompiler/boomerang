@@ -22,4 +22,5 @@ private:
 
 private slots:
     void testSubscriptVars();
+    void testSubscriptVar();
 };
