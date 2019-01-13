@@ -21,13 +21,11 @@ class BasicBlock;
 class Function;
 class UserProc;
 class Exp;
-class Const;
 class Type;
 class StmtVisitor;
 class StmtExpVisitor;
 class StmtModifier;
 class StmtPartModifier;
-class ICodeGenerator;
 class LocationSet;
 class Assignment;
 class Settings;
@@ -42,15 +40,15 @@ typedef std::shared_ptr<const Type> SharedConstType;
 enum class StmtType : uint8_t
 {
     INVALID = 0,
-    Assign  = 1,
-    PhiAssign, ///< x := phi(a, b, c)
-    ImpAssign,
-    BoolAssign, ///< For "setCC" instructions
-    Call,
-    Ret, ///< Return
-    Branch,
-    Goto,
-    Case ///< switch statement
+    Assign  = 1, ///< Ordinary Assignment x := y
+    PhiAssign,   ///< x := phi(a, b, c)
+    ImpAssign,   ///< Implicit assignment (potential function parameter) x := -
+    BoolAssign,  ///< For "setCC" instructions
+    Call,        ///< Call statements rets := CALL foo(args)
+    Ret,         ///< Return
+    Branch,      ///< Conditional jump / if-then
+    Goto,        ///< Unconditional jump / goto
+    Case         ///< switch statement
 };
 
 /**
@@ -275,8 +273,6 @@ public:
     /// Fix references to the returns of call statements
     /// Bypass calls for references in this statement
     void bypass();
-
-    // End Statement visitation functions
 
     /// Get the type for the definition, if any, for expression e in this statement
     /// Overridden only by Assignment and CallStatement, and ReturnStatement.
