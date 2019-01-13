@@ -13,6 +13,36 @@
 #include "boomerang/ssl/statements/GotoStatement.h"
 
 
+
+enum class SwitchType : char
+{
+    Invalid = 0,
+    a       = 'a',
+    A       = 'A',
+    o       = 'o',
+    O       = 'O',
+    r       = 'r',
+    R       = 'R',
+    H       = 'H',
+    F       = 'F', // Fortran style
+};
+
+/**
+ * CaseStatement is derived from GotoStatement. In addition to the destination
+ * of the jump, it has a switch variable Exp.
+ */
+struct SwitchInfo
+{
+    SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
+    SwitchType switchType; ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
+    int lowerBound;        ///< Lower bound of the switch variable
+    int upperBound;        ///< Upper bound for the switch variable
+    Address tableAddr;     ///< Native address of the table, or ptr to array of values for form F
+    int numTableEntries;   ///< Number of entries in the table (form H only)
+    int offsetFromJumpTbl = 0; ///< Distance from jump to table (form R only)
+};
+
+
 class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
