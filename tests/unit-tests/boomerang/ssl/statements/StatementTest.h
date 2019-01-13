@@ -55,9 +55,6 @@ private slots:
     void testAddUsedLocsReturn();
     void testAddUsedLocsBool();
 
-    /// Test the subscripting of locations in Statements
-    void testSubscriptVars();
-
     /// Test the visitor code that fixes references that were to locations defined by calls
     void testBypass();
 

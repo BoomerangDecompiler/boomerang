@@ -19,6 +19,8 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpSubscripter.h"
+#include "boomerang/visitor/stmtmodifier/StmtSubscripter.h"
 
 
 BlockVarRenamePass::BlockVarRenamePass()
@@ -144,7 +146,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(location, def));
                 }
                 else {
-                    S->subscriptVar(location, def);
+                    subscriptVar(S, location, def);
                 }
             }
         }
@@ -299,4 +301,13 @@ bool BlockVarRenamePass::execute(UserProc *proc)
     /// The stack which remembers the last definition of an expression.
     std::map<SharedExp, std::deque<Statement *>, lessExpStar> stacks;
     return renameBlockVars(proc, 0, stacks);
+}
+
+
+void BlockVarRenamePass::subscriptVar(Statement *stmt, SharedExp var, Statement *varDef)
+{
+    ExpSubscripter es(var, varDef);
+    StmtSubscripter ss(&es);
+
+    stmt->accept(&ss);
 }

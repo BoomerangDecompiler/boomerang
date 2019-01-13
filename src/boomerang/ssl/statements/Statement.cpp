@@ -537,15 +537,6 @@ void Statement::addUsedLocs(LocationSet &used, bool cc /* = false */, bool memOn
 }
 
 
-void Statement::subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */)
-{
-    ExpSubscripter es(e, def /*, cfg*/);
-    StmtSubscripter ss(&es);
-
-    accept(&ss);
-}
-
-
 void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
 {
     ConstFinder cf(lc);

@@ -287,9 +287,6 @@ public:
     /// Strip all size casts
     void stripSizes();
 
-    /// For all expressions in this Statement, replace any e with e{def}
-    void subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */);
-
     // End Statement visitation functions
 
     /// Get the type for the definition, if any, for expression e in this statement
