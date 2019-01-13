@@ -22,6 +22,7 @@
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/stmtmodifier/StmtSSAXFormer.h"
 
 
 FromSSAFormPass::FromSSAFormPass()
@@ -225,8 +226,10 @@ bool FromSSAFormPass::execute(UserProc *proc)
     // First rename the variables (including phi's, but don't remove).
     // NOTE: it is not possible to postpone renaming these locals till the back end, since the same
     // base location may require different names at different locations, e.g. r28{0} is local0,
-    // r28{16} is local1 Update symbols and parameters, particularly for the stack pointer inside
-    // memofs. NOTE: the ordering of the below operations is critical! Re-ordering may well prevent
+    // r28{16} is local1
+    // Update symbols and parameters, particularly for the stack pointer inside
+    // memofs.
+    // NOTE: the ordering of the below operations is critical! Re-ordering may well prevent
     // e.g. parameters from renaming successfully.
     assert(proc->allPhisHaveDefs());
     nameParameterPhis(proc);
@@ -241,7 +244,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         ExpSSAXformer esx(proc);
         StmtSSAXformer ssx(&esx, proc);
 
-        accept(&ssx);
+        s->accept(&ssx);
     }
 
     // Now remove the phis

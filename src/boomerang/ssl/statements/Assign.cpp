@@ -203,8 +203,8 @@ bool Assign::usesExp(const Exp &e) const
 {
     SharedExp where = nullptr;
 
-    return (m_rhs->search(e, where) ||
-            ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where)));
+    return m_rhs->search(e, where) ||
+            ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where));
 }
 
 

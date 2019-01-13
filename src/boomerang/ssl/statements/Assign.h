@@ -23,6 +23,7 @@ public:
     Assign();
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
+
     Assign(const Assign &other);
     Assign(Assign &&other) = default;
 
@@ -34,15 +35,6 @@ public:
 public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
-
-    /// \copydoc Assignment::getRight
-    virtual SharedExp getRight() const override { return m_rhs; }
-
-    SharedExp &getRightRef() { return m_rhs; }
-    const SharedExp &getRightRef() const { return m_rhs; }
-
-    /// set the rhs to something new
-    void setRight(SharedExp e) { m_rhs = e; }
 
     /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) const override;
@@ -58,11 +50,6 @@ public:
 
     /// \copydoc Assignment::printCompact
     virtual void printCompact(OStream &os) const override;
-
-    /// Guard
-    void setGuard(SharedExp g) { m_guard = g; }
-    SharedExp getGuard() const { return m_guard; }
-    inline bool isGuarded() const { return m_guard != nullptr; }
 
     /// \copydoc Assignment::usesExp
     virtual bool usesExp(const Exp &e) const override;
@@ -90,6 +77,21 @@ public:
 
     /// \copydoc Statement::fixSuccessor
     virtual void fixSuccessor() override;
+
+    /// \copydoc Assignment::getRight
+    virtual SharedExp getRight() const override { return m_rhs; }
+
+    SharedExp &getRightRef() { return m_rhs; }
+    const SharedExp &getRightRef() const { return m_rhs; }
+
+    /// set the rhs to something new
+    void setRight(SharedExp e) { m_rhs = e; }
+
+public:
+    /// Guard
+    void setGuard(SharedExp g) { m_guard = g; }
+    SharedExp getGuard() const { return m_guard; }
+    inline bool isGuarded() const { return m_guard != nullptr; }
 
 private:
     SharedExp m_rhs;
