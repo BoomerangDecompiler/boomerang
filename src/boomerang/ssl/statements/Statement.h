@@ -303,9 +303,6 @@ public:
     /// Note: this procedure does not control what part of this statement is propagated to
     bool doPropagateTo(const SharedExp &e, Assignment *def, bool &convert, Settings *settings);
 
-    /// returns true if e1 may alias e2
-    bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
-
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
     UserProc *m_proc = nullptr; ///< procedure containing this statement
