@@ -173,8 +173,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
         fixSuccessorForStmt(ss);
 
         if (m_verboseOutput) {
-            OStream q_cout(stdout);
-            q_cout << "            " << ss << "\n";
+            LOG_MSG("            %1", ss);
         }
     }
 
