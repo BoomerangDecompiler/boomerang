@@ -6,5 +6,33 @@
 # WARRANTIES.
 #
 
-add_subdirectory(expmodifier)
-add_subdirectory(stmtmodifier)
+
+include(boomerang-utils)
+
+set(test_LIBRARIES
+    ${GC_LIBS}
+    ${DEBUG_LIB}
+    boomerang
+    ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+set(TESTS
+    expmodifier/ExpAddrSimplifierTest
+    expmodifier/ExpArithSimplifierTest
+    expmodifier/ExpSimplifierTest
+    stmtexpvisitor/StmtConstFinderTest
+    stmtmodifier/StmtSubscripterTest
+)
+
+
+foreach(t ${TESTS})
+    BOOMERANG_ADD_TEST(
+        NAME ${t}
+        SOURCES ${t}.h ${t}.cpp
+        LIBRARIES
+            ${DEBUG_LIB}
+            boomerang
+            ${CMAKE_THREAD_LIBS_INIT}
+    )
+endforeach()
