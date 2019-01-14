@@ -18,7 +18,6 @@ list(APPEND boomerang-visitor-sources
     visitor/expvisitor/PrimitiveTester
     visitor/expvisitor/UsedLocalFinder
     visitor/expvisitor/UsedLocsFinder
-    visitor/expvisitor/TempToLocalMapper
 
     visitor/expmodifier/CallBypasser
     visitor/expmodifier/ConstGlobalConverter
