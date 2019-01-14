@@ -320,7 +320,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         RTL *lastRTL = bb->getLastRTL();
 
         if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("decodeIndirectJmp: %1", lastRTL->prints());
+            LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
         }
 
         assert(!lastRTL->empty());
@@ -452,7 +452,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
         if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("decodeIndirectJmp: COMPCALL:");
-            LOG_MSG("%1", lastRTL->prints());
+            LOG_MSG("%1", lastRTL->toString());
         }
 
         assert(!lastRTL->empty());

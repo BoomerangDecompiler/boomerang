@@ -19,7 +19,7 @@ class ConstFinder;
 /**
  *
  */
-class StmtConstFinder : public StmtExpVisitor
+class BOOMERANG_API StmtConstFinder : public StmtExpVisitor
 {
 public:
     StmtConstFinder()          = default;

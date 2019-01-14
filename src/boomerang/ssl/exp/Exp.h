@@ -361,9 +361,6 @@ public:
     // Get the complexity depth. Basically, add one for each unary, binary, or ternary
     int getComplexityDepth(UserProc *proc);
 
-    // Get memory depth. Add one for each m[]
-    int getMemDepth();
-
     // These simplifying functions don't really belong in class Exp,
     // but they know too much about how Exps work
 

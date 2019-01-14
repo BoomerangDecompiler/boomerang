@@ -23,8 +23,7 @@ SharedExp ExpPropagator::postModify(const std::shared_ptr<RefExp> &exp)
 {
     // No need to call e->canRename() here, because if e's base expression is not suitable for
     // renaming, it will never have been renamed, and we never would get here
-    if (!Statement::canPropagateToExp(
-            *exp)) { // Check of the definition statement is suitable for propagating
+    if (!Statement::canPropagateToExp(*exp)) {
         return exp;
     }
 

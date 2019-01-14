@@ -29,6 +29,7 @@ class BasicBlock;
 class Exp;
 class LocationSet;
 class BinaryImage;
+class Statement;
 
 
 /// Operator precedence
@@ -94,25 +95,43 @@ public:
     virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr,
                               bool intermixRTL = false) override;
 
-public:
-    /// \copydoc ICodeGenerator::addAssignmentStatement
-    virtual void addAssignmentStatement(const Assign *assign) override;
-
-    /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addCallStatement(const Function *func, const QString &name,
-                                  const StatementList &args, const StatementList &results) override;
-
-    /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,
-                                     const StatementList &results) override;
-
-    /// \copydoc ICodeGenerator::addReturnStatement
-    virtual void addReturnStatement(const StatementList *rets) override;
-
-    /// \copydoc ICodeGenerator::removeUnusedLabels
-    virtual void removeUnusedLabels() override;
-
 private:
+    /// Add an assignment statement at the current position.
+    void addAssignmentStatement(const Assign *assign);
+
+    /**
+     * Adds a call to the function \p proc.
+     *
+     * \param dest      The Proc the call is to.
+     * \param name      The name the Proc has.
+     * \param args      The arguments to the call.
+     * \param results   The variable that will receive the return value of the function.
+     *
+     * \todo            Remove the \p name parameter and use Proc::getName()
+     * \todo            Add assignment for when the function returns a struct.
+     */
+    void addCallStatement(const Function *dest, const QString &name, const StatementList &args,
+                          const StatementList &results);
+
+    /**
+     * Adds an indirect call to \p exp.
+     * \param results UNUSED
+     *
+     * \sa addCallStatement
+     * \todo Add the use of \p results like AddCallStatement.
+     */
+    void addIndCallStatement(const SharedExp &exp, const StatementList &args,
+                             const StatementList &results);
+
+    /**
+     * Adds a return statement and returns the first expression in \a rets.
+     * \todo This should be returning a struct if more than one real return value.
+     */
+    void addReturnStatement(const StatementList *rets);
+
+    /// Removes unused labels from the code.
+    void removeUnusedLabels();
+
     /// Add a prototype (for forward declaration)
     void addPrototype(UserProc *proc);
 
@@ -284,6 +303,8 @@ private:
     /// \returns true if all predecessors of this BB have had their code generated.
     bool isAllParentsGenerated(const BasicBlock *bb) const;
     bool isGenerated(const BasicBlock *bb) const;
+
+    void emitCodeForStmt(const Statement *stmt);
 
 private:
     void print(const Module *module);

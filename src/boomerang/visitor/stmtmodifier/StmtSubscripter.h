@@ -15,7 +15,7 @@
 class ExpSubscripter;
 
 
-class StmtSubscripter : public StmtModifier
+class BOOMERANG_API StmtSubscripter : public StmtModifier
 {
 public:
     StmtSubscripter(ExpSubscripter *es);

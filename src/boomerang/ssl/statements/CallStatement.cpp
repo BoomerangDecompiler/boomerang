@@ -593,27 +593,6 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen) const
-{
-    const Function *dest = getDestProc();
-
-    if ((dest == nullptr) && isComputed()) {
-        gen->addIndCallStatement(m_dest, m_arguments, *calcResults());
-        return;
-    }
-
-    std::unique_ptr<StatementList> results = calcResults();
-    assert(dest);
-
-    if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
-        gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments,
-                              *results);
-    }
-    else {
-        gen->addCallStatement(dest, dest->getName(), m_arguments, *results);
-    }
-}
-
 void CallStatement::simplify()
 {
     GotoStatement::simplify();
@@ -625,28 +604,6 @@ void CallStatement::simplify()
     for (Statement *ss : m_defines) {
         ss->simplify();
     }
-}
-
-
-bool CallStatement::usesExp(const Exp &e) const
-{
-    if (GotoStatement::usesExp(e)) {
-        return true;
-    }
-
-    for (const Statement *arg : m_arguments) {
-        if (arg->usesExp(e)) {
-            return true;
-        }
-    }
-
-    for (const Statement *def : m_defines) {
-        if (def->usesExp(e)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 

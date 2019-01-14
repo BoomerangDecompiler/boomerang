@@ -118,29 +118,6 @@ bool CaseStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void CaseStatement::generateCode(ICodeGenerator *) const
-{
-    // don't generate any code for switches, they will be handled by the bb
-}
-
-
-bool CaseStatement::usesExp(const Exp &e) const
-{
-    // Before a switch statement is recognised, m_dest is non null
-    if (m_dest) {
-        return *m_dest == e;
-    }
-
-    // After a switch statement is recognised, m_dest is null, and m_switchInfo->m_switchVar takes
-    // over
-    if (m_switchInfo->switchExp) {
-        return *m_switchInfo->switchExp == e;
-    }
-
-    return false;
-}
-
-
 void CaseStatement::simplify()
 {
     if (m_dest) {

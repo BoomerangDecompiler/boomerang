@@ -69,7 +69,7 @@ void BasicBlockTest::testAssign()
     BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
 
     BasicBlock bb4 = bb3;
-    QCOMPARE(bb4.prints(), bb3.prints());
+    QCOMPARE(bb4.toString(), bb3.toString());
 
     BasicBlock bb5 = bb2;
 
@@ -361,12 +361,12 @@ void BasicBlockTest::testAddImplicit()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
     bb1.addImplicitAssign(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -390,12 +390,12 @@ void BasicBlockTest::testAddPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
     bb1.addPhi(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -417,7 +417,7 @@ void BasicBlockTest::testAddImplicitOverPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -439,7 +439,7 @@ void BasicBlockTest::testAddPhiOverImplict()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 

@@ -43,7 +43,9 @@
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expvisitor/ConstFinder.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtConstFinder.h"
 
 #include <cstring>
 #include <sstream>
@@ -71,7 +73,7 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
 
         // Now print type for each constant in this Statement
         std::list<std::shared_ptr<Const>> lc;
-        s->findConstants(lc);
+        findConstantsInStmt(s, lc);
 
         for (std::shared_ptr<Const> &cc : lc) {
             LOG_MSG("    %1, %2", cc->getType()->getCtype(), cc);
@@ -308,7 +310,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     for (Statement *s : stmts) {
         // 1) constants
         std::list<std::shared_ptr<Const>> constList;
-        s->findConstants(constList);
+        findConstantsInStmt(s, constList);
 
         for (const std::shared_ptr<Const> &con : constList) {
             if (!con || (con->getOper() == opStrConst)) {
@@ -562,6 +564,17 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
 
     return ch;
 }
+
+
+void DFATypeRecovery::findConstantsInStmt(Statement *stmt,
+                                          std::list<std::shared_ptr<Const>> &constants)
+{
+    ConstFinder cf(constants);
+    StmtConstFinder scf(&cf);
+
+    stmt->accept(&scf);
+}
+
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::TypeRecovery, DFATypeRecovery, "DFA Type Recovery plugin",
                         BOOMERANG_VERSION, "Boomerang developers")

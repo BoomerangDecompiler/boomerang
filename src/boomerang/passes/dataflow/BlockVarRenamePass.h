@@ -33,4 +33,7 @@ public:
 private:
     bool renameBlockVars(UserProc *proc, int n,
                          std::map<SharedExp, std::deque<Statement *>, lessExpStar> &stacks);
+
+    /// For all expressions in \p stmt, replace \p var with var{varDef}
+    void subscriptVar(Statement *stmt, SharedExp var, Statement *varDef);
 };

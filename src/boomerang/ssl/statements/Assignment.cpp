@@ -50,6 +50,12 @@ Assignment::~Assignment()
 }
 
 
+bool Assignment::operator<(const Assignment &o)
+{
+    return *m_lhs < *o.m_lhs;
+}
+
+
 SharedConstType Assignment::getTypeForExp(SharedConstExp) const
 {
     // assert(*lhs == *e); // No: local vs base expression
@@ -79,14 +85,6 @@ bool Assignment::definesLoc(SharedExp loc) const
     }
 
     return *m_lhs == *loc;
-}
-
-
-bool Assignment::usesExp(const Exp &e) const
-{
-    SharedExp where = nullptr;
-
-    return (m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where);
 }
 
 

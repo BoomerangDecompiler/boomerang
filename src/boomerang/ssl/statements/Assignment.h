@@ -35,7 +35,7 @@ public:
     /// to contain a set of (pointers to) Assignments, so we can automatically
     /// make sure that existing assignments are not duplicated.
     /// Assume that we won't want sets of assignments differing by anything other than LHSs
-    bool operator<(const Assignment &o) { return m_lhs < o.m_lhs; }
+    bool operator<(const Assignment &o);
 
     /// \copydoc Assignment::print
     virtual void print(OStream &os) const override;
@@ -52,10 +52,6 @@ public:
     /// \copydoc Statement::setTypeFor
     virtual void setTypeForExp(SharedExp e, SharedType ty) override;
 
-    /// \copydoc Statement::usesExp
-    /// \internal PhiAssign and ImplicitAssign don't override
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
@@ -63,17 +59,14 @@ public:
     virtual bool definesLoc(SharedExp loc) const override;
 
     /// \returns the expression defining the left hand side of the assignment
-    virtual SharedExp getLeft() const;
+    SharedExp getLeft() const;
 
     /// Update the left hand side of the assignment
     void setLeft(SharedExp e);
 
-    // get how to replace this statement in a use
+    /// Get how to replace this statement in a use
     /// \returns the expression defining the right hand side of the assignment
     virtual SharedExp getRight() const = 0;
-
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *) const override {}
 
     /// \copydoc Statement::simplifyAddr
     virtual void simplifyAddr() override;

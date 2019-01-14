@@ -18,7 +18,7 @@
 /**
  * This is the code (apart from definitions) to find all constants in a Statement
  */
-class ConstFinder : public ExpVisitor
+class BOOMERANG_API ConstFinder : public ExpVisitor
 {
 public:
     ConstFinder(std::list<std::shared_ptr<Const>> &results);

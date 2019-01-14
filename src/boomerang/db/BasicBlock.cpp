@@ -117,7 +117,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 }
 
 
-QString BasicBlock::prints() const
+QString BasicBlock::toString() const
 {
     QString tgt;
     OStream ost(&tgt);

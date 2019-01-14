@@ -73,9 +73,6 @@ public:
     /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
-    /// \copydoc Statement::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
@@ -111,9 +108,6 @@ public:
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override;
-
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
 
     /// \returns pointer to the collector object
     DefCollector *getCollector() { return &m_col; }

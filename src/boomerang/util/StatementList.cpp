@@ -61,7 +61,7 @@ void StatementList::append(const StatementSet &ss)
 }
 
 
-QString StatementList::prints() const
+QString StatementList::toString() const
 {
     QString tgt;
     OStream ost(&tgt);

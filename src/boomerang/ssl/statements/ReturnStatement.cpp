@@ -84,12 +84,6 @@ bool ReturnStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void ReturnStatement::generateCode(ICodeGenerator *gen) const
-{
-    gen->addReturnStatement(&getReturns());
-}
-
-
 void ReturnStatement::simplify()
 {
     for (Statement *s : m_modifieds) {
@@ -151,20 +145,6 @@ bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result
     }
 
     return found;
-}
-
-
-bool ReturnStatement::usesExp(const Exp &e) const
-{
-    SharedExp where;
-
-    for (Statement *ret : m_returns) {
-        if (ret->search(e, where)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 

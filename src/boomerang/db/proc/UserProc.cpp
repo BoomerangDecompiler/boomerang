@@ -1447,7 +1447,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
                         LOG_ERROR("refsTo: ");
 
                         for (Statement *ins : refsTo) {
-                            LOG_MSG("  %1, ", ins->prints());
+                            LOG_MSG("  %1, ", ins->toString());
                         }
 
                         return false;

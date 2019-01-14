@@ -261,20 +261,6 @@ bool BranchStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void BranchStatement::generateCode(ICodeGenerator *) const
-{
-    // dont generate any code for jconds, they will be handled by the bb
-}
-
-
-bool BranchStatement::usesExp(const Exp &e) const
-{
-    SharedExp tmp;
-
-    return m_cond && m_cond->search(e, tmp);
-}
-
-
 void BranchStatement::simplify()
 {
     if (m_cond) {

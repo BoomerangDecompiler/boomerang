@@ -72,69 +72,27 @@ void PhiAssign::printCompact(OStream &os) const
     }
 
     os << " := phi";
-    // Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the
-    // referenced locations. When not, print as local4 := phi(r24{9} argc{17})
-    bool simple = true;
-
     for (const auto &v : m_defs) {
+        Q_UNUSED(v);
         assert(v.second.getSubExp1() != nullptr);
+        assert(*v.second.getSubExp1() == *m_lhs);
+    }
+    os << "{";
 
-        // If e is nullptr assume it is meant to match lhs
-        if (!(*v.second.getSubExp1() == *m_lhs)) {
-            // One of the phi parameters has a different base expression to lhs. Use non-simple
-            // print.
-            simple = false;
-            break;
+    for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
+        if (it->second.getDef()) {
+            os << it->second.getDef()->getNumber();
+        }
+        else {
+            os << "-";
+        }
+
+        if (++it != m_defs.end()) {
+            os << " ";
         }
     }
 
-    if (simple) {
-        os << "{";
-
-        for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-            if (it->second.getDef()) {
-                os << it->second.getDef()->getNumber();
-            }
-            else {
-                os << "-";
-            }
-
-            if (++it != m_defs.end()) {
-                os << " ";
-            }
-        }
-
-        os << "}";
-    }
-    else {
-        os << "(";
-
-        for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-            SharedConstExp e = it->second.getSubExp1();
-
-            if (e == nullptr) {
-                os << "nullptr{";
-            }
-            else {
-                os << e << "{";
-            }
-
-            if (it->second.getDef()) {
-                os << it->second.getDef()->getNumber();
-            }
-            else {
-                os << "-";
-            }
-
-            os << "}";
-
-            if (++it != m_defs.end()) {
-                os << " ";
-            }
-        }
-
-        os << ")";
-    }
+    os << "}";
 }
 
 
@@ -147,8 +105,8 @@ bool PhiAssign::search(const Exp &pattern, SharedExp &result) const
     for (RefExp exp : *this) {
         assert(exp.getSubExp1() != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(exp.getSubExp1(),
-                  const_cast<Statement *>(exp.getDef())); ///< \todo remove const_cast
+        // \todo remove const_cast
+        RefExp re(exp.getSubExp1(), const_cast<Statement *>(exp.getDef()));
 
         if (re.search(pattern, result)) {
             return true;
@@ -169,7 +127,7 @@ bool PhiAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) cons
 
 bool PhiAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
-    bool change;
+    bool change = false;
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 

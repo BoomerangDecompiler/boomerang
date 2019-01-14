@@ -131,7 +131,7 @@ void RTL::print(OStream &os) const
 }
 
 
-QString RTL::prints() const
+QString RTL::toString() const
 {
     QString tgt;
     OStream ost(&tgt);

@@ -83,12 +83,6 @@ public:
     /// \copydoc GotoStatement::searchAll
     virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
-    /// \copydoc GotoStatement::generateCode
-    virtual void generateCode(ICodeGenerator *generator) const override;
-
-    /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 

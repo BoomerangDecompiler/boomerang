@@ -443,7 +443,7 @@ void ExpTest::testSimplifyBinary()
                                                                       Location::regOf(REG_PENT_EBP),
                                                                       Const::get(-4)))));
     as->simplify();
-    QCOMPARE(as->prints(), QString("   0 *v* r27 := m[r29 - 4]"));
+    QCOMPARE(as->toString(), QString("   0 *v* r27 := m[r29 - 4]"));
 }
 
 
@@ -582,7 +582,7 @@ void ExpTest::testParen()
                                      Const::get(1))));
 
 
-    QCOMPARE(a.prints(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
+    QCOMPARE(a.toString(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
 }
 
 
@@ -626,48 +626,6 @@ void ExpTest::testAssociativity()
     // Note: at one stage, simplifyArith was part of simplify().
     // Now call simplifyArith() explicitly only where needed
     QCOMPARE(*e1->simplify()->simplifyArith(), *e2->simplify()->simplifyArith());
-}
-
-
-void ExpTest::testSubscriptVar()
-{
-    // m[r28 - 4] := r28 + r29
-    SharedExp lhs = Location::memOf(Binary::get(opMinus,
-                                                 Location::regOf(REG_PENT_ESP),
-                                                 Const::get(4)));
-
-    Assign    *ae  = new Assign(lhs->clone(),
-                                Binary::get(opPlus,
-                                            Location::regOf(REG_PENT_ESP),
-                                            Location::regOf(REG_PENT_EBP)));
-
-    // Subtest 1: should do nothing
-    SharedExp r28   = Location::regOf(REG_PENT_ESP);
-    Statement *def1 = new Assign(r28->clone(), r28->clone());
-
-    def1->setNumber(12);
-    def1->subscriptVar(lhs, def1); // Should do nothing
-
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28 - 4] := r28 + r29"));
-
-    // m[r28 - 4]
-
-    // Subtest 2: Ordinary substitution, on LHS and RHS
-    ae->subscriptVar(r28, def1);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
-
-
-    // Subtest 3: change to a different definition
-    // 99: r28 := 0
-    // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
-    Statement *def3 = new Assign(Location::regOf(REG_PENT_ESP), Const::get(0));
-    def3->setNumber(99);
-    ae->subscriptVar(r28, def3);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
-
-    delete def1;
-    delete def3;
-    delete ae;
 }
 
 

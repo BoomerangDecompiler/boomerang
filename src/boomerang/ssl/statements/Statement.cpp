@@ -11,50 +11,18 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/ifc/ICodeGenerator.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/statements/BoolAssign.h"
-#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/ssl/statements/CaseStatement.h"
-#include "boomerang/ssl/statements/ImplicitAssign.h"
-#include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
-#include "boomerang/visitor/expmodifier/DFALocalMapper.h"
-#include "boomerang/visitor/expmodifier/ExpCastInserter.h"
-#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
-#include "boomerang/visitor/expmodifier/ExpSubscripter.h"
-#include "boomerang/visitor/expmodifier/SizeStripper.h"
-#include "boomerang/visitor/expvisitor/ConstFinder.h"
-#include "boomerang/visitor/expvisitor/ExpRegMapper.h"
-#include "boomerang/visitor/expvisitor/UsedLocalFinder.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtConstFinder.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtRegMapper.h"
 #include "boomerang/visitor/stmtexpvisitor/UsedLocsVisitor.h"
-#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/visitor/stmtmodifier/StmtSSAXFormer.h"
-#include "boomerang/visitor/stmtmodifier/StmtSubscripter.h"
-#include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
-
-#include <algorithm>
-#include <cassert>
-#include <cstddef>
-#include <cstring>
-#include <sstream>
 
 
 Statement::Statement()
@@ -85,70 +53,6 @@ void Statement::setProc(UserProc *proc)
 }
 
 
-bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
-{
-    // currently only considers memory aliasing..
-    if (!e1->isMemOf() || !e2->isMemOf()) {
-        return false;
-    }
-
-    SharedExp e1a = e1->getSubExp1();
-    SharedExp e2a = e2->getSubExp1();
-
-    // constant memory accesses
-    if (e1a->isIntConst() && e2a->isIntConst()) {
-        Address a1     = e1a->access<Const>()->getAddr();
-        Address a2     = e2a->access<Const>()->getAddr();
-        ptrdiff_t diff = (a1 - a2).value();
-
-        if (diff < 0) {
-            diff = -diff;
-        }
-
-        if (diff * 8 >= size) {
-            return false;
-        }
-    }
-
-    // same left op constant memory accesses
-    if ((e1a->getArity() == 2) && (e1a->getOper() == e2a->getOper()) &&
-        e1a->getSubExp2()->isIntConst() && e2a->getSubExp2()->isIntConst() &&
-        (*e1a->getSubExp1() == *e2a->getSubExp1())) {
-        int i1   = e1a->access<Const, 2>()->getInt();
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
-
-        if (diff < 0) {
-            diff = -diff;
-        }
-
-        if (diff * 8 >= size) {
-            return false;
-        }
-    }
-
-    // [left] vs [left +/- constant] memory accesses
-    if (((e2a->getOper() == opPlus) || (e2a->getOper() == opMinus)) &&
-        (*e1a == *e2a->getSubExp1()) && e2a->getSubExp2()->isIntConst()) {
-        int i1   = 0;
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
-
-        if (diff < 0) {
-            diff = -diff;
-        }
-
-        if (diff * 8 >= size) {
-            return false;
-        }
-    }
-
-    // Don't need [left +/- constant ] vs [left] because called twice with
-    // args reversed
-    return true;
-}
-
-
 OStream &operator<<(OStream &os, const Statement *s)
 {
     if (s == nullptr) {
@@ -172,7 +76,7 @@ bool Statement::isFlagAssign() const
 }
 
 
-QString Statement::prints() const
+QString Statement::toString() const
 {
     QString tgt;
     OStream ost(&tgt);
@@ -505,15 +409,6 @@ bool Statement::isNullStatement() const
 }
 
 
-void Statement::stripSizes()
-{
-    SizeStripper ss;
-    StmtModifier sm(&ss);
-
-    accept(&sm);
-}
-
-
 void Statement::bypass()
 {
     // Use the Part modifier so we don't change the top level of LHS of assigns etc
@@ -534,78 +429,6 @@ void Statement::addUsedLocs(LocationSet &used, bool cc /* = false */, bool memOn
     UsedLocsVisitor ulv(&ulf, cc);
 
     accept(&ulv);
-}
-
-
-bool Statement::addUsedLocals(LocationSet &used)
-{
-    UsedLocalFinder ulf(used, m_proc);
-    UsedLocsVisitor ulv(&ulf, false);
-
-    accept(&ulv);
-    return ulf.wasAllFound();
-}
-
-
-void Statement::subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */)
-{
-    ExpSubscripter es(e, def /*, cfg*/);
-    StmtSubscripter ss(&es);
-
-    accept(&ss);
-}
-
-
-void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
-{
-    ConstFinder cf(lc);
-    StmtConstFinder scf(&cf);
-
-    accept(&scf);
-}
-
-
-void Statement::mapRegistersToLocals()
-{
-    ExpRegMapper erm(m_proc);
-    StmtRegMapper srm(&erm);
-
-    accept(&srm);
-}
-
-
-void Statement::insertCasts()
-{
-    // First we postvisit expressions using a StmtModifier and an ExpCastInserter
-    ExpCastInserter eci;
-    StmtModifier sm(&eci, true); // True to ignore collectors
-    accept(&sm);
-
-    // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
-    StmtCastInserter sci;
-    accept(&sci);
-}
-
-
-void Statement::replaceSubscriptsWithLocals()
-{
-    ExpSSAXformer esx(m_proc);
-    StmtSSAXformer ssx(&esx, m_proc);
-
-    accept(&ssx);
-}
-
-
-void Statement::dfaMapLocals()
-{
-    DfaLocalMapper dlm(m_proc);
-    StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
-
-    accept(&sm);
-
-    if (dlm.change) {
-        LOG_VERBOSE2("Statement '%1' mapped with new local(s)", this);
-    }
 }
 
 
