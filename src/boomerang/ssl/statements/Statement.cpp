@@ -480,8 +480,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
 
         const QString str = rhs->access<Const, 1>()->getStr();
         if (str.startsWith("LOGICALFLAGS")) {
-            SharedExp relExp = Binary::get(opLess, rhs->getSubExp2()->getSubExp1(),
-                                           Const::get(0));
+            SharedExp relExp = Binary::get(opLess, rhs->getSubExp2()->getSubExp1(), Const::get(0));
             searchAndReplace(*RefExp::get(Terminal::get(opNF), def), relExp, true);
             return true;
         }
