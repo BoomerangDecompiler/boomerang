@@ -26,7 +26,7 @@ namespace Util
 QString escapeStr(const QString &inp)
 {
     // clang-format off
-    static const QMap<char, QString> replacements{
+    static const QMap<QChar, QString> replacements{
         { '\n', "\\n" },
         { '\t', "\\t" },
         { '\v', "\\v" },
@@ -38,23 +38,24 @@ QString escapeStr(const QString &inp)
     };
     // clang-format on
 
-    QString res;
+    QString result;
 
-    for (char c : inp.toLocal8Bit()) {
-        if (isprint(c) && (c != '\"')) {
-            res += QChar(c);
+    for (QChar c : inp) {
+        if (isprint(c.cell()) && c != QChar('\"')) {
+            result += QChar(c);
             continue;
         }
 
         if (replacements.contains(c)) {
-            res += replacements[c];
+            result += replacements[c];
         }
         else {
-            res += "\\" + QString::number(c, 16);
+            result += QChar('\\');
+            result += QString::number(c.cell(), 8);
         }
     }
 
-    return res;
+    return result;
 }
 
 
