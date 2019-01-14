@@ -37,7 +37,6 @@
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
-#include "boomerang/visitor/expmodifier/SizeStripper.h"
 #include "boomerang/visitor/expvisitor/BadMemofFinder.h"
 #include "boomerang/visitor/expvisitor/ComplexityFinder.h"
 #include "boomerang/visitor/expvisitor/FlagsFinder.h"
@@ -459,13 +458,6 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
     ExpSSAXformer xformer(proc);
     SharedExp result = r->acceptModifier(&xformer);
     return result;
-}
-
-
-SharedExp Exp::stripSizes()
-{
-    SizeStripper ss;
-    return this->acceptModifier(&ss);
 }
 
 

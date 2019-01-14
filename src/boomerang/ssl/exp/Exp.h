@@ -459,9 +459,6 @@ public:
     // which is probably not what is wanted!
     SharedExp fromSSAleft(UserProc *proc, Statement *d);
 
-    /// Strip size casts from an Exp
-    SharedExp stripSizes();
-
     /// Subscript all e in this Exp with statement def
     /// Subscript any occurrences of e with e{def} in this expression
     SharedExp expSubscriptVar(const SharedExp &e, Statement *def);

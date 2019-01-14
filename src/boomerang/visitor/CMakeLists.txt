@@ -32,7 +32,6 @@ list(APPEND boomerang-visitor-sources
     visitor/expmodifier/ImplicitConverter
     visitor/expmodifier/Localiser
     visitor/expmodifier/SimpExpModifier
-    visitor/expmodifier/SizeStripper
 
     visitor/stmtvisitor/StmtCastInserter
     visitor/stmtvisitor/StmtVisitor
