@@ -476,6 +476,8 @@ bool UserProc::filterReturns(SharedExp e)
         // Would like to handle at least %ZF, %CF one day. For now, filter them out
     case opZF:
     case opCF:
+    case opNF:
+    case opOF:
     case opFlags: return true;
 
     case opMemOf:
