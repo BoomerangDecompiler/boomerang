@@ -43,8 +43,8 @@
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expvisitor/ConstFinder.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtConstFinder.h"
 
 #include <cstring>

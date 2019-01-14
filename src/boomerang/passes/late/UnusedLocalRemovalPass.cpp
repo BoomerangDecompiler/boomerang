@@ -156,7 +156,6 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
 }
 
 
-
 bool UnusedLocalRemovalPass::addUsedLocalsForStmt(Statement *stmt, LocationSet &used)
 {
     UsedLocalFinder ulf(used, stmt->getProc());

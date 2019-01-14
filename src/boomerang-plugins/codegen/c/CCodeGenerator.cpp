@@ -24,10 +24,10 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
@@ -2558,7 +2558,7 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
     }
     case StmtType::Call: {
         const CallStatement *call = static_cast<const CallStatement *>(st);
-        const Function *dest = call->getDestProc();
+        const Function *dest      = call->getDestProc();
 
         if ((dest == nullptr) && call->isComputed()) {
             addIndCallStatement(call->getDest(), call->getArguments(), *call->calcResults());
@@ -2570,7 +2570,7 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
 
         if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
             addCallStatement(dest, dest->getSignature()->getPreferredName(), call->getArguments(),
-                                *results);
+                             *results);
         }
         else {
             addCallStatement(dest, dest->getName(), call->getArguments(), *results);
@@ -2585,8 +2585,8 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
         const BoolAssign *bas = static_cast<const BoolAssign *>(st);
 
         // lhs := (m_cond) ? 1 : 0
-        Assign as(bas->getLeft()->clone(), Ternary::get(opTern,
-            bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
+        Assign as(bas->getLeft()->clone(),
+                  Ternary::get(opTern, bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
         addAssignmentStatement(&as);
         break;
     }
@@ -2595,15 +2595,9 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
     case StmtType::Case:
         // these will be handled by the BB
         break;
-    case StmtType::PhiAssign:
-        LOG_ERROR("Encountered Phi Assign in back end");
-        break;
-    case StmtType::ImpAssign:
-        LOG_ERROR("Encountered Implicit Assign in back end");
-        break;
-    case StmtType::INVALID:
-        LOG_ERROR("Encountered Invalid Statement in back end");
-        break;
+    case StmtType::PhiAssign: LOG_ERROR("Encountered Phi Assign in back end"); break;
+    case StmtType::ImpAssign: LOG_ERROR("Encountered Implicit Assign in back end"); break;
+    case StmtType::INVALID: LOG_ERROR("Encountered Invalid Statement in back end"); break;
     }
 }
 

@@ -68,9 +68,6 @@ public:
     /// \returns the expression defining the right hand side of the assignment
     virtual SharedExp getRight() const = 0;
 
-    /// \copydoc Statement::generateCode
-//     virtual void generateCode(ICodeGenerator *) const override {}
-
     /// \copydoc Statement::simplifyAddr
     virtual void simplifyAddr() override;
 

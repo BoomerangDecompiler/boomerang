@@ -13,7 +13,6 @@
 #include "boomerang/ssl/statements/GotoStatement.h"
 
 
-
 enum class SwitchType : char
 {
     Invalid = 0,

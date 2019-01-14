@@ -110,8 +110,8 @@ private:
      * \todo            Remove the \p name parameter and use Proc::getName()
      * \todo            Add assignment for when the function returns a struct.
      */
-    void addCallStatement(const Function *dest, const QString &name,
-                          const StatementList &args, const StatementList &results);
+    void addCallStatement(const Function *dest, const QString &name, const StatementList &args,
+                          const StatementList &results);
 
     /**
      * Adds an indirect call to \p exp.
