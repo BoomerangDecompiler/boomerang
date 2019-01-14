@@ -377,6 +377,19 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
         }
     }
 
+    if (base->getOper() == opNF && lhs->isFlags()) {
+        if (!rhs->isFlagCall()) {
+            return false;
+        }
+
+        const QString str = rhs->access<Const, 1>()->getStr();
+        if (str.startsWith("LOGICALFLAGS")) {
+            SharedExp relExp = Binary::get(opLess, rhs->getSubExp2()->getSubExp1(), Const::get(0));
+            searchAndReplace(*RefExp::get(Terminal::get(opNF), def), relExp, true);
+            return true;
+        }
+    }
+
     // do the replacement
     // bool convert = doReplaceRef(re, rhs);
     bool ret = searchAndReplace(*e, rhs, true); // Last parameter true to change collectors

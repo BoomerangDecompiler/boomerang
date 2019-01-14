@@ -211,7 +211,7 @@ SharedType Ternary::ascendType()
 }
 
 
-bool Ternary::descendType(SharedType /*newType*/)
+bool Ternary::descendType(SharedType newType)
 {
     switch (m_oper) {
     case opFsize: return subExp3->descendType(FloatType::get(access<Const, 1>()->getInt()));
@@ -220,6 +220,12 @@ bool Ternary::descendType(SharedType /*newType*/)
         const int fromSize = access<Const, 1>()->getInt();
         const Sign sign    = m_oper == opZfill ? Sign::Unsigned : Sign::Signed;
         return subExp3->descendType(Type::newIntegerLikeType(fromSize, sign));
+    }
+    case opTern: {
+        bool thisChanged = false;
+        thisChanged |= subExp2->descendType(newType);
+        thisChanged |= subExp3->descendType(newType);
+        return thisChanged;
     }
 
     default: return false;

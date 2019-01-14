@@ -101,6 +101,8 @@ void Assignment::getDefinitions(LocationSet &defs, bool) const
     if (m_lhs->isFlags()) {
         defs.insert(Terminal::get(opCF));
         defs.insert(Terminal::get(opZF));
+        defs.insert(Terminal::get(opOF));
+        defs.insert(Terminal::get(opNF));
     }
 }
 
