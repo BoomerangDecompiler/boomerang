@@ -50,7 +50,7 @@ Assignment::~Assignment()
 }
 
 
-bool Assignment::operator<(const Assignment& o)
+bool Assignment::operator<(const Assignment &o)
 {
     return *m_lhs < *o.m_lhs;
 }
