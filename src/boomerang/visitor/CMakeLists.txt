@@ -39,7 +39,6 @@ list(APPEND boomerang-visitor-sources
     visitor/stmtvisitor/StmtCastInserter
     visitor/stmtvisitor/StmtVisitor
 
-    visitor/stmtmodifier/PhiStripper
     visitor/stmtmodifier/StmtImplicitConverter
     visitor/stmtmodifier/StmtModifier
     visitor/stmtmodifier/StmtPartModifier
