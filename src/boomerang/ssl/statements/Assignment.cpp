@@ -50,6 +50,12 @@ Assignment::~Assignment()
 }
 
 
+bool Assignment::operator<(const Assignment& o)
+{
+    return *m_lhs < *o.m_lhs;
+}
+
+
 SharedConstType Assignment::getTypeForExp(SharedConstExp) const
 {
     // assert(*lhs == *e); // No: local vs base expression

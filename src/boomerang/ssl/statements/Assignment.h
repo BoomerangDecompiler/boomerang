@@ -35,7 +35,7 @@ public:
     /// to contain a set of (pointers to) Assignments, so we can automatically
     /// make sure that existing assignments are not duplicated.
     /// Assume that we won't want sets of assignments differing by anything other than LHSs
-    bool operator<(const Assignment &o) { return m_lhs < o.m_lhs; }
+    bool operator<(const Assignment &o);
 
     /// \copydoc Assignment::print
     virtual void print(OStream &os) const override;
@@ -59,12 +59,12 @@ public:
     virtual bool definesLoc(SharedExp loc) const override;
 
     /// \returns the expression defining the left hand side of the assignment
-    virtual SharedExp getLeft() const;
+    SharedExp getLeft() const;
 
     /// Update the left hand side of the assignment
     void setLeft(SharedExp e);
 
-    // get how to replace this statement in a use
+    /// Get how to replace this statement in a use
     /// \returns the expression defining the right hand side of the assignment
     virtual SharedExp getRight() const = 0;
 
