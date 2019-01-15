@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
     }
     if (argc <= 1) {
         local5 = 0;
-        if (!(local1 != 0x10000434 || local2 != 0x1000046c || local3 != 0x100004a4 || local4 != 0x100004dc)) {
+        if (local1 == 0x10000434 && local2 == 0x1000046c && local3 == 0x100004a4 && local4 == 0x100004dc) {
             local5 = 1;
         }
     }
     else {
         local5 = 0;
-        if (!(local1 != 0x10000418 || local2 != 0x10000450 || local3 != 0x10000488 || local4 != 0x100004c0)) {
+        if (local1 == 0x10000418 && local2 == 0x10000450 && local3 == 0x10000488 && local4 == 0x100004c0) {
             local5 = 1;
         }
     }

@@ -77,6 +77,37 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         return exp->getSubExp1()->getSubExp1();
     }
 
+    // if still not simplified, try De Morgan's laws
+    const OPER myOper = exp->getOper();
+    const OPER subOper = exp->getSubExp1()->getOper();
+
+    if (myOper == opBitNot && (subOper == opBitAnd || subOper == opBitOr)) {
+        changed = true;
+        if (subOper == opBitAnd) {
+            return Binary::get(opBitOr,
+                               Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
+        }
+        else {
+            return Binary::get(opBitAnd,
+                               Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
+        }
+    }
+    else if (myOper == opLNot && (subOper == opAnd || subOper == opOr)) {
+        changed = true;
+        if (subOper == opAnd) {
+            return Binary::get(opOr,
+                               Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opLNot, exp->access<Exp, 1, 2>()));
+        }
+        else {
+            return Binary::get(opAnd,
+                               Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opLNot, exp->access<Exp, 1, 2>()));
+        }
+    }
+
     return exp;
 }
 
