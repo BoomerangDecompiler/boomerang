@@ -288,18 +288,18 @@ LOGICALFLAGS64(result)  {
 
 
 IMULTFLAGS8(result)  {
-    *1* %CF := (result@[7:15] = 0 or result@[7:15] = 1)
-    *1* %OF := (result@[7:15] = 0 or result@[7:15] = 1)
+    *1* %CF := (result@[7:15] = 0 || result@[7:15] = 1)
+    *1* %OF := (result@[7:15] = 0 || result@[7:15] = 1)
 };
 
 IMULTFLAGS16(result)  {
-    *1* %CF := (result@[15:31] = 0 or result@[15:31] = 1)
-    *1* %OF := (result@[15:31] = 0 or result@[15:31] = 1)
+    *1* %CF := (result@[15:31] = 0 || result@[15:31] = 1)
+    *1* %OF := (result@[15:31] = 0 || result@[15:31] = 1)
 };
 
 IMULTFLAGS32(result)  {
-    *1* %CF := (result@[31:63] = 0 or result@[31:63] = 1)
-    *1* %OF := (result@[31:63] = 0 or result@[31:63] = 1)
+    *1* %CF := (result@[31:63] = 0 || result@[31:63] = 1)
+    *1* %OF := (result@[31:63] = 0 || result@[31:63] = 1)
 };
 
 
@@ -2457,14 +2457,14 @@ LOOP.imm32 dest
 # LOOPE
 LOOPE.imm32 dest
     *32* %ecx := %ecx - 1
-    *32* %ecx ~= 0 and %ZF = 1 => %pc := dest
+    *32* %ecx ~= 0 && %ZF = 1 => %pc := dest
 ;
 
 
 # LOOPNE
 LOOPNE.imm32 dest
     *32* %ecx := %ecx - 1
-    *32* %ecx ~= 0 and %ZF = 0 => %pc := dest
+    *32* %ecx ~= 0 && %ZF = 0 => %pc := dest
 ;
 
 
