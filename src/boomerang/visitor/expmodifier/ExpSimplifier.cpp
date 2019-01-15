@@ -526,6 +526,23 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return exp->getSubExp1();
     }
 
+    // Check for (x compare y) || (x != y), becomes x compare y
+    // Note: Case (x == y) || (x != y) handled above
+    if ((exp->isOr() || exp->getOper() == opBitOr) &&
+        exp->getSubExp1()->isComparison() && exp->getSubExp2()->isComparison() &&
+        (exp->getSubExp1()->isNotEquality() || exp->getSubExp2()->isNotEquality()) &&
+        *exp->access<Exp, 1, 1>() == *exp->access<Exp, 2, 1>() && // x on left == x on right
+        *exp->access<Exp, 1, 2>() == *exp->access<Exp, 2, 2>()) { // y on left == y on right
+        if (exp->getSubExp1()->isNotEquality()) {
+            changed = true;
+            return exp->getSubExp2();
+        }
+        else {
+            changed = true;
+            return exp->getSubExp1();
+        }
+    }
+
     // For (a || b) or (a && b) recurse on a and b
     if ((exp->getOper() == opOr) || (exp->getOper() == opAnd)) {
         exp->refSubExp1() = exp->getSubExp1()->acceptModifier(this);
