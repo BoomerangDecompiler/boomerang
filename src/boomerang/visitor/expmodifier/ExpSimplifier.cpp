@@ -311,6 +311,13 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return res->getSubExp1();
     }
 
+    // x xor 0 = x
+    if (exp->getOper() == opBitXor && opSub2 == opIntConst &&
+        exp->access<Const, 2>()->getInt() == 0) {
+        changed = true;
+        return res->getSubExp1();
+    }
+
     // Check for SharedExp (a * x) / x -> a
     if ((exp->getOper() == opDiv || exp->getOper() == opDivs) &&
         (opSub1 == opMult || opSub1 == opMults) &&
