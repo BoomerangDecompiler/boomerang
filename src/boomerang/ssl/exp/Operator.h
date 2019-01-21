@@ -128,6 +128,7 @@ enum OPER
     opList,         ///< A binary, with expression (1) and next element
                     ///< in chain (2). Last element in chain is opNil
     opNil,          ///< This is a "nil list" terminal (e.g. no parameters)
+    opTypedExp,     ///< Typed expression
 
 
     //
@@ -135,13 +136,8 @@ enum OPER
     //
 
     /// For frontend / parser use only
-    opFlagCall, ///< A flag call (Binary with string and params)
-    opTypedExp, ///< Typed expression
-
-    // Binary with name of table and name
-    // of string as Const string subexpressions. Actual table info held in the
-    // TableDict object
-    opExpTable,  ///< A table of expressions
+    opFlagCall,  ///< A flag call (Binary with string and params)
+    opExpTable,  ///< Binary with name of table and name of string as Const string subexpressions.
     opSuccessor, ///< Get the successor register of this parameter
 
     opMachFtr, ///< A Unary with Const(string) representing a machine specific feature
