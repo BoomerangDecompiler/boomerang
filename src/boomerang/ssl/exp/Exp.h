@@ -86,9 +86,6 @@ public:
     /// Type sensitive less than
     virtual bool operator<(const Exp &o) const = 0;
 
-    /// Type insensitive less than. Class TypedExp overrides
-    virtual bool operator<<(const Exp &o) const { return (*this < o); }
-
     /// Comparison ignoring subscripts
     virtual bool operator*=(const Exp &o) const = 0;
 

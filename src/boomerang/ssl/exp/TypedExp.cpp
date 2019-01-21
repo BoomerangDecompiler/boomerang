@@ -73,20 +73,6 @@ bool TypedExp::operator==(const Exp &o) const
 }
 
 
-bool TypedExp::operator<<(const Exp &o) const // Type insensitive
-{
-    if (m_oper < o.getOper()) {
-        return true;
-    }
-
-    if (m_oper > o.getOper()) {
-        return false;
-    }
-
-    return *subExp1 << *o.getSubExp1();
-}
-
-
 bool TypedExp::operator<(const Exp &o) const // Type sensitive
 {
     if (m_oper < o.getOper()) {

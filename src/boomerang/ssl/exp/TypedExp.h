@@ -46,9 +46,6 @@ public:
     /// \copydoc Unary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator<<
-    bool operator<<(const Exp &o) const override;
-
     /// \copydoc Unary::operator*=
     bool operator*=(const Exp &o) const override;
 
