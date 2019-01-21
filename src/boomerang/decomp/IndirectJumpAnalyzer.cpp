@@ -209,12 +209,8 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
             l = l->getSubExp1();
         }
 
-        // b = <expr> * 4 + T:
-        SharedExp b = l->getSubExp1();
-        // b = <expr> * 4:
-        b = b->getSubExp1();
-        // expr = <expr>:
-        expr = b->getSubExp1();
+        // <expr> * 4 + T:
+        expr = l->access<Exp, 1, 1, 1>();
         break;
     }
 
@@ -228,14 +224,8 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
             l = l->getSubExp1();
         }
 
-        // b = %pc    + (<expr> * 4) + k:
-        SharedExp b = l->getSubExp1();
-        // b = (<expr> * 4) + k:
-        b = b->getSubExp2();
-        // b = <expr> * 4:
-        b = b->getSubExp1();
-        // expr = <expr>:
-        expr = b->getSubExp1();
+        // (%pc + (<expr> * 4)) + k:
+        expr = l->access<Exp, 1, 2, 1, 1>();
         break;
     }
 
@@ -251,14 +241,8 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
             l = l->getSubExp1();
         }
 
-        // b = %pc + ((<expr> * 4) - k)
-        b = l->getSubExp1();
-        // b = ((<expr> * 4) - k):
-        b = b->getSubExp2();
-        // b = <expr> * 4:
-        b = b->getSubExp1();
-        // expr = <expr>
-        expr = b->getSubExp1();
+        // %pc + ((<expr> * 4) - k)
+        expr = l->access<Exp, 1, 2, 1, 1>();
         break;
     }
 
