@@ -63,8 +63,6 @@ public:
 
     SharedExp addSubscript(Statement *_def);
 
-    bool references(const Statement *s) const { return m_def == s; }
-
     /**
      * Before type analysis, implicit definitions are nullptr.
      * During and after TA, they point to an implicit assignment statement.
