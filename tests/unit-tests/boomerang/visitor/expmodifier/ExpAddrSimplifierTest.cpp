@@ -27,9 +27,6 @@ void ExpAddrSimplifierTest::testSimplifyUnary()
     TEST_SIMPLIFY(Unary::get(opAddrOf, Location::memOf(Const::get(0x1000))),
                   Const::get(0x1000));
 
-    TEST_SIMPLIFY(Unary::get(opAddrOf, Binary::get(opSize, Const::get(16), Location::memOf(Const::get(0x1000)))),
-                  Const::get(0x1000));
-
     TEST_SIMPLIFY(Unary::get(opNeg, Const::get(0x1000)),
                   Unary::get(opNeg, Const::get(0x1000)));
 }

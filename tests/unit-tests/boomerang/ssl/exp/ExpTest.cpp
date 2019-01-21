@@ -426,14 +426,12 @@ void ExpTest::testSimplifyBinary()
 
 void ExpTest::testSimplifyAddr()
 {
-    // a[m[1000]] - a[m[r2]{64}]@0:15
+    // a[m[1000]] - a[m[r2]]@0:15
     SharedExp e = Binary::get(opMinus,
                               Unary::get(opAddrOf, Location::memOf(Const::get(1000))),
                               Ternary::get(opAt,
                                            Unary::get(opAddrOf,
-                                                      Binary::get(opSize,
-                                                                  Const::get(64),
-                                                                  Location::memOf(Location::regOf(REG_SPARC_G2)))),
+                                                      Location::memOf(Location::regOf(REG_SPARC_G2))),
                                            Const::get(0),
                                            Const::get(15)));
     QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@0:15)"));

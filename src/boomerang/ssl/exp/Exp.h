@@ -161,13 +161,9 @@ public:
     bool isLongConst() const { return m_oper == opLongConst; }
     /// True if is string const
     bool isStrConst() const { return m_oper == opStrConst; }
-
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
 
-
-    /// True if this is an opSize (size case; deprecated)
-    bool isSizeCast() const { return m_oper == opSize; }
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }
     /// True if this is a local variable

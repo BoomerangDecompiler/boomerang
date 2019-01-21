@@ -153,14 +153,6 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         os << " )";
         return;
 
-    case opSize:
-        // This can still be seen after decoding and before type analysis after m[...]
-        // *size* is printed after the expression, even though it comes from the first subexpression
-        print(os, exp->getSubExp2());
-        os << "*";
-        print(os, exp->getSubExp1());
-        os << "*";
-        return;
     case opTemp:
         if (exp->getSubExp1()->getOper() == opWildStrConst) {
             assert(exp->getSubExp1()->isTerminal());
@@ -338,7 +330,6 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         }
 
         switch (exp->getOper()) {
-        case opSize:
         case opList: return false;
 
         default: return true;

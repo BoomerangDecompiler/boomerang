@@ -234,7 +234,7 @@ LDD eaddr, rd
     *32*    succ(rd) := m[eaddr + WORD]
 ;
 
-LD      eaddr, rd       *32* rd := m[eaddr]{32};
+LD      eaddr, rd       *32* rd := m[eaddr];
 LDUH    eaddr, rd       *32* rd := zfill(16, 32, m[eaddr]);
 LDUB    eaddr, rd       *32* rd := zfill(8, 32, m[eaddr]);
 LDSH    eaddr, rd       *32* rd := sgnex(16, 32, m[eaddr]);
@@ -697,10 +697,10 @@ JUMPS2_C[idx] . A  reloc
 ;
 
 # Loading and storing Floating point registers.
-LDFSR      eaddr       *32* %FSR := m[eaddr]{32};
+LDFSR      eaddr       *32* %FSR := m[eaddr];
 
-LDF  eaddr, fds        *32* fds := m[eaddr]{32};
-LDDF eaddr, fdd        *64* fdd := m[eaddr]{64};
+LDF  eaddr, fds        *32* fds := m[eaddr];
+LDDF eaddr, fdd        *64* fdd := m[eaddr];
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd

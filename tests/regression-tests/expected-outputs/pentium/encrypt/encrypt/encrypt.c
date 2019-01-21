@@ -37,12 +37,12 @@ void rux_encrypt(void *param1)
     while (local0 <= 3) {
         bl_1 = *((local0) + param1);
         cl = *((local0) + param1);
-        cl = (cl & 0xf ^ *((local0) + 0x8049644));
+        cl = cl & 0xf ^ *((local0) + 0x8049644);
         bl_4 = *((cl) + esp - 40);
         *(unsigned char*)((local0) + param1) = bl_4;
-        bl = (bl_1 >> 4 ^ *((local0) + 0x8049648));
+        bl = bl_1 >> 4 ^ *((local0) + 0x8049648);
         bl = *((bl) + esp - 24);
-        bl = (bl << 4 ^ *((local0) + param1));
+        bl = bl << 4 ^ *((local0) + param1);
         *(unsigned char*)((local0) + param1) = bl;
         local0++;
     }

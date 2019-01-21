@@ -1519,14 +1519,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         str << ")";
         break;
 
-    case opSize:
-
-        //         SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
-        //         str << "*(" << ty->getCtype(true) << " *)";
-        //         appendExp(str, new Unary(opAddrOf, b.getSubExp2()), OpPrec::PREC_UNARY);
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
-        break;
-
     case opLoge:
         // not implemented
         LOG_WARN("Case %1 not implemented", operToString(exp.getOper()));

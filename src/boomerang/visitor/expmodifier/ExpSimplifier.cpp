@@ -50,8 +50,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         }
     }
 
-    if (exp->getOper() == opNeg || exp->getOper() == opBitNot || exp->getOper() == opLNot ||
-        exp->getOper() == opSize) {
+    if (exp->getOper() == opNeg || exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         if (exp->getSubExp1()->isIntConst()) {
             // -k, ~k, or !k
             int k = exp->access<Const, 1>()->getInt();
@@ -60,7 +59,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
             case opNeg: k = -k; break;
             case opBitNot: k = ~k; break;
             case opLNot: k = !k; break;
-            case opSize: /* No change required */
             default: break;
             }
 
@@ -570,13 +568,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
                 return Binary::get(opMod, leftOfPlus, Const::get(c));
             }
         }
-    }
-
-    // Replace opSize(n, loc) with loc and set the type if needed
-    if ((exp->getOper() == opSize) && exp->getSubExp2()->isLocation()) {
-        res     = res->getSubExp2();
-        changed = true;
-        return res;
     }
 
     return res;

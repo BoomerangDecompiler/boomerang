@@ -102,14 +102,12 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %left PLUS MINUS FPLUS FMINUS
 %left MULT DIV MOD SMULT SDIV SMOD FMUL FDIV
 %right NOT LNOT
-%right CAST_OP
 %nonassoc AT
 
 %type <SharedExp>    exp location exp_term
 %type <Statement *>  statement
 %type <Assign *>     assignment
 %type <SharedType>   assigntype
-%type <int>          cast
 %type <SharedRTL>    rtl nonempty_rtl rtl_part
 %type <QString>      str
 %type <std::shared_ptr<Table>> table_expr
@@ -213,19 +211,7 @@ exp:
   | NOT exp             { $$ = Unary::get(opBitNot, $2); }
   | LNOT exp            { $$ = Unary::get(opLNot,   $2); }
   | FNEG exp            { $$ = Unary::get(opFNeg,   $2); }
-  | exp cast %prec CAST_OP {
-        if ($2 == STD_SIZE) {
-            $$ = std::move($1);
-        }
-        else {
-            $$ = Binary::get(opSize, Const::get($2), $1);
-        }
-    }
   | exp_term { $$ = std::move($1); }
-  ;
-
-cast:
-    LBRACE INT_LITERAL RBRACE { $$ = $2; }
   ;
 
 exp_term:

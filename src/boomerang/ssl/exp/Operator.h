@@ -128,7 +128,6 @@ enum OPER
     opList,         ///< A binary, with expression (1) and next element
                     ///< in chain (2). Last element in chain is opNil
     opNil,          ///< This is a "nil list" terminal (e.g. no parameters)
-    opSize,         ///< Size specifier
 
     /// For frontend / parser use only
     opFlagCall, ///< A flag call (Binary with string and params)

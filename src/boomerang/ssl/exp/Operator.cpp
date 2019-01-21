@@ -77,7 +77,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opMemberAccess);
         HANDLE_OPER(opArrayIndex);
         HANDLE_OPER(opTemp);
-        HANDLE_OPER(opSize);
         HANDLE_OPER(opMachFtr);
         HANDLE_OPER(opTruncu);
         HANDLE_OPER(opTruncs);
