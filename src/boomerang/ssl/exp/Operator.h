@@ -88,17 +88,17 @@ enum OPER
     opLNot,      ///< Logical not
 
     // bit manipulation operations
-    opNot,      ///< Bitwise inversion
-    opBitAnd,   ///< Bitwise and
-    opBitOr,    ///< Bitwise or
-    opBitXor,   ///< Bitwise xor
-    opShiftL,   ///< Left shift
-    opShiftR,   ///< Right shift
-    opShiftRA,  ///< Right shift arithmetic
-    opRotateL,  ///< Rotate left
-    opRotateR,  ///< Rotate right
-    opRotateLC, ///< Rotate left through carry
-    opRotateRC, ///< Rotate right through carry
+    opNot,    ///< Bitwise inversion
+    opBitAnd, ///< Bitwise and
+    opBitOr,  ///< Bitwise or
+    opBitXor, ///< xor (Note: a ^ 5 is a bitwise operation, (a==b) ^ true is a logical operation)
+    opShL,    ///< Left shift (zero filled from the right)
+    opShR,    ///< Right shift (zero filed from the left)
+    opShRA,   ///< Right shift arithmetic (MSB filled from the left)
+    opRotL,   ///< Rotate left
+    opRotR,   ///< Rotate right
+    opRotLC,  ///< Rotate left through carry
+    opRotRC,  ///< Rotate right through carry
 
     // constants
     opIntConst,  ///< integer constant TODO: differentiate IntConst by adding AddressConst ?

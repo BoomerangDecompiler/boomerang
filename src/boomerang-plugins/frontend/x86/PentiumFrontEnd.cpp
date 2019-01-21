@@ -106,8 +106,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         newRTL->append(a);
         a = new Assign(Location::regOf(REG_PENT_EDX),
-                       Binary::get(opShiftR,
-                                   Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
+                       Binary::get(opShR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                    Const::get(32)));
         newRTL->append(a);
 

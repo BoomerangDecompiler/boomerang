@@ -296,31 +296,31 @@ void ExpSimplifierTest::testSimplify_data()
                       Terminal::get(opTrue));
 
         TEST_SIMPLIFY("BinaryConstShrConst",
-                      Binary::get(opShiftR,
+                      Binary::get(opShR,
                                   Const::get(0x100),
                                   Const::get(4)),
                       Const::get(0x010));
 
         TEST_SIMPLIFY("BinaryConstShr32",
-                      Binary::get(opShiftR,
+                      Binary::get(opShR,
                                   Const::get(0x100),
                                   Const::get(32)),
                       Const::get(0));
 
         TEST_SIMPLIFY("BinaryConstShlConst",
-                      Binary::get(opShiftL,
+                      Binary::get(opShL,
                                   Const::get(0x100),
                                   Const::get(4)),
                       Const::get(0x1000));
 
         TEST_SIMPLIFY("BinaryConstShl32",
-                      Binary::get(opShiftL,
+                      Binary::get(opShL,
                                   Const::get(0x100),
                                   Const::get(32)),
                       Const::get(0));
 
         TEST_SIMPLIFY("BinaryConstSarConst",
-                      Binary::get(opShiftRA,
+                      Binary::get(opShRA,
                                   Const::get(-256),
                                   Const::get(5)),
                       Const::get(-8));

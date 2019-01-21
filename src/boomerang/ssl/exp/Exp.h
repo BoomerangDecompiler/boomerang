@@ -62,11 +62,7 @@ typedef std::shared_ptr<const Type> SharedConstType;
 class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 {
 public:
-    Exp(OPER oper)
-        : m_oper(oper)
-    {
-    }
-
+    Exp(OPER oper);
     Exp(const Exp &other) = default;
     Exp(Exp &&other)      = default;
 
@@ -89,26 +85,22 @@ public:
     /// Comparison ignoring subscripts
     virtual bool equalNoSubscript(const Exp &o) const = 0;
 
+public:
     /// Return the operator.
     /// \note I'd like to make this protected, but then subclasses
     /// don't seem to be able to use it (at least, for subexpressions)
     OPER getOper() const { return m_oper; }
 
     /// A few simplifications use this
-    void setOper(OPER x) { m_oper = x; }
-
-    /// \returns this expression as a string
-    QString toString() const;
-
-    /// Print the expression to the given stream
-    void print(OStream &os) const;
+    void setOper(OPER oper) { m_oper = oper; }
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
-    virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
+    virtual int getArity() const;
 
     // Checks for broad type of expression operator
 
+    /// \returns true if this is a wildcard expression (used for searching)
     bool isWildcard() const;
 
     /// \returns true if this is a floating point expression (e.g. a +f b)
@@ -209,6 +201,74 @@ public:
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }
 
+public:
+    // subexpression access / modification
+
+    /**
+     * These are here so we can (optionally) prevent code clutter.
+     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
+     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
+     */
+    template<class T>
+    inline std::shared_ptr<T> access()
+    {
+        return shared_from_base<T>();
+    }
+
+    template<class T>
+    inline std::shared_ptr<const T> access() const
+    {
+        return shared_from_base<const T>();
+    }
+
+    /// Access sub-expressions recursively
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<T> access()
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+        case 1: return getSubExp1()->access<T, Path...>();
+        case 2: return getSubExp2()->access<T, Path...>();
+        case 3: return getSubExp3()->access<T, Path...>();
+        default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<const T> access() const
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+            case 1: return getSubExp1()->access<T, Path...>();
+            case 2: return getSubExp2()->access<T, Path...>();
+            case 3: return getSubExp3()->access<T, Path...>();
+            default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    /// \returns  Pointer to the requested subexpression
+    virtual SharedExp getSubExp1() { return nullptr; }
+    virtual SharedConstExp getSubExp1() const { return nullptr; }
+    virtual SharedExp getSubExp2() { return nullptr; }
+    virtual SharedConstExp getSubExp2() const { return nullptr; }
+    virtual SharedExp getSubExp3() { return nullptr; }
+    virtual SharedConstExp getSubExp3() const { return nullptr; }
+    virtual SharedExp &refSubExp1();
+    virtual SharedExp &refSubExp2();
+    virtual SharedExp &refSubExp3();
+
+    /// Update a sub-expression
+    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
+
+public:
     /**
      * Search this expression for the given subexpression, and if found,
      * return true and return a pointer to the matched expression in result.
@@ -290,72 +350,6 @@ public:
      */
     SharedExp propagateAllRpt(bool &changed);
 
-
-    /**
-     * These are here so we can (optionally) prevent code clutter.
-     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
-     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
-     */
-    template<class T>
-    inline std::shared_ptr<T> access()
-    {
-        return shared_from_base<T>();
-    }
-
-    template<class T>
-    inline std::shared_ptr<const T> access() const
-    {
-        return shared_from_base<const T>();
-    }
-
-    /// Access sub-expressions recursively
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<T> access()
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<const T> access() const
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    /// \returns  Pointer to the requested subexpression
-    virtual SharedExp getSubExp1() { return nullptr; }
-    virtual SharedConstExp getSubExp1() const { return nullptr; }
-    virtual SharedExp getSubExp2() { return nullptr; }
-    virtual SharedConstExp getSubExp2() const { return nullptr; }
-    virtual SharedExp getSubExp3() { return nullptr; }
-    virtual SharedConstExp getSubExp3() const { return nullptr; }
-    virtual SharedExp &refSubExp1();
-    virtual SharedExp &refSubExp2();
-    virtual SharedExp &refSubExp3();
-
-    /// Update a sub-expression
-    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
 
     // Get the complexity depth. Basically, add one for each unary, binary, or ternary
     int getComplexityDepth(UserProc *proc);
@@ -489,6 +483,13 @@ public:
     /// \param newType new type of the expression.
     /// \returns true if any change.
     virtual bool descendType(SharedType newType) = 0;
+
+public:
+    /// \returns this expression as a string
+    QString toString() const;
+
+    /// Print the expression to the given stream
+    void print(OStream &os) const;
 
 public:
     /// Accept an expression visitor to visit this expression.

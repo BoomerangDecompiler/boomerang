@@ -266,13 +266,13 @@ SharedType Binary::ascendType()
 
     case opMults:
     case opDivs:
-    case opShiftRA: return IntegerType::get(ta->getSize(), Sign::Signed);
+    case opShRA: return IntegerType::get(ta->getSize(), Sign::Signed);
 
     case opBitAnd:
     case opBitOr:
     case opBitXor:
-    case opShiftR:
-    case opShiftL: return IntegerType::get(ta->getSize(), Sign::Unknown);
+    case opShR:
+    case opShL: return IntegerType::get(ta->getSize(), Sign::Unknown);
 
     case opLess:
     case opGtr:
@@ -447,11 +447,11 @@ bool Binary::descendType(SharedType newType)
     case opBitAnd:
     case opBitOr:
     case opBitXor:
-    case opShiftR:
-    case opShiftL:
+    case opShR:
+    case opShL:
     case opMults:
     case opDivs:
-    case opShiftRA:
+    case opShRA:
     case opMult:
     case opDiv: {
         Sign signedness;
@@ -460,12 +460,12 @@ bool Binary::descendType(SharedType newType)
         case opBitAnd:
         case opBitOr:
         case opBitXor:
-        case opShiftR:
-        case opShiftL: signedness = Sign::Unknown; break;
+        case opShR:
+        case opShL: signedness = Sign::Unknown; break;
 
         case opMults:
         case opDivs:
-        case opShiftRA: signedness = Sign::Signed; break;
+        case opShRA: signedness = Sign::Signed; break;
 
         case opMult:
         case opDiv: signedness = Sign::Unsigned; break;
@@ -477,7 +477,7 @@ bool Binary::descendType(SharedType newType)
         ta             = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
         changed |= subExp1->descendType(ta);
 
-        if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
+        if ((m_oper == opShL) || (m_oper == opShR) || (m_oper == opShRA)) {
             // These operators are not symmetric; doesn't force a signedness on the second operand
             // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by
             // negative amounts.

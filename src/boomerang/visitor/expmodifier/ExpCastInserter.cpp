@@ -96,10 +96,10 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
     case opGtrUns:
     case opLessEqUns:
     case opGtrEqUns:
-    case opShiftR:
+    case opShR:
         exp->setSubExp1(checkSignedness(exp->getSubExp1(), Sign::Unsigned));
 
-        if (op != opShiftR) { // The shift amount (second operand) is sign agnostic
+        if (op != opShR) { // The shift amount (second operand) is sign agnostic
             exp->setSubExp2(checkSignedness(exp->getSubExp2(), Sign::Unsigned));
         }
 
@@ -110,10 +110,10 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
     case opGtr:
     case opLessEq:
     case opGtrEq:
-    case opShiftRA:
+    case opShRA:
         exp->setSubExp1(checkSignedness(exp->getSubExp1(), Sign::Signed));
 
-        if (op != opShiftRA) {
+        if (op != opShRA) {
             exp->setSubExp2(checkSignedness(exp->getSubExp2(), Sign::Signed));
         }
 

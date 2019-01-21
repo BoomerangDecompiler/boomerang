@@ -102,9 +102,9 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         case opMults: k1 = k1 * k2; break;
         case opDivs: k1 = k1 / k2; break;
         case opMods: k1 = k1 % k2; break;
-        case opShiftL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
-        case opShiftR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
-        case opShiftRA: {
+        case opShL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
+        case opShR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
+        case opShRA: {
             assert(k2 < 32);
             k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
             break;
@@ -352,7 +352,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     }
 
     // Check for [exp] << k where k is a positive integer const
-    if (exp->getOper() == opShiftL && opSub2 == opIntConst) {
+    if (exp->getOper() == opShL && opSub2 == opIntConst) {
         const int k = exp->access<Const, 2>()->getInt();
 
         if (Util::inRange(k, 0, 4)) { // do not express e.g. a << 4 as multiplication

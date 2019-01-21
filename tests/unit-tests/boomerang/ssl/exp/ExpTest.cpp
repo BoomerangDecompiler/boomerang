@@ -376,24 +376,24 @@ void ExpTest::testSimplify_data()
     QTest::addColumn<SharedExpWrapper>("exp");
     QTest::addColumn<SharedExpWrapper>("expectedResult");
 
-    TEST_SIMPLIFY("negConst",  Unary::get(opNeg, Const::get(55)),    Const::get(-55));
-    TEST_SIMPLIFY("notConst",  Unary::get(opNot, Const::get(0x55AA)), Const::get(0xFFFFAA55));
-    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot, Const::get(55)),   Const::get(0));
-    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot, Const::get(0)),    Const::get(1));
-    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg, Unary::get(opLocal, Const::get("abc"))),
+    TEST_SIMPLIFY("negConst",  Unary::get(opNeg,  Const::get(55)),     Const::get(-55));
+    TEST_SIMPLIFY("notConst",  Unary::get(opNot,  Const::get(0x55AA)), Const::get(0xFFFFAA55));
+    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot, Const::get(55)),     Const::get(0));
+    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot, Const::get(0)),      Const::get(1));
+    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg,  Unary::get(opLocal,  Const::get("abc"))),
                   Unary::get(opNeg, Unary::get(opLocal, Const::get("abc"))));
 
     TEST_SIMPLIFY("plusConst", Binary::get(opPlus,    Const::get(2),    Const::get(3)),    Const::get(5));
     TEST_SIMPLIFY("multConst", Binary::get(opMult,    Const::get(2),    Const::get(3)),    Const::get(6));
-    TEST_SIMPLIFY("shlConst",  Binary::get(opShiftL,  Const::get(2),    Const::get(3)),    Const::get(16));
-    TEST_SIMPLIFY("sarConst",  Binary::get(opShiftRA, Const::get(-144), Const::get(3)),    Const::get(-18));
+    TEST_SIMPLIFY("shlConst",  Binary::get(opShL,     Const::get(2),    Const::get(3)),    Const::get(16));
+    TEST_SIMPLIFY("sarConst",  Binary::get(opShRA,    Const::get(-144), Const::get(3)),    Const::get(-18));
     TEST_SIMPLIFY("xorConst",  Binary::get(opBitXor,  Const::get(0x55), Const::get(0x0F)), Const::get(0x5A));
     TEST_SIMPLIFY("xorSelf",   Binary::get(opBitXor,  m_rof2->clone(),  m_rof2->clone()),  Const::get(0));
     TEST_SIMPLIFY("commute",   Binary::get(opMults,   Const::get(77),   m_rof2->clone()),  Binary::get(opMults, m_rof2->clone(), Const::get(77)));
     TEST_SIMPLIFY("mult1",     Binary::get(opMult,    m_rof2->clone(),  Const::get(1)),    m_rof2->clone());
     TEST_SIMPLIFY("or0",       Binary::get(opBitOr,   Const::get(0),    m_rof2->clone()),  m_rof2->clone());
-    TEST_SIMPLIFY("shlZero",   Binary::get(opShiftL,  m_rof2->clone(),  Const::get(0)),    m_rof2->clone());
-    TEST_SIMPLIFY("shlMult",   Binary::get(opShiftL,  m_rof2->clone(),  Const::get(2)),    Binary::get(opMult, m_rof2->clone(), Const::get(4)));
+    TEST_SIMPLIFY("shlZero",   Binary::get(opShL,     m_rof2->clone(),  Const::get(0)),    m_rof2->clone());
+    TEST_SIMPLIFY("shlMult",   Binary::get(opShL,     m_rof2->clone(),  Const::get(2)),    Binary::get(opMult, m_rof2->clone(), Const::get(4)));
 
     // As of June 2003, I've decided to go the old way. esp + -4 is just
     // too ugly, and all the code has to cope with pluses and minuses anyway,

@@ -184,7 +184,7 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
                           exp1,
                           Binary::get(opBitOr,
                                       Const::get(mask),
-                                      Binary::get(opShiftL, rhs, Const::get(m))));
+                                      Binary::get(opShL, rhs, Const::get(m))));
         // clang-format on
         rhs = rhs->simplify();
 
@@ -1409,7 +1409,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::Mult);
         break;
 
-    case opShiftL:
+    case opShL:
         openParen(str, curPrec, OpPrec::BitShift);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " << ";
@@ -1417,8 +1417,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::BitShift);
         break;
 
-    case opShiftR:
-    case opShiftRA:
+    case opShR:
+    case opShRA:
         openParen(str, curPrec, OpPrec::BitShift);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " >> ";
@@ -1495,25 +1495,25 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         appendExp(str, *unaryExp.getSubExp3(), OpPrec::Unary);
         break;
 
-    case opRotateL:
+    case opRotL:
         str << "ROTL(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateR:
+    case opRotR:
         str << "ROTR(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateLC:
+    case opRotLC:
         str << "ROTLC(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateRC:
+    case opRotRC:
         str << "ROTRC(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";

@@ -76,29 +76,66 @@ SharedExp &Exp::refSubExp3()
 }
 
 
-bool Exp::isRegOfConst() const
+Exp::Exp(OPER oper)
+    : m_oper(oper)
 {
-    return isRegOf() && getSubExp1()->isIntConst();
+}
+
+int Exp::getArity() const
+{
+    return 0;
 }
 
 
-bool Exp::isRegN(int N) const
+bool Exp::isWildcard() const
 {
-    return isRegOfConst() && access<Const, 1>()->getInt() == N;
+    return m_oper == opWild || m_oper == opWildIntConst || m_oper == opWildStrConst ||
+           m_oper == opWildMemOf || m_oper == opWildRegOf || m_oper == opWildAddrOf;
 }
 
 
-bool Exp::isConst() const
+bool Exp::isFloatExp() const
 {
-    return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
+    return m_oper == opFPlus || m_oper == opFMinus || m_oper == opFMult || m_oper == opFDiv ||
+           m_oper == opFNeg || m_oper == opFabs || m_oper == opSin || m_oper == opCos ||
+           m_oper == opTan || m_oper == opArcTan || m_oper == opLog2 || m_oper == opLog10 ||
+           m_oper == opLoge || m_oper == opPow || m_oper == opSqrt || m_oper == opFround ||
+           m_oper == opFtrunc || m_oper == opFsize || m_oper == opItof || m_oper == opFtoi;
 }
 
+
+bool Exp::isLogExp() const
+{
+    return isAnd() || isOr() || isComparison() || m_oper == opLNot ||
+           (m_oper == opBitXor && getSubExp1()->isLogExp() && getSubExp2()->isLogExp());
+}
+
+
+bool Exp::isBitwise() const
+{
+    return m_oper == opNot || m_oper == opBitAnd || m_oper == opBitOr ||
+           (m_oper == opBitXor && (!getSubExp1()->isLogExp() || !!getSubExp2()->isLogExp())) ||
+           m_oper == opShL || m_oper == opShR || m_oper == opShRA || m_oper == opRotL ||
+           m_oper == opRotLC || m_oper == opRotR || m_oper == opRotRC;
+}
 
 bool Exp::isComparison() const
 {
     return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
            m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq || m_oper == opLessEq ||
            m_oper == opGtrEqUns || m_oper == opLessEqUns;
+}
+
+
+bool Exp::isLocation() const
+{
+    return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
+           m_oper == opParam;
+}
+
+bool Exp::isConst() const
+{
+    return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
 }
 
 
@@ -110,74 +147,15 @@ bool Exp::isSymmetric() const
 }
 
 
-bool Exp::isLocation() const
+bool Exp::isRegOfConst() const
 {
-    return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
-           m_oper == opParam;
+    return isRegOf() && getSubExp1()->isIntConst();
 }
 
 
-void Exp::doSearch(const Exp &pattern, SharedExp &toSearch, std::list<SharedExp *> &matches,
-                   bool once)
+bool Exp::isRegN(int N) const
 {
-    const bool compare = (pattern == *toSearch);
-
-    if (compare) {
-        matches.push_back(&toSearch); // Success
-
-        if (once) {
-            return; // No more to do
-        }
-    }
-
-    // Either want to find all occurrences, or did not match at this level
-    // Recurse into children, unless a matching opSubscript
-    if (!compare || (toSearch->m_oper != opSubscript)) {
-        toSearch->doSearchChildren(pattern, matches, once);
-    }
-}
-
-
-void Exp::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &matches, bool once)
-{
-    Q_UNUSED(pattern);
-    Q_UNUSED(matches);
-    Q_UNUSED(once);
-    // Const and Terminal do not override this
-}
-
-
-SharedExp Exp::searchReplace(const Exp &pattern, const SharedExp &replace, bool &change)
-{
-    return searchReplaceAll(pattern, replace, change, true);
-}
-
-
-SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bool &change,
-                                bool once /* = false */)
-{
-    // TODO: consider working on base object, and only in case when we find the search, use clone
-    // call to return the new object ?
-    if (*this == pattern) {
-        change = true;
-        return replace->clone();
-    }
-
-    std::list<SharedExp *> matches;
-    SharedExp top = shared_from_this(); // top may change; that's why we have to return it
-    doSearch(pattern, top, matches, false);
-
-    for (SharedExp *pexp : matches) {
-        *pexp = replace->clone(); // Do the replacement
-
-        if (once) {
-            change = true;
-            return top;
-        }
-    }
-
-    change = !matches.empty();
-    return top;
+    return isRegOfConst() && access<Const, 1>()->getInt() == N;
 }
 
 
@@ -215,6 +193,70 @@ bool Exp::searchAll(const Exp &pattern, std::list<SharedExp> &result)
     }
 
     return !matches.empty();
+}
+
+
+SharedExp Exp::searchReplace(const Exp &pattern, const SharedExp &replace, bool &change)
+{
+    return searchReplaceAll(pattern, replace, change, true);
+}
+
+
+SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bool &change,
+                                bool once /* = false */)
+{
+    // TODO: consider working on base object, and only in case when we find the search, use clone
+    // call to return the new object ?
+    if (*this == pattern) {
+        change = true;
+        return replace->clone();
+    }
+
+    std::list<SharedExp *> matches;
+    SharedExp top = shared_from_this(); // top may change; that's why we have to return it
+    doSearch(pattern, top, matches, false);
+
+    for (SharedExp *pexp : matches) {
+        *pexp = replace->clone(); // Do the replacement
+
+        if (once) {
+            change = true;
+            return top;
+        }
+    }
+
+    change = !matches.empty();
+    return top;
+}
+
+
+void Exp::doSearch(const Exp &pattern, SharedExp &toSearch, std::list<SharedExp *> &matches,
+                   bool once)
+{
+    const bool compare = (pattern == *toSearch);
+
+    if (compare) {
+        matches.push_back(&toSearch); // Success
+
+        if (once) {
+            return; // No more to do
+        }
+    }
+
+    // Either want to find all occurrences, or did not match at this level
+    // Recurse into children, unless a matching opSubscript
+    if (!compare || (toSearch->m_oper != opSubscript)) {
+        toSearch->doSearchChildren(pattern, matches, once);
+    }
+}
+
+
+void Exp::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &matches, bool once)
+{
+    Q_UNUSED(pattern);
+    Q_UNUSED(matches);
+    Q_UNUSED(once);
+    // Const and Terminal do not override this
 }
 
 
