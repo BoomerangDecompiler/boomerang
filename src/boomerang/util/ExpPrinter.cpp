@@ -155,7 +155,6 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
 
     case opTemp:
         if (exp->getSubExp1()->getOper() == opWildStrConst) {
-            assert(exp->getSubExp1()->isTerminal());
             os << "t[";
             exp->access<const Terminal, 1>()->print(os);
             os << "]";

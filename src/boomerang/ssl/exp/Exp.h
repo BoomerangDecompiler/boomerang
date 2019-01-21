@@ -171,8 +171,6 @@ public:
     /// True if this is a global variable
     bool isGlobal() const { return m_oper == opGlobal; }
 
-    /// \returns true if this is a terminal
-    virtual bool isTerminal() const { return false; }
     /// \returns true if this is the constant "true"
     bool isTrue() const { return m_oper == opTrue; }
     /// \returns true if this is the constant "false"

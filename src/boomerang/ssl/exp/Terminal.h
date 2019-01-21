@@ -45,9 +45,6 @@ public:
     /// \copydoc Exp::equalNoSubscript
     bool equalNoSubscript(const Exp &o) const override;
 
-    /// \copydoc Exp::isTerminal
-    bool isTerminal() const override { return true; }
-
     /// \copydoc Exp::ascendType
     SharedType ascendType() override;
 

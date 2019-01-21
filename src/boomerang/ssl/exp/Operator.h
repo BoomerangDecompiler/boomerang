@@ -124,10 +124,15 @@ enum OPER
     opMemberAccess, ///< . and -> in C
     opArrayIndex,   ///< [] in C
     opDefineAll,    ///< A wild definition
-    opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
+    opSubscript,    ///< Represents e{}
     opList,         ///< A binary, with expression (1) and next element
                     ///< in chain (2). Last element in chain is opNil
     opNil,          ///< This is a "nil list" terminal (e.g. no parameters)
+
+
+    //
+    // Deprecated operators
+    //
 
     /// For frontend / parser use only
     opFlagCall, ///< A flag call (Binary with string and params)
