@@ -329,11 +329,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
             return true;
         }
 
-        switch (exp->getOper()) {
-        case opList: return false;
-
-        default: return true;
-        }
+        return exp->getOper() != opList;
     }
 
     return false;
