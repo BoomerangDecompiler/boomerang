@@ -115,7 +115,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opFflags,         { "%fflags",    "",         "",         ""      } },
     { opTrue,           { "true",       "",         "",         ""      } },
     { opFalse,          { "false",      "",         "",         ""      } },
-    { opTypeOf,         { "T[",         "",         "",         "]"     } },
     { opZF,             { "%ZF",        "",         "",         ""      } },
     { opCF,             { "%CF",        "",         "",         ""      } },
     { opNF,             { "%NF",        "",         "",         ""      } },

@@ -606,25 +606,6 @@ void ExpTest::testAssociativity()
 }
 
 
-void ExpTest::testTypeOf()
-{
-    // T[r24{5}] = T[r25{9}]
-    Statement *s5 = new Assign;
-    Statement *s9 = new Assign;
-
-    s5->setNumber(5);
-    s9->setNumber(9);
-    SharedExp e = Binary::get(opEquals,
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_EAX), s5)),
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_ECX), s9)));
-
-    QCOMPARE(e->toString(), QString("T[r24{5}] = T[r25{9}]"));
-
-    delete s5;
-    delete s9;
-}
-
-
 void ExpTest::testAddUsedLocs()
 {
     QFETCH(SharedExpWrapper, usedExp);

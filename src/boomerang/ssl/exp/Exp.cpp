@@ -97,8 +97,8 @@ bool Exp::isConst() const
 bool Exp::isComparison() const
 {
     return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
-           m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq ||
-           m_oper == opLessEq || m_oper == opGtrEqUns || m_oper == opLessEqUns;
+           m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq || m_oper == opLessEq ||
+           m_oper == opGtrEqUns || m_oper == opLessEqUns;
 }
 
 
@@ -338,12 +338,6 @@ SharedExp Exp::simplifyArith()
 {
     ExpArithSimplifier eas;
     return this->acceptModifier(&eas);
-}
-
-
-const char *Exp::getOperName() const
-{
-    return operToString(m_oper);
 }
 
 

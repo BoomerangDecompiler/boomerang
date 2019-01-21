@@ -93,7 +93,6 @@ public:
     /// \note I'd like to make this protected, but then subclasses
     /// don't seem to be able to use it (at least, for subexpressions)
     OPER getOper() const { return m_oper; }
-    const char *getOperName() const;
 
     /// A few simplifications use this
     void setOper(OPER x) { m_oper = x; }
@@ -107,6 +106,31 @@ public:
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
     virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
+
+    // Checks for broad type of expression operator
+
+    bool isWildcard() const;
+
+    /// \returns true if this is a floating point expression (e.g. a +f b)
+    bool isFloatExp() const;
+
+    /// \returns true if this is a logical expression (e.g. comparison, && or ||)
+    bool isLogExp() const;
+
+    /// \returns true if this is a comparison
+    bool isComparison() const;
+
+    /// \returns true if this is a bitwise operation (e.g. & or |)
+    bool isBitwise() const;
+
+    /// \returns True if this is a location
+    bool isLocation() const;
+
+    /// True if integer const, float const or string const
+    bool isConst() const;
+
+    /// \returns true if the operator is symmetric (e.g. a && b <-> b && a)
+    bool isSymmetric() const;
 
     /// True if this is a call to a flag function
     bool isFlagCall() const { return m_oper == opFlagCall; }
@@ -148,8 +172,7 @@ public:
 
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
-    /// True if integer const, float const or string const
-    bool isConst() const;
+
 
     /// True if this is an opSize (size case; deprecated)
     bool isSizeCast() const { return m_oper == opSize; }
@@ -159,8 +182,6 @@ public:
     bool isLocal() const { return m_oper == opLocal; }
     /// True if this is a global variable
     bool isGlobal() const { return m_oper == opGlobal; }
-    /// True if this is a typeof
-    bool isTypeOf() const { return m_oper == opTypeOf; }
 
     /// \returns true if this is a terminal
     virtual bool isTerminal() const { return false; }
@@ -179,20 +200,11 @@ public:
     /// \returns true if this is an equality comparison using !=
     bool isNotEquality() const { return m_oper == opNotEqual; }
 
-    /// \returns true if this is a comparison
-    bool isComparison() const;
-
-    /// \returns true if the operator is symmetric (e.g. a && b <-> b && a)
-    bool isSymmetric() const;
-
     /// \returns true if this is a machine feature
     bool isMachFtr() const { return m_oper == opMachFtr; }
     /// \returns true if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a
     /// function parameter
     bool isParam() const { return m_oper == opParam; }
-
-    /// \returns True if this is a location
-    bool isLocation() const;
 
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }

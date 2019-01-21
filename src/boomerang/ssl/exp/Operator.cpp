@@ -111,7 +111,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFflags);
         HANDLE_OPER(opTrue);
         HANDLE_OPER(opFalse);
-        HANDLE_OPER(opTypeOf);
         HANDLE_OPER(opZF);
         HANDLE_OPER(opCF);
         HANDLE_OPER(opNF);

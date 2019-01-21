@@ -1529,7 +1529,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
     case opLoge:
         // not implemented
-        LOG_WARN("Case %1 not implemented", exp.getOperName());
+        LOG_WARN("Case %1 not implemented", operToString(exp.getOper()));
         // assert(false);
         break;
 
@@ -1871,11 +1871,11 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         if (other_op >= opZF) {
             // Machine flags; can occasionally be manipulated individually
             // Chop off the "op" part
-            str << exp.getOperName() + 2;
+            str << operToString(exp.getOper()) + 2;
             break;
         }
 
-        LOG_ERROR("case %1 not implemented", exp.getOperName());
+        LOG_ERROR("case %1 not implemented", operToString(exp.getOper()));
     }
 }
 

@@ -1053,7 +1053,7 @@ void StatementTest::testAddUsedLocsBool()
 
     actual   = "";
     l.print(ost);
-    QCOMPARE(actual, QString("m[local21 + 16]{372},\tlocal21"));
+    QCOMPARE(actual, QString("local21,\tm[local21 + 16]{372}"));
 
     // m[r28{-} - 4] := -
     l.clear();

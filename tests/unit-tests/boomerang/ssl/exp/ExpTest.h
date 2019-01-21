@@ -111,9 +111,6 @@ private slots:
     /// Test that a+K+b is the same as a+b+K when each is simplified
     void testAssociativity();
 
-    /// Test opTypeOf and TypeVal (type values)
-    void testTypeOf();
-
     /// Test finding the locations used by an expression
     void testAddUsedLocs();
     void testAddUsedLocs_data();
