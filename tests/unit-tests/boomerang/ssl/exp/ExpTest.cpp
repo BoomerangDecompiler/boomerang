@@ -91,30 +91,6 @@ void ExpTest::testUnaries()
 }
 
 
-void ExpTest::testIsAfpTerm()
-{
-    SharedExp afp   = Terminal::get(opAFP);
-    SharedExp plus  = Binary::get(opPlus, afp->clone(), Const::get(-99));
-    SharedExp minus = Binary::get(opMinus, afp->clone(), m_99->clone());
-
-    QVERIFY(afp->isAfpTerm());
-    QVERIFY(plus->isAfpTerm());
-    QVERIFY(minus->isAfpTerm());
-    QVERIFY(!m_99->isAfpTerm());
-    QVERIFY(!m_rof2->isAfpTerm());
-
-    // Now with typed expressions
-    SharedExp tafp = TypedExp::get(IntegerType::get(Address::getSourceBits()), afp->clone());
-    // Unary tafp  (opTypedExp, afp.clone());
-    SharedExp tplus  = Unary::get(opTypedExp, plus->clone());
-    SharedExp tminus = Unary::get(opTypedExp, minus->clone());
-
-    QVERIFY(tafp->isAfpTerm());
-    QVERIFY(tplus->isAfpTerm());
-    QVERIFY(tminus->isAfpTerm());
-}
-
-
 void ExpTest::testCompare1()
 {
     QVERIFY(!(*m_99 == *m_rof2));
@@ -330,28 +306,29 @@ void ExpTest::testAccumulate()
     QVERIFY(*Exp::accumulate(le) == expected3);
 
     // Four terms, one repeated
-    le.push_back(Terminal::get(opAFP));
-    Binary expected4(opPlus, rof2->clone(),
+    le.push_back(Terminal::get(opPC));
+    Binary expected4(opPlus,
+                     rof2->clone(),
                      Binary::get(opPlus,
                                  nineNine->clone(),
                                  Binary::get(opPlus,
                                              nineNine->clone(),
-                                             Terminal::get(opAFP))));
+                                             Terminal::get(opPC))));
     QVERIFY(*Exp::accumulate(le) == expected4);
 }
 
 
 void ExpTest::testPartitionTerms()
 {
-    // afp + 108 + n - (afp + 92)
+    // %pc + 108 + n - (%pc + 92)
     Binary e(opMinus,
              Binary::get(opPlus,
                          Binary::get(opPlus,
-                                     Terminal::get(opAFP),
+                                     Terminal::get(opPC),
                                      Const::get(108)),
                          Unary::get(opParam, Const::get("n"))),
              Binary::get(opPlus,
-                         Terminal::get(opAFP),
+                         Terminal::get(opPC),
                          Const::get(92)));
 
     std::list<SharedExp> positives, negatives;
@@ -360,12 +337,12 @@ void ExpTest::testPartitionTerms()
     e.partitionTerms(positives, negatives, integers, false);
     SharedExp res = Exp::accumulate(positives);
     Binary    expected1(opPlus,
-                        Terminal::get(opAFP),
+                        Terminal::get(opPC),
                         Unary::get(opParam, Const::get("n")));
     QVERIFY(*res == expected1);
 
     res = Exp::accumulate(negatives);
-    Terminal expected2(opAFP);
+    Terminal expected2(opPC);
     QVERIFY(*res == expected2);
 
     QCOMPARE(integers.size(), static_cast<size_t>(2));
@@ -479,8 +456,8 @@ void ExpTest::testLess()
     QVERIFY(minusThreePointThree < twoPointTwo);
 
     // Terminal
-    Terminal afp(opAFP), agp(opAGP);
-    QVERIFY((opAFP < opAGP) == (afp < agp));
+    Terminal pc(opPC), nil(opNil);
+    QVERIFY((opPC < opNil) == (pc < nil));
 
     // Unary
     Unary negTwo(opNeg, Const::get(2)), negThree(opNeg, Const::get(3));

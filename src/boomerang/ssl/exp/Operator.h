@@ -134,8 +134,6 @@ enum OPER
     // Terminals (zero parameter special locations)
     // All machines are assumed to have these following registers:
     opPC,     ///< program counter
-    opAFP,    ///< This is the abstract frame pointer register (CSR/PAL analysis)
-    opAGP,    ///< This is the abstract global pointer register (CSR/PAL analysis)
     opNil,    ///< This is a "nil list" terminal (e.g. no parameters)
     opFlags,  ///< This is the abstracted integer flags register terminal
     opFflags, ///< This is the abstracted floating point flags terminal

@@ -88,36 +88,32 @@ bool Exp::isRegN(int N) const
 }
 
 
-bool Exp::isAfpTerm()
+bool Exp::isConst() const
 {
-    auto cur = shared_from_this();
+    return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
+}
 
-    if (m_oper == opTypedExp) {
-        cur = getSubExp1();
-    }
 
-    if (cur->getOper() == opAddrOf) {
-        SharedExp p = cur->getSubExp1();
+bool Exp::isComparison() const
+{
+    return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
+           m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq ||
+           m_oper == opLessEq || m_oper == opGtrEqUns || m_oper == opLessEqUns;
+}
 
-        if (p && (p->getOper() == opMemOf)) {
-            cur = p->getSubExp1();
-        }
-    }
 
-    OPER curOp = cur->getOper();
+bool Exp::isSymmetric() const
+{
+    return m_oper == opPlus || m_oper == opMult || m_oper == opMults || m_oper == opFPlus ||
+           m_oper == opFMult || m_oper == opAnd || m_oper == opOr || m_oper == opEquals ||
+           m_oper == opNotEqual || m_oper == opBitAnd || m_oper == opBitOr || m_oper == opBitXor;
+}
 
-    if (curOp == opAFP) {
-        return true;
-    }
 
-    if ((curOp != opPlus) && (curOp != opMinus)) {
-        return false;
-    }
-
-    // cur must be a Binary* now
-    OPER subOp1 = cur->getSubExp1()->getOper();
-    OPER subOp2 = cur->getSubExp2()->getOper();
-    return ((subOp1 == opAFP) && (subOp2 == opIntConst));
+bool Exp::isLocation() const
+{
+    return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
+           m_oper == opParam;
 }
 
 

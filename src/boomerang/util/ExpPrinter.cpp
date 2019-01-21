@@ -110,8 +110,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
     { opPC,             { "%pc",        "",         "",         ""      } },
-    { opAFP,            { "%afp",       "",         "",         ""      } },
-    { opAGP,            { "%agp",       "",         "",         ""      } },
     { opNil,            { "",           "",         "",         ""      } },
     { opFlags,          { "%flags",     "",         "",         ""      } },
     { opFflags,         { "%fflags",    "",         "",         ""      } },

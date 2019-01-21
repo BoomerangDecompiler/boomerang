@@ -50,9 +50,6 @@ private slots:
     /// Test LNot, unary minus, etc
     void testUnaries();
 
-    /// Test [ a[m[ ] %afp [+|- const]
-    void testIsAfpTerm();
-
     /**
      * ExpTest::testCompare1-5
      * Test the operator== function

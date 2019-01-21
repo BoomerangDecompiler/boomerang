@@ -106,8 +106,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opWildIntConst);
         HANDLE_OPER(opWildStrConst);
         HANDLE_OPER(opPC);
-        HANDLE_OPER(opAFP);
-        HANDLE_OPER(opAGP);
         HANDLE_OPER(opNil);
         HANDLE_OPER(opFlags);
         HANDLE_OPER(opFflags);

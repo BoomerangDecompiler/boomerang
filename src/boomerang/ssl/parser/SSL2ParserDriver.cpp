@@ -88,8 +88,6 @@ OPER strToTerm(const QString &s)
     // clang-format off
     static const QMap<QString, OPER> mapping = {
         { "%pc",        opPC     },
-        { "%afp",       opAFP    },
-        { "%agp",       opAGP    },
         { "%CF",        opCF     },
         { "%ZF",        opZF     },
         { "%OF",        opOF     },

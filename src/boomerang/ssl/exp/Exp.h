@@ -139,9 +139,6 @@ public:
     /// True if this is %pc
     bool isPC() const { return m_oper == opPC; }
 
-    /// Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
-    bool isAfpTerm();
-
     /// True if is int const
     bool isIntConst() const { return m_oper == opIntConst; }
     /// True if is long (address) const
@@ -152,10 +149,8 @@ public:
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
     /// True if integer const, float const or string const
-    bool isConst() const
-    {
-        return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
-    }
+    bool isConst() const;
+
     /// True if this is an opSize (size case; deprecated)
     bool isSizeCast() const { return m_oper == opSize; }
     /// True if this is a subscripted expression (SSA)
@@ -185,12 +180,10 @@ public:
     bool isNotEquality() const { return m_oper == opNotEqual; }
 
     /// \returns true if this is a comparison
-    bool isComparison() const
-    {
-        return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
-               m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq ||
-               m_oper == opLessEq || m_oper == opGtrEqUns || m_oper == opLessEqUns;
-    }
+    bool isComparison() const;
+
+    /// \returns true if the operator is symmetric (e.g. a && b <-> b && a)
+    bool isSymmetric() const;
 
     /// \returns true if this is a machine feature
     bool isMachFtr() const { return m_oper == opMachFtr; }
@@ -199,11 +192,8 @@ public:
     bool isParam() const { return m_oper == opParam; }
 
     /// \returns True if this is a location
-    bool isLocation() const
-    {
-        return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
-               m_oper == opParam;
-    }
+    bool isLocation() const;
+
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }
 

@@ -1528,8 +1528,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opLoge:
-    case opAFP:
-    case opAGP:
         // not implemented
         LOG_WARN("Case %1 not implemented", exp.getOperName());
         // assert(false);
