@@ -106,7 +106,7 @@ bool Const::operator<(const Exp &o) const
 }
 
 
-bool Const::operator*=(const Exp &o) const
+bool Const::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 

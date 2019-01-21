@@ -68,7 +68,7 @@ bool Terminal::operator<(const Exp &o) const
 }
 
 
-bool Terminal::operator*=(const Exp &o) const
+bool Terminal::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 

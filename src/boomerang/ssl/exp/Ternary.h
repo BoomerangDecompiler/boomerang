@@ -45,7 +45,7 @@ public:
     bool operator<(const Exp &o) const override;
 
     /// \copydoc Binary::operator*=
-    bool operator*=(const Exp &o) const override;
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Binary::getArity
     int getArity() const override { return 3; }

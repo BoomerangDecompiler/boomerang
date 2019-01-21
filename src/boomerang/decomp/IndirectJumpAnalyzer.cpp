@@ -339,7 +339,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         SwitchType switchType = SwitchType::Invalid;
 
         for (auto &val : hlForms) {
-            if (*jumpDest *= *val.pattern) { // *= compare ignores subscripts
+            if (jumpDest->equalNoSubscript(*val.pattern)) {
                 switchType = val.type;
 
                 if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
@@ -485,7 +485,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         int i;
 
         for (i = 0; i < n; i++) {
-            if (*e *= *hlVfc[i]) { // *= compare ignores subscripts
+            if (e->equalNoSubscript(*hlVfc[i])) {
                 recognised = true;
 
                 if (proc->getProg()->getProject()->getSettings()->debugSwitch) {

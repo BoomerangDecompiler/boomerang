@@ -198,7 +198,7 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
                             bool isOverwrite = false;
 
                             for (const SharedExp &loc : OWcomps) {
-                                if (*loc *= *lhsOWdef) {
+                                if (loc->equalNoSubscript(*lhsOWdef)) {
                                     isOverwrite = true;
                                     break;
                                 }

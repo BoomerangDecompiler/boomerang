@@ -87,7 +87,7 @@ public:
     virtual bool operator<(const Exp &o) const = 0;
 
     /// Comparison ignoring subscripts
-    virtual bool operator*=(const Exp &o) const = 0;
+    virtual bool equalNoSubscript(const Exp &o) const = 0;
 
     /// Return the operator.
     /// \note I'd like to make this protected, but then subclasses

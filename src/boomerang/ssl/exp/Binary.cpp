@@ -132,7 +132,7 @@ bool Binary::operator<(const Exp &o) const
 }
 
 
-bool Binary::operator*=(const Exp &o) const
+bool Binary::equalNoSubscript(const Exp &o) const
 {
     assert(subExp1 && subExp2);
     const Exp *other = &o;
@@ -149,11 +149,11 @@ bool Binary::operator*=(const Exp &o) const
         return false;
     }
 
-    if (!(*subExp1 *= *other->getSubExp1())) {
+    if (!subExp1->equalNoSubscript(*other->getSubExp1())) {
         return false;
     }
 
-    return *subExp2 *= *other->getSubExp2();
+    return subExp2->equalNoSubscript(*other->getSubExp2());
 }
 
 

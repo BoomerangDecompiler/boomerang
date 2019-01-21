@@ -47,7 +47,7 @@ public:
     bool operator<(const Exp &o) const override;
 
     /// \copydoc Unary::operator*=
-    bool operator*=(const Exp &o) const override;
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// Get and set the type
     SharedType getType() { return m_type; }

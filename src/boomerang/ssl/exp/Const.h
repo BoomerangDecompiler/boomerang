@@ -80,8 +80,8 @@ public:
     /// \copydoc Exp::operator<
     virtual bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator*=
-    virtual bool operator*=(const Exp &o) const override;
+    /// \copydoc Exp::equalNoSubscript
+    virtual bool equalNoSubscript(const Exp &o) const override;
 
     // Get the constant
     int getInt() const;

@@ -130,7 +130,7 @@ bool Ternary::operator<(const Exp &o) const
 }
 
 
-bool Ternary::operator*=(const Exp &o) const
+bool Ternary::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -146,15 +146,15 @@ bool Ternary::operator*=(const Exp &o) const
         return false;
     }
 
-    if (!(*subExp1 *= *other->getSubExp1())) {
+    if (!subExp1->equalNoSubscript(*other->getSubExp1())) {
         return false;
     }
 
-    if (!(*subExp2 *= *other->getSubExp2())) {
+    if (!subExp2->equalNoSubscript(*other->getSubExp2())) {
         return false;
     }
 
-    return *subExp3 *= *other->getSubExp3();
+    return subExp3->equalNoSubscript(*other->getSubExp3());
 }
 
 

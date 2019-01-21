@@ -118,7 +118,7 @@ bool Unary::operator<(const Exp &o) const
 }
 
 
-bool Unary::operator*=(const Exp &o) const
+bool Unary::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -146,7 +146,7 @@ bool Unary::operator*=(const Exp &o) const
         return false;
     }
 
-    return *subExp1 *= *other->getSubExp1();
+    return subExp1->equalNoSubscript(*other->getSubExp1());
 }
 
 

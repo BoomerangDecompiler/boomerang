@@ -107,7 +107,7 @@ bool RefExp::operator<(const Exp &o) const
 }
 
 
-bool RefExp::operator*=(const Exp &o) const
+bool RefExp::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -115,7 +115,7 @@ bool RefExp::operator*=(const Exp &o) const
         other = o.getSubExp1().get();
     }
 
-    return *subExp1 *= *other;
+    return subExp1->equalNoSubscript(*other);
 }
 
 

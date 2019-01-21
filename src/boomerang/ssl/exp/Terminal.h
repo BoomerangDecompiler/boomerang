@@ -42,8 +42,8 @@ public:
     /// \copydoc Exp::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator*=
-    bool operator*=(const Exp &o) const override;
+    /// \copydoc Exp::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }

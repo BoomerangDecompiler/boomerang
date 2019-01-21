@@ -95,7 +95,7 @@ bool TypedExp::operator<(const Exp &o) const // Type sensitive
 }
 
 
-bool TypedExp::operator*=(const Exp &o) const
+bool TypedExp::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -116,7 +116,7 @@ bool TypedExp::operator*=(const Exp &o) const
         return false;
     }
 
-    return *getSubExp1() *= *other->getSubExp1();
+    return getSubExp1()->equalNoSubscript(*other->getSubExp1());
 }
 
 
