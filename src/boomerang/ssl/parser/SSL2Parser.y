@@ -210,9 +210,9 @@ exp:
   | exp UGTREQ exp      { $$ = Binary::get(opGtrEqUns,  $1, $3); }
   | exp AND exp         { $$ = Binary::get(opAnd,       $1, $3); }
   | exp OR exp          { $$ = Binary::get(opOr,        $1, $3); }
-  | NOT exp             { $$ = Unary::get(opNot,   $2); }
-  | LNOT exp            { $$ = Unary::get(opLNot,  $2); }
-  | FNEG exp            { $$ = Unary::get(opFNeg,  $2); }
+  | NOT exp             { $$ = Unary::get(opBitNot, $2); }
+  | LNOT exp            { $$ = Unary::get(opLNot,   $2); }
+  | FNEG exp            { $$ = Unary::get(opFNeg,   $2); }
   | exp cast %prec CAST_OP {
         if ($2 == STD_SIZE) {
             $$ = std::move($1);

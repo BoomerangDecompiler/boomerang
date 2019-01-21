@@ -65,7 +65,7 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLessEqUns,      { "",           " <=u ",    "",         ""      } },
     { opGtrEqUns,       { "",           " >=u ",    "",         ""      } },
     { opLNot,           { "L~",         "",         "",         ""      } },
-    { opNot,            { "~",          "",         "",         ""      } },
+    { opBitNot,         { "~",          "",         "",         ""      } },
     { opBitAnd,         { "",           " & ",      "",         ""      } },
     { opBitOr,          { "",           " | ",      "",         ""      } },
     { opBitXor,         { "",           " ^ ",      "",         ""      } },

@@ -44,7 +44,7 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opGtrUns);
         HANDLE_OPER(opLessEqUns);
         HANDLE_OPER(opGtrEqUns);
-        HANDLE_OPER(opNot);
+        HANDLE_OPER(opBitNot);
         HANDLE_OPER(opLNot);
         HANDLE_OPER(opBitAnd);
         HANDLE_OPER(opBitOr);

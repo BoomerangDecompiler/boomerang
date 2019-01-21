@@ -99,7 +99,7 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             //
             if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
-                SharedExp cond = Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()),
+                SharedExp cond = Binary::get(opAnd, Unary::get(opLNot, firstBranch->getCondExpr()),
                                              secondBranch->getCondExpr());
                 firstBranch->setCondExpr(cond->clone()->simplify());
 

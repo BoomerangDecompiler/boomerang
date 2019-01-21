@@ -88,7 +88,7 @@ enum OPER
     opLNot,      ///< Logical not
 
     // bit manipulation operations
-    opNot,    ///< Bitwise inversion
+    opBitNot, ///< Bitwise inversion
     opBitAnd, ///< Bitwise and
     opBitOr,  ///< Bitwise or
     opBitXor, ///< xor (Note: a ^ 5 is a bitwise operation, (a==b) ^ true is a logical operation)

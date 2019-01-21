@@ -26,7 +26,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
 {
     bool &changed = m_modified;
 
-    if (exp->getOper() == opNot || exp->getOper() == opLNot) {
+    if (exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         OPER oper = exp->getSubExp1()->getOper();
 
         switch (oper) {
@@ -50,7 +50,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         }
     }
 
-    if (exp->getOper() == opNeg || exp->getOper() == opNot || exp->getOper() == opLNot ||
+    if (exp->getOper() == opNeg || exp->getOper() == opBitNot || exp->getOper() == opLNot ||
         exp->getOper() == opSize) {
         if (exp->getSubExp1()->isIntConst()) {
             // -k, ~k, or !k
@@ -58,7 +58,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
 
             switch (exp->getOper()) {
             case opNeg: k = -k; break;
-            case opNot: k = ~k; break;
+            case opBitNot: k = ~k; break;
             case opLNot: k = !k; break;
             case opSize: /* No change required */
             default: break;

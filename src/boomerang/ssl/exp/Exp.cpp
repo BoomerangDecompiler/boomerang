@@ -113,7 +113,7 @@ bool Exp::isLogExp() const
 
 bool Exp::isBitwise() const
 {
-    return m_oper == opNot || m_oper == opBitAnd || m_oper == opBitOr ||
+    return m_oper == opBitNot || m_oper == opBitAnd || m_oper == opBitOr ||
            (m_oper == opBitXor && (!getSubExp1()->isLogExp() || !!getSubExp2()->isLogExp())) ||
            m_oper == opShL || m_oper == opShR || m_oper == opShRA || m_oper == opRotL ||
            m_oper == opRotLC || m_oper == opRotR || m_oper == opRotRC;

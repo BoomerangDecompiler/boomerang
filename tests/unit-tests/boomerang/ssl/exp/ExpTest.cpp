@@ -85,9 +85,9 @@ void ExpTest::testBinaries()
 
 void ExpTest::testUnaries()
 {
-    QCOMPARE(Unary::get(opNot,  Terminal::get(opZF))->toString(), QString("~%ZF"));
-    QCOMPARE(Unary::get(opLNot, Terminal::get(opZF))->toString(), QString("L~%ZF"));
-    QCOMPARE(Unary::get(opNeg,  Terminal::get(opZF))->toString(), QString("-%ZF"));
+    QCOMPARE(Unary::get(opBitNot, Terminal::get(opZF))->toString(), QString("~%ZF"));
+    QCOMPARE(Unary::get(opLNot,   Terminal::get(opZF))->toString(), QString("L~%ZF"));
+    QCOMPARE(Unary::get(opNeg,    Terminal::get(opZF))->toString(), QString("-%ZF"));
 }
 
 
@@ -376,11 +376,11 @@ void ExpTest::testSimplify_data()
     QTest::addColumn<SharedExpWrapper>("exp");
     QTest::addColumn<SharedExpWrapper>("expectedResult");
 
-    TEST_SIMPLIFY("negConst",  Unary::get(opNeg,  Const::get(55)),     Const::get(-55));
-    TEST_SIMPLIFY("notConst",  Unary::get(opNot,  Const::get(0x55AA)), Const::get(0xFFFFAA55));
-    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot, Const::get(55)),     Const::get(0));
-    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot, Const::get(0)),      Const::get(1));
-    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg,  Unary::get(opLocal,  Const::get("abc"))),
+    TEST_SIMPLIFY("negConst",  Unary::get(opNeg,    Const::get(55)),     Const::get(-55));
+    TEST_SIMPLIFY("notConst",  Unary::get(opBitNot, Const::get(0x55AA)), Const::get(0xFFFFAA55));
+    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot,   Const::get(55)),     Const::get(0));
+    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot,   Const::get(0)),      Const::get(1));
+    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg,    Unary::get(opLocal,  Const::get("abc"))),
                   Unary::get(opNeg, Unary::get(opLocal, Const::get("abc"))));
 
     TEST_SIMPLIFY("plusConst", Binary::get(opPlus,    Const::get(2),    Const::get(3)),    Const::get(5));

@@ -42,7 +42,7 @@ void ExpSimplifierTest::testSimplify_data()
     // Unary
     {
         TEST_SIMPLIFY("UnaryNotEqual",
-                      Unary::get(opNot,
+                      Unary::get(opBitNot,
                                  Binary::get(opEquals,
                                              Location::regOf(REG_PENT_EAX),
                                              Location::regOf(REG_PENT_EDX))),
@@ -56,7 +56,7 @@ void ExpSimplifierTest::testSimplify_data()
                       Const::get(0xFFFFFF01));
 
         TEST_SIMPLIFY("UnaryNotConst",
-                      Unary::get(opNot, Const::get(0xFF)),
+                      Unary::get(opBitNot, Const::get(0xFF)),
                       Const::get(0xFFFFFF00));
 
         TEST_SIMPLIFY("UnaryLNotConst",
@@ -76,7 +76,7 @@ void ExpSimplifierTest::testSimplify_data()
                       Location::regOf(REG_PENT_EAX));
 
         TEST_SIMPLIFY("UnaryDoubleNot",
-                      Unary::get(opNot, Unary::get(opNot, Const::get(0x1000))),
+                      Unary::get(opBitNot, Unary::get(opBitNot, Const::get(0x1000))),
                       Const::get(0x1000));
     }
 

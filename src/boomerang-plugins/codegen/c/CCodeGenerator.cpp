@@ -1245,7 +1245,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::BitXor);
         break;
 
-    case opNot:
+    case opBitNot:
         openParen(str, curPrec, OpPrec::Unary);
         str << "~";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
@@ -2058,7 +2058,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
         SharedExp cond = bb->getCond();
 
         if (bb->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(bb)) {
-            cond = Unary::get(opNot, cond)->simplify();
+            cond = Unary::get(opLNot, cond)->simplify();
         }
 
         addPretestedLoopHeader(cond);
