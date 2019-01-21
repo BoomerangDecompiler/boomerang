@@ -56,5 +56,5 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChi
     }
 
     visitChildren = false; // Don't look inside the refexp
-    return true;           // It has a symbol; noting bad foound yet but continue searching
+    return true;           // It has a symbol; nothing bad found yet but continue searching
 }

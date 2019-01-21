@@ -121,7 +121,7 @@ public:
     /// True if integer const, float const or string const
     bool isConst() const;
 
-    /// \returns true if the operator is symmetric (e.g. a && b <-> b && a)
+    /// \returns true if the operator is symmetric (i.e. a && b <-> b && a)
     bool isSymmetric() const;
 
     /// True if this is a call to a flag function

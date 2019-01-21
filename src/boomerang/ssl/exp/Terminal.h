@@ -34,7 +34,7 @@ public:
     virtual SharedExp clone() const override;
 
     /// \copydoc Exp::get
-    static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
+    static SharedExp get(OPER op);
 
     /// \copydoc Exp::operator==
     bool operator==(const Exp &o) const override;

@@ -29,6 +29,12 @@ Terminal::Terminal(const Terminal &o)
 }
 
 
+SharedExp Terminal::get(OPER op)
+{
+    return std::make_shared<Terminal>(op);
+}
+
+
 SharedExp Terminal::clone() const
 {
     return std::make_shared<Terminal>(*this);

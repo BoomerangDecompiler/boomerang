@@ -13,9 +13,7 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
-/**
- * Binary is a subclass of Unary, holding two subexpressions
- */
+/// Binary is an expressions holding two subexpressions.
 class BOOMERANG_API Binary : public Unary
 {
 public:
@@ -32,10 +30,7 @@ public:
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 
-    static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2)
-    {
-        return std::make_shared<Binary>(op, e1, e2);
-    }
+    static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2);
 
     /// \copydoc Unary::operator==
     bool operator==(const Exp &o) const override;
@@ -43,7 +38,7 @@ public:
     /// \copydoc Unary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Unary::operator*=
+    /// \copydoc Unary::equalNoSubscript
     bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Unary::getArity

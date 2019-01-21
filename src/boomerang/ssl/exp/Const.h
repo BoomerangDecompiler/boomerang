@@ -73,7 +73,6 @@ public:
         return c;
     }
 
-
     /// \copydoc Exp::operator==
     virtual bool operator==(const Exp &o) const override;
 

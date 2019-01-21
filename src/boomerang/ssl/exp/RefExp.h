@@ -55,7 +55,7 @@ public:
     /// \copydoc Unary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Unary::operator*=
+    /// \copydoc Unary::equalNoSubscript
     bool equalNoSubscript(const Exp &o) const override;
 
     Statement *getDef() const { return m_def; } // Ugh was called getRef()
