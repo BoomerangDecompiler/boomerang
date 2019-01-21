@@ -509,37 +509,37 @@ void ExpTest::testList()
 
     // 1 element list
     SharedExp e = Binary::get(opList,
-                              Location::get(opParam, Const::get("a"), nullptr),
+                              Location::param("a", nullptr),
                               Terminal::get(opNil));
     QCOMPARE(e->toString(), QString("a"));
 
     // 2 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Terminal::get(opNil)));
     QCOMPARE(e->toString(), QString("a, b"));
 
     // 3 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Binary::get(opList,
-                                            Location::get(opParam, Const::get("c"), nullptr),
+                                            Location::param("c"),
                                             Terminal::get(opNil))));
     QCOMPARE(e->toString(), QString("a, b, c"));
 
     // 4 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Binary::get(opList,
-                                            Location::get(opParam, Const::get("c"), nullptr),
+                                            Location::param("c"),
                                             Binary::get(opList,
-                                                        Location::get(opParam, Const::get("d"), nullptr),
+                                                        Location::param("d"),
                                                         Terminal::get(opNil)))));
     QCOMPARE(e->toString(), QString("a, b, c, d"));
 }
