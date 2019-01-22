@@ -1,3 +1,4 @@
+#include <stdio.h>
 
 double a = 5.2;
 int b = 7;

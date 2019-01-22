@@ -1,6 +1,8 @@
 /* In Sparc, this demonstrates how an empty procedure (just a return statement)
     can pass on multiple arguments */
 /* Compile with cc -xO4 -xinline= ... */
+#include <stdio.h>
+
 
 void addem(int a, int b, int c, int* res)
 {

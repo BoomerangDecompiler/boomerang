@@ -1,4 +1,5 @@
 /* Compile with gcc -O4 -fno-inline -o ...  or cc -xO4 -xinline= -o ...  */
+#include <stdio.h>
 
 int proc1(int a, int b) {
     return a - b;

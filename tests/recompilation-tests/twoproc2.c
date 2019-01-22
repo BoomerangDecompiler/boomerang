@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 
 int proc1(int a, int b) {
     return a + b;

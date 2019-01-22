@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 
 long long a = 123456789012345;
 int b = 7;
@@ -19,6 +21,3 @@ int main()
     printf("b = %i\n", b);
     return 0;
 }
-
-
-

@@ -13,3 +13,6 @@ static unsigned long elf_hash(const unsigned char *name)
 	return h;
 }
 
+int main(int argc, char *argv[])
+{
+}

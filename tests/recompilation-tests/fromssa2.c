@@ -1,15 +1,20 @@
 /* Compile with
 gcc -O4 -o fromssa2 -fno-unroll-loops test/source/fromssa2.c
 */
-int main() {
+
+#include <stdio.h>
+
+
+int main(int argc, char *argv[]) {
     int a, x;
     a = 0;
+
     do {
         a = a+1;
         x = a;
         printf("%d ", a);
     } while (a < 10);
+
     printf("a is %d, x is %d\n", a, x);
-    return 0;
 }
 

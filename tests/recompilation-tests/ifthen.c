@@ -7,10 +7,11 @@
 
 #include <stdio.h>
 
-void main(int argc) {
+void main(int argc)
+{
     int x=0;
     int a, b, c;
-    printf("Figure 19.2\n");        // Burn block number 0
+    printf("Figure 19.2\n");        /* Burn block number 0 */
 
     x = 1;
     b = argc;
@@ -24,7 +25,7 @@ void main(int argc) {
         a = b;
     }
 
-    // In this block, there is no need for a phi-function for b
+    /* In this block, there is no need for a phi-function for b */
     x = 4;
     c = a+b;
     printf("C is %d\n", c);

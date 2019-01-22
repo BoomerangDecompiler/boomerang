@@ -1,9 +1,9 @@
-// Compile with gcc -O0
+/* Compile with gcc -O0 */
 #include <stdio.h>
 
 int bswap(int x) {
-    asm("mov 8(%ebp), %eax");
-    asm("bswap %eax");
+    __asm__("movl 8(%ebp), %eax");
+    __asm__("bswap %eax");
 }
 
 int main() {

@@ -1,8 +1,12 @@
 #include <sys/stat.h>
+#include <stdio.h>
 
-int main(int argc, char **argv) {
+
+int main(int argc, char **argv)
+{
     struct stat st;
     int res = stat(argv[1], &st);
+
     printf("res: %i\n", res);
     printf("dev: %i\n", st.st_dev);
     printf("ino: %i\n", st.st_ino);
@@ -17,5 +21,4 @@ int main(int argc, char **argv) {
     printf("atime: %i\n", st.st_atime);
     printf("mtime: %i\n", st.st_mtime);
     printf("ctime: %i\n", st.st_ctime);
-    return 0;
 }
