@@ -257,7 +257,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             // correct the assignment to %pc to be relative
             if (!rtl->getStatements().empty() && rtl->getStatements().back()->isAssign()) {
                 Assign *asgn = static_cast<Assign *>(rtl->getStatements().back());
-                if (asgn->getLeft()->getOper() == opPC && asgn->getRight()->isConst() &&
+                if (asgn->getLeft()->isPC() && asgn->getRight()->isConst() &&
                     !asgn->getRight()->isStrConst()) {
                     const Address absoluteAddr = asgn->getRight()->access<Const>()->getAddr();
                     const int delta            = (absoluteAddr -

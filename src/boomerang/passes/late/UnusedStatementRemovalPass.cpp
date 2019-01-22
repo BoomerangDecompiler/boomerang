@@ -123,13 +123,13 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
             }
 
             // If it's a memof and renameable it can still be deleted
-            if ((asLeft->getOper() == opMemOf) && !proc->canRename(asLeft)) {
+            if (asLeft->isMemOf() && !proc->canRename(asLeft)) {
                 // Assignments to memof-anything-but-local must always be kept.
                 ++ll;
                 continue;
             }
 
-            if ((asLeft->getOper() == opMemberAccess) || (asLeft->getOper() == opArrayIndex)) {
+            if (asLeft->isMemberOf() || asLeft->isArrayIndex()) {
                 // can't say with these; conservatively never remove them
                 ++ll;
                 continue;

@@ -945,7 +945,7 @@ bool DefaultFrontEnd::isHelperFunc(Address, Address, RTLList &)
 
 bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 {
-    if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
+    if (exp && exp->isMemOf() && exp->access<Exp, 1>()->isIntConst()) {
         const BinarySymbol *symbol = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
             exp->access<Const, 1>()->getAddr());
 

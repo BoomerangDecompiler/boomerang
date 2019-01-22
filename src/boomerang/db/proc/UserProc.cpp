@@ -1142,7 +1142,7 @@ bool UserProc::proveEqual(const SharedExp &queryLeft, const SharedExp &queryRigh
         query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
     }
 
-    if (query->getSubExp1()->getOper() != opSubscript) {
+    if (!query->getSubExp1()->isSubscript()) {
         bool gotDef = false;
 
         // replace expression from return set with expression in the collector of the return
@@ -1236,7 +1236,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
 
         change = false;
 
-        if (query->getOper() == opEquals) {
+        if (query->isEquality()) {
             // same left and right means true
             if (*query->getSubExp1() == *query->getSubExp2()) {
                 query  = Terminal::get(opTrue);
@@ -1265,7 +1265,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
             }
 
             // substitute using a statement that has the same left as the query
-            if (!change && (query->getSubExp1()->getOper() == opSubscript)) {
+            if (!change && (query->getSubExp1()->isSubscript())) {
                 auto r              = query->access<RefExp, 1>();
                 Statement *s        = r->getDef();
                 CallStatement *call = dynamic_cast<CallStatement *>(s);
@@ -1463,28 +1463,28 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
             }
 
             // remove memofs from both sides if possible
-            if (!change && (query->getSubExp1()->getOper() == opMemOf) &&
-                (query->getSubExp2()->getOper() == opMemOf)) {
-                query->setSubExp1(query->getSubExp1()->getSubExp1());
-                query->setSubExp2(query->getSubExp2()->getSubExp1());
+            if (!change && query->getSubExp1()->isMemOf() &&
+                query->getSubExp2()->isMemOf()) {
+                query->setSubExp1(query->access<Exp, 1, 1>());
+                query->setSubExp2(query->access<Exp, 2, 1>());
                 change = true;
             }
 
             // is ok if both of the memofs are subscripted with nullptr
-            if (!change && (query->getSubExp1()->getOper() == opSubscript) &&
-                (query->access<Exp, 1, 1>()->getOper() == opMemOf) &&
-                (query->access<RefExp, 1>()->getDef() == nullptr) &&
-                (query->access<Exp, 2>()->getOper() == opSubscript) &&
-                (query->access<Exp, 2, 1>()->getOper() == opMemOf) &&
-                (query->access<RefExp, 2>()->getDef() == nullptr)) {
-                query->setSubExp1(query->getSubExp1()->getSubExp1()->getSubExp1());
-                query->setSubExp2(query->getSubExp2()->getSubExp1()->getSubExp1());
+            if (!change && query->getSubExp1()->isSubscript() &&
+                query->access<Exp, 1, 1>()->isMemOf() &&
+                query->access<RefExp, 1>()->getDef() == nullptr &&
+                query->access<Exp, 2>()->isSubscript() &&
+                query->access<Exp, 2, 1>()->isMemOf() &&
+                query->access<RefExp, 2>()->getDef() == nullptr) {
+                query->setSubExp1(query->access<Exp, 1, 1, 1>());
+                query->setSubExp2(query->access<Exp, 2, 1, 1>());
                 change = true;
             }
 
             // find a memory def for the right if there is a memof on the left
             // FIXME: this seems pretty much like a bad hack!
-            if (!change && (query->getSubExp1()->getOper() == opMemOf)) {
+            if (!change && query->getSubExp1()->isMemOf()) {
                 StatementList stmts;
                 getStatements(stmts);
 
@@ -1492,7 +1492,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
                     Assign *as = dynamic_cast<Assign *>(s);
 
                     if (as && (*as->getRight() == *query->getSubExp2()) &&
-                        (as->getLeft()->getOper() == opMemOf)) {
+                        as->getLeft()->isMemOf()) {
                         query->setSubExp2(as->getLeft()->clone());
                         change = true;
                         break;

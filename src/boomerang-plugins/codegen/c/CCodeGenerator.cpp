@@ -134,7 +134,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
-    if (asgn->getLeft()->getOper() == opPC) {
+    if (asgn->getLeft()->isPC()) {
         return; // Never want to see assignments to %PC
     }
 
@@ -164,7 +164,7 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
         appendExp(ost, TypedExp(asgnType, lhs), OpPrec::Assign);
     }
-    else if ((lhs->getOper() == opGlobal) && asgn->getType()->isArray()) {
+    else if (lhs->isGlobal() && asgn->getType()->isArray()) {
         appendExp(ost, Binary(opArrayIndex, lhs, Const::get(0)), OpPrec::Assign);
     }
     else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
@@ -1131,7 +1131,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opGlobal:
     case opLocal: {
         auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
-        assert(c1 && c1->getOper() == opStrConst);
+        assert(c1 && c1->isStrConst());
         str << c1->getStr();
     } break;
 
@@ -1320,7 +1320,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // MVE: this can likely go
         LOG_VERBOSE("Case opRegOf is deprecated");
 
-        if (unaryExp.getSubExp1()->getOper() == opTemp) {
+        if (unaryExp.getSubExp1()->isTemp()) {
             // The great debate: r[tmpb] vs tmpb
             str << "tmp";
             break;
@@ -1526,7 +1526,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opFlagCall: {
-        assert(binaryExp.getSubExp1()->getOper() == opStrConst);
+        assert(binaryExp.getSubExp1()->isStrConst());
         str << binaryExp.access<Const, 1>()->getStr();
         str << "(";
         auto l = binaryExp.getSubExp2();
@@ -1628,13 +1628,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         }
 #endif
 
-        if ((unaryExp.getSubExp1()->getOper() == opTypedExp) &&
+        if (unaryExp.getSubExp1()->isTypedExp() &&
             (*static_cast<const TypedExp &>(unaryExp).getType() ==
              *unaryExp.access<TypedExp, 1>()->getType())) {
             // We have (type)(type)x: recurse with type(x)
             appendExp(str, *unaryExp.getSubExp1(), curPrec);
         }
-        else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
+        else if (unaryExp.getSubExp1()->isMemOf()) {
             // We have (tt)m[x]
             SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
             SharedConstExp x   = unaryExp.getSubExp1()->getSubExp1();
@@ -1810,7 +1810,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // local11.lhHeight (where local11 is a register)
         // Mike: it shouldn't!  local11 should have a compound type
         // assert(ty->resolvesToCompound());
-        if (binaryExp.getSubExp1()->getOper() == opMemOf) {
+        if (binaryExp.getSubExp1()->isMemOf()) {
             appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
             str << "->";
         }

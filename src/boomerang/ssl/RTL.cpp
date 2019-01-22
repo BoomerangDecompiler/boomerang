@@ -149,7 +149,7 @@ void RTL::simplify()
         if (s->isBranch()) {
             SharedExp cond = static_cast<BranchStatement *>(s)->getCondExpr();
 
-            if (cond && (cond->getOper() == opIntConst)) {
+            if (cond && cond->isIntConst()) {
                 if (cond->access<Const>()->getInt() == 0) {
                     LOG_VERBOSE("Removing branch with false condition at %1 %2", getAddress(), *it);
                     it = this->erase(it);

@@ -191,7 +191,7 @@ bool BlockVarRenamePass::renameBlockVars(
             }
 
             // FIXME: MVE: do we need this awful hack?
-            if (a->getOper() == opLocal) {
+            if (a->isLocal()) {
                 SharedConstExp a1 = S->getProc()->expFromSymbol(a->access<Const, 1>()->getStr());
                 assert(a1);
 

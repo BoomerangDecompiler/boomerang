@@ -771,11 +771,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                             SharedExp rhs = static_cast<Assign *>(a)->getRight();
                             auto o7(Location::regOf(REG_SPARC_O7));
 
-                            if ((rhs->getOper() == opPlus) &&
-                                (rhs->access<Exp, 2>()->getOper() == opIntConst) &&
-                                (*rhs->getSubExp1() == *o7)) {
+                            if (rhs->getOper() == opPlus && rhs->access<Exp, 2>()->isIntConst() &&
+                                *rhs->getSubExp1() == *o7) {
                                 // Get the constant
-                                int K = rhs->access<Const, 2>()->getInt();
+                                const int K = rhs->access<Const, 2>()->getInt();
                                 case_CALL(pc, inst, delayInst, std::move(BB_rtls), proc, callList,
                                           true);
                                 // We don't generate a goto; instead, we just decode from the new

@@ -130,7 +130,7 @@ void GotoStatement::print(OStream &os) const
     if (m_dest == nullptr) {
         os << "*no dest*";
     }
-    else if (m_dest->getOper() != opIntConst) {
+    else if (!m_dest->isIntConst()) {
         m_dest->print(os);
     }
     else {

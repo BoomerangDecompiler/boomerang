@@ -421,9 +421,9 @@ SharedExp Exp::fixSuccessor()
     if (search(*search_expression, result)) {
         // Result has the matching expression, i.e. succ(r[K])
         SharedExp sub1 = result->getSubExp1();
-        assert(sub1->getOper() == opRegOf);
+        assert(sub1->isRegOf());
         SharedExp sub2 = sub1->getSubExp1();
-        assert(sub2->getOper() == opIntConst);
+        assert(sub2->isIntConst());
         // result     sub1    sub2
         // succ(      r[   Const K    ])
         // Note: we need to clone the r[K] part, since it will be deleted as
@@ -446,13 +446,8 @@ bool Exp::isTemp() const
         return true;
     }
 
-    if (m_oper != opRegOf) {
-        return false;
-    }
-
     // Some old code has r[tmpb] instead of just tmpb
-    SharedConstExp sub = getSubExp1();
-    return sub->m_oper == opTemp;
+    return isRegOf() && getSubExp1()->getOper() == opTemp;
 }
 
 
@@ -465,17 +460,17 @@ SharedExp Exp::removeSubscripts(bool &allZero)
     allZero = true;
 
     for (const SharedExp &loc : locs) {
-        if (loc->getOper() == opSubscript) {
-            auto r1              = std::static_pointer_cast<RefExp>(loc);
+        if (loc->isSubscript()) {
+            auto r1              = loc->access<RefExp>();
             const Statement *def = r1->getDef();
 
-            if (!((def == nullptr) || (def->getNumber() == 0))) {
+            if (def && def->getNumber() != 0) {
                 allZero = false;
             }
 
             bool change;
-            e = e->searchReplaceAll(*loc, r1->getSubExp1() /*->clone()*/,
-                                    change); // TODO: what happens when clone is restored here ?
+            // TODO: what happens when clone is restored here ?
+            e = e->searchReplaceAll(*loc, r1->getSubExp1() /*->clone()*/, change);
         }
     }
 

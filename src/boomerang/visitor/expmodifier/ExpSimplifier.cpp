@@ -208,7 +208,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // check for (x - a) + b where a and b are constants, becomes x + -a+b
     if (exp->getOper() == opPlus && opSub1 == opMinus && opSub2 == opIntConst &&
-        exp->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        exp->access<Exp, 1, 2>()->isIntConst()) {
         const int n = exp->access<Const, 2>()->getInt();
         exp->getSubExp1()->setOper(opPlus);
         exp->access<Const, 1, 2>()->setInt(-exp->access<Const, 1, 2>()->getInt() + n);
@@ -500,12 +500,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return res;
     }
 
-    // check for a*n*m, becomes a*(n*m) where n and m are ints
+    // check for (a*n)*m, becomes a*(n*m) where n and m are ints
     if ((exp->getOper() == opMult) && (opSub1 == opMult) && (opSub2 == opIntConst) &&
-        (exp->getSubExp1()->getSubExp2()->getOper() == opIntConst)) {
-        int m = std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt();
+        exp->access<Exp, 1, 2>()->isIntConst()) {
+        const int n = exp->access<const Const, 1, 2>()->getInt();
+        const int m = exp->access<const Const, 2>()->getInt();
+
         res   = res->getSubExp1();
-        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
+        res->access<Const, 2>()->setInt(n*m);
         changed = true;
         return res;
     }

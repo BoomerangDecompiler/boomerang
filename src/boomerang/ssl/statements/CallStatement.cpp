@@ -640,7 +640,7 @@ bool CallStatement::convertToDirect()
         e = e->getSubExp1();
     }
 
-    if ((e->getOper() == opArrayIndex) && e->getSubExp2()->isIntConst() &&
+    if (e->isArrayIndex() && e->getSubExp2()->isIntConst() &&
         (e->access<Const, 2>()->getInt() == 0)) {
         e = e->getSubExp1();
     }
@@ -749,8 +749,8 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return getKind() == StmtType::Call && getDest() && getDest()->getOper() == opMemOf &&
-           getDest()->getSubExp1()->getOper() == opIntConst;
+    return getKind() == StmtType::Call && getDest() && getDest()->isMemOf() &&
+           getDest()->getSubExp1()->isIntConst();
 }
 
 

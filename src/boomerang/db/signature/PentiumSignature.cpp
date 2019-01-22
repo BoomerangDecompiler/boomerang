@@ -84,7 +84,7 @@ bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
             continue;
         }
 
-        if (e->getLeft()->getOper() == opPC) {
+        if (e->getLeft()->isPC()) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP)) {
                 LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;

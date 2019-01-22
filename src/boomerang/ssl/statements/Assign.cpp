@@ -105,7 +105,7 @@ void Assign::simplify()
         m_guard = nullptr; // No longer a guarded assignment
     }
 
-    if (m_lhs->getOper() == opMemOf) {
+    if (m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->simplifyArith());
     }
 }

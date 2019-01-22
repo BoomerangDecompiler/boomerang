@@ -67,12 +67,8 @@ OStream &operator<<(OStream &os, const Statement *s)
 
 bool Statement::isFlagAssign() const
 {
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    const OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
-    return op == opFlagCall;
+    return m_kind == StmtType::Assign &&
+        static_cast<const Assign *>(this)->getRight()->isFlagCall();
 }
 
 
