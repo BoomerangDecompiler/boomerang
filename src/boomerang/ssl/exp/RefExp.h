@@ -63,10 +63,8 @@ public:
 
     SharedExp addSubscript(Statement *def);
 
-    /**
-     * Before type analysis, implicit definitions are nullptr.
-     * During and after TA, they point to an implicit assignment statement.
-     */
+    /// Before type analysis, implicit definitions are nullptr.
+    /// During and after TA, they point to an implicit assignment statement.
     bool isImplicitDef() const;
 
     /// \copydoc Unary::ascendType

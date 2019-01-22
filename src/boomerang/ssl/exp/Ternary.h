@@ -13,9 +13,7 @@
 #include "boomerang/ssl/exp/Binary.h"
 
 
-/**
- * Ternary is a subclass of Binary, holding three subexpressions
- */
+/// Ternary is a non-terminal expression holding three subexpressions.
 class BOOMERANG_API Ternary : public Binary
 {
 public:

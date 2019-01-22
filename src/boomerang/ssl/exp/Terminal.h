@@ -13,10 +13,9 @@
 #include "boomerang/ssl/exp/Exp.h"
 
 
-/**
- * Terminal holds special zero arity items
- * such as opFlags (abstract flags register)
- */
+/// Terminal holds special zero arity items
+/// such as opFlags (abstract flags register)
+/// These are always terminal expressions.
 class BOOMERANG_API Terminal : public Exp
 {
 public:
