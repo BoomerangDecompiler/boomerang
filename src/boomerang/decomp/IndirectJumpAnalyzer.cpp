@@ -513,7 +513,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             }
 
             std::shared_ptr<Const> con = e->access<Const, 1>(); // e is <name>
-            Global *global = prog->getGlobalByName(con->getStr());
+            Global *global             = prog->getGlobalByName(con->getStr());
             assert(global);
             // Set the type to pointer to function, if not already
             SharedType ty = global->getType();
@@ -585,8 +585,8 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                 e = e->getSubExp1(); // e = m[r27{25} + 8]
             }
 
-            vtExp         = e;
-            K1            = e->access<Const, 1, 2>()->getInt();
+            vtExp = e;
+            K1    = e->access<Const, 1, 2>()->getInt();
             break;
         }
 

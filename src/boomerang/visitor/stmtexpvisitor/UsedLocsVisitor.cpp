@@ -85,7 +85,7 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool &visitChildren)
             ulf->setMemOnly(wasMemOnly);
         }
     }
-    else if (lhs->isArrayIndex()|| lhs->isMemberOf()) {
+    else if (lhs->isArrayIndex() || lhs->isMemberOf()) {
         SharedExp subExp1 = lhs->getSubExp1();
         subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();

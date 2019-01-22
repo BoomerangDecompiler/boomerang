@@ -1463,8 +1463,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
             }
 
             // remove memofs from both sides if possible
-            if (!change && query->getSubExp1()->isMemOf() &&
-                query->getSubExp2()->isMemOf()) {
+            if (!change && query->getSubExp1()->isMemOf() && query->getSubExp2()->isMemOf()) {
                 query->setSubExp1(query->access<Exp, 1, 1>());
                 query->setSubExp2(query->access<Exp, 2, 1>());
                 change = true;
@@ -1474,8 +1473,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
             if (!change && query->getSubExp1()->isSubscript() &&
                 query->access<Exp, 1, 1>()->isMemOf() &&
                 query->access<RefExp, 1>()->getDef() == nullptr &&
-                query->access<Exp, 2>()->isSubscript() &&
-                query->access<Exp, 2, 1>()->isMemOf() &&
+                query->access<Exp, 2>()->isSubscript() && query->access<Exp, 2, 1>()->isMemOf() &&
                 query->access<RefExp, 2>()->getDef() == nullptr) {
                 query->setSubExp1(query->access<Exp, 1, 1, 1>());
                 query->setSubExp2(query->access<Exp, 2, 1, 1>());

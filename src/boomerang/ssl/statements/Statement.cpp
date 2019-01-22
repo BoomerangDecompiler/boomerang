@@ -68,7 +68,7 @@ OStream &operator<<(OStream &os, const Statement *s)
 bool Statement::isFlagAssign() const
 {
     return m_kind == StmtType::Assign &&
-        static_cast<const Assign *>(this)->getRight()->isFlagCall();
+           static_cast<const Assign *>(this)->getRight()->isFlagCall();
 }
 
 

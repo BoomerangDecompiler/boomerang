@@ -559,7 +559,6 @@ bool Signature::isStackLocal(RegNum spIndex, SharedConstExp e) const
 
 bool Signature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const
 {
-
     if (e->isAddrOf()) {
         return isStackLocal(spIndex, e->getSubExp1());
     }

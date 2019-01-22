@@ -506,8 +506,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         const int n = exp->access<const Const, 1, 2>()->getInt();
         const int m = exp->access<const Const, 2>()->getInt();
 
-        res   = res->getSubExp1();
-        res->access<Const, 2>()->setInt(n*m);
+        res = res->getSubExp1();
+        res->access<Const, 2>()->setInt(n * m);
         changed = true;
         return res;
     }

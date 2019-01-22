@@ -1210,7 +1210,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
         if (binaryExp.getSubExp2()->isIntConst()) {
             // print it 0x2000 style
-            uint32_t val = uint32_t(binaryExp.access<const Const, 2>()->getInt());
+            uint32_t val    = uint32_t(binaryExp.access<const Const, 2>()->getInt());
             QString vanilla = QString("0x") + QString::number(val, 16);
             QString negated = QString("~0x") + QString::number(~val, 16);
 

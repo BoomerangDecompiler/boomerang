@@ -918,8 +918,7 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
                 SharedType ty = getArgumentType(i);
                 LOG_MSG("arg %1 e: %2 ty: %3", i, e, ty);
 
-                if (!(ty->isPointer() &&
-                      ty->as<PointerType>()->getPointsTo()->isChar() &&
+                if (!(ty->isPointer() && ty->as<PointerType>()->getPointsTo()->isChar() &&
                       e->isIntConst())) {
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);
