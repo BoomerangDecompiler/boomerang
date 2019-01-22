@@ -32,7 +32,7 @@ std::shared_ptr<RefExp> RefExp::get(SharedExp e, Statement *def)
 
 SharedExp RefExp::clone() const
 {
-    return RefExp::get(subExp1->clone(), m_def);
+    return RefExp::get(m_subExp1->clone(), m_def);
 }
 
 
@@ -46,7 +46,7 @@ bool RefExp::operator==(const Exp &o) const
         return false;
     }
 
-    if (!(*subExp1 == *o.getSubExp1())) {
+    if (!(*m_subExp1 == *o.getSubExp1())) {
         return false;
     }
 
@@ -86,11 +86,11 @@ bool RefExp::operator<(const Exp &o) const
         return false;
     }
 
-    if (*subExp1 < *static_cast<const Unary &>(o).getSubExp1()) {
+    if (*m_subExp1 < *static_cast<const Unary &>(o).getSubExp1()) {
         return true;
     }
 
-    if (*static_cast<const Unary &>(o).getSubExp1() < *subExp1) {
+    if (*static_cast<const Unary &>(o).getSubExp1() < *m_subExp1) {
         return false;
     }
 
@@ -115,7 +115,7 @@ bool RefExp::equalNoSubscript(const Exp &o) const
         other = o.getSubExp1().get();
     }
 
-    return subExp1->equalNoSubscript(*other);
+    return m_subExp1->equalNoSubscript(*other);
 }
 
 
@@ -127,7 +127,7 @@ bool RefExp::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v)) {
+        if (!m_subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -165,7 +165,7 @@ SharedType RefExp::ascendType()
         return VoidType::get();
     }
 
-    return m_def->getTypeForExp(subExp1);
+    return m_def->getTypeForExp(m_subExp1);
 }
 
 
@@ -181,9 +181,9 @@ bool RefExp::descendType(SharedType newType)
     }
 
     bool thisChanged = false;
-    newType          = m_def->meetWithFor(newType, subExp1, thisChanged);
+    newType          = m_def->meetWithFor(newType, m_subExp1, thisChanged);
     // In case subExp1 is a m[...]
-    return subExp1->descendType(newType);
+    return m_subExp1->descendType(newType);
 }
 
 

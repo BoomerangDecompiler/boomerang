@@ -30,17 +30,17 @@
 
 Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
     : Unary(op, e1)
-    , subExp2(e2)
+    , m_subExp2(e2)
 {
-    assert(subExp1 && subExp2);
+    assert(m_subExp1 && m_subExp2);
 }
 
 
 Binary::Binary(const Binary &o)
     : Unary(o)
 {
-    subExp2 = o.subExp2->clone();
-    assert(subExp1 && subExp2);
+    m_subExp2 = o.m_subExp2->clone();
+    assert(m_subExp1 && m_subExp2);
 }
 
 
@@ -56,42 +56,42 @@ std::shared_ptr<Binary> Binary::get(OPER op, SharedExp e1, SharedExp e2)
 
 void Binary::setSubExp2(SharedExp e)
 {
-    subExp2 = e;
-    assert(subExp1 && subExp2);
+    m_subExp2 = e;
+    assert(m_subExp1 && m_subExp2);
 }
 
 
 SharedExp Binary::getSubExp2()
 {
-    assert(subExp1 && subExp2);
-    return subExp2;
+    assert(m_subExp1 && m_subExp2);
+    return m_subExp2;
 }
 
 
 SharedExp &Binary::refSubExp2()
 {
-    assert(subExp1 && subExp2);
-    return subExp2;
+    assert(m_subExp1 && m_subExp2);
+    return m_subExp2;
 }
 
 
 void Binary::commute()
 {
-    std::swap(subExp1, subExp2);
-    assert(subExp1 && subExp2);
+    std::swap(m_subExp1, m_subExp2);
+    assert(m_subExp1 && m_subExp2);
 }
 
 
 SharedExp Binary::clone() const
 {
-    assert(subExp1 && subExp2);
-    return std::make_shared<Binary>(m_oper, subExp1->clone(), subExp2->clone());
+    assert(m_subExp1 && m_subExp2);
+    return std::make_shared<Binary>(m_oper, m_subExp1->clone(), m_subExp2->clone());
 }
 
 
 bool Binary::operator==(const Exp &o) const
 {
-    assert(subExp1 && subExp2);
+    assert(m_subExp1 && m_subExp2);
 
     if (o.getOper() == opWild) {
         return true;
@@ -105,17 +105,17 @@ bool Binary::operator==(const Exp &o) const
         return false;
     }
 
-    if (!(*subExp1 == *static_cast<const Binary &>(o).getSubExp1())) {
+    if (!(*m_subExp1 == *static_cast<const Binary &>(o).getSubExp1())) {
         return false;
     }
 
-    return *subExp2 == *static_cast<const Binary &>(o).getSubExp2();
+    return *m_subExp2 == *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
 bool Binary::operator<(const Exp &o) const
 {
-    assert(subExp1 && subExp2);
+    assert(m_subExp1 && m_subExp2);
 
     if (m_oper < o.getOper()) {
         return true;
@@ -125,21 +125,21 @@ bool Binary::operator<(const Exp &o) const
         return false;
     }
 
-    if (*subExp1 < *static_cast<const Binary &>(o).getSubExp1()) {
+    if (*m_subExp1 < *static_cast<const Binary &>(o).getSubExp1()) {
         return true;
     }
 
-    if (*static_cast<const Binary &>(o).getSubExp1() < *subExp1) {
+    if (*static_cast<const Binary &>(o).getSubExp1() < *m_subExp1) {
         return false;
     }
 
-    return *subExp2 < *static_cast<const Binary &>(o).getSubExp2();
+    return *m_subExp2 < *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
 bool Binary::equalNoSubscript(const Exp &o) const
 {
-    assert(subExp1 && subExp2);
+    assert(m_subExp1 && m_subExp2);
     const Exp *other = &o;
 
     if (o.getOper() == opSubscript) {
@@ -154,31 +154,31 @@ bool Binary::equalNoSubscript(const Exp &o) const
         return false;
     }
 
-    if (!subExp1->equalNoSubscript(*other->getSubExp1())) {
+    if (!m_subExp1->equalNoSubscript(*other->getSubExp1())) {
         return false;
     }
 
-    return subExp2->equalNoSubscript(*other->getSubExp2());
+    return m_subExp2->equalNoSubscript(*other->getSubExp2());
 }
 
 
 void Binary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
-    assert(subExp1 && subExp2);
-    doSearch(pattern, subExp1, li, once);
+    assert(m_subExp1 && m_subExp2);
+    doSearch(pattern, m_subExp1, li, once);
 
     if (once && !li.empty()) {
         return;
     }
 
-    doSearch(pattern, subExp2, li, once);
+    doSearch(pattern, m_subExp2, li, once);
 }
 
 
 SharedConstExp Binary::getSubExp2() const
 {
-    assert(subExp1 && subExp2);
-    return subExp2;
+    assert(m_subExp1 && m_subExp2);
+    return m_subExp2;
 }
 
 
@@ -257,8 +257,8 @@ SharedType Binary::ascendType()
         return VoidType::get();
     }
 
-    SharedType ta = subExp1->ascendType();
-    SharedType tb = subExp2->ascendType();
+    SharedType ta = m_subExp1->ascendType();
+    SharedType tb = m_subExp2->ascendType();
 
     switch (m_oper) {
     case opPlus: return sigmaSum(ta, tb);
@@ -402,8 +402,8 @@ bool Binary::descendType(SharedType newType)
         return false;
     }
 
-    SharedType ta = subExp1->ascendType();
-    SharedType tb = subExp2->ascendType();
+    SharedType ta = m_subExp1->ascendType();
+    SharedType tb = m_subExp2->ascendType();
     SharedType nt; // "New" type for certain operators
     bool changed = false;
 
@@ -415,16 +415,16 @@ bool Binary::descendType(SharedType newType)
     case opPlus: {
         ta = ta->meetWith(sigmaAddend(newType, tb), changed);
         tb = tb->meetWith(sigmaAddend(newType, ta), changed);
-        changed |= subExp1->descendType(ta);
-        changed |= subExp2->descendType(tb);
+        changed |= m_subExp1->descendType(ta);
+        changed |= m_subExp2->descendType(tb);
         break;
     }
 
     case opMinus:
         ta = ta->meetWith(deltaMinuend(newType, tb), changed);
         tb = tb->meetWith(deltaSubtrahend(newType, ta), changed);
-        changed |= subExp1->descendType(ta);
-        changed |= subExp2->descendType(tb);
+        changed |= m_subExp1->descendType(ta);
+        changed |= m_subExp2->descendType(tb);
         break;
 
     case opGtrUns:
@@ -434,8 +434,8 @@ bool Binary::descendType(SharedType newType)
         nt = IntegerType::get(ta->getSize(), Sign::Unsigned); // Used as unsigned
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
-        changed |= subExp1->descendType(ta);
-        changed |= subExp2->descendType(tb);
+        changed |= m_subExp1->descendType(ta);
+        changed |= m_subExp2->descendType(tb);
         break;
 
     case opGtr:
@@ -445,8 +445,8 @@ bool Binary::descendType(SharedType newType)
         nt = IntegerType::get(ta->getSize(), Sign::Signed); // Used as signed
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
-        changed |= subExp1->descendType(ta);
-        changed |= subExp2->descendType(tb);
+        changed |= m_subExp1->descendType(ta);
+        changed |= m_subExp2->descendType(tb);
         break;
 
     case opBitAnd:
@@ -480,7 +480,7 @@ bool Binary::descendType(SharedType newType)
 
         int parentSize = newType->getSize();
         ta             = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
-        changed |= subExp1->descendType(ta);
+        changed |= m_subExp1->descendType(ta);
 
         if ((m_oper == opShL) || (m_oper == opShR) || (m_oper == opShRA)) {
             // These operators are not symmetric; doesn't force a signedness on the second operand
@@ -490,7 +490,7 @@ bool Binary::descendType(SharedType newType)
         }
 
         tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);
-        changed |= subExp2->descendType(tb);
+        changed |= m_subExp2->descendType(tb);
         break;
     }
 
@@ -505,7 +505,7 @@ bool Binary::descendType(SharedType newType)
 
 bool Binary::acceptVisitor(ExpVisitor *v)
 {
-    assert(subExp1 && subExp2);
+    assert(m_subExp1 && m_subExp2);
 
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Binary>(), visitChildren)) {
@@ -513,7 +513,7 @@ bool Binary::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v)) {
+        if (!m_subExp1->acceptVisitor(v) || !m_subExp2->acceptVisitor(v)) {
             return false;
         }
     }
@@ -530,8 +530,8 @@ SharedExp Binary::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 
 SharedExp Binary::acceptChildModifier(ExpModifier *mod)
 {
-    subExp1 = subExp1->acceptModifier(mod);
-    subExp2 = subExp2->acceptModifier(mod);
+    m_subExp1 = m_subExp1->acceptModifier(mod);
+    m_subExp2 = m_subExp2->acceptModifier(mod);
     return shared_from_this();
 }
 

@@ -86,5 +86,5 @@ protected:
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
-    SharedExp subExp3; ///< Third subexpression pointer
+    SharedExp m_subExp3; ///< Third subexpression pointer
 };

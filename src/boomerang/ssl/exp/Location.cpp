@@ -18,7 +18,7 @@
 
 
 Location::Location(const Location &other)
-    : Unary(other.m_oper, other.subExp1->clone())
+    : Unary(other.m_oper, other.m_subExp1->clone())
     , m_proc(other.m_proc)
 {
 }
@@ -62,7 +62,7 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
 
 SharedExp Location::clone() const
 {
-    return std::make_shared<Location>(m_oper, subExp1->clone(), m_proc);
+    return std::make_shared<Location>(m_oper, m_subExp1->clone(), m_proc);
 }
 
 
@@ -128,7 +128,7 @@ bool Location::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v)) {
+        if (!m_subExp1->acceptVisitor(v)) {
             return false;
         }
     }

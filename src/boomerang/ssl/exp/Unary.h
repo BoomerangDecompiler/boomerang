@@ -84,5 +84,5 @@ protected:
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
-    SharedExp subExp1; ///< One subexpression pointer
+    SharedExp m_subExp1; ///< One subexpression pointer
 };

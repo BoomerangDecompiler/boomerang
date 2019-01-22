@@ -50,7 +50,7 @@ std::shared_ptr<TypedExp> TypedExp::get(SharedType ty, SharedExp exp)
 
 SharedExp TypedExp::clone() const
 {
-    return std::make_shared<TypedExp>(m_type, subExp1->clone());
+    return std::make_shared<TypedExp>(m_type, m_subExp1->clone());
 }
 
 
@@ -91,7 +91,7 @@ bool TypedExp::operator<(const Exp &o) const // Type sensitive
         return false;
     }
 
-    return *subExp1 < *o.getSubExp1();
+    return *m_subExp1 < *o.getSubExp1();
 }
 
 

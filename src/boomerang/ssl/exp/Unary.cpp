@@ -28,17 +28,17 @@
 
 Unary::Unary(OPER _op, SharedExp e)
     : Exp(_op)
-    , subExp1(e)
+    , m_subExp1(e)
 {
-    assert(subExp1);
+    assert(m_subExp1);
 }
 
 
 Unary::Unary(const Unary &o)
     : Exp(o.m_oper)
 {
-    subExp1 = o.subExp1->clone();
-    assert(subExp1);
+    m_subExp1 = o.m_subExp1->clone();
+    assert(m_subExp1);
 }
 
 
@@ -49,36 +49,36 @@ Unary::~Unary()
 
 void Unary::setSubExp1(SharedExp e)
 {
-    subExp1 = e;
-    assert(subExp1);
+    m_subExp1 = e;
+    assert(m_subExp1);
 }
 
 
 SharedExp Unary::getSubExp1()
 {
-    assert(subExp1);
-    return subExp1;
+    assert(m_subExp1);
+    return m_subExp1;
 }
 
 
 SharedConstExp Unary::getSubExp1() const
 {
-    assert(subExp1);
-    return subExp1;
+    assert(m_subExp1);
+    return m_subExp1;
 }
 
 
 SharedExp &Unary::refSubExp1()
 {
-    assert(subExp1);
-    return subExp1;
+    assert(m_subExp1);
+    return m_subExp1;
 }
 
 
 SharedExp Unary::clone() const
 {
-    assert(subExp1);
-    return std::make_shared<Unary>(m_oper, subExp1->clone());
+    assert(m_subExp1);
+    return std::make_shared<Unary>(m_oper, m_subExp1->clone());
 }
 
 
@@ -104,7 +104,7 @@ bool Unary::operator==(const Exp &o) const
         return false;
     }
 
-    return *subExp1 == *o.getSubExp1();
+    return *m_subExp1 == *o.getSubExp1();
 }
 
 
@@ -114,7 +114,7 @@ bool Unary::operator<(const Exp &o) const
         return m_oper < static_cast<const Unary &>(o).m_oper;
     }
 
-    return *subExp1 < *static_cast<const Unary &>(o).getSubExp1();
+    return *m_subExp1 < *static_cast<const Unary &>(o).getSubExp1();
 }
 
 
@@ -146,13 +146,13 @@ bool Unary::equalNoSubscript(const Exp &o) const
         return false;
     }
 
-    return subExp1->equalNoSubscript(*other->getSubExp1());
+    return m_subExp1->equalNoSubscript(*other->getSubExp1());
 }
 
 
 void Unary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
-    doSearch(pattern, subExp1, li, once);
+    doSearch(pattern, m_subExp1, li, once);
 }
 
 
@@ -164,7 +164,7 @@ bool Unary::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v)) {
+        if (!m_subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -175,7 +175,7 @@ bool Unary::acceptVisitor(ExpVisitor *v)
 
 SharedType Unary::ascendType()
 {
-    SharedType ta = subExp1->ascendType();
+    SharedType ta = m_subExp1->ascendType();
 
     switch (m_oper) {
     case opMemOf:
@@ -284,7 +284,7 @@ bool Unary::descendType(SharedType newType)
         //             // FIXME: many other cases
         //        }
         else {
-            changed |= subExp1->descendType(PointerType::get(newType));
+            changed |= m_subExp1->descendType(PointerType::get(newType));
         }
 
         break;
@@ -292,7 +292,7 @@ bool Unary::descendType(SharedType newType)
 
     case opAddrOf:
         if (newType->resolvesToPointer()) {
-            changed |= subExp1->descendType(newType->as<PointerType>()->getPointsTo());
+            changed |= m_subExp1->descendType(newType->as<PointerType>()->getPointsTo());
         }
 
         break;
@@ -328,7 +328,7 @@ SharedExp Unary::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 
 SharedExp Unary::acceptChildModifier(ExpModifier *mod)
 {
-    subExp1 = subExp1->acceptModifier(mod);
+    m_subExp1 = m_subExp1->acceptModifier(mod);
     return shared_from_this();
 }
 
