@@ -21,10 +21,10 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
-Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
-    : Binary(_op, _e1, _e2)
+Ternary::Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3)
+    : Binary(op, e1, e2)
 {
-    m_subExp3 = _e3;
+    m_subExp3 = e3;
     assert(m_subExp1 && m_subExp2 && m_subExp3);
 }
 
@@ -39,18 +39,17 @@ Ternary::Ternary(const Ternary &o)
 
 Ternary::~Ternary()
 {
-    if (m_subExp3 != nullptr) {
-        // delete subExp3;
-    }
+}
+
+
+std::shared_ptr<Ternary> Ternary::get(OPER op, SharedExp e1, SharedExp e2, SharedExp e3)
+{
+    return std::make_shared<Ternary>(op, e1, e2, e3);
 }
 
 
 void Ternary::setSubExp3(SharedExp e)
 {
-    if (m_subExp3 != nullptr) {
-        // delete subExp3;
-    }
-
     m_subExp3 = e;
     assert(m_subExp1 && m_subExp2 && m_subExp3);
 }
@@ -80,9 +79,7 @@ SharedExp &Ternary::refSubExp3()
 SharedExp Ternary::clone() const
 {
     assert(m_subExp1 && m_subExp2 && m_subExp3);
-    std::shared_ptr<Ternary> c = std::make_shared<Ternary>(m_oper, m_subExp1->clone(),
-                                                           m_subExp2->clone(), m_subExp3->clone());
-    return c;
+    return Ternary::get(m_oper, m_subExp1->clone(), m_subExp2->clone(), m_subExp3->clone());
 }
 
 
@@ -91,7 +88,7 @@ bool Ternary::operator==(const Exp &o) const
     if (o.getOper() == opWild) {
         return true;
     }
-    else if (nullptr == dynamic_cast<const Ternary *>(&o)) {
+    else if (o.getArity() != 3) {
         return false;
     }
 
@@ -110,20 +107,11 @@ bool Ternary::operator<(const Exp &o) const
 
     const Ternary &otherTern = static_cast<const Ternary &>(o);
 
-    if (*m_subExp1 < *otherTern.getSubExp1()) {
-        return true;
+    if (*m_subExp1 != *otherTern.getSubExp1()) {
+        return *m_subExp1 < *otherTern.getSubExp1();
     }
-
-    if (*otherTern.getSubExp1() < *m_subExp1) {
-        return false;
-    }
-
-    if (*m_subExp2 < *otherTern.getSubExp2()) {
-        return true;
-    }
-
-    if (*otherTern.getSubExp2() < *m_subExp2) {
-        return false;
+    else if (*m_subExp2 != *otherTern.getSubExp2()) {
+        return *m_subExp2 < *otherTern.getSubExp2();
     }
 
     return *m_subExp3 < *otherTern.getSubExp3();

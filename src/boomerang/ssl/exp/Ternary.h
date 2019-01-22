@@ -32,11 +32,7 @@ public:
     /// \copydoc Binary::clone
     virtual SharedExp clone() const override;
 
-    template<typename Ty, typename Arg1, typename Arg2, typename Arg3>
-    static std::shared_ptr<Ternary> get(Ty ty, Arg1 arg1, Arg2 arg2, Arg3 arg3)
-    {
-        return std::make_shared<Ternary>(ty, arg1, arg2, arg3);
-    }
+    static std::shared_ptr<Ternary> get(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
 
     /// \copydoc Binary::operator==
     bool operator==(const Exp &o) const override;
