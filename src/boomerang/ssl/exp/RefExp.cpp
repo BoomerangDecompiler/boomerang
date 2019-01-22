@@ -142,17 +142,16 @@ bool RefExp::isImplicitDef() const
 }
 
 
-SharedExp RefExp::addSubscript(Statement *_def)
+SharedExp RefExp::addSubscript(Statement *def)
 {
-    m_def = _def;
+    m_def = def;
     return shared_from_this();
 }
 
 
-void RefExp::setDef(Statement *_def)
+void RefExp::setDef(Statement *def)
 {
-    //         assert(_def != nullptr);
-    m_def = _def;
+    m_def = def;
 }
 
 

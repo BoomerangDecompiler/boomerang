@@ -58,10 +58,10 @@ public:
     /// \copydoc Unary::equalNoSubscript
     bool equalNoSubscript(const Exp &o) const override;
 
-    Statement *getDef() const { return m_def; } // Ugh was called getRef()
-    void setDef(Statement *_def);
+    Statement *getDef() const { return m_def; }
+    void setDef(Statement *def);
 
-    SharedExp addSubscript(Statement *_def);
+    SharedExp addSubscript(Statement *def);
 
     /**
      * Before type analysis, implicit definitions are nullptr.
