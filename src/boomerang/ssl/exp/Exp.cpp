@@ -162,6 +162,18 @@ bool Exp::isRegN(int N) const
 }
 
 
+bool Exp::isTrue() const
+{
+    return m_oper == opTrue || (isIntConst() && access<Const>()->getInt() == 1);
+}
+
+
+bool Exp::isFalse() const
+{
+    return m_oper == opFalse || (isIntConst() && access<Const>()->getInt() == 0);
+}
+
+
 bool Exp::search(const Exp &pattern, SharedExp &result)
 {
     std::list<SharedExp *> li;
