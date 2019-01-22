@@ -846,7 +846,7 @@ QString UserProc::findFirstSymbol(const SharedConstExp &exp) const
 {
     auto it = m_symbolMap.find(exp);
     if (it != m_symbolMap.end()) {
-        return std::static_pointer_cast<Const>(it->second->getSubExp1())->getStr();
+        return it->second->access<Const, 1>()->getStr();
     }
     return "";
 }
@@ -1538,7 +1538,7 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp &from, const SharedConstTy
     while (ff != m_symbolMap.end() && *ff->first == *from) {
         SharedExp currTo = ff->second;
         assert(currTo->isLocal() || currTo->isParam());
-        QString name           = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
+        QString name           = currTo->access<Const, 1>()->getStr();
         SharedConstType currTy = getLocalType(name);
 
         if (currTy == nullptr) {

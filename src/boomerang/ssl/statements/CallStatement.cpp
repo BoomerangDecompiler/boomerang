@@ -919,7 +919,7 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
                 LOG_MSG("arg %1 e: %2 ty: %3", i, e, ty);
 
                 if (!(ty->isPointer() &&
-                      (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) &&
+                      ty->as<PointerType>()->getPointsTo()->isChar() &&
                       e->isIntConst())) {
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);

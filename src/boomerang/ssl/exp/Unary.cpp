@@ -219,7 +219,7 @@ bool match_l1_K(SharedExp in, std::vector<SharedExp> &matches)
         return false;
     }
 
-    auto refexp = std::static_pointer_cast<RefExp>(as_bin->getSubExp1());
+    auto refexp = as_bin->access<RefExp, 1>();
 
     if (!refexp->getSubExp1()->isLocation()) {
         return false;

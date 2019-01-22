@@ -233,7 +233,7 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         return;
 
     case opTypedExp: {
-        SharedConstType ty = std::static_pointer_cast<const TypedExp>(exp)->getType();
+        SharedConstType ty = exp->access<const TypedExp>()->getType();
         os << "<" << ty->getSize() << ">";
         return;
     }

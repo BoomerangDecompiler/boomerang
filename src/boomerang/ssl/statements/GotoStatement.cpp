@@ -83,7 +83,7 @@ void GotoStatement::adjustFixedDest(int delta)
         return;
     }
 
-    auto theConst = std::static_pointer_cast<Const>(m_dest);
+    auto theConst = m_dest->access<Const>();
     theConst->setAddr(theConst->getAddr() + delta);
 }
 

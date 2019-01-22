@@ -98,7 +98,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     // return, and also because we may have just removed all call livenesses
                     // Update use information in calls, and in the proc (for parameters)
                     SharedExp base = location->getSubExp1();
-                    def            = std::static_pointer_cast<RefExp>(location)->getDef();
+                    def            = location->access<RefExp>()->getDef();
 
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at

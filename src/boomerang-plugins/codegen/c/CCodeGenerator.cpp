@@ -1210,8 +1210,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
         if (binaryExp.getSubExp2()->isIntConst()) {
             // print it 0x2000 style
-            uint32_t val = uint32_t(
-                std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
+            uint32_t val = uint32_t(binaryExp.access<const Const, 2>()->getInt());
             QString vanilla = QString("0x") + QString::number(val, 16);
             QString negated = QString("~0x") + QString::number(~val, 16);
 
@@ -1272,13 +1271,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // s1 >> last & 0xMASK
         openParen(str, curPrec, OpPrec::BitAnd);
         appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
-        auto first = std::static_pointer_cast<const Const>(ternaryExp.getSubExp2());
-        auto last  = std::static_pointer_cast<const Const>(ternaryExp.getSubExp3());
+        auto first = ternaryExp.access<const Const, 2>();
+        auto last  = ternaryExp.access<const Const, 3>();
         str << " >> ";
         appendExp(str, *last, OpPrec::BitShift);
         str << " & ";
 
-        unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
+        const unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
 
         // print 0x3 as 3
         if (mask < 10) {

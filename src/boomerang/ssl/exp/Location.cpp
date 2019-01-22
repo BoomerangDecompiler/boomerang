@@ -46,7 +46,7 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
                 case opLocal:
                 case opGlobal:
                 case opParam:
-                    this->m_proc = std::static_pointer_cast<Location>(e)->getProc();
+                    this->m_proc = e->access<Location>()->getProc();
                     giveUp       = true;
                     break;
 

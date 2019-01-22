@@ -179,7 +179,7 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
         assert(base->getSubExp1()->isStrConst());
 
         QString gloName = base->access<Const, 1>()->getStr();
-        UserProc *p     = std::static_pointer_cast<Location>(base)->getProc();
+        UserProc *p     = base->access<Location>()->getProc();
         Prog *prog      = p->getProg();
         T               = prog->getGlobalAddrByName(gloName);
         expr            = e->getSubExp2();
@@ -382,7 +382,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                 swi->lowerBound = 0;
 
                 if ((expr->getOper() == opMinus) && expr->getSubExp2()->isIntConst()) {
-                    swi->lowerBound = std::static_pointer_cast<Const>(expr->getSubExp2())->getInt();
+                    swi->lowerBound = expr->access<Const, 2>()->getInt();
                     swi->upperBound += swi->lowerBound;
                     expr = expr->getSubExp1();
                 }
@@ -404,7 +404,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                     // Yes, we have <location>{ref}. Follow the tree and store the constant values
                     // that <location> could be assigned to in dests
                     std::list<int> dests;
-                    findConstantValues(std::static_pointer_cast<RefExp>(jumpDest)->getDef(), dests);
+                    findConstantValues(jumpDest->access<RefExp>()->getDef(), dests);
                     // The switch info wants an array of native addresses
                     size_t num_dests = dests.size();
 
@@ -502,7 +502,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
             e             = e->getSubExp1(); // e is global<name>{0}[0]
             t1            = e->getSubExp2();
-            auto t1_const = std::static_pointer_cast<Const>(t1);
+            auto t1_const = t1->access<Const>();
 
             if (e->isArrayIndex() && (t1->isIntConst()) && (t1_const->getInt() == 0)) {
                 e = e->getSubExp1(); // e is global<name>{0}
@@ -512,15 +512,13 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                 e = e->getSubExp1(); // e is global<name>
             }
 
-            std::shared_ptr<Const> con = std::static_pointer_cast<Const>(
-                e->getSubExp1()); // e is <name>
+            std::shared_ptr<Const> con = e->access<Const, 1>(); // e is <name>
             Global *global = prog->getGlobalByName(con->getStr());
             assert(global);
             // Set the type to pointer to function, if not already
             SharedType ty = global->getType();
 
-            if (!ty->isPointer() &&
-                !std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isFunc()) {
+            if (!ty->isPointer() && !ty->as<PointerType>()->getPointsTo()->isFunc()) {
                 global->setType(PointerType::get(FuncType::get()));
             }
 
@@ -540,7 +538,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
             e             = e->getSubExp1(); // e = m[r27{25} + 8]{-} + 8
             SharedExp rhs = e->getSubExp2(); // rhs = 8
-            K2            = std::static_pointer_cast<Const>(rhs)->getInt();
+            K2            = rhs->access<Const>()->getInt();
             SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
 
             if (lhs->isSubscript()) {
@@ -550,7 +548,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             vtExp         = lhs;
             lhs           = lhs->getSubExp1(); // lhs =   r27{25} + 8
             SharedExp CK1 = lhs->getSubExp2();
-            K1            = std::static_pointer_cast<Const>(CK1)->getInt();
+            K1            = CK1->access<Const>()->getInt();
             break;
         }
 
@@ -562,7 +560,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
             e             = e->getSubExp1(); // e = m[r27{25}]{-} + 8
             SharedExp rhs = e->getSubExp2(); // rhs = 8
-            K2            = std::static_pointer_cast<Const>(rhs)->getInt();
+            K2            = rhs->access<Const>()->getInt();
             SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
 
             if (lhs->isSubscript()) {
@@ -588,10 +586,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             }
 
             vtExp         = e;
-            SharedExp lhs = e->getSubExp1(); // lhs =   r27{25} + 8
-            // Exp* object = ((Binary*)lhs)->getSubExp1();
-            SharedExp CK1 = lhs->getSubExp2();
-            K1            = std::static_pointer_cast<Const>(CK1)->getInt();
+            K1            = e->access<Const, 1, 2>()->getInt();
             break;
         }
 
@@ -637,7 +632,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         const bool decodeThru = proc->getProg()->getProject()->getSettings()->decodeThruIndCall;
 
         if (decodeThru && vtExp && vtExp->isIntConst()) {
-            Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
+            Address addr  = vtExp->access<Const>()->getAddr();
             Address pfunc = Address(prog->readNative4(addr));
 
             if (prog->getFunctionByAddr(pfunc) == nullptr) {
@@ -680,7 +675,7 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
             continue;
         }
 
-        const int k   = std::static_pointer_cast<const Const>(rhs)->getInt();
+        const int k   = rhs->access<const Const>()->getInt();
         const OPER op = lastCondition->getOper();
 
         switch (op) {
