@@ -47,6 +47,12 @@ Unary::~Unary()
 }
 
 
+SharedExp Unary::get(OPER op, SharedExp e1)
+{
+    return std::make_shared<Unary>(op, e1);
+}
+
+
 void Unary::setSubExp1(SharedExp e)
 {
     m_subExp1 = e;

@@ -19,10 +19,7 @@
 class Function;
 
 
-/**
- * Const is a subclass of Exp, and holds either an integer,
- * floating point, string, or address constant
- */
+/// Const holds either an integer, floating point, string, or address constant.
 class BOOMERANG_API Const : public Exp
 {
 private:

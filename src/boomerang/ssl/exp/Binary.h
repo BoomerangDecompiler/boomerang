@@ -13,7 +13,7 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
-/// Binary is an expressions holding two subexpressions.
+/// Binary is an expression holding two subexpressions.
 class BOOMERANG_API Binary : public Unary
 {
 public:
