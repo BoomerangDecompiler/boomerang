@@ -229,7 +229,7 @@ void UserProcTest::testFilterParams()
     QVERIFY(mainProc != nullptr && !mainProc->isLib());
 
     QVERIFY(mainProc->filterParams(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterParams(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(mainProc->filterParams(Location::tempOf(Terminal::get(opTrue))));
     QVERIFY(mainProc->filterParams(Location::regOf(REG_PENT_ESP)));
     QVERIFY(!mainProc->filterParams(Location::regOf(REG_PENT_EDX)));
     QVERIFY(mainProc->filterParams(Location::memOf(Const::get(0x08048328))));

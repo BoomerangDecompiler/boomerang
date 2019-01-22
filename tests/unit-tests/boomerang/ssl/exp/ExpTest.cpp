@@ -206,7 +206,7 @@ void ExpTest::testSearch2()
     // Search using wildcards
     SharedExp e = Binary::get(opDivs, m_rof2->clone(), m_99->clone());         // r2 /! 99
     SharedExp result;
-    SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
+    SharedExp search = Location::regOf(Terminal::get(opWild)); // r[?]
 
     QVERIFY(e->search(*search, result));
     QVERIFY(result != nullptr);
@@ -255,7 +255,7 @@ void ExpTest::testSearch3()
 
 void ExpTest::testSearchAll()
 {
-    SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
+    SharedExp search = Location::regOf(Terminal::get(opWild)); // r[?]
 
     // A more complex expression:
     // (r2 * 99) + (r8 * 4)
@@ -278,7 +278,7 @@ void ExpTest::testSearchAll()
 
 void ExpTest::testAccumulate()
 {
-    SharedExp rof2     = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
+    SharedExp rof2     = Location::regOf(REG_SPARC_G2);
     SharedExp nineNine = Const::get(99);
 
     // Zero terms
@@ -492,7 +492,7 @@ void ExpTest::testMapOfExp()
                                                       Const::get(5))));
 
     m[e] = -100;
-    SharedExp rof2 = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
+    SharedExp rof2 = Location::regOf(REG_SPARC_G2);
     m[rof2] = 2; // Should overwrite
 
     QCOMPARE(m.size(), static_cast<size_t>(3));
