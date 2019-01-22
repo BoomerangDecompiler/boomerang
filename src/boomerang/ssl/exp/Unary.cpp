@@ -26,9 +26,9 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
-Unary::Unary(OPER _op, SharedExp e)
-    : Exp(_op)
-    , m_subExp1(e)
+Unary::Unary(OPER op, SharedExp e1)
+    : Exp(op)
+    , m_subExp1(e1)
 {
     assert(m_subExp1);
 }

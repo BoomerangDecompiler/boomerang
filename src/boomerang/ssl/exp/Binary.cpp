@@ -54,6 +54,7 @@ std::shared_ptr<Binary> Binary::get(OPER op, SharedExp e1, SharedExp e2)
     return std::make_shared<Binary>(op, e1, e2);
 }
 
+
 void Binary::setSubExp2(SharedExp e)
 {
     m_subExp2 = e;

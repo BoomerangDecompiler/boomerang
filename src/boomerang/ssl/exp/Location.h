@@ -41,12 +41,12 @@ public:
     static SharedExp regOf(SharedExp exp);
     static SharedExp memOf(SharedExp exp, UserProc *proc = nullptr);
 
-    static std::shared_ptr<Location> tempOf(SharedExp e);
+    static SharedExp tempOf(SharedExp e);
 
     static SharedExp global(const char *name, UserProc *proc);
     static SharedExp global(const QString &name, UserProc *proc);
 
-    static std::shared_ptr<Location> local(const QString &name, UserProc *proc);
+    static SharedExp local(const QString &name, UserProc *proc);
 
     static SharedExp param(const char *name, UserProc *proc = nullptr);
     static SharedExp param(const QString &name, UserProc *proc = nullptr);

@@ -90,9 +90,9 @@ SharedExp Location::memOf(SharedExp exp, UserProc *proc)
 }
 
 
-std::shared_ptr<Location> Location::tempOf(SharedExp e)
+SharedExp Location::tempOf(SharedExp e)
 {
-    return std::make_shared<Location>(opTemp, e, nullptr);
+    return get(opTemp, e, nullptr);
 }
 
 
@@ -137,9 +137,9 @@ bool Location::acceptVisitor(ExpVisitor *v)
 }
 
 
-std::shared_ptr<Location> Location::local(const QString &name, UserProc *p)
+SharedExp Location::local(const QString &name, UserProc *p)
 {
-    return std::make_shared<Location>(opLocal, Const::get(name), p);
+    return get(opLocal, Const::get(name), p);
 }
 
 
