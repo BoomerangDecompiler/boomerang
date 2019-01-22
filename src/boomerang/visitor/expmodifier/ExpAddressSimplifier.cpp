@@ -20,12 +20,6 @@ SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Unary> &exp, boo
             m_modified = true;
             return exp->getSubExp1()->getSubExp1();
         }
-        else if (exp->getSubExp1()->getOper() == opSize) {
-            if (exp->getSubExp1()->getSubExp2()->isMemOf()) {
-                m_modified = true;
-                return exp->access<Exp, 1, 2, 1>();
-            }
-        }
     }
 
     return exp->shared_from_this();

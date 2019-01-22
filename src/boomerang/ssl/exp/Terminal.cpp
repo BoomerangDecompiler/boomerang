@@ -29,6 +29,12 @@ Terminal::Terminal(const Terminal &o)
 }
 
 
+SharedExp Terminal::get(OPER op)
+{
+    return std::make_shared<Terminal>(op);
+}
+
+
 SharedExp Terminal::clone() const
 {
     return std::make_shared<Terminal>(*this);
@@ -68,7 +74,7 @@ bool Terminal::operator<(const Exp &o) const
 }
 
 
-bool Terminal::operator*=(const Exp &o) const
+bool Terminal::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 

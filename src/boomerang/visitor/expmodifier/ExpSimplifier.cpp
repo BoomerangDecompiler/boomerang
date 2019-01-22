@@ -26,7 +26,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
 {
     bool &changed = m_modified;
 
-    if (exp->getOper() == opNot || exp->getOper() == opLNot) {
+    if (exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         OPER oper = exp->getSubExp1()->getOper();
 
         switch (oper) {
@@ -50,17 +50,15 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         }
     }
 
-    if (exp->getOper() == opNeg || exp->getOper() == opNot || exp->getOper() == opLNot ||
-        exp->getOper() == opSize) {
+    if (exp->getOper() == opNeg || exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         if (exp->getSubExp1()->isIntConst()) {
             // -k, ~k, or !k
             int k = exp->access<Const, 1>()->getInt();
 
             switch (exp->getOper()) {
             case opNeg: k = -k; break;
-            case opNot: k = ~k; break;
+            case opBitNot: k = ~k; break;
             case opLNot: k = !k; break;
-            case opSize: /* No change required */
             default: break;
             }
 
@@ -102,9 +100,9 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         case opMults: k1 = k1 * k2; break;
         case opDivs: k1 = k1 / k2; break;
         case opMods: k1 = k1 % k2; break;
-        case opShiftL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
-        case opShiftR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
-        case opShiftRA: {
+        case opShL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
+        case opShR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
+        case opShRA: {
             assert(k2 < 32);
             k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
             break;
@@ -210,7 +208,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // check for (x - a) + b where a and b are constants, becomes x + -a+b
     if (exp->getOper() == opPlus && opSub1 == opMinus && opSub2 == opIntConst &&
-        exp->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        exp->access<Exp, 1, 2>()->isIntConst()) {
         const int n = exp->access<Const, 2>()->getInt();
         exp->getSubExp1()->setOper(opPlus);
         exp->access<Const, 1, 2>()->setInt(-exp->access<Const, 1, 2>()->getInt() + n);
@@ -352,7 +350,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     }
 
     // Check for [exp] << k where k is a positive integer const
-    if (exp->getOper() == opShiftL && opSub2 == opIntConst) {
+    if (exp->getOper() == opShL && opSub2 == opIntConst) {
         const int k = exp->access<Const, 2>()->getInt();
 
         if (Util::inRange(k, 0, 4)) { // do not express e.g. a << 4 as multiplication
@@ -502,12 +500,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return res;
     }
 
-    // check for a*n*m, becomes a*(n*m) where n and m are ints
+    // check for (a*n)*m, becomes a*(n*m) where n and m are ints
     if ((exp->getOper() == opMult) && (opSub1 == opMult) && (opSub2 == opIntConst) &&
-        (exp->getSubExp1()->getSubExp2()->getOper() == opIntConst)) {
-        int m = std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt();
-        res   = res->getSubExp1();
-        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
+        exp->access<Exp, 1, 2>()->isIntConst()) {
+        const int n = exp->access<const Const, 1, 2>()->getInt();
+        const int m = exp->access<const Const, 2>()->getInt();
+
+        res = res->getSubExp1();
+        res->access<Const, 2>()->setInt(n * m);
         changed = true;
         return res;
     }
@@ -570,13 +570,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
                 return Binary::get(opMod, leftOfPlus, Const::get(c));
             }
         }
-    }
-
-    // Replace opSize(n, loc) with loc and set the type if needed
-    if ((exp->getOper() == opSize) && exp->getSubExp2()->isLocation()) {
-        res     = res->getSubExp2();
-        changed = true;
-        return res;
     }
 
     return res;

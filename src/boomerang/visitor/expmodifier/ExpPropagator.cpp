@@ -41,8 +41,7 @@ SharedExp ExpPropagator::postModify(const std::shared_ptr<RefExp> &exp)
             m_unchanged &= ~m_mask; // Been changed now (so simplify parent)
 
             if (res->isSubscript()) {
-                res = postModify(std::static_pointer_cast<RefExp>(
-                    res)); // Recursively propagate more if possible
+                res = postModify(res->access<RefExp>()); // Recursively propagate more if possible
             }
         }
     }

@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-int fib(int param1);
+__size32 fib(int param1);
 
 /** address: 0x00001cf0 */
 int main(int argc, char *argv[])
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x00001c34 */
-int fib(int param1)
+__size32 fib(int param1)
 {
     int g0; 		// r0
     __size32 g1; 		// r1
@@ -42,6 +42,6 @@ int fib(int param1)
         *(int*)(g30 + 68) = g0;
     }
     g3 = *(g30 + 68);
-    return param1; /* WARNING: Also returning: g3 := g3, g30 := param1, g30 := param1, g30 := g30, g31 := g31 */
+    return g3; /* WARNING: Also returning: g30 := g30, g31 := g31 */
 }
 

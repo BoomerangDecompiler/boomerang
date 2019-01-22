@@ -38,7 +38,7 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)
     if (call) {
         assert(std::dynamic_pointer_cast<RefExp>(ret));
         bool ch;
-        ret = call->bypassRef(std::static_pointer_cast<RefExp>(ret), ch);
+        ret = call->bypassRef(ret->access<RefExp>(), ch);
 
         if (ch) {
             m_unchanged &= ~m_mask;

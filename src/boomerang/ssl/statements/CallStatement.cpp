@@ -640,7 +640,7 @@ bool CallStatement::convertToDirect()
         e = e->getSubExp1();
     }
 
-    if ((e->getOper() == opArrayIndex) && e->getSubExp2()->isIntConst() &&
+    if (e->isArrayIndex() && e->getSubExp2()->isIntConst() &&
         (e->access<Const, 2>()->getInt() == 0)) {
         e = e->getSubExp1();
     }
@@ -749,8 +749,8 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return getKind() == StmtType::Call && getDest() && getDest()->getOper() == opMemOf &&
-           getDest()->getSubExp1()->getOper() == opIntConst;
+    return getKind() == StmtType::Call && getDest() && getDest()->isMemOf() &&
+           getDest()->getSubExp1()->isIntConst();
 }
 
 
@@ -918,8 +918,7 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
                 SharedType ty = getArgumentType(i);
                 LOG_MSG("arg %1 e: %2 ty: %3", i, e, ty);
 
-                if (!(ty->isPointer() &&
-                      (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) &&
+                if (!(ty->isPointer() && ty->as<PointerType>()->getPointsTo()->isChar() &&
                       e->isIntConst())) {
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);

@@ -62,11 +62,7 @@ typedef std::shared_ptr<const Type> SharedConstType;
 class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 {
 public:
-    Exp(OPER oper)
-        : m_oper(oper)
-    {
-    }
-
+    Exp(OPER oper);
     Exp(const Exp &other) = default;
     Exp(Exp &&other)      = default;
 
@@ -86,30 +82,47 @@ public:
     /// Type sensitive less than
     virtual bool operator<(const Exp &o) const = 0;
 
-    /// Type insensitive less than. Class TypedExp overrides
-    virtual bool operator<<(const Exp &o) const { return (*this < o); }
-
     /// Comparison ignoring subscripts
-    virtual bool operator*=(const Exp &o) const = 0;
+    virtual bool equalNoSubscript(const Exp &o) const = 0;
 
+public:
     /// Return the operator.
     /// \note I'd like to make this protected, but then subclasses
     /// don't seem to be able to use it (at least, for subexpressions)
     OPER getOper() const { return m_oper; }
-    const char *getOperName() const;
 
     /// A few simplifications use this
-    void setOper(OPER x) { m_oper = x; }
-
-    /// \returns this expression as a string
-    QString toString() const;
-
-    /// Print the expression to the given stream
-    void print(OStream &os) const;
+    void setOper(OPER oper) { m_oper = oper; }
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
-    virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
+    virtual int getArity() const;
+
+    // Checks for broad type of expression operator
+
+    /// \returns true if this is a wildcard expression (used for searching)
+    bool isWildcard() const;
+
+    /// \returns true if this is a floating point expression (e.g. a +f b)
+    bool isFloatExp() const;
+
+    /// \returns true if this is a logical expression (e.g. comparison, && or ||)
+    bool isLogExp() const;
+
+    /// \returns true if this is a comparison
+    bool isComparison() const;
+
+    /// \returns true if this is a bitwise operation (e.g. & or |)
+    bool isBitwise() const;
+
+    /// \returns True if this is a location
+    bool isLocation() const;
+
+    /// True if integer const, float const or string const
+    bool isConst() const;
+
+    /// \returns true if the operator is symmetric (i.e. a && b <-> b && a)
+    bool isSymmetric() const;
 
     /// True if this is a call to a flag function
     bool isFlagCall() const { return m_oper == opFlagCall; }
@@ -142,36 +155,22 @@ public:
     /// True if this is %pc
     bool isPC() const { return m_oper == opPC; }
 
-    /// Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
-    bool isAfpTerm();
-
     /// True if is int const
     bool isIntConst() const { return m_oper == opIntConst; }
     /// True if is long (address) const
     bool isLongConst() const { return m_oper == opLongConst; }
     /// True if is string const
     bool isStrConst() const { return m_oper == opStrConst; }
-
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
-    /// True if integer const, float const or string const
-    bool isConst() const
-    {
-        return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
-    }
-    /// True if this is an opSize (size case; deprecated)
-    bool isSizeCast() const { return m_oper == opSize; }
+
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }
     /// True if this is a local variable
     bool isLocal() const { return m_oper == opLocal; }
     /// True if this is a global variable
     bool isGlobal() const { return m_oper == opGlobal; }
-    /// True if this is a typeof
-    bool isTypeOf() const { return m_oper == opTypeOf; }
 
-    /// \returns true if this is a terminal
-    virtual bool isTerminal() const { return false; }
     /// \returns true if this is the constant "true"
     bool isTrue() const { return m_oper == opTrue; }
     /// \returns true if this is the constant "false"
@@ -187,29 +186,83 @@ public:
     /// \returns true if this is an equality comparison using !=
     bool isNotEquality() const { return m_oper == opNotEqual; }
 
-    /// \returns true if this is a comparison
-    bool isComparison() const
-    {
-        return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
-               m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq ||
-               m_oper == opLessEq || m_oper == opGtrEqUns || m_oper == opLessEqUns;
-    }
-
     /// \returns true if this is a machine feature
     bool isMachFtr() const { return m_oper == opMachFtr; }
     /// \returns true if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a
     /// function parameter
     bool isParam() const { return m_oper == opParam; }
 
-    /// \returns True if this is a location
-    bool isLocation() const
-    {
-        return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
-               m_oper == opParam;
-    }
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }
 
+public:
+    // subexpression access / modification
+
+    /**
+     * These are here so we can (optionally) prevent code clutter.
+     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
+     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
+     */
+    template<class T>
+    inline std::shared_ptr<T> access()
+    {
+        return shared_from_base<T>();
+    }
+
+    template<class T>
+    inline std::shared_ptr<const T> access() const
+    {
+        return shared_from_base<const T>();
+    }
+
+    /// Access sub-expressions recursively
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<T> access()
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+        case 1: return getSubExp1()->access<T, Path...>();
+        case 2: return getSubExp2()->access<T, Path...>();
+        case 3: return getSubExp3()->access<T, Path...>();
+        default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<const T> access() const
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+            case 1: return getSubExp1()->access<T, Path...>();
+            case 2: return getSubExp2()->access<T, Path...>();
+            case 3: return getSubExp3()->access<T, Path...>();
+            default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    /// \returns  Pointer to the requested subexpression
+    virtual SharedExp getSubExp1() { return nullptr; }
+    virtual SharedConstExp getSubExp1() const { return nullptr; }
+    virtual SharedExp getSubExp2() { return nullptr; }
+    virtual SharedConstExp getSubExp2() const { return nullptr; }
+    virtual SharedExp getSubExp3() { return nullptr; }
+    virtual SharedConstExp getSubExp3() const { return nullptr; }
+    virtual SharedExp &refSubExp1();
+    virtual SharedExp &refSubExp2();
+    virtual SharedExp &refSubExp3();
+
+    /// Update a sub-expression
+    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
+
+public:
     /**
      * Search this expression for the given subexpression, and if found,
      * return true and return a pointer to the matched expression in result.
@@ -291,72 +344,6 @@ public:
      */
     SharedExp propagateAllRpt(bool &changed);
 
-
-    /**
-     * These are here so we can (optionally) prevent code clutter.
-     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
-     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
-     */
-    template<class T>
-    inline std::shared_ptr<T> access()
-    {
-        return shared_from_base<T>();
-    }
-
-    template<class T>
-    inline std::shared_ptr<const T> access() const
-    {
-        return shared_from_base<const T>();
-    }
-
-    /// Access sub-expressions recursively
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<T> access()
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<const T> access() const
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    /// \returns  Pointer to the requested subexpression
-    virtual SharedExp getSubExp1() { return nullptr; }
-    virtual SharedConstExp getSubExp1() const { return nullptr; }
-    virtual SharedExp getSubExp2() { return nullptr; }
-    virtual SharedConstExp getSubExp2() const { return nullptr; }
-    virtual SharedExp getSubExp3() { return nullptr; }
-    virtual SharedConstExp getSubExp3() const { return nullptr; }
-    virtual SharedExp &refSubExp1();
-    virtual SharedExp &refSubExp2();
-    virtual SharedExp &refSubExp3();
-
-    /// Update a sub-expression
-    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
 
     // Get the complexity depth. Basically, add one for each unary, binary, or ternary
     int getComplexityDepth(UserProc *proc);
@@ -490,6 +477,13 @@ public:
     /// \param newType new type of the expression.
     /// \returns true if any change.
     virtual bool descendType(SharedType newType) = 0;
+
+public:
+    /// \returns this expression as a string
+    QString toString() const;
+
+    /// Print the expression to the given stream
+    void print(OStream &os) const;
 
 public:
     /// Accept an expression visitor to visit this expression.

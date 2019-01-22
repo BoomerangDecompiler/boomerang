@@ -65,17 +65,17 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLessEqUns,      { "",           " <=u ",    "",         ""      } },
     { opGtrEqUns,       { "",           " >=u ",    "",         ""      } },
     { opLNot,           { "L~",         "",         "",         ""      } },
-    { opNot,            { "~",          "",         "",         ""      } },
+    { opBitNot,         { "~",          "",         "",         ""      } },
     { opBitAnd,         { "",           " & ",      "",         ""      } },
     { opBitOr,          { "",           " | ",      "",         ""      } },
     { opBitXor,         { "",           " ^ ",      "",         ""      } },
-    { opShiftL,         { "",           " << ",     "",         ""      } },
-    { opShiftR,         { "",           " >> ",     "",         ""      } },
-    { opShiftRA,        { "",           " >>A ",    "",         ""      } },
-    { opRotateL,        { "",           " rl ",     "",         ""      } },
-    { opRotateR,        { "",           " rr ",     "",         ""      } },
-    { opRotateLC,       { "",           " rlc ",    "",         ""      } },
-    { opRotateRC,       { "",           " rrc ",    "",         ""      } },
+    { opShL,            { "",           " << ",     "",         ""      } },
+    { opShR,            { "",           " >> ",     "",         ""      } },
+    { opShRA,           { "",           " >>A ",    "",         ""      } },
+    { opRotL,           { "",           " rl ",     "",         ""      } },
+    { opRotR,           { "",           " rr ",     "",         ""      } },
+    { opRotLC,          { "",           " rlc ",    "",         ""      } },
+    { opRotRC,          { "",           " rrc ",    "",         ""      } },
     { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
@@ -110,14 +110,11 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
     { opPC,             { "%pc",        "",         "",         ""      } },
-    { opAFP,            { "%afp",       "",         "",         ""      } },
-    { opAGP,            { "%agp",       "",         "",         ""      } },
     { opNil,            { "",           "",         "",         ""      } },
     { opFlags,          { "%flags",     "",         "",         ""      } },
     { opFflags,         { "%fflags",    "",         "",         ""      } },
     { opTrue,           { "true",       "",         "",         ""      } },
     { opFalse,          { "false",      "",         "",         ""      } },
-    { opTypeOf,         { "T[",         "",         "",         "]"     } },
     { opZF,             { "%ZF",        "",         "",         ""      } },
     { opCF,             { "%CF",        "",         "",         ""      } },
     { opNF,             { "%NF",        "",         "",         ""      } },
@@ -156,17 +153,8 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         os << " )";
         return;
 
-    case opSize:
-        // This can still be seen after decoding and before type analysis after m[...]
-        // *size* is printed after the expression, even though it comes from the first subexpression
-        print(os, exp->getSubExp2());
-        os << "*";
-        print(os, exp->getSubExp1());
-        os << "*";
-        return;
     case opTemp:
         if (exp->getSubExp1()->getOper() == opWildStrConst) {
-            assert(exp->getSubExp1()->isTerminal());
             os << "t[";
             exp->access<const Terminal, 1>()->print(os);
             os << "]";
@@ -245,7 +233,7 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         return;
 
     case opTypedExp: {
-        SharedConstType ty = std::static_pointer_cast<const TypedExp>(exp)->getType();
+        SharedConstType ty = exp->access<const TypedExp>()->getType();
         os << "<" << ty->getSize() << ">";
         return;
     }
@@ -340,12 +328,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
             return true;
         }
 
-        switch (exp->getOper()) {
-        case opSize:
-        case opList: return false;
-
-        default: return true;
-        }
+        return exp->getOper() != opList;
     }
 
     return false;

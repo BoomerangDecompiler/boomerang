@@ -163,11 +163,11 @@ bool ExpDotWriter::postVisit(const std::shared_ptr<TypedExp> &exp)
 
 bool ExpDotWriter::postVisit(const std::shared_ptr<RefExp> &exp)
 {
-    return postVisit(std::static_pointer_cast<Unary>(exp));
+    return postVisit(exp->access<Unary>());
 }
 
 
 bool ExpDotWriter::postVisit(const std::shared_ptr<Location> &exp)
 {
-    return postVisit(std::static_pointer_cast<Unary>(exp));
+    return postVisit(exp->access<Unary>());
 }

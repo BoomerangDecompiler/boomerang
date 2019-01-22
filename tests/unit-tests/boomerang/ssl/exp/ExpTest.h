@@ -50,9 +50,6 @@ private slots:
     /// Test LNot, unary minus, etc
     void testUnaries();
 
-    /// Test [ a[m[ ] %afp [+|- const]
-    void testIsAfpTerm();
-
     /**
      * ExpTest::testCompare1-5
      * Test the operator== function
@@ -113,9 +110,6 @@ private slots:
 
     /// Test that a+K+b is the same as a+b+K when each is simplified
     void testAssociativity();
-
-    /// Test opTypeOf and TypeVal (type values)
-    void testTypeOf();
 
     /// Test finding the locations used by an expression
     void testAddUsedLocs();

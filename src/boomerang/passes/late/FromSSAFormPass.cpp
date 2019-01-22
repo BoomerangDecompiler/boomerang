@@ -387,6 +387,7 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
     }
 }
 
+
 void FromSSAFormPass::mapParameters(UserProc *proc)
 {
     // Replace the parameters with their mappings

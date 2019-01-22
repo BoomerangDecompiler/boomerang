@@ -280,7 +280,7 @@ Assignment *RegDB::emitOverlappedStmt(const Assignment *original, const Register
             IntegerType::get(lhs->getSize()), Location::regOf(lhsID),
             Binary::get(
                 opBitOr, Binary::get(opBitAnd, Location::regOf(lhsID), Const::get(mask)),
-                Binary::get(opShiftL,
+                Binary::get(opShL,
                             Ternary::get(opZfill, Const::get(rhs->getSize()),
                                          Const::get(lhs->getSize()), Location::regOf(rhsID)),
                             Const::get(offsetInParent))));

@@ -38,8 +38,8 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
         }
 
         assert(std::dynamic_pointer_cast<RefExp>(exp) != nullptr);
+        auto refexp = exp->access<RefExp>();
 
-        auto refexp = std::static_pointer_cast<RefExp>(exp);
         // Interference if we can find a live variable which differs only in the reference
         SharedExp dr;
 

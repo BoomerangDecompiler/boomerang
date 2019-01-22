@@ -134,7 +134,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
-    if (asgn->getLeft()->getOper() == opPC) {
+    if (asgn->getLeft()->isPC()) {
         return; // Never want to see assignments to %PC
     }
 
@@ -164,7 +164,7 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
         appendExp(ost, TypedExp(asgnType, lhs), OpPrec::Assign);
     }
-    else if ((lhs->getOper() == opGlobal) && asgn->getType()->isArray()) {
+    else if (lhs->isGlobal() && asgn->getType()->isArray()) {
         appendExp(ost, Binary(opArrayIndex, lhs, Const::get(0)), OpPrec::Assign);
     }
     else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
@@ -184,7 +184,7 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
                           exp1,
                           Binary::get(opBitOr,
                                       Const::get(mask),
-                                      Binary::get(opShiftL, rhs, Const::get(m))));
+                                      Binary::get(opShL, rhs, Const::get(m))));
         // clang-format on
         rhs = rhs->simplify();
 
@@ -1131,7 +1131,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opGlobal:
     case opLocal: {
         auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
-        assert(c1 && c1->getOper() == opStrConst);
+        assert(c1 && c1->isStrConst());
         str << c1->getStr();
     } break;
 
@@ -1210,8 +1210,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
         if (binaryExp.getSubExp2()->isIntConst()) {
             // print it 0x2000 style
-            uint32_t val = uint32_t(
-                std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
+            uint32_t val    = uint32_t(binaryExp.access<const Const, 2>()->getInt());
             QString vanilla = QString("0x") + QString::number(val, 16);
             QString negated = QString("~0x") + QString::number(~val, 16);
 
@@ -1245,7 +1244,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::BitXor);
         break;
 
-    case opNot:
+    case opBitNot:
         openParen(str, curPrec, OpPrec::Unary);
         str << "~";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
@@ -1272,13 +1271,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // s1 >> last & 0xMASK
         openParen(str, curPrec, OpPrec::BitAnd);
         appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
-        auto first = std::static_pointer_cast<const Const>(ternaryExp.getSubExp2());
-        auto last  = std::static_pointer_cast<const Const>(ternaryExp.getSubExp3());
+        auto first = ternaryExp.access<const Const, 2>();
+        auto last  = ternaryExp.access<const Const, 3>();
         str << " >> ";
         appendExp(str, *last, OpPrec::BitShift);
         str << " & ";
 
-        unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
+        const unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
 
         // print 0x3 as 3
         if (mask < 10) {
@@ -1320,7 +1319,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // MVE: this can likely go
         LOG_VERBOSE("Case opRegOf is deprecated");
 
-        if (unaryExp.getSubExp1()->getOper() == opTemp) {
+        if (unaryExp.getSubExp1()->isTemp()) {
             // The great debate: r[tmpb] vs tmpb
             str << "tmp";
             break;
@@ -1409,7 +1408,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::Mult);
         break;
 
-    case opShiftL:
+    case opShL:
         openParen(str, curPrec, OpPrec::BitShift);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " << ";
@@ -1417,8 +1416,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::BitShift);
         break;
 
-    case opShiftR:
-    case opShiftRA:
+    case opShR:
+    case opShRA:
         openParen(str, curPrec, OpPrec::BitShift);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " >> ";
@@ -1495,48 +1494,38 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         appendExp(str, *unaryExp.getSubExp3(), OpPrec::Unary);
         break;
 
-    case opRotateL:
+    case opRotL:
         str << "ROTL(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateR:
+    case opRotR:
         str << "ROTR(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateLC:
+    case opRotLC:
         str << "ROTLC(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opRotateRC:
+    case opRotRC:
         str << "ROTRC(";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         str << ")";
         break;
 
-    case opSize:
-
-        //         SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
-        //         str << "*(" << ty->getCtype(true) << " *)";
-        //         appendExp(str, new Unary(opAddrOf, b.getSubExp2()), OpPrec::PREC_UNARY);
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
-        break;
-
     case opLoge:
-    case opAFP:
-    case opAGP:
         // not implemented
-        LOG_WARN("Case %1 not implemented", exp.getOperName());
+        LOG_WARN("Case %1 not implemented", operToString(exp.getOper()));
         // assert(false);
         break;
 
     case opFlagCall: {
-        assert(binaryExp.getSubExp1()->getOper() == opStrConst);
+        assert(binaryExp.getSubExp1()->isStrConst());
         str << binaryExp.access<Const, 1>()->getStr();
         str << "(";
         auto l = binaryExp.getSubExp2();
@@ -1638,13 +1627,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         }
 #endif
 
-        if ((unaryExp.getSubExp1()->getOper() == opTypedExp) &&
+        if (unaryExp.getSubExp1()->isTypedExp() &&
             (*static_cast<const TypedExp &>(unaryExp).getType() ==
              *unaryExp.access<TypedExp, 1>()->getType())) {
             // We have (type)(type)x: recurse with type(x)
             appendExp(str, *unaryExp.getSubExp1(), curPrec);
         }
-        else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
+        else if (unaryExp.getSubExp1()->isMemOf()) {
             // We have (tt)m[x]
             SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
             SharedConstExp x   = unaryExp.getSubExp1()->getSubExp1();
@@ -1820,7 +1809,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // local11.lhHeight (where local11 is a register)
         // Mike: it shouldn't!  local11 should have a compound type
         // assert(ty->resolvesToCompound());
-        if (binaryExp.getSubExp1()->getOper() == opMemOf) {
+        if (binaryExp.getSubExp1()->isMemOf()) {
             appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
             str << "->";
         }
@@ -1873,11 +1862,11 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         if (other_op >= opZF) {
             // Machine flags; can occasionally be manipulated individually
             // Chop off the "op" part
-            str << exp.getOperName() + 2;
+            str << operToString(exp.getOper()) + 2;
             break;
         }
 
-        LOG_ERROR("case %1 not implemented", exp.getOperName());
+        LOG_ERROR("case %1 not implemented", operToString(exp.getOper()));
     }
 }
 
@@ -2060,7 +2049,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
         SharedExp cond = bb->getCond();
 
         if (bb->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(bb)) {
-            cond = Unary::get(opNot, cond)->simplify();
+            cond = Unary::get(opLNot, cond)->simplify();
         }
 
         addPretestedLoopHeader(cond);

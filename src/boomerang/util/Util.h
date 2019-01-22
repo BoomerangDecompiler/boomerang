@@ -61,9 +61,8 @@ void clone(const Container &from, Container &to)
 
     to.resize(from.size());
 
-    for (typename Container::size_type i = 0; i < from.size(); i++) {
-        to[i] = from[i]->clone();
-    }
+    std::transform(from.begin(), from.end(), to.begin(),
+                   [](typename Container::value_type val) { return val->clone(); });
 }
 
 

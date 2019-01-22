@@ -448,7 +448,7 @@ Statement *ProcCFG::findImplicitParamAssign(Parameter *param)
     ExpStatementMap::iterator it = std::find_if(
         m_implicitMap.begin(), m_implicitMap.end(),
         [paramExp](const std::pair<const SharedConstExp &, Statement *> &val) {
-            return *(val.first) *= *paramExp;
+            return val.first->equalNoSubscript(*paramExp);
         });
 
     if (it == m_implicitMap.end()) {

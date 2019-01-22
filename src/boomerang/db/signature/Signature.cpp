@@ -559,15 +559,14 @@ bool Signature::isStackLocal(RegNum spIndex, SharedConstExp e) const
 
 bool Signature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const
 {
-    OPER op = e->getOper();
-
-    if (op == opAddrOf) {
+    if (e->isAddrOf()) {
         return isStackLocal(spIndex, e->getSubExp1());
     }
 
     // e must be sp -/+ K or just sp
     SharedConstExp sp = Location::regOf(spIndex);
 
+    const OPER op = e->getOper();
     if ((op != opMinus) && (op != opPlus)) {
         // Matches if e is sp or sp{0} or sp{-}
         return *e == *sp || (e->isSubscript() && e->access<RefExp>()->isImplicitDef() &&
@@ -577,9 +576,7 @@ bool Signature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) cons
     // We may have weird expressions like sp + -4
     // which is the address of a stack local on x86
     SharedConstExp exp2 = e->clone()->simplify();
-    op                  = exp2->getOper();
-
-    if (!isOpCompatStackLocal(op)) {
+    if (!isOpCompatStackLocal(exp2->getOper())) {
         return false;
     }
 

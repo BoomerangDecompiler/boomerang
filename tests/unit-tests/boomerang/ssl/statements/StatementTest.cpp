@@ -813,10 +813,10 @@ void StatementTest::testRecursion()
 void StatementTest::testClone()
 {
     Assign *a1 = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
-    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::get(opParam, Const::get("x"), nullptr),
-                            Location::get(opParam, Const::get("y"), nullptr));
-    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::get(opParam, Const::get("z"), nullptr),
-                            Location::get(opParam, Const::get("q"), nullptr));
+    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"),
+                            Location::param("y"));
+    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"),
+                            Location::param("q"));
 
     Statement *c1 = a1->clone();
     Statement *c2 = a2->clone();
@@ -1053,7 +1053,7 @@ void StatementTest::testAddUsedLocsBool()
 
     actual   = "";
     l.print(ost);
-    QCOMPARE(actual, QString("m[local21 + 16]{372},\tlocal21"));
+    QCOMPARE(actual, QString("local21,\tm[local21 + 16]{372}"));
 
     // m[r28{-} - 4] := -
     l.clear();

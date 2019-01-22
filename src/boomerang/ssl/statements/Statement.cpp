@@ -67,12 +67,8 @@ OStream &operator<<(OStream &os, const Statement *s)
 
 bool Statement::isFlagAssign() const
 {
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    const OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
-    return op == opFlagCall;
+    return m_kind == StmtType::Assign &&
+           static_cast<const Assign *>(this)->getRight()->isFlagCall();
 }
 
 
@@ -198,7 +194,7 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
                             bool isOverwrite = false;
 
                             for (const SharedExp &loc : OWcomps) {
-                                if (*loc *= *lhsOWdef) {
+                                if (loc->equalNoSubscript(*lhsOWdef)) {
                                     isOverwrite = true;
                                     break;
                                 }

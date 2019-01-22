@@ -19,10 +19,8 @@
 class Function;
 
 
-/**
- * Const is a subclass of Exp, and holds either an integer,
- * floating point, string, or address constant
- */
+/// Const is a terminal expression holding either an integer, floating point,
+/// string, or address constant.
 class BOOMERANG_API Const : public Exp
 {
 private:
@@ -73,15 +71,14 @@ public:
         return c;
     }
 
-
     /// \copydoc Exp::operator==
     virtual bool operator==(const Exp &o) const override;
 
     /// \copydoc Exp::operator<
     virtual bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator*=
-    virtual bool operator*=(const Exp &o) const override;
+    /// \copydoc Exp::equalNoSubscript
+    virtual bool equalNoSubscript(const Exp &o) const override;
 
     // Get the constant
     int getInt() const;

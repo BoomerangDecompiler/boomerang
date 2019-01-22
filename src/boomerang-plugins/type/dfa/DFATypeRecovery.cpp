@@ -313,7 +313,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         findConstantsInStmt(s, constList);
 
         for (const std::shared_ptr<Const> &con : constList) {
-            if (!con || (con->getOper() == opStrConst)) {
+            if (!con || con->isStrConst()) {
                 continue;
             }
 

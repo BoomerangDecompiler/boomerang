@@ -98,7 +98,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     // return, and also because we may have just removed all call livenesses
                     // Update use information in calls, and in the proc (for parameters)
                     SharedExp base = location->getSubExp1();
-                    def            = std::static_pointer_cast<RefExp>(location)->getDef();
+                    def            = location->access<RefExp>()->getDef();
 
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at
@@ -191,7 +191,7 @@ bool BlockVarRenamePass::renameBlockVars(
             }
 
             // FIXME: MVE: do we need this awful hack?
-            if (a->getOper() == opLocal) {
+            if (a->isLocal()) {
                 SharedConstExp a1 = S->getProc()->expFromSymbol(a->access<Const, 1>()->getStr());
                 assert(a1);
 
