@@ -14,6 +14,14 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
+/// Location encompasses two kinds of expressions:
+///  - Register or memory accesses before transforming out of SSA form
+///  - Local and global variables in the IR.
+/// In all cases, Location is a non-terminal expression.
+/// The following subexpressions are used:
+///  - For register accesses (opRegOf), the ID of the register (not necessarily constant)
+///  - For memory accesses (opMemOf), the address expression
+///  - For all others (e.g. global, local, temporary variables), the name of the variable.
 class BOOMERANG_API Location : public Unary
 {
 public:

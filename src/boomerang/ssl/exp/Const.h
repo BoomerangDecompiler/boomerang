@@ -19,7 +19,8 @@
 class Function;
 
 
-/// Const holds either an integer, floating point, string, or address constant.
+/// Const is a terminal expression holding either an integer, floating point,
+/// string, or address constant.
 class BOOMERANG_API Const : public Exp
 {
 private:
