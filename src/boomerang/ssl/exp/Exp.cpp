@@ -81,6 +81,7 @@ Exp::Exp(OPER oper)
 {
 }
 
+
 int Exp::getArity() const
 {
     return 0;
@@ -119,6 +120,7 @@ bool Exp::isBitwise() const
            m_oper == opRotLC || m_oper == opRotR || m_oper == opRotRC;
 }
 
+
 bool Exp::isComparison() const
 {
     return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
@@ -132,6 +134,7 @@ bool Exp::isLocation() const
     return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
            m_oper == opParam;
 }
+
 
 bool Exp::isConst() const
 {
@@ -286,7 +289,7 @@ void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &
         break;
 
     case opIntConst: {
-        int k = access<Const>()->getInt();
+        const int k = access<Const>()->getInt();
 
         if (negate) {
             integers.push_back(-k);
@@ -299,7 +302,6 @@ void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &
     }
 
     default:
-
         // These can be any other expression tree
         if (negate) {
             negatives.push_back(shared_from_this());
@@ -322,10 +324,7 @@ SharedExp Exp::accumulate(std::list<SharedExp> &exprs)
     }
 
     std::list<SharedExp> cloned_list;
-
-    for (const SharedExp &v : exprs) {
-        cloned_list.push_back(v->clone());
-    }
+    Util::clone(exprs, cloned_list);
 
     SharedExp last_val = cloned_list.back();
     cloned_list.pop_back();
