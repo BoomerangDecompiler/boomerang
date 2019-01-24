@@ -77,8 +77,15 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         return exp->getSubExp1()->getSubExp1();
     }
 
-    // if still not simplified, try De Morgan's laws
+    // Simplify e.g. ~(x comp y) -> !(x comp y)
     const OPER myOper  = exp->getOper();
+    if (myOper == opBitNot && exp->getSubExp1()->isLogExp()) {
+        changed = true;
+        exp->setOper(opLNot);
+        return exp;
+    }
+
+    // if still not simplified, try De Morgan's laws
     const OPER subOper = exp->getSubExp1()->getOper();
 
     if (myOper == opBitNot && (subOper == opBitAnd || subOper == opBitOr)) {
