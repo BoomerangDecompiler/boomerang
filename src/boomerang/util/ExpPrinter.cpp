@@ -330,6 +330,13 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
 
         return exp->getOper() != opList;
     }
+    else if (exp->getArity() == 1) {
+        switch (exp->getOper()) {
+        case opBitNot: return true;
+        case opLNot: return true;
+        default: return false;
+        }
+    }
 
     return false;
 }
