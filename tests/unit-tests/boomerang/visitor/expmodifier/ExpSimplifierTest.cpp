@@ -617,6 +617,31 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0x40)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual1",
+                      Binary::get(opOr,
+                                  Binary::get(opNotEqual,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
+
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual2",
+                      Binary::get(opOr,
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opNotEqual,
+                                            Location::regOf(REG_PENT_EAX),
+                                            Location::regOf(REG_PENT_EDX))),
+
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
+
         TEST_SIMPLIFY("BinaryComplexBitAnd",
                       Binary::get(opBitAnd,
                                   Binary::get(opMinus,
