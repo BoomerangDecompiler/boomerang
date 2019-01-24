@@ -1,19 +1,32 @@
-#include <stdio.h>
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
 
-int fib (int x)
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int fib(int x)
 {
-    if (x > 1)
+    if (x > 1) {
         return (fib(x - 1) + fib(x - 2));
-    else return (x);
+    }
+    else {
+        return (x);
+    }
 }
 
 int main ()
-{   int number, value;
+{
+    int number;
 
     printf ("Input number: ");
     scanf ("%d", &number);
-    value = fib(number);
-    printf("fibonacci(%d) = %d\n", number, value);
-    return (0);
-}
 
+    printf("fibonacci(%d) = %d\n", number, fib(number));
+    return EXIT_SUCCESS;
+}

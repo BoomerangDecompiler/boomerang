@@ -1,10 +1,21 @@
-/* This test program has a case where a semidominator (node L/6) is not the
-    same as its dominator (semi[6] = 4, idom[6] = 2)
-*/
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+
+/*
+ * This test program has a case where a semidominator (node L/6) is not the
+ * same as its dominator (semi[6] = 4, idom[6] = 2)
+ */
 
 #include <stdio.h>
 
-int main(int argc) {
+
+int main(int argc, char *argv[])
+{
     int x = 1;                      /* A */
     if (argc > 2) {
         do {
@@ -41,5 +52,3 @@ int main(int argc) {
     x = 7;                          /* M */
     return x;
 }
-
-
