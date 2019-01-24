@@ -78,7 +78,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
     }
 
     // Simplify e.g. ~(x comp y) -> !(x comp y)
-    const OPER myOper  = exp->getOper();
+    const OPER myOper = exp->getOper();
     if (myOper == opBitNot && exp->getSubExp1()->isLogExp()) {
         changed = true;
         exp->setOper(opLNot);
