@@ -172,9 +172,9 @@ public:
     bool isGlobal() const { return m_oper == opGlobal; }
 
     /// \returns true if this is the constant "true"
-    bool isTrue() const { return m_oper == opTrue; }
+    bool isTrue() const;
     /// \returns true if this is the constant "false"
-    bool isFalse() const { return m_oper == opFalse; }
+    bool isFalse() const;
     /// \returns true if this is a disjunction, i.e. x or y
     bool isOr() const { return m_oper == opOr; }
     /// \returns true if this is a conjunction, i.e. x and y

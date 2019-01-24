@@ -78,6 +78,46 @@ void ExpSimplifierTest::testSimplify_data()
         TEST_SIMPLIFY("UnaryDoubleNot",
                       Unary::get(opBitNot, Unary::get(opBitNot, Const::get(0x1000))),
                       Const::get(0x1000));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitAnd",
+                      Unary::get(opBitNot, Binary::get(opBitAnd,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opBitOr,
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitAnd",
+                      Unary::get(opBitNot, Binary::get(opBitOr,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opBitAnd,
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganLogOr",
+                      Unary::get(opLNot, Binary::get(opOr,
+                                                     Location::regOf(REG_PENT_EAX),
+                                                     Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opAnd,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganLogAnd",
+                      Unary::get(opLNot, Binary::get(opAnd,
+                                                     Location::regOf(REG_PENT_EAX),
+                                                     Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opOr,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitNotLogOr",
+                      Unary::get(opBitNot, Binary::get(opOr,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opAnd,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
     }
 
     // Binary
@@ -218,6 +258,12 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(REG_PENT_EAX),
                                   Const::get(0)),
                       Const::get(0));
+
+        TEST_SIMPLIFY("BinaryXxorNull",
+                      Binary::get(opBitXor,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)),
+                      Location::regOf(REG_PENT_EAX));
 
         TEST_SIMPLIFY("BinaryXandFalse",
                       Binary::get(opAnd,
@@ -570,6 +616,31 @@ void ExpSimplifierTest::testSimplify_data()
                                                           Const::get(0x80))),
                                   Const::get(0x40)),
                       Const::get(0));
+
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual1",
+                      Binary::get(opOr,
+                                  Binary::get(opNotEqual,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
+
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual2",
+                      Binary::get(opOr,
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opNotEqual,
+                                            Location::regOf(REG_PENT_EAX),
+                                            Location::regOf(REG_PENT_EDX))),
+
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
 
         TEST_SIMPLIFY("BinaryComplexBitAnd",
                       Binary::get(opBitAnd,
