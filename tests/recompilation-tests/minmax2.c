@@ -30,7 +30,7 @@
         10834:  84 08 80 03        and          %g2, %g3, %g2
         10838:  40 00 40 4f        call         printf
         1083c:  92 00 a0 03        add          %g2, 3, %o1
-        10840:  81 c7 e0 08        ret     
+        10840:  81 c7 e0 08        ret
         10844:  91 e8 20 00        restore      %g0, 0, %o0
 
     For pentum, the Sun compiler doesn't (at present) generate terribly
@@ -41,17 +41,22 @@
 */
 
 #include <stdio.h>
-int test(int i) {
+
+
+void test(int i)
+{
     if (i < -2) i = -2;
     if (i > 3) i = 3;
 
     printf("MinMax result %d\n", i);
 }
-int main(int argc) {
+
+
+int main(int argc, char *argv[])
+{
     test(-5);
     test(-2);
     test(0);
     test(argc);
     test(5);
-    return 0;
 }

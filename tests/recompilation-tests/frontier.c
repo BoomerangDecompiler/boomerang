@@ -1,3 +1,11 @@
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+
 /* Test program for dominance frontier code
     Based on Figure 19.1 (p405) of "Modern Compiler Implementation in Java",
     Andrew W. Appel, 2nd Edition, Cambridge University Press, 2002.
@@ -6,7 +14,9 @@
 
 #include <stdio.h>
 
-int main(int argc, char* argv[]) {
+
+int main(int argc, char  *argv[])
+{
     int x = 1;
     switch (argc) {
         case 2:
@@ -42,6 +52,7 @@ int main(int argc, char* argv[]) {
             x = 12;
             break;
     }
+
     x = 13;
     return x;
 }
