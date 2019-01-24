@@ -259,6 +259,12 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinaryXxorNull",
+                      Binary::get(opBitXor,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)),
+                      Location::regOf(REG_PENT_EAX));
+
         TEST_SIMPLIFY("BinaryXandFalse",
                       Binary::get(opAnd,
                                   Location::regOf(REG_PENT_EAX),
