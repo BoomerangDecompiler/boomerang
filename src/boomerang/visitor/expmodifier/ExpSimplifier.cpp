@@ -78,32 +78,28 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
     }
 
     // if still not simplified, try De Morgan's laws
-    const OPER myOper = exp->getOper();
+    const OPER myOper  = exp->getOper();
     const OPER subOper = exp->getSubExp1()->getOper();
 
     if (myOper == opBitNot && (subOper == opBitAnd || subOper == opBitOr)) {
         changed = true;
         if (subOper == opBitAnd) {
-            return Binary::get(opBitOr,
-                               Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+            return Binary::get(opBitOr, Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
                                Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
         }
         else {
-            return Binary::get(opBitAnd,
-                               Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+            return Binary::get(opBitAnd, Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
                                Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
         }
     }
     else if (myOper == opLNot && (subOper == opAnd || subOper == opOr)) {
         changed = true;
         if (subOper == opAnd) {
-            return Binary::get(opOr,
-                               Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+            return Binary::get(opOr, Unary::get(opLNot, exp->access<Exp, 1, 1>()),
                                Unary::get(opLNot, exp->access<Exp, 1, 2>()));
         }
         else {
-            return Binary::get(opAnd,
-                               Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+            return Binary::get(opAnd, Unary::get(opLNot, exp->access<Exp, 1, 1>()),
                                Unary::get(opLNot, exp->access<Exp, 1, 2>()));
         }
     }
@@ -528,8 +524,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // Check for (x compare y) || (x != y), becomes x compare y
     // Note: Case (x == y) || (x != y) handled above
-    if ((exp->isOr() || exp->getOper() == opBitOr) &&
-        exp->getSubExp1()->isComparison() && exp->getSubExp2()->isComparison() &&
+    if ((exp->isOr() || exp->getOper() == opBitOr) && exp->getSubExp1()->isComparison() &&
+        exp->getSubExp2()->isComparison() &&
         (exp->getSubExp1()->isNotEquality() || exp->getSubExp2()->isNotEquality()) &&
         *exp->access<Exp, 1, 1>() == *exp->access<Exp, 2, 1>() && // x on left == x on right
         *exp->access<Exp, 1, 2>() == *exp->access<Exp, 2, 2>()) { // y on left == y on right
