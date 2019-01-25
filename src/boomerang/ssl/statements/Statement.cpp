@@ -317,25 +317,25 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
     // Could be propagating %flags into %CF
     SharedExp lhs = def->getLeft();
 
-    // When one of the main flags is used bare, and was defined via a flag function,
-    // apply the semantics for it. For example, the x86 'sub lhs, rhs' instruction effectively
-    // sets the CF flag to 'lhs <u rhs'.
-    // Extract the arguments of the flag function call, and apply the semantics manually.
-    // This should rather be done in the SSL file (not hard-coded), but doing this currently breaks
-    // Type Analysis (because Type Analysis is also done for subexpressions of dead definitions).
-    // Note: the flagcall is a binary, with a Const (the name), and a list of expressions. Example
-    // for the 'SUBFLAGS' flag call:
-    //
-    //          defRhs
-    //         /     \
-    //     Const    opList
-    // "SUBFLAGS"   /    \
-    //             P1   opList
-    //                  /    \
-    //                 P2   opList
-    //                      /    \
-    //                     P3   opNil
-    //
+    /* When one of the main flags is used bare, and was defined via a flag function,
+     * apply the semantics for it. For example, the x86 'sub lhs, rhs' instruction effectively
+     * sets the CF flag to 'lhs <u rhs'.
+     * Extract the arguments of the flag function call, and apply the semantics manually.
+     * This should rather be done in the SSL file (not hard-coded), but doing this currently breaks
+     * Type Analysis (because Type Analysis is also done for subexpressions of dead definitions).
+     * Note: the flagcall is a binary, with a Const (the name), and a list of expressions. Example
+     * for the 'SUBFLAGS' flag call:
+     *
+     *          defRhs
+     *         /     \
+     *     Const    opList
+     * "SUBFLAGS"   /    \
+     *             P1   opList
+     *                  /    \
+     *                 P2   opList
+     *                      /    \
+     *                     P3   opNil
+     */
     if (lhs && lhs->isFlags()) {
         if (!rhs || !rhs->isFlagCall()) {
             return false;
