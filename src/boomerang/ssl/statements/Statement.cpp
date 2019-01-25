@@ -317,72 +317,139 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
     // Could be propagating %flags into %CF
     SharedExp lhs = def->getLeft();
 
-    if ((base->getOper() == opCF) && lhs->isFlags()) {
-        if (!rhs->isFlagCall()) {
+    // When one of the main flags is used bare, and was defined via a flag function,
+    // apply the semantics for it. For example, the x86 'sub lhs, rhs' instruction effectively
+    // sets the CF flag to 'lhs <u rhs'.
+    // Extract the arguments of the flag function call, and apply the semantics manually.
+    // This should rather be done in the SSL file (not hard-coded), but doing this currently breaks
+    // Type Analysis (because Type Analysis is also done for subexpressions of dead definitions).
+    // Note: the flagcall is a binary, with a Const (the name), and a list of expressions. Example
+    // for the 'SUBFLAGS' flag call:
+    //
+    //          defRhs
+    //         /     \
+    //     Const    opList
+    // "SUBFLAGS"   /    \
+    //             P1   opList
+    //                  /    \
+    //                 P2   opList
+    //                      /    \
+    //                     P3   opNil
+    //
+    if (lhs && lhs->isFlags()) {
+        if (!rhs || !rhs->isFlagCall()) {
             return false;
         }
 
-        QString str = rhs->access<Const, 1>()->getStr();
+        const QString flagFuncName = rhs->access<Const, 1>()->getStr();
 
-        // FIXME: check SUBFLAGSFL handling, and implement it if needed
-        if (str.startsWith("SUBFLAGS") && (str != "SUBFLAGSFL")) {
-            /* When the carry flag is used bare, and was defined in a subtract of the form lhs -
-             * rhs, then CF has the value (lhs <u rhs).  lhs and rhs are the first and second
-             * parameters of the flagcall. Note: the flagcall is a binary, with a Const (the name)
-             * and a list of expressions:
-             *          defRhs
-             *         /     \
-             *     Const    opList
-             * "SUBFLAGS"   /    \
-             *             P1   opList
-             *                  /    \
-             *                 P2   opList
-             *                      /    \
-             *                     P3   opNil
-             */
-            SharedExp relExp = Binary::get(opLessUns, rhs->getSubExp2()->getSubExp1(),
-                                           rhs->getSubExp2()->getSubExp2()->getSubExp1());
-            searchAndReplace(*RefExp::get(Terminal::get(opCF), def), relExp, true);
-            return true;
+        if (flagFuncName.startsWith("SUBFLAGSFL")) {
+            switch (base->getOper()) {
+            case opCF: {
+                // for float cf we'll replace the CF with (P1<P2)
+                SharedExp replacement = Binary::get(opLess, rhs->access<Exp, 2, 1>(),
+                                                    rhs->access<Exp, 2, 2, 1>());
+                searchAndReplace(*RefExp::get(Terminal::get(opCF), def), replacement, true);
+                return true;
+            }
+            case opZF: {
+                // for float zf we'll replace the ZF with (P1==P2)
+                SharedExp replacement = Binary::get(opEquals, rhs->access<Exp, 2, 1>(),
+                                                    rhs->access<Exp, 2, 2, 1>());
+                searchAndReplace(*RefExp::get(Terminal::get(opZF), def), replacement, true);
+                return true;
+            }
+
+            default: break;
+            }
         }
-    }
+        else if (flagFuncName.startsWith("SUBFLAGS")) {
+            const SharedExp subLhs    = rhs->access<Exp, 2, 1>();
+            const SharedExp subRhs    = rhs->access<Exp, 2, 2, 1>();
+            const SharedExp subResult = rhs->access<Exp, 2, 2, 2, 1>();
 
-    // need something similar for %ZF
-    if ((base->getOper() == opZF) && lhs->isFlags()) {
-        if (!rhs->isFlagCall()) {
-            return false;
+            switch (base->getOper()) {
+            case opCF: {
+                const SharedExp replacement = Binary::get(opLessUns, subLhs, subRhs);
+                searchAndReplace(*RefExp::get(Terminal::get(opCF), def), replacement, true);
+                return true;
+            }
+            case opZF: {
+                // for zf we only want to check if the result part of the subflags is equal to zero
+                const SharedExp replacement = Binary::get(opEquals, subResult, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opZF), def), replacement, true);
+                return true;
+            }
+            case opNF: {
+                // for sf we only want to check if the result part of the subflags is less than zero
+                const SharedExp replacement = Binary::get(opLess, subResult, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opNF), def), replacement, true);
+                return true;
+            }
+            case opOF: {
+                // (op1 < 0 && op2 >= 0 && result >= 0) || (op1 >= 0 && op2 < 0 && result < 0)
+                const SharedExp replacement = Binary::get(
+                    opOr,
+                    Binary::get(opAnd,
+                                Binary::get(opAnd, Binary::get(opLess, subLhs, Const::get(0)),
+                                            Binary::get(opGtrEq, subRhs, Const::get(0))),
+                                Binary::get(opGtrEq, subResult, Const::get(0))),
+                    Binary::get(opAnd,
+                                Binary::get(opAnd, Binary::get(opGtrEq, subLhs, Const::get(0)),
+                                            Binary::get(opLess, subRhs, Const::get(0))),
+                                Binary::get(opLess, subResult, Const::get(0))));
+                searchAndReplace(*RefExp::get(Terminal::get(opOF), def), replacement, true);
+                return true;
+            }
+            default: break;
+            }
         }
-
-        QString str = rhs->access<Const, 1>()->getStr();
-
-        if (str.startsWith("SUBFLAGS") && (str != "SUBFLAGSFL")) {
-            // for zf we're only interested in if the result part of the subflags is equal to zero
-            SharedExp relExp = Binary::get(
-                opEquals, rhs->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
-                Const::get(0));
-            searchAndReplace(*RefExp::get(Terminal::get(opZF), def), relExp, true);
-            return true;
+        else if (flagFuncName.startsWith("LOGICALFLAGS")) {
+            const SharedExp param = rhs->access<Exp, 2, 1>();
+            switch (base->getOper()) {
+            case opNF: {
+                SharedExp replacement = Binary::get(opLess, param, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opNF), def), replacement, true);
+                return true;
+            }
+            case opZF: {
+                SharedExp replacement = Binary::get(opEquals, param, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opZF), def), replacement, true);
+                return true;
+            }
+            case opCF: {
+                SharedExp replacement = Const::get(0);
+                searchAndReplace(*RefExp::get(Terminal::get(opCF), def), replacement, true);
+                return true;
+            }
+            case opOF: {
+                const SharedExp replacement = Const::get(0);
+                searchAndReplace(*RefExp::get(Terminal::get(opOF), def), replacement, true);
+                return true;
+            }
+            default: break;
+            }
         }
-
-        if (str == "SUBFLAGSFL") {
-            // for float zf we'll replace the ZF with (P1==P2)
-            SharedExp relExp = Binary::get(opEquals, rhs->getSubExp2()->getSubExp1(),
-                                           rhs->getSubExp2()->getSubExp2()->getSubExp1());
-            searchAndReplace(*RefExp::get(Terminal::get(opZF), def), relExp, true);
-            return true;
-        }
-    }
-
-    if (base->getOper() == opNF && lhs->isFlags()) {
-        if (!rhs->isFlagCall()) {
-            return false;
-        }
-
-        const QString str = rhs->access<Const, 1>()->getStr();
-        if (str.startsWith("LOGICALFLAGS")) {
-            SharedExp relExp = Binary::get(opLess, rhs->getSubExp2()->getSubExp1(), Const::get(0));
-            searchAndReplace(*RefExp::get(Terminal::get(opNF), def), relExp, true);
-            return true;
+        else if (flagFuncName.startsWith("INCDECFLAGS")) {
+            const SharedExp param = rhs->access<Exp, 2, 1>();
+            switch (base->getOper()) {
+            case opOF: {
+                const SharedExp replacement = Const::get(0);
+                searchAndReplace(*RefExp::get(Terminal::get(opOF), def), replacement, true);
+                return true;
+            }
+            case opZF: {
+                const SharedExp replacement = Binary::get(opEquals, param, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opZF), def), replacement, true);
+                return true;
+            }
+            case opNF: {
+                const SharedExp replacement = Binary::get(opLess, param, Const::get(0));
+                searchAndReplace(*RefExp::get(Terminal::get(opNF), def), replacement, true);
+                return true;
+            }
+            default: break;
+            }
         }
     }
 
