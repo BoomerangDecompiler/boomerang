@@ -159,7 +159,7 @@ void CompoundType::setMemberNameByOffset(uint64 bitOffset, const QString &name)
 }
 
 
-QString CompoundType::getMemberNameByOffset(size_t n)
+QString CompoundType::getMemberNameByOffset(uint64 n)
 {
     uint64 offset = 0;
 
