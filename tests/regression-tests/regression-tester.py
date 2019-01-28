@@ -79,6 +79,7 @@ regression_tests = [
     "pentium/encrypt",
     "pentium/fbranch",
     "pentium/fbranch2",
+    "pentium/fbranch_sahf",
     "pentium/fib",
     "pentium/fibo3",
     "pentium/fibo4",
