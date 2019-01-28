@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     char * *local4; 		// m[esp + 8]
     int local5; 		// m[esp - 12]
 
-    (*0x8048328)(0x8048328, esp - 4, SUBFLAGS32((esp - 12), 0, esp - 12), esp == 12, esp < 12, SUBFLAGS32(esp - 12, 0, esp - 12), SUBFLAGS32(esp - 12, 0, esp - 12), ebp, 0x8048328, pc, argc, argv);
+    (*0x8048328)(0x8048328, esp - 4, SUBFLAGS32((esp - 12), 0, esp - 12), esp == 12, esp < 12, esp < 12, esp < 12 && esp >= 12, ebp, 0x8048328, pc, argc, argv);
     *(__size32*)(ebp - 4) = 0x8048340;
     eax = *(ebp - 4);
     (*eax)(eax, ebp, <all>, flags, ZF, CF, NF, OF, local0, local1, local2, local3, local4);

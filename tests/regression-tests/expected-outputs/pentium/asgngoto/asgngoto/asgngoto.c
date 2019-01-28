@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     f_setsig();
     f_init();
     eax = atexit(0x8048584); /* Warning: also results in ecx, edx */
-    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16, SUBFLAGS32(esp - 12, 16, esp - 28), SUBFLAGS32(esp - 12, 16, esp - 28), argc, argv, ebp, argv, 0x8048584, pc);
+    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16, (int)esp < 28, (int)esp < 12 && (int)esp >= 28, argc, argv, ebp, argv, 0x8048584, pc);
 }
 
 /** address: 0x08048904 */

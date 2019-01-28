@@ -420,6 +420,8 @@ SETFFLAGS(op1, op2)  {
 };
 
 
+SAHFFLAGS(reg) { _ };
+
 #
 # String instructions
 #
@@ -1242,89 +1244,89 @@ CMC
 
 
 # CMOVcc
-CMOVA.reg32.reg32    dest, src      *32* dest := [(~%CF & ~%ZF)         ? src : dest];
-CMOVA.reg32.rm32     dest, src      *32* dest := [(~%CF & ~%ZF)         ? src : dest];
+CMOVA.reg32.reg32    dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
+CMOVA.reg32.rm32     dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
 
-CMOVAE.reg32.reg32   dest, src      *32* dest := [(%CF = 0)             ? src : dest];
-CMOVAE.reg32.rm32    dest, src      *32* dest := [(%CF = 0)             ? src : dest];
+CMOVAE.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+CMOVAE.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
 
-CMOVB.reg32.reg32    dest, src      *32* dest := [(%CF = 1)             ? src : dest];
-CMOVB.reg32.rm32     dest, src      *32* dest := [(%CF = 1)             ? src : dest];
+CMOVB.reg32.reg32    dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+CMOVB.reg32.rm32     dest, src      *32* dest := [(%CF = 1)              ? src : dest];
 
-CMOVBE.reg32.reg32   dest, src      *32* dest := [(%CF | %ZF)           ? src : dest];
-CMOVBE.reg32.rm32    dest, src      *32* dest := [(%CF | %ZF)           ? src : dest];
+CMOVBE.reg32.reg32   dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
+CMOVBE.reg32.rm32    dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
 
-CMOVC.reg32.reg32    dest, src      *32* dest := [(%CF = 1)             ? src : dest];
-CMOVC.reg32.rm32     dest, src      *32* dest := [(%CF = 1)             ? src : dest];
+CMOVC.reg32.reg32    dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+CMOVC.reg32.rm32     dest, src      *32* dest := [(%CF = 1)              ? src : dest];
 
-CMOVE.reg32.reg32    dest, src      *32* dest := [(%ZF = 1)             ? src : dest];
-CMOVE.reg32.rm32     dest, src      *32* dest := [(%ZF = 1)             ? src : dest];
+CMOVE.reg32.reg32    dest, src      *32* dest := [(%ZF = 1)              ? src : dest];
+CMOVE.reg32.rm32     dest, src      *32* dest := [(%ZF = 1)              ? src : dest];
 
-CMOVG.reg32.reg32    dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
-CMOVG.reg32.rm32     dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
+CMOVG.reg32.reg32    dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+CMOVG.reg32.rm32     dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
 
-CMOVGE.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))        ? src : dest];
-CMOVGE.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))        ? src : dest];
+CMOVGE.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
+CMOVGE.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
 
-CMOVL.reg32.reg32    dest, src      *32* dest := [(%SF ^ %OF)           ? src : dest];
-CMOVL.reg32.rm32     dest, src      *32* dest := [(%SF ^ %OF)           ? src : dest];
+CMOVL.reg32.reg32    dest, src      *32* dest := [(%SF ^ %OF)            ? src : dest];
+CMOVL.reg32.rm32     dest, src      *32* dest := [(%SF ^ %OF)            ? src : dest];
 
-CMOVLE.reg32.reg32   dest, src      *32* dest := [(%ZF | (%SF ^ %OF))   ? src : dest];
-CMOVLE.reg32.rm32    dest, src      *32* dest := [(%ZF | (%SF ^ %OF))   ? src : dest];
+CMOVLE.reg32.reg32   dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
+CMOVLE.reg32.rm32    dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
 
-CMOVNA.reg32.reg32   dest, src      *32* dest := [(%CF | %ZF)           ? src : dest];
-CMOVNA.reg32.rm32    dest, src      *32* dest := [(%CF | %ZF)           ? src : dest];
+CMOVNA.reg32.reg32   dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
+CMOVNA.reg32.rm32    dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
 
-CMOVNAE.reg32.reg32  dest, src      *32* dest := [(%CF = 1)             ? src : dest];
-CMOVNAE.reg32.rm32   dest, src      *32* dest := [(%CF = 1)             ? src : dest];
+CMOVNAE.reg32.reg32  dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+CMOVNAE.reg32.rm32   dest, src      *32* dest := [(%CF = 1)              ? src : dest];
 
-CMOVNB.reg32.reg32   dest, src      *32* dest := [(%CF = 0)             ? src : dest];
-CMOVNB.reg32.rm32    dest, src      *32* dest := [(%CF = 0)             ? src : dest];
+CMOVNB.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+CMOVNB.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
 
-CMOVNBE.reg32.reg32  dest, src      *32* dest := [(~%CF & ~%ZF)         ? src : dest];
-CMOVNBE.reg32.rm32   dest, src      *32* dest := [(~%CF & ~%ZF)         ? src : dest];
+CMOVNBE.reg32.reg32  dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
+CMOVNBE.reg32.rm32   dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
 
-CMOVNC.reg32.reg32   dest, src      *32* dest := [(%CF = 0)             ? src : dest];
-CMOVNC.reg32.rm32    dest, src      *32* dest := [(%CF = 0)             ? src : dest];
+CMOVNC.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+CMOVNC.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
 
-CMOVNE.reg32.reg32   dest, src      *32* dest := [(%ZF = 0)             ? src : dest];
-CMOVNE.reg32.rm32    dest, src      *32* dest := [(%ZF = 0)             ? src : dest];
+CMOVNE.reg32.reg32   dest, src      *32* dest := [(%ZF = 0)              ? src : dest];
+CMOVNE.reg32.rm32    dest, src      *32* dest := [(%ZF = 0)              ? src : dest];
 
-CMOVNG.reg32.reg32   dest, src      *32* dest := [(%ZF | (%SF ^ %OF))   ? src : dest];
-CMOVNG.reg32.rm32    dest, src      *32* dest := [(%ZF | (%SF ^ %OF))   ? src : dest];
+CMOVNG.reg32.reg32   dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
+CMOVNG.reg32.rm32    dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
 
-CMOVNGE.reg32.reg32  dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
-CMOVNGE.reg32.rm32   dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
+CMOVNGE.reg32.reg32  dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+CMOVNGE.reg32.rm32   dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
 
-CMOVNL.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))        ? src : dest];
-CMOVNL.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))        ? src : dest];
+CMOVNL.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
+CMOVNL.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
 
-CMOVNLE.reg32.reg32  dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
-CMOVNLE.reg32.rm32   dest, src      *32* dest := [(~%ZF & ~(%SF ^ %OF)) ? src : dest];
+CMOVNLE.reg32.reg32  dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+CMOVNLE.reg32.rm32   dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
 
-CMOVNO.reg32.reg32   dest, src      *32* dest := [(~%OF)                ? src : dest];
-CMOVNO.reg32.rm32    dest, src      *32* dest := [(~%OF)                ? src : dest];
+CMOVNO.reg32.reg32   dest, src      *32* dest := [(~%OF)                 ? src : dest];
+CMOVNO.reg32.rm32    dest, src      *32* dest := [(~%OF)                 ? src : dest];
 
-CMOVNP.reg32.reg32   dest, src      *32* dest := [(~%PF)                ? src : dest];
-CMOVNP.reg32.rm32    dest, src      *32* dest := [(~%PF)                ? src : dest];
+CMOVNP.reg32.reg32   dest, src      *32* dest := [(~%PF)                 ? src : dest];
+CMOVNP.reg32.rm32    dest, src      *32* dest := [(~%PF)                 ? src : dest];
 
-CMOVNS.reg32.reg32   dest, src      *32* dest := [(~%SF)                ? src : dest];
-CMOVNS.reg32.rm32    dest, src      *32* dest := [(~%SF)                ? src : dest];
+CMOVNS.reg32.reg32   dest, src      *32* dest := [(~%SF)                 ? src : dest];
+CMOVNS.reg32.rm32    dest, src      *32* dest := [(~%SF)                 ? src : dest];
 
-CMOVNE.reg32.reg32   dest, src      *32* dest := [(~%ZF)                ? src : dest];
-CMOVNE.reg32.rm32    dest, src      *32* dest := [(~%ZF)                ? src : dest];
+CMOVNZ.reg32.reg32   dest, src      *32* dest := [(~%ZF)                 ? src : dest];
+CMOVNZ.reg32.rm32    dest, src      *32* dest := [(~%ZF)                 ? src : dest];
 
-CMOVO.reg32.reg32    dest, src      *32* dest := [(%OF)                 ? src : dest];
-CMOVO.reg32.rm32     dest, src      *32* dest := [(%OF)                 ? src : dest];
+CMOVO.reg32.reg32    dest, src      *32* dest := [(%OF)                  ? src : dest];
+CMOVO.reg32.rm32     dest, src      *32* dest := [(%OF)                  ? src : dest];
 
-CMOVP.reg32.reg32    dest, src      *32* dest := [(%PF)                 ? src : dest];
-CMOVP.reg32.rm32     dest, src      *32* dest := [(%PF)                 ? src : dest];
+CMOVP.reg32.reg32    dest, src      *32* dest := [(%PF)                  ? src : dest];
+CMOVP.reg32.rm32     dest, src      *32* dest := [(%PF)                  ? src : dest];
 
-CMOVS.reg32.reg32    dest, src      *32* dest := [(%SF)                 ? src : dest];
-CMOVS.reg32.rm32     dest, src      *32* dest := [(%SF)                 ? src : dest];
+CMOVS.reg32.reg32    dest, src      *32* dest := [(%SF)                  ? src : dest];
+CMOVS.reg32.rm32     dest, src      *32* dest := [(%SF)                  ? src : dest];
 
-CMOVZ.reg32.reg32    dest, src      *32* dest := [(%ZF)                 ? src : dest];
-CMOVZ.reg32.rm32     dest, src      *32* dest := [(%ZF)                 ? src : dest];
+CMOVZ.reg32.reg32    dest, src      *32* dest := [(%ZF)                  ? src : dest];
+CMOVZ.reg32.rm32     dest, src      *32* dest := [(%ZF)                  ? src : dest];
 
 
 # CMP
@@ -3324,6 +3326,7 @@ SAHF
     *1* %AF := %ah@[4:4]
     *1* %PF := %ah@[2:2]
     *1* %CF := %ah@[0:0]
+    SAHFFLAGS(%ah)
 ;
 
 

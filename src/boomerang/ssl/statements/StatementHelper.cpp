@@ -11,6 +11,7 @@
 
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -393,6 +394,58 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                           left1->getSubExp2()->getSubExp2()->getSubExp1());
                     return true; // This is now a float comparison
                 }
+            }
+        }
+    }
+    else if (condExp->isFlagCall() && condExp->access<Const, 1>()->getStr() == "SAHFFLAGS") {
+        const SharedExp param = condExp->access<Exp, 2, 1>();
+        if (param->isFlagCall() && param->access<Const, 1>()->getStr() == "SETFFLAGS") {
+            // Can happen e.g. with the following assembly:
+            //  fucompp
+            //  fnstsw ax
+            //  sahf
+            //  jne <foo>
+            const SharedExp floatParam1 = param->access<Const, 2, 1>();
+            const SharedExp floatParam2 = param->access<Const, 2, 2, 1>();
+
+            // We have:
+            // %ZF = floatParam1 == floatParam2
+            // %CF = floatParam1 <  floatParam2
+            // %PF = 0 (if not unordered)
+            switch (jtCond) {
+            case BranchType::JNE: { // ~%ZF
+                condExp = Binary::get(opNotEqual, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JE: { // %ZF
+                condExp = Binary::get(opEquals, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JPAR: { // %PF
+                condExp = Terminal::get(opFalse);
+                return true;
+            }
+            case BranchType::JNPAR: { // ~%PF
+                condExp = Terminal::get(opTrue);
+                return true;
+            }
+            case BranchType::JUL: { // %CF
+                condExp = Binary::get(opLess, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JUGE: { // ~%CF
+                condExp = Binary::get(opGtrEq, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JULE: { // %CF | %ZF
+                condExp = Binary::get(opLessEq, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JUG: { // ~%CF & ~%ZF
+                condExp = Binary::get(opGtr, floatParam1, floatParam2);
+                return true;
+            }
+            default: break;
             }
         }
     }
