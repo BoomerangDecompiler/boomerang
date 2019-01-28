@@ -12,7 +12,8 @@ v0.5.0 (in development)
 - Fixed: Signature promotion ignored '-nP' switch.
 - Fixed: Wrong decompilation of "Pass by pointer/reference" values (e.g. `foo(&local0)` was emitted as `foo(esp-32)`).
 - Fixed: Wrong decompilation of parameter types in function signatures in some cases.
-- Fixed: Wrong decompilation of x86 binaries containing a `cmovs` instruction.
+- Fixed: Wrong decompilation of x86 binaries containing a `cmovCC`-type instruction.
+- Fixed: Wrong decompilation of x86 binaries using the `sahf` instruction in floating point comparisons.
 - Fixed: Unnecessary union types in high-level code due to non-symmetric type meet operator.
 - Fixed: Memory leaks in parsers.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
