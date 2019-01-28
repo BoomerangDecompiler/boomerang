@@ -420,6 +420,8 @@ SETFFLAGS(op1, op2)  {
 };
 
 
+SAHFFLAGS(reg) { _ };
+
 #
 # String instructions
 #
@@ -3324,6 +3326,7 @@ SAHF
     *1* %AF := %ah@[4:4]
     *1* %PF := %ah@[2:2]
     *1* %CF := %ah@[0:0]
+    SAHFFLAGS(%ah)
 ;
 
 
