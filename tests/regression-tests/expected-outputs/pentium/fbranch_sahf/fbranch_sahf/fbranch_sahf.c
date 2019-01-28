@@ -7,8 +7,8 @@ int main(int argc, char *argv[])
     float local1; 		// m[esp - 8]
     double local2; 		// m[esp - 20]
 
-    __isoc99_scanf();
-    __isoc99_scanf();
+    scanf("%f", &local0);
+    scanf("%f", &local1);
     printf("a is %f, b is %f\n", local0, local2);
     if (local0 == local1) {
         puts("Equal");
