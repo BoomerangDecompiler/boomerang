@@ -35,12 +35,30 @@ if (MSVC AND BOOMERANG_BUILD_DECODER_CapstoneX86)
     install(FILES "${Capstone_DLL}" DESTINATION "bin/")
 endif ()
 
+
 BOOMERANG_ADD_DECODER(
-    NAME "PPC"
+    NAME "CapstonePPC"
     SOURCES
-        ppc/PPCDecoder.cpp
-        ppc/PPCDecoder.h
+        csx86/CapstoneDecoder.cpp
+        csx86/CapstoneDecoder.h
+        ppc/CapstonePPCDecoder.cpp
+        ppc/CapstonePPCDecoder.h
+    LIBRARIES
+        Capstone::Capstone
 )
+
+if (MSVC AND BOOMERANG_BUILD_DECODER_CapstonePPC)
+    add_custom_command(TARGET boomerang-CapstonePPCDecoder POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS
+            -E copy_if_different
+            "${Capstone_DLL}"
+            "${BOOMERANG_OUTPUT_DIR}/bin/"
+    )
+
+    install(FILES "${Capstone_DLL}" DESTINATION "bin/")
+endif ()
+
 
 BOOMERANG_ADD_DECODER(
     NAME "SPARC"

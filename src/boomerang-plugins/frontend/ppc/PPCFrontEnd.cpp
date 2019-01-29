@@ -27,7 +27,7 @@
 PPCFrontEnd::PPCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    Plugin *plugin = project->getPluginManager()->getPluginByName("PPC decoder plugin");
+    Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone PPC decoder plugin");
     if (plugin) {
         m_decoder = plugin->getIfc<IDecoder>();
         m_decoder->initialize(project);

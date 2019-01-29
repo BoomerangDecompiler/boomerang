@@ -190,6 +190,10 @@ SETFFLAGSN(op1, op2, crfd) {
 };
 
 
+MR          rd, rs              *32* rd := rs;
+LIS         rd, val             *32* rd := (val << 16);
+LI          rd, val             *32* rd := val;
+
 # Arithmetic operations
 
 ADD         rd, ra, rb          *32* rd := ra + rb;
@@ -309,15 +313,15 @@ RLWIMIq     ra, rs, uimm, beg, end
 
 # Memory access. rA is passed twice; as part of eaddr, and by itself for the U versions (update rA)
 
-LWZ         rd, eaddr, ra           *32* rd := m[eaddr];
-LWZX        rd, eaddr, ra           *32* rd := m[eaddr];
+LWZ         dest, src               *32* dest := src;
+LWZX        dest, src               *32* dest := zfill(16, 32, src);
 LBZ         rd, eaddr, ra           *32* rd := zfill(8, 32, m[eaddr]);
 LHZ         rd, eaddr, ra           *32* rd := zfill(16, 32, m[eaddr]);
 LHA         rd, eaddr, ra           *32* rd := sgnex(16, 32, m[eaddr]);
 LBZX        rd, eaddr, ra           *32* rd := zfill(8, 32, m[eaddr]);
 
-STWU        rs, eaddr, ra           *32* m[eaddr] := rs     *32* ra := eaddr;
-STW         rs, eaddr, ra           *32* m[eaddr] := rs;
+STWU        src, dest               *32* dest := src    *32* src := addr(dest);
+STW         src, dest               *32* dest := src;
 STWX        rs, eaddr               *32* m[eaddr] := rs;
 STH         rs, eaddr, ra           *16* m[eaddr] := truncs(32, 16, rs);
 STHX        rs, eaddr               *16* m[eaddr] := truncs(32, 16, rs);
@@ -422,6 +426,7 @@ STFSUX      fd, eaddr, ra           *32* m[eaddr] := fsize(64, 32, fd)      *32*
 
 
 BALLR                               *32* %pc := %LR;
+MFLR        rd                      *32* rd := %LR;
 MFCR        rd                      *32* rd := (%CR0 << 28) + (%CR1 << 24)
                                              + (%CR2 << 20) + (%CR3 << 16)
                                              + (%CR4 << 12) + (%CR5 <<  8)
@@ -435,6 +440,7 @@ MTCTR       rs                      *32* %CTR := rs;
 BL          reloc                   *32* %LR := %pc + 4
                                     *32* %pc := reloc;
 
+BLR                                 _; # Semantics are hard-coded (see CapstonePPCDecoder.ssl)
 
 # Comparisons. Ignore XER[SO] for now.
 CMPI        crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);

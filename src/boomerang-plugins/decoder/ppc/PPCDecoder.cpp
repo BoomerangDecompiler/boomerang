@@ -9081,5 +9081,4 @@ SharedExp crBit(int bitNum)
                                      Const::get(bitNum));
 }
 
-BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, PPCDecoder, "PPC decoder plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+
