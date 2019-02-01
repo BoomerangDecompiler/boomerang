@@ -30,13 +30,14 @@
 %option noyywrap nounput batch debug noinput
 %option prefix="AnsiC"
 
-D           [0-9]
+digit           [0-9]
 /* Allow ? and @ in identifiers, so we can use mangled names */
-L           [a-zA-Z_?@]
-H           [a-fA-F0-9]
-E           [Ee][+-]?{D}+
-FS          (f|F|l|L)
-IS          (u|U|l|L)*
+letter          [a-zA-Z_?@]
+hex             [a-fA-F0-9]
+exp             [Ee][+-]?{digit}+
+float_suffix    (f|F|l|L)
+int_suffix      (u|U|l|L)
+
 
 %x C_COMMENT
 
@@ -102,22 +103,48 @@ loc.step();
 "-"                 { return AnsiC::parser::make_MINUS(loc); }
 "*"                 { return AnsiC::parser::make_STAR(loc); }
 
-{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
-"0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
-"0"{D}+{IS}?        { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
-{D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-"L"?"'"(\\.|[^\\'])+"'" { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
-{D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-{D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-{D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-"L"?\"(.|[^\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
+{letter}({letter}|{digit})* {
+    return AnsiC::parser::make_IDENTIFIER(yytext, loc);
+}
+
+"0"[xX]{hex}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc);
+}
+
+"0"{digit}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc);
+}
+
+{digit}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+}
+
+"L"?"'"(\\.|[^\\'])+"'" {
+    return AnsiC::parser::make_STRING_LITERAL(yytext, loc);
+}
+"L"?\"(.|[^\"])*\"    {
+    return AnsiC::parser::make_STRING_LITERAL(yytext, loc);
+}
+
+{digit}+{exp}{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+}
+
+{digit}*"."{digit}+({exp})?{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+}
+
+{digit}+"."{digit}*({exp})?{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+}
 
 
+"//".*          { loc.step(); }
 "/*"            { loc.step(); BEGIN(C_COMMENT); }
 <C_COMMENT>"*/" { loc.step(); BEGIN(INITIAL); }
 <C_COMMENT>\n   { loc.lines(yyleng); loc.step(); }
 <C_COMMENT>.    { loc.step(); }
-"//".*          { loc.step(); }
+
 [\n]+           { loc.lines(yyleng); loc.step(); }
 [ \t\v\f]+      { loc.step(); }
 
