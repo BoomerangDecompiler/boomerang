@@ -83,24 +83,24 @@ loc.step();
 "__symref"          { return AnsiC::parser::make_KW_SYMBOLREF(loc); }
 "__withstack"/"("   { return AnsiC::parser::make_KW_WITHSTACK(loc); }
 
-"r["                { return AnsiC::parser::make_REGOF(loc); }
-"m["                { return AnsiC::parser::make_MEMOF(loc); }
-"@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
+"r"/"["             { return AnsiC::parser::make_REGOF(loc); }
+"m"/"["             { return AnsiC::parser::make_MEMOF(loc); }
+"@max"/"("          { return AnsiC::parser::make_MAXBOUND(loc); }
 
-"..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
-";"             { return AnsiC::parser::make_SEMICOLON(loc); }
-"{"             { return AnsiC::parser::make_LBRACE(loc); }
-"}"             { return AnsiC::parser::make_RBRACE(loc); }
-","             { return AnsiC::parser::make_COMMA(loc); }
-":"             { return AnsiC::parser::make_COLON(loc); }
-"("             { return AnsiC::parser::make_LPAREN(loc); }
-")"             { return AnsiC::parser::make_RPAREN(loc); }
-"["             { return AnsiC::parser::make_LBRACKET(loc); }
-"]"             { return AnsiC::parser::make_RBRACKET(loc); }
+"..."               { return AnsiC::parser::make_ELLIPSIS(loc); }
+";"                 { return AnsiC::parser::make_SEMICOLON(loc); }
+"{"                 { return AnsiC::parser::make_LBRACE(loc); }
+"}"                 { return AnsiC::parser::make_RBRACE(loc); }
+","                 { return AnsiC::parser::make_COMMA(loc); }
+":"                 { return AnsiC::parser::make_COLON(loc); }
+"("                 { return AnsiC::parser::make_LPAREN(loc); }
+")"                 { return AnsiC::parser::make_RPAREN(loc); }
+"["                 { return AnsiC::parser::make_LBRACKET(loc); }
+"]"                 { return AnsiC::parser::make_RBRACKET(loc); }
 
-"+"             { return AnsiC::parser::make_PLUS(loc); }
-"-"             { return AnsiC::parser::make_MINUS(loc); }
-"*"             { return AnsiC::parser::make_STAR(loc); }
+"+"                 { return AnsiC::parser::make_PLUS(loc); }
+"-"                 { return AnsiC::parser::make_MINUS(loc); }
+"*"                 { return AnsiC::parser::make_STAR(loc); }
 
 {L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
 "0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }

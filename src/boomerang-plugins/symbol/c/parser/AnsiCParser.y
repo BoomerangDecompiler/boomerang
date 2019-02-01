@@ -121,8 +121,8 @@ struct Bound
 %token KW_SYMBOLREF
 %token KW_WITHSTACK
 %token KW_CDECL KW_PASCAL KW_THISCALL KW_CUSTOM
-%token REGOF MEMOF
-%token MAXBOUND
+
+%token REGOF MEMOF MAXBOUND
 
 %token ELLIPSIS
 %token PLUS MINUS
@@ -305,11 +305,11 @@ param_exp:
   ;
 
 exp:
-    REGOF CONSTANT RBRACE   { $$ = Location::regOf($2); }
-  | MEMOF exp RBRACE        { $$ = Location::memOf($2);  }
-  | exp PLUS exp            { $$ = Binary::get(opPlus, $1, $3); }
-  | exp MINUS exp           { $$ = Binary::get(opMinus, $1, $3); }
-  | CONSTANT                { $$ = Const::get($1); }
+    REGOF LBRACKET CONSTANT RBRACKET { $$ = Location::regOf($3); }
+  | MEMOF LBRACKET exp RBRACKET      { $$ = Location::memOf($3);  }
+  | exp PLUS exp                     { $$ = Binary::get(opPlus, $1, $3); }
+  | exp MINUS exp                    { $$ = Binary::get(opMinus, $1, $3); }
+  | CONSTANT                         { $$ = Const::get($1); }
   ;
 
 param:
@@ -351,8 +351,8 @@ param:
   ;
 
 optional_bound:
-    MAXBOUND IDENTIFIER RPAREN  { $$.reset(new Bound(0, $2)); }
- |  %empty                      { $$ = nullptr; }
+    MAXBOUND LPAREN IDENTIFIER RPAREN  { $$.reset(new Bound(0, $3)); }
+ |  %empty                             { $$ = nullptr; }
  ;
 
 func_decl:
