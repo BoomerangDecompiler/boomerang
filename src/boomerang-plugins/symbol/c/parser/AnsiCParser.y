@@ -110,32 +110,34 @@ struct Bound
   END  0    "end of file"
 ;
 
-%token PREINCLUDE PREDEFINE PREIF PREIFDEF PREENDIF PRELINE
-%token<QString> IDENTIFIER STRING_LITERAL
-%token<int> CONSTANT
-%token SIZEOF
+// keywords
+%token KW_TYPEDEF
+%token KW_CHAR KW_SHORT KW_INT KW_LONG KW_SIGNED KW_UNSIGNED KW_FLOAT KW_DOUBLE KW_CONST KW_VOID
+%token KW_STRUCT KW_UNION KW_ENUM
+%token KW_PREFER
+
 %token NODECODE
 %token INCOMPLETE
 %token SYMBOLREF
 %token CDECL PASCAL THISCALL
 %token REGOF MEMOF
 %token MAXBOUND
-%token CUSTOM PREFER
+%token CUSTOM
 %token WITHSTACK
+
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-%token XOR_ASSIGN OR_ASSIGN TYPE_NAME
+%token XOR_ASSIGN OR_ASSIGN
 
-%token TYPEDEF EXTERN STATIC AUTO REGISTER
-%token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
-%token STRUCT UNION ENUM ELLIPSIS
-
-%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+%token ELLIPSIS
 
 %token SEMICOLON COMMA COLON ASSIGN_OP DOT AND NOT BIT_NOT MINUS PLUS STAR DIV MOD
 %token LESS GTR XOR BIT_OR QUESTION
 %token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
+
+%token<QString> IDENTIFIER STRING_LITERAL
+%token<int> CONSTANT
 
 
 %type<SharedType> type
@@ -151,6 +153,7 @@ struct Bound
 %type<SymbolMods> symbol_mods;
 %type<SharedType> array_modifier;
 %type<CallConv> convention;
+
 
 %start translation_unit
 
@@ -173,10 +176,10 @@ decl:
   ;
 
 type_decl:
-    TYPEDEF type_ident SEMICOLON {
+    KW_TYPEDEF type_ident SEMICOLON {
         Type::addNamedType($2->name, $2->ty);
     }
-  | TYPEDEF type LPAREN STAR IDENTIFIER RPAREN LPAREN param_list RPAREN SEMICOLON {
+  | KW_TYPEDEF type LPAREN STAR IDENTIFIER RPAREN LPAREN param_list RPAREN SEMICOLON {
         std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, NULL);
         sig->addReturn($2);
 
@@ -191,7 +194,7 @@ type_decl:
 
         Type::addNamedType($5, PointerType::get(FuncType::get(sig)));
     }
-  | TYPEDEF type_ident LPAREN param_list RPAREN SEMICOLON  {
+  | KW_TYPEDEF type_ident LPAREN param_list RPAREN SEMICOLON  {
         std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, $2->name);
         sig->addReturn($2->ty);
 
@@ -205,7 +208,7 @@ type_decl:
 
         Type::addNamedType($2->name, FuncType::get(sig));
     }
-  | STRUCT IDENTIFIER LBRACE type_ident_list RBRACE SEMICOLON {
+  | KW_STRUCT IDENTIFIER LBRACE type_ident_list RBRACE SEMICOLON {
         std::shared_ptr<CompoundType> ty = CompoundType::get();
         for (std::shared_ptr<TypeIdent> &ti : *$4) {
             ty->addMember(ti->ty, ti->name);
@@ -240,21 +243,21 @@ type_ident:
   ;
 
 type:
-    CHAR                { $$ = CharType::get(); }
-  | SHORT               { $$ = IntegerType::get(16, Sign::Signed);   }
-  | INT                 { $$ = IntegerType::get(32, Sign::Signed);   }
-  | UNSIGNED CHAR       { $$ = IntegerType::get( 8, Sign::Unsigned); }
-  | UNSIGNED SHORT      { $$ = IntegerType::get(16, Sign::Unsigned); }
-  | UNSIGNED INT        { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | UNSIGNED LONG       { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | UNSIGNED            { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | LONG                { $$ = IntegerType::get(32, Sign::Signed);   }
-  | LONG LONG           { $$ = IntegerType::get(64, Sign::Signed);   }
-  | UNSIGNED LONG LONG  { $$ = IntegerType::get(64, Sign::Unsigned); }
-  | FLOAT               { $$ = FloatType::get(32); }
-  | DOUBLE              { $$ = FloatType::get(64); }
-  | VOID                { $$ = VoidType::get(); }
-  | type STAR           { $$ = PointerType::get($1); }
+    KW_CHAR                     { $$ = CharType::get(); }
+  | KW_SHORT                    { $$ = IntegerType::get(16, Sign::Signed);   }
+  | KW_INT                      { $$ = IntegerType::get(32, Sign::Signed);   }
+  | KW_UNSIGNED KW_CHAR         { $$ = IntegerType::get( 8, Sign::Unsigned); }
+  | KW_UNSIGNED KW_SHORT        { $$ = IntegerType::get(16, Sign::Unsigned); }
+  | KW_UNSIGNED KW_INT          { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_UNSIGNED KW_LONG         { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_UNSIGNED                 { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_LONG                     { $$ = IntegerType::get(32, Sign::Signed);   }
+  | KW_LONG KW_LONG             { $$ = IntegerType::get(64, Sign::Signed);   }
+  | KW_UNSIGNED KW_LONG KW_LONG { $$ = IntegerType::get(64, Sign::Unsigned); }
+  | KW_FLOAT                    { $$ = FloatType::get(32); }
+  | KW_DOUBLE                   { $$ = FloatType::get(64); }
+  | KW_VOID                     { $$ = VoidType::get(); }
+  | type STAR                   { $$ = PointerType::get($1); }
   | type LBRACKET CONSTANT RBRACKET {
         // This isn't C, but it makes defining pointers to arrays easier
         $$ = ArrayType::get($1, $3);
@@ -267,11 +270,11 @@ type:
 
         $$ = NamedType::get($1);
     }
-  | CONST type { $$ = $2; }
-  | STRUCT IDENTIFIER {
+  | KW_CONST type { $$ = $2; }
+  | KW_STRUCT IDENTIFIER {
         $$ = NamedType::get(QString("struct ") + $2);
     }
-  | STRUCT LBRACE type_ident_list RBRACE {
+  | KW_STRUCT LBRACE type_ident_list RBRACE {
         std::shared_ptr<CompoundType> ty = CompoundType::get();
         for (std::shared_ptr<TypeIdent> &ti : *$3) {
             ty->addMember(ti->ty, ti->name);
@@ -298,7 +301,7 @@ array_modifier:
 param_list:
     param_exp COMMA param_list    { $$ = $3;  $$->push_front($1); }
   | param_exp                     { $$.reset(new std::list<std::shared_ptr<Parameter>>()); $$->push_back($1); }
-  | VOID                          { $$.reset(new std::list<std::shared_ptr<Parameter>>()); }
+  | KW_VOID                       { $$.reset(new std::list<std::shared_ptr<Parameter>>()); }
   | %empty                        { $$.reset(new std::list<std::shared_ptr<Parameter>>()); }
   ;
 
@@ -362,7 +365,7 @@ func_decl:
     signature SEMICOLON {
         drv.signatures.push_back($1);
     }
-  | signature PREFER type_ident LPAREN num_list RPAREN SEMICOLON {
+  | signature KW_PREFER type_ident LPAREN num_list RPAREN SEMICOLON {
         $1->setPreferredName($3->name);
         drv.signatures.push_back($1);
     }

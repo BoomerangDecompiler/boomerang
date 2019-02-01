@@ -55,45 +55,23 @@ loc.step();
 
 %}
 
-^#include           { return AnsiC::parser::make_PREINCLUDE(loc); }
-^#define            { return AnsiC::parser::make_PREDEFINE(loc); }
-^#if                { return AnsiC::parser::make_PREIF(loc); }
-^#ifdef             { return AnsiC::parser::make_PREIFDEF(loc); }
-^#endif             { return AnsiC::parser::make_PREENDIF(loc); }
-^#line              { return AnsiC::parser::make_PRELINE(loc); }
 
-"auto"              { return AnsiC::parser::make_AUTO(loc); }
-"break"             { return AnsiC::parser::make_BREAK(loc); }
-"case"              { return AnsiC::parser::make_CASE(loc); }
-"char"              { return AnsiC::parser::make_CHAR(loc); }
-"const"             { return AnsiC::parser::make_CONST(loc); }
-"continue"          { return AnsiC::parser::make_CONTINUE(loc); }
-"default"           { return AnsiC::parser::make_DEFAULT(loc); }
-"do"                { return AnsiC::parser::make_DO(loc); }
-"double"            { return AnsiC::parser::make_DOUBLE(loc); }
-"else"              { return AnsiC::parser::make_ELSE(loc); }
-"enum"              { return AnsiC::parser::make_ENUM(loc); }
-"extern"            { return AnsiC::parser::make_EXTERN(loc); }
-"float"             { return AnsiC::parser::make_FLOAT(loc); }
-"for"               { return AnsiC::parser::make_FOR(loc); }
-"goto"              { return AnsiC::parser::make_GOTO(loc); }
-"if"                { return AnsiC::parser::make_IF(loc); }
-"int"               { return AnsiC::parser::make_INT(loc); }
-"long"              { return AnsiC::parser::make_LONG(loc); }
-"register"          { return AnsiC::parser::make_REGISTER(loc); }
-"return"            { return AnsiC::parser::make_RETURN(loc); }
-"short"             { return AnsiC::parser::make_SHORT(loc); }
-"signed"            { return AnsiC::parser::make_SIGNED(loc); }
-"sizeof"            { return AnsiC::parser::make_SIZEOF(loc); }
-"static"            { return AnsiC::parser::make_STATIC(loc); }
-"struct"            { return AnsiC::parser::make_STRUCT(loc); }
-"switch"            { return AnsiC::parser::make_SWITCH(loc); }
-"typedef"           { return AnsiC::parser::make_TYPEDEF(loc); }
-"union"             { return AnsiC::parser::make_UNION(loc); }
-"unsigned"          { return AnsiC::parser::make_UNSIGNED(loc); }
-"void"              { return AnsiC::parser::make_VOID(loc); }
-"volatile"          { return AnsiC::parser::make_VOLATILE(loc); }
-"while"             { return AnsiC::parser::make_WHILE(loc); }
+"char"              { return AnsiC::parser::make_KW_CHAR(loc); }
+"const"             { return AnsiC::parser::make_KW_CONST(loc); }
+"double"            { return AnsiC::parser::make_KW_DOUBLE(loc); }
+"enum"              { return AnsiC::parser::make_KW_ENUM(loc); }
+"float"             { return AnsiC::parser::make_KW_FLOAT(loc); }
+"int"               { return AnsiC::parser::make_KW_INT(loc); }
+"long"              { return AnsiC::parser::make_KW_LONG(loc); }
+"short"             { return AnsiC::parser::make_KW_SHORT(loc); }
+"signed"            { return AnsiC::parser::make_KW_SIGNED(loc); }
+"struct"            { return AnsiC::parser::make_KW_STRUCT(loc); }
+"typedef"           { return AnsiC::parser::make_KW_TYPEDEF(loc); }
+"union"             { return AnsiC::parser::make_KW_UNION(loc); }
+"unsigned"          { return AnsiC::parser::make_KW_UNSIGNED(loc); }
+"void"              { return AnsiC::parser::make_KW_VOID(loc); }
+
+"PREFER"            { return AnsiC::parser::make_KW_PREFER(loc); }
 
 "__nodecode"        { return AnsiC::parser::make_NODECODE(loc); }
 "__incomplete"      { return AnsiC::parser::make_INCOMPLETE(loc); }
@@ -102,7 +80,6 @@ loc.step();
 "__stdcall"         { return AnsiC::parser::make_PASCAL(loc); }
 "__custom"          { return AnsiC::parser::make_CUSTOM(loc); }
 "__thiscall"        { return AnsiC::parser::make_THISCALL(loc);}
-"PREFER"            { return AnsiC::parser::make_PREFER(loc); }
 "__withstack("      { return AnsiC::parser::make_WITHSTACK(loc); }
 "__symref"          { return AnsiC::parser::make_SYMBOLREF(loc); }
 "r["                { return AnsiC::parser::make_REGOF(loc); }
