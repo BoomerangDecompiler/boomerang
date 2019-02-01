@@ -36,7 +36,7 @@ letter          [a-zA-Z_?@]
 hex             [a-fA-F0-9]
 exp             [Ee][+-]?{digit}+
 float_suffix    (f|F|l|L)
-int_suffix      (u|U|l|L)
+int_suffix      (u|U)?(l|L){0,2}
 
 
 %x C_COMMENT
@@ -53,7 +53,6 @@ int_suffix      (u|U|l|L)
 AnsiC::location& loc = drv.location;
 // Code run each time yylex is called.
 loc.step();
-
 %}
 
 
