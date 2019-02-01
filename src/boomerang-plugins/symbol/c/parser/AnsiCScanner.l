@@ -87,52 +87,19 @@ loc.step();
 "@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
 
 "..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
-">>="           { return AnsiC::parser::make_RIGHT_ASSIGN(loc); }
-"<<="           { return AnsiC::parser::make_LEFT_ASSIGN(loc); }
-"+="            { return AnsiC::parser::make_ADD_ASSIGN(loc); }
-"-="            { return AnsiC::parser::make_SUB_ASSIGN(loc); }
-"*="            { return AnsiC::parser::make_MUL_ASSIGN(loc); }
-"/="            { return AnsiC::parser::make_DIV_ASSIGN(loc); }
-"%="            { return AnsiC::parser::make_MOD_ASSIGN(loc); }
-"&="            { return AnsiC::parser::make_AND_ASSIGN(loc); }
-"^="            { return AnsiC::parser::make_XOR_ASSIGN(loc); }
-"|="            { return AnsiC::parser::make_OR_ASSIGN(loc); }
-">>"            { return AnsiC::parser::make_RIGHT_OP(loc); }
-"<<"            { return AnsiC::parser::make_LEFT_OP(loc); }
-"++"            { return AnsiC::parser::make_INC_OP(loc); }
-"--"            { return AnsiC::parser::make_DEC_OP(loc); }
-"->"            { return AnsiC::parser::make_PTR_OP(loc); }
-"&&"            { return AnsiC::parser::make_AND_OP(loc); }
-"||"            { return AnsiC::parser::make_OR_OP(loc); }
-"<="            { return AnsiC::parser::make_LE_OP(loc); }
-">="            { return AnsiC::parser::make_GE_OP(loc); }
-"=="            { return AnsiC::parser::make_EQ_OP(loc); }
-"!="            { return AnsiC::parser::make_NE_OP(loc); }
 ";"             { return AnsiC::parser::make_SEMICOLON(loc); }
 "{"             { return AnsiC::parser::make_LBRACE(loc); }
 "}"             { return AnsiC::parser::make_RBRACE(loc); }
 ","             { return AnsiC::parser::make_COMMA(loc); }
 ":"             { return AnsiC::parser::make_COLON(loc); }
-"="             { return AnsiC::parser::make_ASSIGN_OP(loc); }
 "("             { return AnsiC::parser::make_LPAREN(loc); }
 ")"             { return AnsiC::parser::make_RPAREN(loc); }
 "["             { return AnsiC::parser::make_LBRACKET(loc); }
 "]"             { return AnsiC::parser::make_RBRACKET(loc); }
-"."             { return AnsiC::parser::make_DOT(loc); }
-"&"             { return AnsiC::parser::make_AND(loc); }
-"!"             { return AnsiC::parser::make_NOT(loc); }
-"~"             { return AnsiC::parser::make_BIT_NOT(loc); }
-"-"             { return AnsiC::parser::make_MINUS(loc); }
-"+"             { return AnsiC::parser::make_PLUS(loc); }
-"*"             { return AnsiC::parser::make_STAR(loc); }
-"/"             { return AnsiC::parser::make_DIV(loc); }
-"%"             { return AnsiC::parser::make_MOD(loc); }
-"<"             { return AnsiC::parser::make_LESS(loc); }
-">"             { return AnsiC::parser::make_GTR(loc); }
-"^"             { return AnsiC::parser::make_XOR(loc); }
-"|"             { return AnsiC::parser::make_BIT_OR(loc); }
-"?"             { return AnsiC::parser::make_QUESTION(loc); }
 
+"+"             { return AnsiC::parser::make_PLUS(loc); }
+"-"             { return AnsiC::parser::make_MINUS(loc); }
+"*"             { return AnsiC::parser::make_STAR(loc); }
 
 {L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
 "0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
