@@ -116,14 +116,13 @@ struct Bound
 %token KW_STRUCT KW_UNION KW_ENUM
 %token KW_PREFER
 
-%token NODECODE
-%token INCOMPLETE
-%token SYMBOLREF
-%token CDECL PASCAL THISCALL
+%token KW_NODECODE
+%token KW_INCOMPLETE
+%token KW_SYMBOLREF
+%token KW_WITHSTACK
+%token KW_CDECL KW_PASCAL KW_THISCALL KW_CUSTOM
 %token REGOF MEMOF
 %token MAXBOUND
-%token CUSTOM
-%token WITHSTACK
 
 %token ELLIPSIS
 %token PLUS MINUS
@@ -398,7 +397,7 @@ signature:
 
         $$ = sig;
     }
-  | CUSTOM custom_options type_ident LPAREN param_list RPAREN {
+  | KW_CUSTOM custom_options type_ident LPAREN param_list RPAREN {
         std::shared_ptr<CustomSignature> sig = std::make_shared<CustomSignature>($3->name);
         if ($2->exp) {
             sig->addReturn($3->ty, $2->exp);
@@ -422,9 +421,9 @@ signature:
   ;
 
 convention:
-    CDECL       { $$ = CallConv::C; }
-  | PASCAL      { $$ = CallConv::Pascal; }
-  | THISCALL    { $$ = CallConv::ThisCall; }
+    KW_CDECL       { $$ = CallConv::C; }
+  | KW_PASCAL      { $$ = CallConv::Pascal; }
+  | KW_THISCALL    { $$ = CallConv::ThisCall; }
   ;
 
 num_list:
@@ -434,9 +433,9 @@ num_list:
   ;
 
 custom_options:
-    exp COLON                   { $$.reset(new CustomOptions()); $$->exp = $1; }
-  | WITHSTACK CONSTANT RPAREN   { $$.reset(new CustomOptions()); $$->sp = $2; }
-  | %empty                      { $$.reset(new CustomOptions()); }
+    exp COLON                           { $$.reset(new CustomOptions()); $$->exp = $1; }
+  | KW_WITHSTACK LPAREN CONSTANT RPAREN { $$.reset(new CustomOptions()); $$->sp = $3; }
+  | %empty                              { $$.reset(new CustomOptions()); }
   ;
 
 symbol_decl:
@@ -459,13 +458,13 @@ symbol_decl:
   ;
 
 symbol_mods:
-    NODECODE symbol_mods   { $$ = $2; $$.noDecode = true; }
-  | INCOMPLETE symbol_mods { $$ = $2; $$.incomplete = true; }
+    KW_NODECODE symbol_mods   { $$ = $2; $$.noDecode = true; }
+  | KW_INCOMPLETE symbol_mods { $$ = $2; $$.incomplete = true; }
   | %empty                 { }
   ;
 
 symbol_ref_decl:
-    SYMBOLREF CONSTANT IDENTIFIER SEMICOLON {
+    KW_SYMBOLREF CONSTANT IDENTIFIER SEMICOLON {
         std::shared_ptr<SymbolRef> ref(new SymbolRef(Address($2), $3));
         drv.refs.push_back(ref);
     }
