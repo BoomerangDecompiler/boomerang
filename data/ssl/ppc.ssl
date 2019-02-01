@@ -192,7 +192,7 @@ SETFFLAGSN(op1, op2, crfd) {
 
 MR          rd, rs              *32* rd := rs;
 LIS         rd, val             *32* rd := (val << 16);
-LI          rd, val             *32* rd := val;
+LI          rd, val             *32* rd := sgnex(16, 32, val);
 
 # Arithmetic operations
 
@@ -202,7 +202,7 @@ ADDq        rd, ra, rb          *32* rd := ra + rb              SETFLAGS0(rd);
 ADDE        rd, ra, rb          *32* rd := ra + rb + %XERCA;
 ADDEq       rd, ra, rb          *32* rd := ra + rb + %XERCA     SETFLAGS0(rd);
 
-ADDI        rd, rs, simm        *32* rd := rs + simm;
+ADDI        rd, rs, simm        *32* rd := rs + sgnex(16, 32, simm);
 ADDIC       rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX(rd, rs, simm);    # Set carry
 ADDICq      rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX0(rd, rs, simm);   # Set carry and CR0
 ADDIS       rd, rs, simm        *32* rd := rs + (simm << 16);

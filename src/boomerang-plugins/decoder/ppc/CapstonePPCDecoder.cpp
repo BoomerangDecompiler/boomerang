@@ -176,6 +176,11 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
                                Const::get(0)));
     }
 
+    if (rtl == nullptr) {
+        LOG_ERROR("Encountered invalid instruction, treating instruction as NOP");
+        rtl = std::make_unique<RTL>(pc);
+    }
+
     return rtl;
 }
 
