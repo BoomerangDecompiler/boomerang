@@ -68,16 +68,17 @@ loc.step();
 %}
 
 
-"INTEGER"       return SSL2::parser::make_TOK_INTEGER(loc);
-"FLOAT"         return SSL2::parser::make_TOK_FLOAT(loc);
+"INTEGER"       return SSL2::parser::make_KW_INTEGER(loc);
+"FLOAT"         return SSL2::parser::make_KW_FLOAT(loc);
 "FLAGS"         return SSL2::parser::make_KW_FLAGS(loc);
-"ENDIANNESS"    return SSL2::parser::make_ENDIANNESS(loc);
-"BIG"           return SSL2::parser::make_BIG(loc);
-"LITTLE"        return SSL2::parser::make_LITTLE(loc);
-"COVERS"        return SSL2::parser::make_COVERS(loc);
-"SHARES"        return SSL2::parser::make_SHARES(loc);
-"FPUSH"         return SSL2::parser::make_FPUSH(loc);
-"FPOP"          return SSL2::parser::make_FPOP(loc);
+"ENDIANNESS"    return SSL2::parser::make_KW_ENDIANNESS(loc);
+"BIG"           return SSL2::parser::make_KW_BIG(loc);
+"LITTLE"        return SSL2::parser::make_KW_LITTLE(loc);
+"COVERS"        return SSL2::parser::make_KW_COVERS(loc);
+"SHARES"        return SSL2::parser::make_KW_SHARES(loc);
+"FPUSH"         return SSL2::parser::make_KW_FPUSH(loc);
+"FPOP"          return SSL2::parser::make_KW_FPOP(loc);
+
 "|"             return SSL2::parser::make_BIT_OR(loc);
 "&"             return SSL2::parser::make_BIT_AND(loc);
 "^"             return SSL2::parser::make_XOR(loc);
