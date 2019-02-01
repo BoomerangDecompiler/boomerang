@@ -237,21 +237,25 @@ type_ident:
   ;
 
 type:
-    KW_CHAR                     { $$ = CharType::get(); }
-  | KW_SHORT                    { $$ = IntegerType::get(16, Sign::Signed);   }
-  | KW_INT                      { $$ = IntegerType::get(32, Sign::Signed);   }
-  | KW_UNSIGNED KW_CHAR         { $$ = IntegerType::get( 8, Sign::Unsigned); }
-  | KW_UNSIGNED KW_SHORT        { $$ = IntegerType::get(16, Sign::Unsigned); }
-  | KW_UNSIGNED KW_INT          { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | KW_UNSIGNED KW_LONG         { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | KW_UNSIGNED                 { $$ = IntegerType::get(32, Sign::Unsigned); }
-  | KW_LONG                     { $$ = IntegerType::get(32, Sign::Signed);   }
-  | KW_LONG KW_LONG             { $$ = IntegerType::get(64, Sign::Signed);   }
-  | KW_UNSIGNED KW_LONG KW_LONG { $$ = IntegerType::get(64, Sign::Unsigned); }
-  | KW_FLOAT                    { $$ = FloatType::get(32); }
-  | KW_DOUBLE                   { $$ = FloatType::get(64); }
-  | KW_VOID                     { $$ = VoidType::get(); }
-  | type STAR                   { $$ = PointerType::get($1); }
+    KW_CHAR                             { $$ = CharType::get(); }
+  | KW_UNSIGNED KW_CHAR                 { $$ = IntegerType::get( 8, Sign::Unsigned); }
+  | KW_SHORT                            { $$ = IntegerType::get(16, Sign::Signed);   }
+  | KW_UNSIGNED KW_SHORT                { $$ = IntegerType::get(16, Sign::Unsigned); }
+  | KW_INT                              { $$ = IntegerType::get(32, Sign::Signed);   }
+  | KW_UNSIGNED KW_INT                  { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_UNSIGNED                         { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_LONG                             { $$ = IntegerType::get(32, Sign::Signed);   }
+  | KW_LONG KW_INT                      { $$ = IntegerType::get(32, Sign::Signed);   }
+  | KW_UNSIGNED KW_LONG                 { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_UNSIGNED KW_LONG KW_INT          { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | KW_LONG KW_LONG                     { $$ = IntegerType::get(64, Sign::Signed);   }
+  | KW_LONG KW_LONG KW_INT              { $$ = IntegerType::get(64, Sign::Signed);   }
+  | KW_UNSIGNED KW_LONG KW_LONG         { $$ = IntegerType::get(64, Sign::Unsigned); }
+  | KW_UNSIGNED KW_LONG KW_LONG KW_INT  { $$ = IntegerType::get(64, Sign::Unsigned); }
+  | KW_FLOAT                            { $$ = FloatType::get(32); }
+  | KW_DOUBLE                           { $$ = FloatType::get(64); }
+  | KW_VOID                             { $$ = VoidType::get(); }
+  | type STAR                           { $$ = PointerType::get($1); }
   | type LBRACKET CONSTANT RBRACKET {
         // This isn't C, but it makes defining pointers to arrays easier
         $$ = ArrayType::get($1, $3);
@@ -261,7 +265,6 @@ type:
         $$ = ArrayType::get($1);
     }
   | IDENTIFIER {
-
         $$ = NamedType::get($1);
     }
   | KW_CONST type { $$ = $2; }
