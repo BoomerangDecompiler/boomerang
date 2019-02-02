@@ -30,13 +30,14 @@
 %option noyywrap nounput batch debug noinput
 %option prefix="AnsiC"
 
-D           [0-9]
+digit           [0-9]
 /* Allow ? and @ in identifiers, so we can use mangled names */
-L           [a-zA-Z_?@]
-H           [a-fA-F0-9]
-E           [Ee][+-]?{D}+
-FS          (f|F|l|L)
-IS          (u|U|l|L)*
+letter          [a-zA-Z_?@]
+hex             [a-fA-F0-9]
+exp             [Ee][+-]?{digit}+
+float_suffix    (f|F|l|L)
+int_suffix      (u|U)?(l|L){0,2}
+
 
 %x C_COMMENT
 
@@ -52,127 +53,97 @@ IS          (u|U|l|L)*
 AnsiC::location& loc = drv.location;
 // Code run each time yylex is called.
 loc.step();
-
 %}
 
-^#include           { return AnsiC::parser::make_PREINCLUDE(loc); }
-^#define            { return AnsiC::parser::make_PREDEFINE(loc); }
-^#if                { return AnsiC::parser::make_PREIF(loc); }
-^#ifdef             { return AnsiC::parser::make_PREIFDEF(loc); }
-^#endif             { return AnsiC::parser::make_PREENDIF(loc); }
-^#line              { return AnsiC::parser::make_PRELINE(loc); }
 
-"auto"              { return AnsiC::parser::make_AUTO(loc); }
-"break"             { return AnsiC::parser::make_BREAK(loc); }
-"case"              { return AnsiC::parser::make_CASE(loc); }
-"char"              { return AnsiC::parser::make_CHAR(loc); }
-"const"             { return AnsiC::parser::make_CONST(loc); }
-"continue"          { return AnsiC::parser::make_CONTINUE(loc); }
-"default"           { return AnsiC::parser::make_DEFAULT(loc); }
-"do"                { return AnsiC::parser::make_DO(loc); }
-"double"            { return AnsiC::parser::make_DOUBLE(loc); }
-"else"              { return AnsiC::parser::make_ELSE(loc); }
-"enum"              { return AnsiC::parser::make_ENUM(loc); }
-"extern"            { return AnsiC::parser::make_EXTERN(loc); }
-"float"             { return AnsiC::parser::make_FLOAT(loc); }
-"for"               { return AnsiC::parser::make_FOR(loc); }
-"goto"              { return AnsiC::parser::make_GOTO(loc); }
-"if"                { return AnsiC::parser::make_IF(loc); }
-"int"               { return AnsiC::parser::make_INT(loc); }
-"long"              { return AnsiC::parser::make_LONG(loc); }
-"register"          { return AnsiC::parser::make_REGISTER(loc); }
-"return"            { return AnsiC::parser::make_RETURN(loc); }
-"short"             { return AnsiC::parser::make_SHORT(loc); }
-"signed"            { return AnsiC::parser::make_SIGNED(loc); }
-"sizeof"            { return AnsiC::parser::make_SIZEOF(loc); }
-"static"            { return AnsiC::parser::make_STATIC(loc); }
-"struct"            { return AnsiC::parser::make_STRUCT(loc); }
-"switch"            { return AnsiC::parser::make_SWITCH(loc); }
-"typedef"           { return AnsiC::parser::make_TYPEDEF(loc); }
-"union"             { return AnsiC::parser::make_UNION(loc); }
-"unsigned"          { return AnsiC::parser::make_UNSIGNED(loc); }
-"void"              { return AnsiC::parser::make_VOID(loc); }
-"volatile"          { return AnsiC::parser::make_VOLATILE(loc); }
-"while"             { return AnsiC::parser::make_WHILE(loc); }
+"char"              { return AnsiC::parser::make_KW_CHAR(loc); }
+"const"             { return AnsiC::parser::make_KW_CONST(loc); }
+"double"            { return AnsiC::parser::make_KW_DOUBLE(loc); }
+"enum"              { return AnsiC::parser::make_KW_ENUM(loc); }
+"float"             { return AnsiC::parser::make_KW_FLOAT(loc); }
+"int"               { return AnsiC::parser::make_KW_INT(loc); }
+"long"              { return AnsiC::parser::make_KW_LONG(loc); }
+"short"             { return AnsiC::parser::make_KW_SHORT(loc); }
+"signed"            { return AnsiC::parser::make_KW_SIGNED(loc); }
+"struct"            { return AnsiC::parser::make_KW_STRUCT(loc); }
+"typedef"           { return AnsiC::parser::make_KW_TYPEDEF(loc); }
+"union"             { return AnsiC::parser::make_KW_UNION(loc); }
+"unsigned"          { return AnsiC::parser::make_KW_UNSIGNED(loc); }
+"void"              { return AnsiC::parser::make_KW_VOID(loc); }
 
-"__nodecode"        { return AnsiC::parser::make_NODECODE(loc); }
-"__incomplete"      { return AnsiC::parser::make_INCOMPLETE(loc); }
-"__cdecl"           { return AnsiC::parser::make_CDECL(loc); }
-"__pascal"          { return AnsiC::parser::make_PASCAL(loc); }
-"__stdcall"         { return AnsiC::parser::make_PASCAL(loc); }
-"__custom"          { return AnsiC::parser::make_CUSTOM(loc); }
-"__thiscall"        { return AnsiC::parser::make_THISCALL(loc);}
-"PREFER"            { return AnsiC::parser::make_PREFER(loc); }
-"__withstack("      { return AnsiC::parser::make_WITHSTACK(loc); }
-"__symref"          { return AnsiC::parser::make_SYMBOLREF(loc); }
-"r["                { return AnsiC::parser::make_REGOF(loc); }
-"m["                { return AnsiC::parser::make_MEMOF(loc); }
-"@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
+"PREFER"            { return AnsiC::parser::make_KW_PREFER(loc); }
 
-"..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
-">>="           { return AnsiC::parser::make_RIGHT_ASSIGN(loc); }
-"<<="           { return AnsiC::parser::make_LEFT_ASSIGN(loc); }
-"+="            { return AnsiC::parser::make_ADD_ASSIGN(loc); }
-"-="            { return AnsiC::parser::make_SUB_ASSIGN(loc); }
-"*="            { return AnsiC::parser::make_MUL_ASSIGN(loc); }
-"/="            { return AnsiC::parser::make_DIV_ASSIGN(loc); }
-"%="            { return AnsiC::parser::make_MOD_ASSIGN(loc); }
-"&="            { return AnsiC::parser::make_AND_ASSIGN(loc); }
-"^="            { return AnsiC::parser::make_XOR_ASSIGN(loc); }
-"|="            { return AnsiC::parser::make_OR_ASSIGN(loc); }
-">>"            { return AnsiC::parser::make_RIGHT_OP(loc); }
-"<<"            { return AnsiC::parser::make_LEFT_OP(loc); }
-"++"            { return AnsiC::parser::make_INC_OP(loc); }
-"--"            { return AnsiC::parser::make_DEC_OP(loc); }
-"->"            { return AnsiC::parser::make_PTR_OP(loc); }
-"&&"            { return AnsiC::parser::make_AND_OP(loc); }
-"||"            { return AnsiC::parser::make_OR_OP(loc); }
-"<="            { return AnsiC::parser::make_LE_OP(loc); }
-">="            { return AnsiC::parser::make_GE_OP(loc); }
-"=="            { return AnsiC::parser::make_EQ_OP(loc); }
-"!="            { return AnsiC::parser::make_NE_OP(loc); }
-";"             { return AnsiC::parser::make_SEMICOLON(loc); }
-"{"             { return AnsiC::parser::make_LBRACE(loc); }
-"}"             { return AnsiC::parser::make_RBRACE(loc); }
-","             { return AnsiC::parser::make_COMMA(loc); }
-":"             { return AnsiC::parser::make_COLON(loc); }
-"="             { return AnsiC::parser::make_ASSIGN_OP(loc); }
-"("             { return AnsiC::parser::make_LPAREN(loc); }
-")"             { return AnsiC::parser::make_RPAREN(loc); }
-"["             { return AnsiC::parser::make_LBRACKET(loc); }
-"]"             { return AnsiC::parser::make_RBRACKET(loc); }
-"."             { return AnsiC::parser::make_DOT(loc); }
-"&"             { return AnsiC::parser::make_AND(loc); }
-"!"             { return AnsiC::parser::make_NOT(loc); }
-"~"             { return AnsiC::parser::make_BIT_NOT(loc); }
-"-"             { return AnsiC::parser::make_MINUS(loc); }
-"+"             { return AnsiC::parser::make_PLUS(loc); }
-"*"             { return AnsiC::parser::make_STAR(loc); }
-"/"             { return AnsiC::parser::make_DIV(loc); }
-"%"             { return AnsiC::parser::make_MOD(loc); }
-"<"             { return AnsiC::parser::make_LESS(loc); }
-">"             { return AnsiC::parser::make_GTR(loc); }
-"^"             { return AnsiC::parser::make_XOR(loc); }
-"|"             { return AnsiC::parser::make_BIT_OR(loc); }
-"?"             { return AnsiC::parser::make_QUESTION(loc); }
+"__nodecode"        { return AnsiC::parser::make_KW_NODECODE(loc); }
+"__incomplete"      { return AnsiC::parser::make_KW_INCOMPLETE(loc); }
+"__cdecl"           { return AnsiC::parser::make_KW_CDECL(loc); }
+"__pascal"          { return AnsiC::parser::make_KW_PASCAL(loc); }
+"__stdcall"         { return AnsiC::parser::make_KW_PASCAL(loc); }
+"__custom"          { return AnsiC::parser::make_KW_CUSTOM(loc); }
+"__thiscall"        { return AnsiC::parser::make_KW_THISCALL(loc);}
+"__symref"          { return AnsiC::parser::make_KW_SYMBOLREF(loc); }
+"__withstack"/"("   { return AnsiC::parser::make_KW_WITHSTACK(loc); }
+
+"r"/"["             { return AnsiC::parser::make_REGOF(loc); }
+"m"/"["             { return AnsiC::parser::make_MEMOF(loc); }
+"@max"/"("          { return AnsiC::parser::make_MAXBOUND(loc); }
+
+"..."               { return AnsiC::parser::make_ELLIPSIS(loc); }
+";"                 { return AnsiC::parser::make_SEMICOLON(loc); }
+"{"                 { return AnsiC::parser::make_LBRACE(loc); }
+"}"                 { return AnsiC::parser::make_RBRACE(loc); }
+","                 { return AnsiC::parser::make_COMMA(loc); }
+":"                 { return AnsiC::parser::make_COLON(loc); }
+"("                 { return AnsiC::parser::make_LPAREN(loc); }
+")"                 { return AnsiC::parser::make_RPAREN(loc); }
+"["                 { return AnsiC::parser::make_LBRACKET(loc); }
+"]"                 { return AnsiC::parser::make_RBRACKET(loc); }
+
+"+"                 { return AnsiC::parser::make_PLUS(loc); }
+"-"                 { return AnsiC::parser::make_MINUS(loc); }
+"*"                 { return AnsiC::parser::make_STAR(loc); }
+
+{letter}({letter}|{digit})* {
+    return AnsiC::parser::make_IDENTIFIER(yytext, loc);
+}
+
+"0"[xX]{hex}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc);
+}
+
+"0"{digit}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc);
+}
+
+{digit}+{int_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+}
+
+"L"?"'"(\\.|[^\\'])+"'" {
+    return AnsiC::parser::make_STRING_LITERAL(yytext, loc);
+}
+"L"?\"(.|[^\"])*\"    {
+    return AnsiC::parser::make_STRING_LITERAL(yytext, loc);
+}
+
+{digit}+{exp}{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+}
+
+{digit}*"."{digit}+({exp})?{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+}
+
+{digit}+"."{digit}*({exp})?{float_suffix}? {
+    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+}
 
 
-{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
-"0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
-"0"{D}+{IS}?        { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
-{D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-"L"?"'"(\\.|[^\\'])+"'" { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
-{D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-{D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-{D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-"L"?\"(.|[^\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
-
-
+"//".*          { loc.step(); }
 "/*"            { loc.step(); BEGIN(C_COMMENT); }
 <C_COMMENT>"*/" { loc.step(); BEGIN(INITIAL); }
 <C_COMMENT>\n   { loc.lines(yyleng); loc.step(); }
 <C_COMMENT>.    { loc.step(); }
-"//".*          { loc.step(); }
+
 [\n]+           { loc.lines(yyleng); loc.step(); }
 [ \t\v\f]+      { loc.step(); }
 

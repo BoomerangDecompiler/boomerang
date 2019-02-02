@@ -57,10 +57,10 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 ;
 
 // keywords
-%token ENDIANNESS BIG LITTLE
-%token COVERS SHARES
-%token FPUSH FPOP
-%token TOK_FLOAT TOK_INTEGER KW_FLAGS
+%token KW_ENDIANNESS KW_BIG KW_LITTLE
+%token KW_COVERS KW_SHARES
+%token KW_FPUSH KW_FPOP
+%token KW_FLOAT KW_INTEGER KW_FLAGS
 
 // identifiers
 %token <QString> IDENT REG_IDENT TEMP
@@ -158,8 +158,8 @@ parts:
   ;
 
 endianness_def:
-    ENDIANNESS BIG      { drv.m_dict->m_endianness = Endian::Big; }
-  | ENDIANNESS LITTLE   { drv.m_dict->m_endianness = Endian::Little; }
+    KW_ENDIANNESS KW_BIG      { drv.m_dict->m_endianness = Endian::Big; }
+  | KW_ENDIANNESS KW_LITTLE   { drv.m_dict->m_endianness = Endian::Little; }
   ;
 
 constant_def:
@@ -298,9 +298,9 @@ nonempty_arglist:
   ;
 
 reg_def:
-    TOK_INTEGER { drv.m_regType = RegType::Int;   } reg_def_part
-  | TOK_FLOAT   { drv.m_regType = RegType::Float; } reg_def_part
-  | KW_FLAGS    { drv.m_regType = RegType::Flags; } reg_def_part
+    KW_INTEGER { drv.m_regType = RegType::Int;   } reg_def_part
+  | KW_FLOAT   { drv.m_regType = RegType::Float; } reg_def_part
+  | KW_FLAGS   { drv.m_regType = RegType::Flags; } reg_def_part
   ;
 
 reg_def_part:
@@ -317,7 +317,7 @@ reg_def_part:
         }
     }
     // example: %foo[32] -> 10 COVERS %bar..%baz
-  | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL COVERS REG_IDENT TO REG_IDENT {
+  | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL KW_COVERS REG_IDENT TO REG_IDENT {
         if ($3 <= 0) {
             throw SSL2::parser::syntax_error(drv.location, "Register size must be positive.");
         }
@@ -362,7 +362,7 @@ reg_def_part:
         }
     }
     // example: %ah[8] -> 10 SHARES %ax@[8..15]
-  | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL SHARES REG_IDENT AT LBRACKET INT_LITERAL TO INT_LITERAL RBRACKET {
+  | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL KW_SHARES REG_IDENT AT LBRACKET INT_LITERAL TO INT_LITERAL RBRACKET {
         if ($3 <= 0) {
             throw SSL2::parser::syntax_error(drv.location, "Register size must be positive.");
         }
@@ -437,7 +437,7 @@ nonempty_rtl:
   ;
 
 rtl_part:
-    FPUSH {
+    KW_FPUSH {
         $$.reset(new RTL(Address::ZERO, {
             new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST7)),
             new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6)),
@@ -450,7 +450,7 @@ rtl_part:
             new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
         }));
     }
-  | FPOP {
+  | KW_FPOP {
         $$.reset(new RTL(Address::ZERO, {
             new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST0)),
             new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1)),
