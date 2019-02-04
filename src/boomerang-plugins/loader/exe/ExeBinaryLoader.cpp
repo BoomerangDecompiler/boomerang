@@ -63,11 +63,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
     int cb = 0;
 
     // Check for the "MZ" exe header
-    if (Util::testMagic((Byte *)m_header, { 0x4D, 0x5A })) {
+    if (Util::testMagic((Byte *)m_header, { 'M', 'Z' })) {
         /* Read rest of m_header */
-        fp.seek(0);
-
-        if (fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
+        if (!fp.seek(0) ||
+            fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
             LOG_ERROR("Cannot read Exe file");
             return false;
         }
@@ -110,8 +109,11 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         }
 
         m_relocTable.resize(m_numReloc);
+        if (!fp.seek(offset)) {
+            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", offset);
+            return false;
+        }
 
-        fp.seek(offset);
         /* Read in seg:offset pairs and convert to Image ptrs */
         Byte buf[4];
         for (int i = 0; i < m_numReloc; i++) {
@@ -130,7 +132,11 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
             return false;
         }
 
-        fp.seek(initialPtrOffset * DOS_PARA_SIZE);
+        if (!fp.seek(initialPtrOffset * DOS_PARA_SIZE)) {
+            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1",
+                      initialPtrOffset * DOS_PARA_SIZE);
+            return false;
+        }
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset in the bottom half.
@@ -156,7 +162,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         m_uInitSP  = Address(0xFFFE);
         m_numReloc = 0;
 
-        fp.seek(0);
+        if (!fp.seek(0)) {
+            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", 0);
+            return false;
+        }
     }
 
     if (!Util::inRange(cb, 0, data.size())) {
