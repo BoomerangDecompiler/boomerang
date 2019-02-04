@@ -22,6 +22,10 @@
 #include <cassert>
 
 
+#define DOS_PAGE_SIZE (512U)
+#define DOS_PARA_SIZE (16U)
+
+
 ExeBinaryLoader::ExeBinaryLoader(Project *project)
     : IFileLoader(project)
 {
@@ -56,10 +60,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         return false;
     }
 
-    int fCOM;
-    int cb;
+    int cb = 0;
+
     // Check for the "MZ" exe header
-    if (!(fCOM = ((m_header->sigLo != 0x4D) || (m_header->sigHi != 0x5A)))) {
+    if (Util::testMagic((Byte *)m_header, { 0x4D, 0x5A })) {
         /* Read rest of m_header */
         fp.seek(0);
 
@@ -70,16 +74,18 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 
 
         /* Calculate the load module size.
-         * This is the number of pages in the file
-         * less the length of the m_header and reloc table
-         * less the number of bytes unused on last page
+         * This is:
+         *  - the number of pages in the file
+         *  - less the length of the m_header and reloc table
+         *  - less the number of bytes unused on last page
          */
         const SWord numPages      = Util::readWord(&m_header->numPages, Endian::Little);
         const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
-        cb                        = numPages * 512U - numParaHeader * 16U;
+        const SWord lastPageSize  = Util::readWord(&m_header->lastPageSize, Endian::Little);
+        cb                        = numPages * DOS_PAGE_SIZE - numParaHeader * DOS_PARA_SIZE;
 
-        if (m_header->lastPageSize > 0) {
-            cb -= 512U - Util::readWord(&m_header->lastPageSize, Endian::Little);
+        if (lastPageSize > 0) {
+            cb -= DOS_PAGE_SIZE - lastPageSize;
         }
 
         /* We quietly ignore minAlloc and maxAlloc since for our
@@ -124,10 +130,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
             return false;
         }
 
-        fp.seek(initialPtrOffset * 16U);
+        fp.seek(initialPtrOffset * DOS_PARA_SIZE);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
-        // the segment in the top half, and offset int he bottom
+        // the segment in the top half, and offset in the bottom half.
         const DWord initCS = Util::readWord(&m_header->initCS, Endian::Little);
         const DWord initIP = Util::readWord(&m_header->initIP, Endian::Little);
         const DWord initSS = Util::readWord(&m_header->initSS, Endian::Little);
@@ -142,8 +148,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
          */
         cb = fp.size();
 
-        /* COM programs start off with an ORG 100H (to leave room for a PSP)
-         * This is also the implied start address so if we load the image
+        /* COM programs start off with an ORG 100H (to leave room for a Program Segment
+         * Prefix (PSP)). This is also the implied start address so if we load the image
          * at offset 100H addresses should all line up properly again.
          */
         m_uInitPC  = Address(0x0100);
