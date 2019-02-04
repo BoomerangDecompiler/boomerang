@@ -260,11 +260,16 @@ Address ExeBinaryLoader::getEntryPoint()
 
 int ExeBinaryLoader::canLoad(QIODevice &fl) const
 {
-    Byte buf[4];
-    fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
+    Byte buf[4] = { 0 };
+    const bool ok = fl.read(reinterpret_cast<char *>(buf), sizeof(buf)) == sizeof(buf);
+
+    if (!ok) {
+        // cannot read file / file is too small
+        return 0;
+    }
 
     if (!Util::testMagic(buf, { 'M', 'Z' })) {
-        /* No MZ header */
+        // No MZ header
         return 0;
     }
 
