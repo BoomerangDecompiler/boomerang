@@ -41,21 +41,21 @@ struct PSP
 /// EXE file header
 struct ExeHeader
 {
-    Byte sigLo; ///< .EXE signature: 0x4D 0x5A
-    Byte sigHi;
-    SWord lastPageSize;   ///< Size of the last page
-    SWord numPages;       ///< Number of pages in the file
-    SWord numReloc;       ///< Number of relocation items
-    SWord numParaHeader;  ///< # of paragraphs in the header
-    SWord minAlloc;       ///< Minimum number of paragraphs
-    SWord maxAlloc;       ///< Maximum number of paragraphs
-    SWord initSS;         ///< Segment displacement of stack
-    SWord initSP;         ///< Contents of SP at entry
-    SWord checkSum;       ///< Complemented checksum
-    SWord initIP;         ///< Contents of IP at entry
-    SWord initCS;         ///< Segment displacement of code
-    SWord relocTabOffset; ///< Relocation table offset
-    SWord overlayNum;     ///< Overlay number
+    Byte sigLo;           ///< 0x00     .EXE signature: 0x4D 0x5A
+    Byte sigHi;           ///< 0x01
+    SWord lastPageSize;   ///< 0x02     Size of the last page (mod 512 bytes)
+    SWord numPages;       ///< 0x04     Number of (512-byte) pages in the file
+    SWord numReloc;       ///< 0x06     Number of relocation items
+    SWord numParaHeader;  ///< 0x08     # of paragraphs in the header
+    SWord minAlloc;       ///< 0x0A     Minimum number of paragraphs
+    SWord maxAlloc;       ///< 0x0C     Maximum number of paragraphs (usually 0xFFFF)
+    SWord initSS;         ///< 0x0E     Segment displacement of stack
+    SWord initSP;         ///< 0x10     Contents of SP at entry
+    SWord checkSum;       ///< 0x12     Complemented checksum
+    SWord initIP;         ///< 0x14     Contents of IP at entry
+    SWord initCS;         ///< 0x16     Segment displacement of code
+    SWord relocTabOffset; ///< 0x18     Relocation table offset
+    SWord overlayNum;     ///< 0x1A     Overlay number
 };
 #pragma pack(pop)
 

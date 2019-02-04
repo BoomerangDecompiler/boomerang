@@ -75,7 +75,9 @@ public:
     /// \returns the primary instruction set used in the binary file.
     Machine getMachine() const;
 
-    /// \returns the address of the entry point
+    /// \returns the address of the entry point. If the address is not known (yet),
+    /// returns Address::INVALID (and not Address::ZERO because Address::ZERO is a
+    /// potentially valid start address)
     Address getEntryPoint() const;
 
     /// \returns the address of main()/WinMain(), if found, else Address::INVALID
