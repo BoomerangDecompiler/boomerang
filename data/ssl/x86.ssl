@@ -1188,16 +1188,34 @@ BTS.rm32.reg32 dest, bit
 
 
 # CALL
+CALL.imm16 dest
+    *16* %sp := %sp - 4
+    *16* m[%sp] := %pc
+    *16* %pc := dest
+;
+
 CALL.imm32 dest
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
     *32* %pc := dest
 ;
 
+CALL.reg16 dest
+    *16* %sp := %sp - 4
+    *16* m[%sp] := %pc
+    *16* %pc := dest
+;
+
 CALL.reg32 dest
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
     *32* %pc := dest
+;
+
+CALL.rm16 dest
+    *16* %sp := %sp - 4
+    *16* m[%sp] := %pc
+    *16* %pc := dest
 ;
 
 CALL.rm32 dest
@@ -2313,6 +2331,10 @@ INC.rm64 val
 
 
 # INT
+INT.imm16 n
+    _
+;
+
 INT.imm32 n
     _
 ;
@@ -2336,39 +2358,71 @@ INTO
 
 
 # Jcc
+JA.imm16 dest       *16* ~%CF & ~%ZF            => %pc := dest;
 JA.imm32 dest       *32* ~%CF & ~%ZF            => %pc := dest;
+JAE.imm16 dest      *16* %CF = 0                => %pc := dest;
 JAE.imm32 dest      *32* %CF = 0                => %pc := dest;
+JB.imm16 dest       *16* %CF = 1                => %pc := dest;
 JB.imm32 dest       *32* %CF = 1                => %pc := dest;
+JBE.imm16 dest      *16* %CF | %ZF              => %pc := dest;
 JBE.imm32 dest      *32* %CF | %ZF              => %pc := dest;
+JC.imm16 dest       *16* %CF = 1                => %pc := dest;
 JC.imm32 dest       *32* %CF = 1                => %pc := dest;
+JCXZ.imm16 dest     *16* %cx = 0                => %pc := dest;
 JCXZ.imm32 dest     *32* %cx = 0                => %pc := dest;
+JE.imm16 dest       *16* %ZF = 1                => %pc := dest;
 JE.imm32 dest       *32* %ZF = 1                => %pc := dest;
-JECXZ.imm16 dest    *32* %ecx = 0               => %pc := dest;
+JECXZ.imm16 dest    *16* %ecx = 0               => %pc := dest;
 JECXZ.imm32 dest    *32* %ecx = 0               => %pc := dest;
+JG.imm16 dest       *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
 JG.imm32 dest       *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JGE.imm16 dest      *16* ~(%SF ^ %OF)           => %pc := dest;
 JGE.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
+JL.imm16 dest       *16* %SF ^ %OF              => %pc := dest;
 JL.imm32 dest       *32* %SF ^ %OF              => %pc := dest;
+JLE.imm16 dest      *16* %ZF | (%SF ^ %OF)      => %pc := dest;
 JLE.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
+JMP.imm16 dest      *16*                           %pc := dest;
 JMP.imm32 dest      *32*                           %pc := dest;
+JMP.reg16 dest      *16*                           %pc := dest;
 JMP.reg32 dest      *32*                           %pc := dest;
+JMP.rm16 dest       *16*                           %pc := dest;
 JMP.rm32 dest       *32*                           %pc := dest;
+JNA.imm16 dest      *16* %CF | %ZF              => %pc := dest;
 JNA.imm32 dest      *32* %CF | %ZF              => %pc := dest;
+JNAE.imm16 dest     *16* %CF                    => %pc := dest;
 JNAE.imm32 dest     *32* %CF                    => %pc := dest;
+JNB.imm16 dest      *16* ~%CF                   => %pc := dest;
 JNB.imm32 dest      *32* ~%CF                   => %pc := dest;
+JNBE.imm16 dest     *16* (~%CF & ~%ZF)          => %pc := dest;
 JNBE.imm32 dest     *32* (~%CF & ~%ZF)          => %pc := dest;
+JNC.imm16 dest      *16* ~%CF                   => %pc := dest;
 JNC.imm32 dest      *32* ~%CF                   => %pc := dest;
+JNE.imm16 dest      *16* ~%ZF                   => %pc := dest;
 JNE.imm32 dest      *32* ~%ZF                   => %pc := dest;
+JNG.imm16 dest      *16* %ZF | (%SF ^ %OF)      => %pc := dest;
 JNG.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
+JNGE.imm16 dest     *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
 JNGE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JNL.imm16 dest      *16* ~(%SF ^ %OF)           => %pc := dest;
 JNL.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
+JNLE.imm16 dest     *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
 JNLE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JNO.imm16 dest      *16* ~%OF                   => %pc := dest;
 JNO.imm32 dest      *32* ~%OF                   => %pc := dest;
+JNP.imm16 dest      *16* ~%PF                   => %pc := dest;
 JNP.imm32 dest      *32* ~%PF                   => %pc := dest;
+JNS.imm16 dest      *16* ~%SF                   => %pc := dest;
 JNS.imm32 dest      *32* ~%SF                   => %pc := dest;
+JNZ.imm16 dest      *16* ~%ZF                   => %pc := dest;
 JNZ.imm32 dest      *32* ~%ZF                   => %pc := dest;
+JO.imm16 dest       *16* %OF                    => %pc := dest;
 JO.imm32 dest       *32* %OF                    => %pc := dest;
+JP.imm16 dest       *16* %PF                    => %pc := dest;
 JP.imm32 dest       *32* %PF                    => %pc := dest;
+JS.imm16 dest       *16* %SF                    => %pc := dest;
 JS.imm32 dest       *32* %SF                    => %pc := dest;
+JZ.imm16 dest       *16* %ZF                    => %pc := dest;
 JZ.imm32 dest       *32* %ZF                    => %pc := dest;
 
 
@@ -2450,6 +2504,11 @@ LGS.reg32.rm32 dest, src
 
 
 # LOOP
+LOOP.imm16 dest
+    *16* %cx := %cx - 1
+    *16* %cx ~= 0 => %pc := dest
+;
+
 LOOP.imm32 dest
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 => %pc := dest
@@ -2457,6 +2516,11 @@ LOOP.imm32 dest
 
 
 # LOOPE
+LOOPE.imm16 dest
+    *16* %cx := %cx - 1
+    *16* %cx ~= 0 && %ZF = 1 => %pc := dest
+;
+
 LOOPE.imm32 dest
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 && %ZF = 1 => %pc := dest
@@ -2464,6 +2528,11 @@ LOOPE.imm32 dest
 
 
 # LOOPNE
+LOOPNE.imm16 dest
+    *16* %cx := %cx - 1
+    *16* %cx ~= 0 && %ZF = 0 => %pc := dest
+;
+
 LOOPNE.imm32 dest
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 && %ZF = 0 => %pc := dest
