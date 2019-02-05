@@ -22,8 +22,8 @@
 #include <cassert>
 
 
-#define DOS_PAGE_SIZE (512U)
-#define DOS_PARA_SIZE (16U)
+#define DOS_PAGE_SIZE (512)
+#define DOS_PARA_SIZE (16)
 
 
 ExeBinaryLoader::ExeBinaryLoader(Project *project)
@@ -41,6 +41,8 @@ void ExeBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 {
+    const Address loadBaseAddr = Address::ZERO;
+
     if (m_header) {
         delete m_header;
     }
@@ -81,53 +83,22 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         const SWord numPages      = Util::readWord(&m_header->numPages, Endian::Little);
         const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
         const SWord lastPageSize  = Util::readWord(&m_header->lastPageSize, Endian::Little);
-        cbImageSize               = numPages * DOS_PAGE_SIZE - numParaHeader * DOS_PARA_SIZE;
+        const SWord headerSize    = numParaHeader * DOS_PARA_SIZE;
+        cbImageSize               = numPages * DOS_PAGE_SIZE - headerSize;
 
         if (lastPageSize > 0) {
+            // if lastPageSize is 0, this indicates that the last page is full; if lastPageSize
+            // is not 0, the last page is not full so we have to subtract the empty space
+            // past the image boundary.
             cbImageSize -= DOS_PAGE_SIZE - lastPageSize;
         }
 
-        /* We quietly ignore minAlloc and maxAlloc since for our
-         * purposes it doesn't really matter where in real memory
-         * the m_am would end up.  EXE m_ams can't really rely on
-         * their load location so setting the PSP segment to 0 is fine.
-         * Certainly m_ams that prod around in DOS or BIOS are going
-         * to have to load DS from a constant so it'll be pretty
-         * obvious.
-         */
-        m_numReloc         = Util::readWord(&m_header->numReloc, Endian::Little);
-        const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
-
-        if (m_numReloc < 0) {
-            m_numReloc = 0;
-        }
-
-        if (!Util::inRange(offset, 0, data.size()) ||
-            !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, data.size())) {
-            LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
-            return false;
-        }
-
-        m_relocTable.resize(m_numReloc);
-        if (!fp.seek(offset)) {
-            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", offset);
-            return false;
-        }
-
-        /* Read in seg:offset pairs and convert to Image ptrs */
-        Byte buf[4];
-        for (int i = 0; i < m_numReloc; i++) {
-            if (4 != fp.read(reinterpret_cast<char *>(buf), 4)) {
-                LOG_ERROR("Cannot load Exe file: Cannot read relocation table");
-                return false;
-            }
-            m_relocTable[i] = Util::readDWord(buf, Endian::Little);
-        }
+        readRelocations(fp, data);
 
         /* Seek to start of image */
         const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
         if (((initialPtrOffset & 0xF000) != 0) ||
-            !Util::inRange(initialPtrOffset * 16, 0, data.size())) {
+            !Util::inRange(initialPtrOffset * DOS_PARA_SIZE, 0, data.size())) {
             LOG_ERROR("Cannot read Exe file: Invalid offset for initial SP/IP values");
             return false;
         }
@@ -145,8 +116,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         const DWord initSS = Util::readWord(&m_header->initSS, Endian::Little);
         const DWord initSP = Util::readWord(&m_header->initSP, Endian::Little);
 
-        m_uInitPC = Address((initCS << 16) + initIP);
-        m_uInitSP = Address((initSS << 16) + initSP);
+        m_uInitPC = Address((initCS * DOS_PARA_SIZE) + initIP);
+        m_uInitSP = Address((initSS * DOS_PARA_SIZE) + initSP);
     }
     else {
         /* COM file
@@ -175,7 +146,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 
     /* Allocate a block of memory for the image. */
     m_imageSize   = cbImageSize;
-    m_loadedImage = new uint8_t[m_imageSize];
+    m_loadedImage = new Byte[m_imageSize];
 
     if (cbImageSize != fp.read(reinterpret_cast<char *>(m_loadedImage), cbImageSize)) {
         LOG_ERROR("Cannot read Exe file: Failed to read loaded image");
@@ -184,15 +155,16 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 
     /* Relocate segment constants */
     for (int i = 0; i < m_numReloc; i++) {
-        const DWord fileOffset = m_relocTable[i];
-        if (!Util::inRange(fileOffset, sizeof(ExeHeader), (DWord)data.size())) {
-            LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i, fileOffset);
+        const ExeReloc relocEntry = m_relocTable[i];
+        const SWord imageOffset = (relocEntry.segment << 4) + relocEntry.offset;
+        if (!Util::inRange(imageOffset, 0, m_imageSize)) {
+            LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i, relocEntry.offset);
             continue;
         }
 
-        Byte *p           = &m_loadedImage[fileOffset];
-        const SWord value = Util::readWord(p, Endian::Little);
-        Util::writeWord(p, value, Endian::Little);
+        Byte *p                = &m_loadedImage[imageOffset];
+        const SWord relocValue = Util::readWord(p, Endian::Little);
+        Util::writeWord(p, loadBaseAddr.value() + relocValue, Endian::Little);
     }
 
     fp.close();
@@ -204,12 +176,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
     header->setEntrySize(1);
 
     // The text and data section
-    BinarySection *text = m_image->createSection(".text", Address(0x10000),
-                                                 Address(0x10000) + sizeof(m_imageSize));
+    BinarySection *text = m_image->createSection(".text", loadBaseAddr, loadBaseAddr + m_imageSize);
     text->setCode(true);
     text->setData(true);
     text->setHostAddr(HostAddress(m_loadedImage));
-    text->setEntrySize(1);
 
     BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader),
                                                   Address(0x4000) + sizeof(ExeHeader) +
@@ -219,7 +189,51 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
     if (!m_relocTable.empty()) {
         reloc->setHostAddr(HostAddress(&m_relocTable[0]));
     }
+
     reloc->setEntrySize(sizeof(DWord));
+    return true;
+}
+
+
+bool ExeBinaryLoader::readRelocations(QBuffer &fp, QByteArray &data)
+{
+    /* We quietly ignore minAlloc and maxAlloc since for our
+     * purposes it doesn't really matter where in real memory
+     * the m_am would end up.  EXE m_ams can't really rely on
+     * their load location so setting the PSP segment to 0 is fine.
+     * Certainly m_ams that prod around in DOS or BIOS are going
+     * to have to load DS from a constant so it'll be pretty
+     * obvious.
+     */
+    m_numReloc         = Util::readWord(&m_header->numReloc, Endian::Little);
+    const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
+
+    m_numReloc = std::max(m_numReloc, 0);
+
+    if (!Util::inRange(offset, 0, data.size()) ||
+        !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, data.size())) {
+        LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
+        return false;
+    }
+
+    m_relocTable.resize(m_numReloc);
+    if (!fp.seek(offset)) {
+        LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", offset);
+        return false;
+    }
+
+    /* Read in seg:offset pairs and convert to Image ptrs */
+    ExeReloc relocEntry;
+    for (int i = 0; i < m_numReloc; i++) {
+        if (4 != fp.read(reinterpret_cast<char *>(&relocEntry), 4)) {
+            LOG_ERROR("Cannot load Exe file: Cannot read relocation table");
+            return false;
+        }
+
+        m_relocTable[i].offset  = Util::readWord(&relocEntry,                 Endian::Little);
+        m_relocTable[i].segment = Util::readWord(&relocEntry + sizeof(SWord), Endian::Little);
+    }
+
     return true;
 }
 
