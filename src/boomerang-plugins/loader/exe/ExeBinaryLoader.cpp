@@ -60,7 +60,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         return false;
     }
 
-    int cb = 0;
+    int cbImageSize = 0;
 
     // Check for the "MZ" exe header
     if (Util::testMagic((Byte *)m_header, { 'M', 'Z' })) {
@@ -81,10 +81,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         const SWord numPages      = Util::readWord(&m_header->numPages, Endian::Little);
         const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
         const SWord lastPageSize  = Util::readWord(&m_header->lastPageSize, Endian::Little);
-        cb                        = numPages * DOS_PAGE_SIZE - numParaHeader * DOS_PARA_SIZE;
+        cbImageSize               = numPages * DOS_PAGE_SIZE - numParaHeader * DOS_PARA_SIZE;
 
         if (lastPageSize > 0) {
-            cb -= DOS_PAGE_SIZE - lastPageSize;
+            cbImageSize -= DOS_PAGE_SIZE - lastPageSize;
         }
 
         /* We quietly ignore minAlloc and maxAlloc since for our
@@ -152,7 +152,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         /* COM file
          * In this case the load module size is just the file length
          */
-        cb = fp.size();
+        cbImageSize = fp.size();
 
         /* COM programs start off with an ORG 100H (to leave room for a Program Segment
          * Prefix (PSP)). This is also the implied start address so if we load the image
@@ -168,16 +168,16 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         }
     }
 
-    if (!Util::inRange(cb, 0, data.size())) {
+    if (!Util::inRange(cbImageSize, 0, data.size())) {
         LOG_ERROR("Cannot read Exe file: Invalid image size.");
         return false;
     }
 
     /* Allocate a block of memory for the image. */
-    m_imageSize   = cb;
+    m_imageSize   = cbImageSize;
     m_loadedImage = new uint8_t[m_imageSize];
 
-    if (cb != fp.read(reinterpret_cast<char *>(m_loadedImage), cb)) {
+    if (cbImageSize != fp.read(reinterpret_cast<char *>(m_loadedImage), cbImageSize)) {
         LOG_ERROR("Cannot read Exe file: Failed to read loaded image");
         return false;
     }
