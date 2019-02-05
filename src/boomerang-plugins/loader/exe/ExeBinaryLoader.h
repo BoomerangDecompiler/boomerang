@@ -18,26 +18,6 @@ class QFile;
 
 
 #pragma pack(push, 1)
-struct PSP
-{
-    SWord int20h;       ///< interrupt 20h
-    SWord eof;          ///< segment, end of allocation block
-    Byte res1;          ///< reserved
-    Byte dosDisp[5];    ///< far call to DOS function dispatcher
-    Byte int22h[4];     ///< vector for terminate routine
-    Byte int23h[4];     ///< vector for ctrl+break routine
-    Byte int24h[4];     ///< vector for error routine
-    Byte res2[22];      ///< reserved
-    SWord segEnv;       ///< segment address of environment block
-    Byte res3[34];      ///< reserved
-    Byte int21h[6];     ///< opcode for int21h and far return
-    Byte res4[6];       ///< reserved
-    Byte fcb1[16];      ///< default file control block 1
-    Byte fcb2[16];      ///< default file control block 2
-    Byte res5[4];       ///< reserved
-    Byte cmdTail[0x80]; ///< command tail and disk transfer area
-};
-
 /// EXE file header
 struct ExeHeader
 {
