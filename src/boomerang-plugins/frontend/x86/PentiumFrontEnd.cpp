@@ -174,7 +174,8 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
     gotMain = false;
     start   = m_binaryFile->getEntryPoint();
 
-    if (start.isZero() || (start == Address::INVALID)) {
+    /// Note that start can be Address::ZERO for DOS executables.
+    if (start == Address::INVALID) {
         return Address::INVALID;
     }
 

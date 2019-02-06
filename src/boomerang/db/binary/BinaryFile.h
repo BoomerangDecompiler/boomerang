@@ -75,7 +75,9 @@ public:
     /// \returns the primary instruction set used in the binary file.
     Machine getMachine() const;
 
-    /// \returns the address of the entry point
+    /// \returns the address of the entry point. If the address is not known (yet),
+    /// returns Address::INVALID (and not Address::ZERO because Address::ZERO is a
+    /// potentially valid start address)
     Address getEntryPoint() const;
 
     /// \returns the address of main()/WinMain(), if found, else Address::INVALID
@@ -90,9 +92,16 @@ public:
     /// \note not yet implemented.
     bool hasDebugInfo() const;
 
+    /// \returns the default instruction size of the instruction set in the binary,
+    /// or 0 if not known.
+    int getBitness() const;
+
+    void setBitness(int bitness);
+
 private:
     std::unique_ptr<BinaryImage> m_image;
     std::unique_ptr<BinarySymbolTable> m_symbols;
 
     IFileLoader *m_loader = nullptr;
+    int m_bitness         = 0;
 };

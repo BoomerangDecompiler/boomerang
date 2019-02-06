@@ -57,9 +57,9 @@ MachOBinaryLoader::~MachOBinaryLoader()
 }
 
 
-void MachOBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
+void MachOBinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
 {
-    Image   = image;
+    Image   = file->getImage();
     Symbols = symbols;
 }
 

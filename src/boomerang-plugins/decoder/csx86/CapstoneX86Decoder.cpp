@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "CapstoneX86Decoder.h"
 
+#include "boomerang/core/Project.h"
 #include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Binary.h"
@@ -131,6 +132,24 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 CapstoneX86Decoder::CapstoneX86Decoder(Project *project)
     : CapstoneDecoder(project, cs::CS_ARCH_X86, cs::CS_MODE_32, "ssl/x86.ssl")
 {
+}
+
+
+bool CapstoneX86Decoder::initialize(Project *project)
+{
+    if (!CapstoneDecoder::initialize(project)) {
+        return false;
+    }
+
+    const int bitness = project->getLoadedBinaryFile()->getBitness();
+    switch (bitness) {
+    case 16: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_16); break;
+    case 32: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_32); break;
+    case 64: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_64); break;
+    default: break;
+    }
+
+    return true;
 }
 
 

@@ -72,7 +72,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
+    void initialize(BinaryFile *filee, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::loadFromMemory
     bool loadFromMemory(QByteArray &data) override;

@@ -95,10 +95,10 @@ Win32BinaryLoader::~Win32BinaryLoader()
 }
 
 
-void Win32BinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
+void Win32BinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
 {
     unload();
-    m_binaryImage = image;
+    m_binaryImage = file->getImage();
     m_symbols     = symbols;
 }
 

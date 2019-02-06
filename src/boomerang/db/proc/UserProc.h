@@ -377,6 +377,8 @@ private:
 
     void killPremise(const SharedExp &e);
 
+    bool isNoReturnInternal(std::set<const Function *> &visited) const;
+
 private:
     /**
      * The status of this user procedure.

@@ -49,34 +49,8 @@ UserProc::~UserProc()
 
 bool UserProc::isNoReturn() const
 {
-    // undecoded procs are assumed to always return (and define everything)
-    if (!this->isDecoded()) {
-        return false;
-    }
-
-    BasicBlock *exitbb = m_cfg->getExitBB();
-
-    if (exitbb == nullptr) {
-        return true;
-    }
-
-    if (exitbb->getNumPredecessors() == 1) {
-        Statement *s = exitbb->getPredecessor(0)->getLastStmt();
-
-        if (!s || !s->isCall()) {
-            return false;
-        }
-
-        const CallStatement *call = static_cast<const CallStatement *>(s);
-
-        // FIXME: This only handles self recursion properly, not mutual tail recursion.
-        if (call->getDestProc() && call->getDestProc() != this &&
-            call->getDestProc()->isNoReturn()) {
-            return true;
-        }
-    }
-
-    return false;
+    std::set<const Function *> visited;
+    return isNoReturnInternal(visited);
 }
 
 
@@ -1568,4 +1542,48 @@ void UserProc::setPremise(const SharedExp &e)
 void UserProc::killPremise(const SharedExp &e)
 {
     m_recurPremises.erase(e);
+}
+
+
+bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
+{
+    // undecoded procs are assumed to always return (and define everything)
+    if (!this->isDecoded()) {
+        return false;
+    }
+
+    BasicBlock *exitbb = m_cfg->getExitBB();
+
+    if (exitbb == nullptr) {
+        return true;
+    }
+
+    if (exitbb->getNumPredecessors() == 1) {
+        Statement *s = exitbb->getPredecessor(0)->getLastStmt();
+
+        if (!s || !s->isCall()) {
+            return false;
+        }
+
+        const CallStatement *call = static_cast<const CallStatement *>(s);
+        const Function *callee    = call->getDestProc();
+
+        if (callee) {
+            visited.insert(this);
+
+            if (visited.find(callee) != visited.end()) {
+                // we have found a procedure involved in tail recursion (either self or mutual).
+                // Assume we have not found all the BBs yet that reach the return statement.
+                return false;
+            }
+            else if (callee->isLib()) {
+                return callee->isNoReturn();
+            }
+            else {
+                return static_cast<const UserProc *>(callee)->isNoReturnInternal(visited);
+            }
+        }
+    }
+
+    return false;
 }
