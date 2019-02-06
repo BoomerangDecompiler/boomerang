@@ -91,3 +91,15 @@ bool BinaryFile::hasDebugInfo() const
 {
     return false;
 }
+
+
+int BinaryFile::getBitness() const
+{
+    return m_bitness;
+}
+
+
+void BinaryFile::setBitness(int bitness)
+{
+    m_bitness = bitness;
+}

@@ -46,10 +46,12 @@ DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
 }
 
 
-void DOS4GWBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
+void DOS4GWBinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
 {
-    m_image   = image;
+    m_image   = file->getImage();
     m_symbols = symbols;
+
+    file->setBitness(16);
 }
 
 

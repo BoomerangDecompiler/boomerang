@@ -123,7 +123,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
+    void initialize(BinaryFile *file, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice &fl) const override;

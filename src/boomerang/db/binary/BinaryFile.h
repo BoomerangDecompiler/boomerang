@@ -92,9 +92,16 @@ public:
     /// \note not yet implemented.
     bool hasDebugInfo() const;
 
+    /// \returns the default instruction size of the instruction set in the binary,
+    /// or 0 if not known.
+    int getBitness() const;
+
+    void setBitness(int bitness);
+
 private:
     std::unique_ptr<BinaryImage> m_image;
     std::unique_ptr<BinarySymbolTable> m_symbols;
 
     IFileLoader *m_loader = nullptr;
+    int m_bitness         = 0;
 };

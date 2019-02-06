@@ -32,10 +32,13 @@ ExeBinaryLoader::ExeBinaryLoader(Project *project)
 }
 
 
-void ExeBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
+void ExeBinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
 {
-    m_image   = image;
+    m_image   = file->getImage();
     m_symbols = symbols;
+
+    // We can only load MZ executables, which are always 16 bit exetuables.
+    file->setBitness(16);
 }
 
 

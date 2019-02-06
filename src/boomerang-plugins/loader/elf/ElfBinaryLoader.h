@@ -39,7 +39,7 @@ public:
     virtual ~ElfBinaryLoader() override;
 
     /// \copydoc IFileLoader::initialize
-    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
+    void initialize(BinaryFile *file, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice &fl) const override;
@@ -155,6 +155,6 @@ private:
     uint32 *m_shInfo       = nullptr;          ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
-    BinaryImage *m_binaryImage   = nullptr;
+    BinaryFile *m_binaryFile     = nullptr;
     BinarySymbolTable *m_symbols = nullptr;
 };

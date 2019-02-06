@@ -33,10 +33,10 @@ public:
 public:
     /**
      * Initialize this loader.
-     * \param image   Binary image to load this file into.
+     * \param image   Binary file to load this executable file into.
      * \param symbols Symbol table to fill
      */
-    virtual void initialize(BinaryImage *image, BinarySymbolTable *symbols) = 0;
+    virtual void initialize(BinaryFile *file, BinarySymbolTable *symbols) = 0;
 
     /// Checks if the file can be loaded by this loader.
     /// If the file can be loaded, the function returns a score ( > 0)
@@ -47,7 +47,7 @@ public:
     /// Load the file with path \p path into memory.
     virtual bool loadFromFile(BinaryFile *file)
     {
-        initialize(file->getImage(), file->getSymbols());
+        initialize(file, file->getSymbols());
         return loadFromMemory(file->getImage()->getRawData());
     };
 

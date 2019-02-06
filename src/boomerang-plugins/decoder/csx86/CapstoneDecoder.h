@@ -44,7 +44,7 @@ public:
     const RTLInstDict *getDict() const override { return &m_dict; }
 
 protected:
-    bool initialize(Project *project) override;
+    virtual bool initialize(Project *project) override;
 
     bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
 

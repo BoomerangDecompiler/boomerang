@@ -39,6 +39,8 @@ public:
     virtual int getRegSizeByNum(RegNum regNum) const override;
 
 private:
+    bool initialize(Project *project) override;
+
     /**
      * Creates a new RTL for a single instruction.
      * \param pc the address of the instruction to instantiate.
