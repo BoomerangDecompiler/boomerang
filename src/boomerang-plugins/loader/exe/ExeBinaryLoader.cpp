@@ -44,6 +44,11 @@ void ExeBinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 {
+    if (data.length() < (int)sizeof(ExeHeader)) {
+        LOG_ERROR("Cannot read exe file!");
+        return false;
+    }
+
     const Address loadBaseAddr = Address::ZERO;
 
     if (m_header) {
@@ -55,92 +60,59 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
 
     QBuffer fp(&data);
     if (!fp.open(QBuffer::ReadOnly)) {
-        LOG_ERROR("Cannot read exe file");
+        LOG_ERROR("Cannot read Exe file");
         return false;
     }
 
-    /* Read in first 2 bytes to check EXE signature */
-    if (fp.read(reinterpret_cast<char *>(m_header), 2) != 2) {
-        LOG_ERROR("Cannot read exe file");
+    // Read rest of m_header
+    if (fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
+        LOG_ERROR("Cannot read Exe file");
         return false;
     }
 
-    int cbImageSize = 0;
+    // Calculate the load module size.
+    // This is:
+    //  - the number of pages in the file
+    //  - less the length of the m_header and reloc table
+    //  - less the number of bytes unused on last page
+    const SWord numPages      = Util::readWord(&m_header->numPages, Endian::Little);
+    const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
+    const SWord lastPageSize  = Util::readWord(&m_header->lastPageSize, Endian::Little);
+    const SWord headerSize    = numParaHeader * DOS_PARA_SIZE;
+    int cbImageSize           = numPages * DOS_PAGE_SIZE - headerSize;
 
-    // Check for the "MZ" exe header
-    if (Util::testMagic((Byte *)m_header, { 'M', 'Z' })) {
-        /* Read rest of m_header */
-        if (!fp.seek(0) ||
-            fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
-            LOG_ERROR("Cannot read Exe file");
-            return false;
-        }
-
-
-        /* Calculate the load module size.
-         * This is:
-         *  - the number of pages in the file
-         *  - less the length of the m_header and reloc table
-         *  - less the number of bytes unused on last page
-         */
-        const SWord numPages      = Util::readWord(&m_header->numPages, Endian::Little);
-        const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
-        const SWord lastPageSize  = Util::readWord(&m_header->lastPageSize, Endian::Little);
-        const SWord headerSize    = numParaHeader * DOS_PARA_SIZE;
-        cbImageSize               = numPages * DOS_PAGE_SIZE - headerSize;
-
-        if (lastPageSize > 0) {
-            // if lastPageSize is 0, this indicates that the last page is full; if lastPageSize
-            // is not 0, the last page is not full so we have to subtract the empty space
-            // past the image boundary.
-            cbImageSize -= DOS_PAGE_SIZE - lastPageSize;
-        }
-
-        readRelocations(fp, data);
-
-        /* Seek to start of image */
-        const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
-        if (((initialPtrOffset & 0xF000) != 0) ||
-            !Util::inRange(initialPtrOffset * DOS_PARA_SIZE, 0, data.size())) {
-            LOG_ERROR("Cannot read Exe file: Invalid offset for initial SP/IP values");
-            return false;
-        }
-
-        if (!fp.seek(initialPtrOffset * DOS_PARA_SIZE)) {
-            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1",
-                      initialPtrOffset * DOS_PARA_SIZE);
-            return false;
-        }
-
-        // Initial PC and SP. Note that we fake the seg:offset by putting
-        // the segment in the top half, and offset in the bottom half.
-        const DWord initCS = Util::readWord(&m_header->initCS, Endian::Little);
-        const DWord initIP = Util::readWord(&m_header->initIP, Endian::Little);
-        const DWord initSS = Util::readWord(&m_header->initSS, Endian::Little);
-        const DWord initSP = Util::readWord(&m_header->initSP, Endian::Little);
-
-        m_uInitPC = Address((initCS * DOS_PARA_SIZE) + initIP);
-        m_uInitSP = Address((initSS * DOS_PARA_SIZE) + initSP);
+    if (lastPageSize > 0) {
+        // if lastPageSize is 0, this indicates that the last page is full; if lastPageSize
+        // is not 0, the last page is not full so we have to subtract the empty space
+        // past the image boundary.
+        cbImageSize -= DOS_PAGE_SIZE - lastPageSize;
     }
-    else {
-        /* COM file
-         * In this case the load module size is just the file length
-         */
-        cbImageSize = fp.size();
 
-        /* COM programs start off with an ORG 100H (to leave room for a Program Segment
-         * Prefix (PSP)). This is also the implied start address so if we load the image
-         * at offset 100H addresses should all line up properly again.
-         */
-        m_uInitPC  = Address(0x0100);
-        m_uInitSP  = Address(0xFFFE);
-        m_numReloc = 0;
+    readRelocations(fp, data);
 
-        if (!fp.seek(0)) {
-            LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", 0);
-            return false;
-        }
+    // Seek to start of image
+    const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
+    if (((initialPtrOffset & 0xF000) != 0) ||
+        !Util::inRange(initialPtrOffset * DOS_PARA_SIZE, 0, data.size())) {
+        LOG_ERROR("Cannot read Exe file: Invalid offset for initial SP/IP values");
+        return false;
     }
+
+    if (!fp.seek(initialPtrOffset * DOS_PARA_SIZE)) {
+        LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1",
+                  initialPtrOffset * DOS_PARA_SIZE);
+        return false;
+    }
+
+    // Initial PC and SP. Note that we fake the seg:offset by putting
+    // the segment in the top half, and offset in the bottom half.
+    const DWord initCS = Util::readWord(&m_header->initCS, Endian::Little);
+    const DWord initIP = Util::readWord(&m_header->initIP, Endian::Little);
+    const DWord initSS = Util::readWord(&m_header->initSS, Endian::Little);
+    const DWord initSP = Util::readWord(&m_header->initSP, Endian::Little);
+
+    m_uInitPC = Address((initCS * DOS_PARA_SIZE) + initIP);
+    m_uInitSP = Address((initSS * DOS_PARA_SIZE) + initSP);
 
     if (!Util::inRange(cbImageSize, 0, data.size())) {
         LOG_ERROR("Cannot read Exe file: Invalid image size.");
@@ -242,7 +214,6 @@ bool ExeBinaryLoader::readRelocations(QBuffer &fp, QByteArray &data)
 }
 
 
-// Clean up and unload the binary image
 void ExeBinaryLoader::unload()
 {
     delete m_header;
