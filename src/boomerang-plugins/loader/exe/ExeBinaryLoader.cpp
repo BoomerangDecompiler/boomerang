@@ -159,9 +159,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
     /* Relocate segment constants */
     for (int i = 0; i < m_numReloc; i++) {
         const ExeReloc relocEntry = m_relocTable[i];
-        const SWord imageOffset = (relocEntry.segment << 4) + relocEntry.offset;
+        const SWord imageOffset   = (relocEntry.segment << 4) + relocEntry.offset;
         if (!Util::inRange(imageOffset, 0, m_imageSize)) {
-            LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i, relocEntry.offset);
+            LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i,
+                     relocEntry.offset);
             continue;
         }
 
@@ -233,7 +234,7 @@ bool ExeBinaryLoader::readRelocations(QBuffer &fp, QByteArray &data)
             return false;
         }
 
-        m_relocTable[i].offset  = Util::readWord(&relocEntry,                 Endian::Little);
+        m_relocTable[i].offset  = Util::readWord(&relocEntry, Endian::Little);
         m_relocTable[i].segment = Util::readWord(&relocEntry + sizeof(SWord), Endian::Little);
     }
 
@@ -286,7 +287,7 @@ Address ExeBinaryLoader::getEntryPoint()
 
 int ExeBinaryLoader::canLoad(QIODevice &fl) const
 {
-    Byte buf[4] = { 0 };
+    Byte buf[4]   = { 0 };
     const bool ok = fl.read(reinterpret_cast<char *>(buf), sizeof(buf)) == sizeof(buf);
 
     if (!ok) {

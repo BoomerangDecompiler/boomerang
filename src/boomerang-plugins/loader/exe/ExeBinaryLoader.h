@@ -41,8 +41,8 @@ struct ExeHeader
 
 struct ExeReloc
 {
-    SWord offset;         ///< 0x00
-    SWord segment;        ///< 0x02
+    SWord offset;  ///< 0x00
+    SWord segment; ///< 0x02
 };
 #pragma pack(pop)
 
@@ -100,8 +100,8 @@ private:
     int m_numReloc      = 0;                ///< Number of relocation entries
     std::vector<ExeReloc> m_relocTable;     ///< The relocation table
 
-    Address m_uInitPC = Address::INVALID;  ///< Initial program counter (relative to m_loadAddr)
-    Address m_uInitSP = Address::INVALID;  ///< Initial stack pointer
+    Address m_uInitPC = Address::INVALID; ///< Initial program counter (relative to m_loadAddr)
+    Address m_uInitSP = Address::INVALID; ///< Initial stack pointer
 
     BinaryImage *m_image         = nullptr;
     BinarySymbolTable *m_symbols = nullptr;
