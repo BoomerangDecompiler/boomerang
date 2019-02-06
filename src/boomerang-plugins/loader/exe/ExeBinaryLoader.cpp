@@ -186,7 +186,7 @@ bool ExeBinaryLoader::applyRelocations(QBuffer &fp, QByteArray &data, Address lo
         relocEntry.offset  = Util::readWord(&relocEntry, Endian::Little);
         relocEntry.segment = Util::readWord(&relocEntry + sizeof(SWord), Endian::Little);
 
-        const SWord imageOffset   = (relocEntry.segment << 4) + relocEntry.offset;
+        const SWord imageOffset = (relocEntry.segment << 4) + relocEntry.offset;
         if (!Util::inRange(imageOffset, 0, m_imageSize)) {
             LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i,
                      relocEntry.offset);
@@ -198,7 +198,7 @@ bool ExeBinaryLoader::applyRelocations(QBuffer &fp, QByteArray &data, Address lo
         Util::writeWord(p, loadBaseAddr.value() + relocValue, Endian::Little);
     }
 
-    Address relocStart = loadBaseAddr + m_imageSize + sizeof(ExeHeader);
+    Address relocStart   = loadBaseAddr + m_imageSize + sizeof(ExeHeader);
     BinarySection *reloc = m_image->createSection("$RELOC", relocStart,
                                                   relocStart + sizeof(ExeReloc) * numReloc);
     reloc->setEntrySize(sizeof(ExeReloc));

@@ -6,6 +6,7 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is a string instruction.
 - Fixed: Crash when decompiling x86 binaries that contain instructions accessing FS or GS segment registers.
+- Fixed: Crash when decompiling tail-recursive functions.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.

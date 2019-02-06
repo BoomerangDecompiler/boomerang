@@ -93,9 +93,9 @@ private:
     bool applyRelocations(QBuffer &fp, QByteArray &data, Address loadBaseAddr);
 
 private:
-    ExeHeader *m_header = nullptr;          ///< Pointer to header
-    Byte *m_loadedImage = nullptr;          ///< Pointer to image buffer
-    int m_imageSize     = 0;                ///< Size of image
+    ExeHeader *m_header = nullptr; ///< Pointer to header
+    Byte *m_loadedImage = nullptr; ///< Pointer to image buffer
+    int m_imageSize     = 0;       ///< Size of image
 
     std::vector<ExeReloc> m_relocations;
 
