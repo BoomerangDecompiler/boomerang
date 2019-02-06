@@ -88,8 +88,6 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         cbImageSize -= DOS_PAGE_SIZE - lastPageSize;
     }
 
-    readRelocations(fp, data);
-
     // Seek to start of image
     const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
     if (((initialPtrOffset & 0xF000) != 0) ||
@@ -128,9 +126,66 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         return false;
     }
 
+    // Use the following section layout:
+    // baseAddr..baseAddr+m_imageSize:                                .text
+    //
+
+    BinarySection *header = m_image->createSection("$HEADER", loadBaseAddr + m_imageSize,
+                                                   loadBaseAddr + m_imageSize + sizeof(ExeHeader));
+    header->setHostAddr(HostAddress(m_header));
+    header->setEntrySize(1);
+
+    // The text and data section
+    BinarySection *text = m_image->createSection(".text", loadBaseAddr, loadBaseAddr + m_imageSize);
+    text->setCode(true);
+    text->setData(true);
+    text->setHostAddr(HostAddress(m_loadedImage));
+
+    // create relocations and relocation section
+    applyRelocations(fp, data, loadBaseAddr);
+
+    fp.close();
+    return true;
+}
+
+
+bool ExeBinaryLoader::applyRelocations(QBuffer &fp, QByteArray &data, Address loadBaseAddr)
+{
+    /* We quietly ignore minAlloc and maxAlloc since for our
+     * purposes it doesn't really matter where in real memory
+     * the m_am would end up.  EXE m_ams can't really rely on
+     * their load location so setting the PSP segment to 0 is fine.
+     * Certainly m_ams that prod around in DOS or BIOS are going
+     * to have to load DS from a constant so it'll be pretty
+     * obvious.
+     */
+    const int numReloc = std::max(0, (int)Util::readWord(&m_header->numReloc, Endian::Little));
+    const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
+
+    if (!Util::inRange(offset, 0, data.size()) ||
+        !Util::inRange(offset + numReloc * (int)sizeof(DWord), 0, data.size())) {
+        LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
+        return false;
+    }
+
+    if (!fp.seek(offset)) {
+        LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", offset);
+        return false;
+    }
+
     /* Relocate segment constants */
-    for (int i = 0; i < m_numReloc; i++) {
-        const ExeReloc relocEntry = m_relocTable[i];
+    m_relocations.resize(numReloc);
+
+    for (int i = 0; i < numReloc; i++) {
+        ExeReloc relocEntry;
+        if (sizeof(ExeReloc) != fp.read(reinterpret_cast<char *>(&relocEntry), sizeof(ExeReloc))) {
+            LOG_ERROR("Cannot load Exe file: Cannot read relocation table");
+            return false;
+        }
+
+        relocEntry.offset  = Util::readWord(&relocEntry, Endian::Little);
+        relocEntry.segment = Util::readWord(&relocEntry + sizeof(SWord), Endian::Little);
+
         const SWord imageOffset   = (relocEntry.segment << 4) + relocEntry.offset;
         if (!Util::inRange(imageOffset, 0, m_imageSize)) {
             LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i,
@@ -143,71 +198,15 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
         Util::writeWord(p, loadBaseAddr.value() + relocValue, Endian::Little);
     }
 
-    fp.close();
+    Address relocStart = loadBaseAddr + m_imageSize + sizeof(ExeHeader);
+    BinarySection *reloc = m_image->createSection("$RELOC", relocStart,
+                                                  relocStart + sizeof(ExeReloc) * numReloc);
+    reloc->setEntrySize(sizeof(ExeReloc));
 
-    // TODO: prevent overlapping of those 3 sections
-    BinarySection *header = m_image->createSection("$HEADER", Address(0x4000),
-                                                   Address(0x4000) + sizeof(ExeHeader));
-    header->setHostAddr(HostAddress(m_header));
-    header->setEntrySize(1);
-
-    // The text and data section
-    BinarySection *text = m_image->createSection(".text", loadBaseAddr, loadBaseAddr + m_imageSize);
-    text->setCode(true);
-    text->setData(true);
-    text->setHostAddr(HostAddress(m_loadedImage));
-
-    BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader),
-                                                  Address(0x4000) + sizeof(ExeHeader) +
-                                                      sizeof(DWord) * m_numReloc);
     // as of C++11, std::vector is guaranteed to be contiguous (except for std::vector<bool>),
     // so we can read the relocated values directly from m_relocTable
-    if (!m_relocTable.empty()) {
-        reloc->setHostAddr(HostAddress(&m_relocTable[0]));
-    }
-
-    reloc->setEntrySize(sizeof(DWord));
-    return true;
-}
-
-
-bool ExeBinaryLoader::readRelocations(QBuffer &fp, QByteArray &data)
-{
-    /* We quietly ignore minAlloc and maxAlloc since for our
-     * purposes it doesn't really matter where in real memory
-     * the m_am would end up.  EXE m_ams can't really rely on
-     * their load location so setting the PSP segment to 0 is fine.
-     * Certainly m_ams that prod around in DOS or BIOS are going
-     * to have to load DS from a constant so it'll be pretty
-     * obvious.
-     */
-    m_numReloc         = Util::readWord(&m_header->numReloc, Endian::Little);
-    const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
-
-    m_numReloc = std::max(m_numReloc, 0);
-
-    if (!Util::inRange(offset, 0, data.size()) ||
-        !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, data.size())) {
-        LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
-        return false;
-    }
-
-    m_relocTable.resize(m_numReloc);
-    if (!fp.seek(offset)) {
-        LOG_ERROR("Cannot load Exe file: Cannot seek to offset %1", offset);
-        return false;
-    }
-
-    /* Read in seg:offset pairs and convert to Image ptrs */
-    ExeReloc relocEntry;
-    for (int i = 0; i < m_numReloc; i++) {
-        if (4 != fp.read(reinterpret_cast<char *>(&relocEntry), 4)) {
-            LOG_ERROR("Cannot load Exe file: Cannot read relocation table");
-            return false;
-        }
-
-        m_relocTable[i].offset  = Util::readWord(&relocEntry, Endian::Little);
-        m_relocTable[i].segment = Util::readWord(&relocEntry + sizeof(SWord), Endian::Little);
+    if (numReloc > 0) {
+        reloc->setHostAddr(HostAddress(&m_relocations[0]));
     }
 
     return true;

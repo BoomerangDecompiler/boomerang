@@ -90,15 +90,14 @@ public:
     Address getEntryPoint() override;
 
 private:
-    bool readRelocations(QBuffer &fp, QByteArray &data);
+    bool applyRelocations(QBuffer &fp, QByteArray &data, Address loadBaseAddr);
 
 private:
     ExeHeader *m_header = nullptr;          ///< Pointer to header
-    Address m_loadAddr  = Address::INVALID; ///< Address where the load module is loaded.
     Byte *m_loadedImage = nullptr;          ///< Pointer to image buffer
     int m_imageSize     = 0;                ///< Size of image
-    int m_numReloc      = 0;                ///< Number of relocation entries
-    std::vector<ExeReloc> m_relocTable;     ///< The relocation table
+
+    std::vector<ExeReloc> m_relocations;
 
     Address m_uInitPC = Address::INVALID; ///< Initial program counter (relative to m_loadAddr)
     Address m_uInitSP = Address::INVALID; ///< Initial stack pointer
