@@ -484,61 +484,63 @@ RETURN  addr
 
 # Jump instructions- uses COND table for correct boolean expression.
 # Always executes delay instr. on branch
+BA      reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BN      reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BNE     reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BE      reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BG      reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
+BLE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BGE     reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
+BL      reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
+BGU     reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
+BLEU    reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
+BCC     reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BCS     reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPOS    reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BNEG    reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BVC     reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BVS     reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
 
-JUMPS := { "BA",  "BN",   "BNE", "BE",  "BG",   "BLE",  "BGE", "BL",
-           "BGU", "BLEU", "BCC", "BCS", "BPOS", "BNEG", "BVC", "BVS" };
 
 # Predicted jumps - treat just the same as non predicted jumps
-PJUMPS := { "BPA",  "BPN",   "BPNE", "BPE",  "BPG",   "BPLE",  "BPGE", "BPL",
-            "BPGU", "BPLEU", "BPCC", "BPCS", "BPPOS", "BPNEG", "BPVC", "BPVS" };
+BPA     reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPN     reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPNE    reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPG     reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPLE    reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPGE    reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPL     reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPGU    reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPLEU   reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPCC    reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPCS    reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPPOS   reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPNEG   reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPVC    reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
+BPVS    reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
 
-COND := { "1",                      "0",
-          "~%ZF",                   "%ZF",
-          "~(%ZF | (%NF ^ %OF))",   "%ZF | (%NF ^ %OF)",
-          "~(%NF ^ %OF)",           "%NF ^ %OF",
-          "~(%CF | %ZF)",           "%CF | %ZF",
-          "~%CF",                   "%CF",
-          "~%NF",                   "%NF",
-          "~%OF",                   "%OF" };
+# unconditional branches
+BAA     reloc   *32* %pc := reloc       *32* %npc := reloc + 4          *1* %CTI := 1;
+BNA     reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8           *1* %CTI := 1;
 
-JUMPS[idx]  reloc
-    *32* %pc := %npc
-    *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
-    *1* %CTI := 1
-;
 
-PJUMPS[idx]  reloc
-    *32* %pc := %npc
-    *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
-    *1* %CTI := 1
-;
+# Conditional branches
+BNEA    reloc   *32* %pc := [ ~%ZF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%ZF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
+BEA     reloc   *32* %pc := [ %ZF                  ? %npc : %npc+4 ]      *32* %npc := [ %ZF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
+BGA     reloc   *32* %pc := [ ~(%ZF | (%NF ^ %OF)) ? %npc : %npc+4 ]      *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+8 ]  *1* %CTI := 1;
+BLEA    reloc   *32* %pc := [ %ZF | (%NF ^ %OF)    ? %npc : %npc+4 ]      *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+8 ]  *1* %CTI := 1;
+BGEA    reloc   *32* %pc := [ ~(%NF ^ %OF)         ? %npc : %npc+4 ]      *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+8 ]  *1* %CTI := 1;
+BLA     reloc   *32* %pc := [ %NF ^ %OF            ? %npc : %npc+4 ]      *32* %npc := [ %NF ^ %OF            ? reloc : %npc+8 ]  *1* %CTI := 1;
+BGUA    reloc   *32* %pc := [ ~(%CF | %ZF)         ? %npc : %npc+4 ]      *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+8 ]  *1* %CTI := 1;
+BLEUA   reloc   *32* %pc := [ %CF | %ZF            ? %npc : %npc+4 ]      *32* %npc := [ %CF | %ZF            ? reloc : %npc+8 ]  *1* %CTI := 1;
+BCCA    reloc   *32* %pc := [ ~%CF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%CF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
+BCSA    reloc   *32* %pc := [ %CF                  ? %npc : %npc+4 ]      *32* %npc := [ %CF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
+BPOSA   reloc   *32* %pc := [ ~%NF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%NF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
+BNEGA   reloc   *32* %pc := [ %NF                  ? %npc : %npc+4 ]      *32* %npc := [ %NF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
+BVCA    reloc   *32* %pc := [ ~%OF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%OF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
+BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]      *32* %npc := [ %OF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
 
-JUMPSA_C  := { "BNEA",  "BEA",  "BGA",   "BLEA", "BGEA",
-               "BLA",   "BGUA", "BLEUA", "BCCA", "BCSA", "BPOSA",
-               "BNEGA", "BVCA", "BVSA" };
-
-COND1_C := { "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))",
-             "%ZF | (%NF ^ %OF)", "~(%NF ^ %OF)", "%NF ^ %OF",
-             "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF", "~%NF", "%NF",
-             "~%OF", "%OF" };
-
-BAA reloc  # unconditional branches
-    *32* %pc := reloc
-    *32* %npc := reloc + 4
-    *1* %CTI := 1
-;
-
-BNA reloc
-    *32* %pc := %npc + 4
-    *32* %npc := %npc + 8
-    *1* %CTI := 1
-;
-
-JUMPSA_C[idx] reloc   # Conditional branches
-    *32* %pc := [(COND1_C[idx] = 0) ? %npc+4 : %npc ]
-    *32* %npc := [(COND1_C[idx] = 0) ? %npc+8 : reloc]
-    *1* %CTI := 1
-;
 
 # Call instruction- always executes delay instruction
 # PC relative transfer of control
