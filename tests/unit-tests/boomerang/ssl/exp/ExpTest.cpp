@@ -86,7 +86,7 @@ void ExpTest::testBinaries()
 void ExpTest::testUnaries()
 {
     QCOMPARE(Unary::get(opBitNot, Terminal::get(opZF))->toString(), QString("~%ZF"));
-    QCOMPARE(Unary::get(opLNot,   Terminal::get(opZF))->toString(), QString("L~%ZF"));
+    QCOMPARE(Unary::get(opLNot,   Terminal::get(opZF))->toString(), QString("!%ZF"));
     QCOMPARE(Unary::get(opNeg,    Terminal::get(opZF))->toString(), QString("-%ZF"));
 }
 
@@ -434,7 +434,7 @@ void ExpTest::testSimplifyAddr()
                                                       Location::memOf(Location::regOf(REG_SPARC_G2))),
                                            Const::get(0),
                                            Const::get(15)));
-    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@0:15)"));
+    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@[0:15])"));
 
     // Now test at top level
     e = Unary::get(opAddrOf, Location::memOf(Const::get(1000)));
