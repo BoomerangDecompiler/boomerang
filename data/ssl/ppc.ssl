@@ -495,22 +495,52 @@ FDIVSq          fd, fa, fb        *64* fd := fa /f fb;        # Yet result is in
 
 # conditional branch
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)
-CONDBR :=     { "%CR0@[3:3]",   "~%CR0@[2:2]",  "%CR0@[1:1]",   "~%CR0@[3:3]",
-                "%CR0@[2:2]",   "~%CR0@[3:3]",  "~%CR0@[1:1]",  "~%CR0@[2:2]",
-                "%CR0@[0:0]",   "~%CR0@[0:0]",  "%CR0@[0:0]",   "~%CR0@[0:0]"};
+#
+#CONDBR :=     { "%CR0@[3:3]",   "~%CR0@[2:2]",  "%CR0@[1:1]",   "~%CR0@[3:3]",
+#                "%CR0@[2:2]",   "~%CR0@[3:3]",  "~%CR0@[1:1]",  "~%CR0@[2:2]",
+#                "%CR0@[0:0]",   "~%CR0@[0:0]",  "%CR0@[0:0]",   "~%CR0@[0:0]"};
+#
+# Note: The semantics for the instructions below are still hard-coded so they are not defined explicitly.
 
-BRCONDS :=    { "blt",          "ble",          "beq",          "bge",
-                "bgt",          "bnl",          "bne",          "bng",
-                "bso",          "bns",          "bun",          "bnu" };
+# BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
+blt     BIcr, reloc     _;
+ble     BIcr, reloc     _;
+beq     BIcr, reloc     _;
+bge     BIcr, reloc     _;
+bgt     BIcr, reloc     _;
+bnl     BIcr, reloc     _;
+bne     BIcr, reloc     _;
+bng     BIcr, reloc     _;
+bso     BIcr, reloc     _;
+bns     BIcr, reloc     _;
+bun     BIcr, reloc     _;
+bnu     BIcr, reloc     _;
 
-BRCONDSCTR := { "bltctr",       "blectr",       "beqctr",       "bgectr",
-                "bgtctr",       "bnlctr",       "bnectr",       "bngctr",
-                "bsoctr",       "bnsctr",       "bunctr",       "bnuctr" };
+# BRCONDSCTR[IDX] BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
+bltctr  BIcr            _;
+blectr  BIcr            _;
+beqctr  BIcr            _;
+bgectr  BIcr            _;
+bgtctr  BIcr            _;
+bnlctr  BIcr            _;
+bnectr  BIcr            _;
+bngctr  BIcr            _;
+bsoctr  BIcr            _;
+bnsctr  BIcr            _;
+bunctr  BIcr            _;
+bnuctr  BIcr            _;
 
-BRCONDSLR := {  "bltlr",        "blelr",        "beqlr",        "bgelr",
-                "bgtlr",        "bnllr",        "bnelr",        "bnglr",
-                "bsolr",        "bnslr",        "bunlr",        "bnulr" };
+# BRCONDSLR[IDX]  BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];
+bltlr  BIcr            _;
+blelr  BIcr            _;
+beqlr  BIcr            _;
+bgelr  BIcr            _;
+bgtlr  BIcr            _;
+bnllr  BIcr            _;
+bnelr  BIcr            _;
+bnglr  BIcr            _;
+bsolr  BIcr            _;
+bnslr  BIcr            _;
+bunlr  BIcr            _;
+bnulr  BIcr            _;
 
-BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
-BRCONDSCTR[IDX] BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
-BRCONDSLR[IDX]  BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];

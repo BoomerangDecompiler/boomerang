@@ -132,7 +132,6 @@ enum OPER
 
     /// For frontend / parser use only
     opFlagCall,  ///< A flag call (Binary with string and params)
-    opExpTable,  ///< Binary with name of table and name of string as Const string subexpressions.
     opSuccessor, ///< Get the successor register of this parameter
 
     opMachFtr, ///< A Unary with Const(string) representing a machine specific feature

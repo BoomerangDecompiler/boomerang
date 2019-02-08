@@ -113,7 +113,6 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
 %type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
-%type <std::shared_ptr<std::deque<SharedExp>>> exprstr_expr exprstr_array
 %type <std::shared_ptr<std::list<QString>>> paramlist nonempty_paramlist
 %type <std::shared_ptr<std::list<SharedExp>>> arglist nonempty_arglist
 
@@ -227,24 +226,6 @@ exp_term:
   | TRUNC_FUNC LPAREN exp RPAREN { $$ = Unary::get(opFtrunc, $3); }
   | FABS_FUNC LPAREN exp RPAREN  { $$ = Unary::get(opFabs, $3); }
   | TRANSCEND LPAREN exp RPAREN  { $$ = Unary::get(drv.strToOper($1), $3); }
-  | NAME_LOOKUP LBRACKET IDENT RBRACKET {
-        /* example: *Use* of COND[idx] */
-        if (drv.indexrefmap.find($3) == drv.indexrefmap.end()) {
-            throw SSL2::parser::syntax_error(drv.location, "Index not declared for use.");
-        }
-        else if (drv.TableDict.find($1) == drv.TableDict.end()) {
-            throw SSL2::parser::syntax_error(drv.location, "Table not declared for use.");
-        }
-        else if (drv.TableDict[$1]->getType() != EXPRTABLE) {
-            throw SSL2::parser::syntax_error(drv.location, "Table is not an expression table.");
-        }
-        else if (std::static_pointer_cast<ExprTable>(drv.TableDict[$1])->expressions.size() !=
-                 drv.indexrefmap[$3]->getNumTokens()) {
-            throw SSL2::parser::syntax_error(drv.location, "Table size does not match index size.");
-        }
-
-        $$ = Binary::get(opExpTable, Const::get($1), Const::get($3));
-    }
   ;
 
 location:
@@ -529,7 +510,6 @@ table_assign:
 
 table_expr:
     strtable_expr   { $$.reset(new Table(*$1)); }
-  | exprstr_expr    { $$.reset(new ExprTable(*$1)); }
   ;
 
 strtable_expr:
@@ -552,11 +532,8 @@ str_list:
         if (drv.TableDict.find($1) == drv.TableDict.end()) {
             $$.reset(new std::deque<QString>({ $1 }));
         }
-        else if (drv.TableDict[$1]->getType() == NAMETABLE) {
-            $$.reset(new std::deque<QString>(drv.TableDict[$1]->getRecords()));
-        }
         else {
-            throw SSL2::parser::syntax_error(drv.location, "Table is not a NAMETABLE.");
+            $$.reset(new std::deque<QString>(drv.TableDict[$1]->getRecords()));
         }
     }
   ;
@@ -574,20 +551,6 @@ str_array:
 str:
     DQUOTE DQUOTE       { $$ = QString(); }
   | DQUOTE IDENT DQUOTE { $$ = std::move($2); }
-  ;
-
-exprstr_expr:
-    LBRACE exprstr_array RBRACE { $$ = std::move($2); }
-  ;
-
-exprstr_array:
-    exprstr_array COMMA DQUOTE exp DQUOTE {
-        $$ = std::move($1);
-        $$->push_back($4);
-    }
-  | DQUOTE exp DQUOTE {
-        $$.reset(new std::deque<SharedExp>({ $2 }));
-    }
   ;
 
 instr_def:
