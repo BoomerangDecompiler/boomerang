@@ -113,7 +113,6 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
 %type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
-%type <std::shared_ptr<std::deque<SharedExp>>> exprstr_expr exprstr_array
 %type <std::shared_ptr<std::list<QString>>> paramlist nonempty_paramlist
 %type <std::shared_ptr<std::list<SharedExp>>> arglist nonempty_arglist
 
@@ -511,7 +510,6 @@ table_assign:
 
 table_expr:
     strtable_expr   { $$.reset(new Table(*$1)); }
-  | exprstr_expr    { $$.reset(new ExprTable(*$1)); }
   ;
 
 strtable_expr:
@@ -534,11 +532,8 @@ str_list:
         if (drv.TableDict.find($1) == drv.TableDict.end()) {
             $$.reset(new std::deque<QString>({ $1 }));
         }
-        else if (drv.TableDict[$1]->getType() == NAMETABLE) {
-            $$.reset(new std::deque<QString>(drv.TableDict[$1]->getRecords()));
-        }
         else {
-            throw SSL2::parser::syntax_error(drv.location, "Table is not a NAMETABLE.");
+            $$.reset(new std::deque<QString>(drv.TableDict[$1]->getRecords()));
         }
     }
   ;
@@ -556,20 +551,6 @@ str_array:
 str:
     DQUOTE DQUOTE       { $$ = QString(); }
   | DQUOTE IDENT DQUOTE { $$ = std::move($2); }
-  ;
-
-exprstr_expr:
-    LBRACE exprstr_array RBRACE { $$ = std::move($2); }
-  ;
-
-exprstr_array:
-    exprstr_array COMMA DQUOTE exp DQUOTE {
-        $$ = std::move($1);
-        $$->push_back($4);
-    }
-  | DQUOTE exp DQUOTE {
-        $$.reset(new std::deque<SharedExp>({ $2 }));
-    }
   ;
 
 instr_def:

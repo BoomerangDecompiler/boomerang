@@ -10,27 +10,7 @@
 #include "Table.h"
 
 
-Table::Table(TABLE_TYPE t)
-    : TableType(t)
-{
-}
-
-
-Table::Table(const std::deque<QString> &recs, TABLE_TYPE t /* = NAMETABLE */)
-    : TableType(t)
-    , Records(recs)
-{
-}
-
-
-TABLE_TYPE Table::getType() const
-{
-    return TableType;
-}
-
-
-ExprTable::ExprTable(const std::deque<SharedExp> &exprs)
-    : Table(EXPRTABLE)
-    , expressions(exprs)
+Table::Table(const std::deque<QString> &recs)
+    : Records(recs)
 {
 }
