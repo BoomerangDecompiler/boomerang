@@ -331,8 +331,8 @@ MULSCC rs1, reg_or_imm, rd
 ;
 
 
-# Signed Multiplication - uses the Y register to store top 32 bits treats  Y
-# and rd as 64 bit register
+# Signed Multiplication - uses the Y register to store top 32 bits
+# treats Y and rd as 64 bit register
 SMULT   := { "SMUL", "SMULCC" };
 SMULT[idx]  rs1, reg_or_imm, rd
     *32* tmp := rs1
@@ -526,20 +526,20 @@ BNA     reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8           *1* %CTI
 
 
 # Conditional branches
-BNEA    reloc   *32* %pc := [ ~%ZF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%ZF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
-BEA     reloc   *32* %pc := [ %ZF                  ? %npc : %npc+4 ]      *32* %npc := [ %ZF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
-BGA     reloc   *32* %pc := [ ~(%ZF | (%NF ^ %OF)) ? %npc : %npc+4 ]      *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+8 ]  *1* %CTI := 1;
-BLEA    reloc   *32* %pc := [ %ZF | (%NF ^ %OF)    ? %npc : %npc+4 ]      *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+8 ]  *1* %CTI := 1;
-BGEA    reloc   *32* %pc := [ ~(%NF ^ %OF)         ? %npc : %npc+4 ]      *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+8 ]  *1* %CTI := 1;
-BLA     reloc   *32* %pc := [ %NF ^ %OF            ? %npc : %npc+4 ]      *32* %npc := [ %NF ^ %OF            ? reloc : %npc+8 ]  *1* %CTI := 1;
-BGUA    reloc   *32* %pc := [ ~(%CF | %ZF)         ? %npc : %npc+4 ]      *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+8 ]  *1* %CTI := 1;
-BLEUA   reloc   *32* %pc := [ %CF | %ZF            ? %npc : %npc+4 ]      *32* %npc := [ %CF | %ZF            ? reloc : %npc+8 ]  *1* %CTI := 1;
-BCCA    reloc   *32* %pc := [ ~%CF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%CF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
-BCSA    reloc   *32* %pc := [ %CF                  ? %npc : %npc+4 ]      *32* %npc := [ %CF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
-BPOSA   reloc   *32* %pc := [ ~%NF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%NF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
-BNEGA   reloc   *32* %pc := [ %NF                  ? %npc : %npc+4 ]      *32* %npc := [ %NF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
-BVCA    reloc   *32* %pc := [ ~%OF                 ? %npc : %npc+4 ]      *32* %npc := [ ~%OF                 ? reloc : %npc+8 ]  *1* %CTI := 1;
-BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]      *32* %npc := [ %OF                  ? reloc : %npc+8 ]  *1* %CTI := 1;
+BNEA    reloc   *32* %pc := [ ~%ZF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%ZF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
+BEA     reloc   *32* %pc := [ %ZF                  ? %npc : %npc+4 ]    *32* %npc := [ %ZF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
+BGA     reloc   *32* %pc := [ ~(%ZF | (%NF ^ %OF)) ? %npc : %npc+4 ]    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+8 ]      *1* %CTI := 1;
+BLEA    reloc   *32* %pc := [ %ZF | (%NF ^ %OF)    ? %npc : %npc+4 ]    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+8 ]      *1* %CTI := 1;
+BGEA    reloc   *32* %pc := [ ~(%NF ^ %OF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
+BLA     reloc   *32* %pc := [ %NF ^ %OF            ? %npc : %npc+4 ]    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+8 ]      *1* %CTI := 1;
+BGUA    reloc   *32* %pc := [ ~(%CF | %ZF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
+BLEUA   reloc   *32* %pc := [ %CF | %ZF            ? %npc : %npc+4 ]    *32* %npc := [ %CF | %ZF            ? reloc : %npc+8 ]      *1* %CTI := 1;
+BCCA    reloc   *32* %pc := [ ~%CF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%CF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
+BCSA    reloc   *32* %pc := [ %CF                  ? %npc : %npc+4 ]    *32* %npc := [ %CF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
+BPOSA   reloc   *32* %pc := [ ~%NF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%NF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
+BNEGA   reloc   *32* %pc := [ %NF                  ? %npc : %npc+4 ]    *32* %npc := [ %NF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
+BVCA    reloc   *32* %pc := [ ~%OF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%OF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
+BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]    *32* %npc := [ %OF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
 
 
 # Call instruction- always executes delay instruction
@@ -646,57 +646,55 @@ FCOMPQ[idx] fs1q, fs2q      *128* tmpD := fs1q -f fs2q
                             SETFFLAGS(fs1q, fs2q);
 
 
-#More generalised form based loosely on the 8086 architecture.  a
-#different "variable" for each of the following conditions: Zero(%FZF),
-#Greater than zero(%FG), Less than Zero(%FL).  The concept of orderedness
-#has been removed but can still be accessed. If a result %FZF=0 and %FGF=0
-#and %FLF=0 then it must be an unordered result.  Tables "borrowed" from
-#integer arithmatic section and modified for floating point instructions.
-# %FGF is 1 iff the fcc field of the FSR = 2
-# %FLF is 1 iff the fcc field of the FSR = 1
-# %FZF is 1 iff the fcc field of the FSR = 0
+# More generalised form based loosely on the 8086 architecture.
+# A different "variable" for each of the following conditions:
+# - Zero(%FZF),
+# - Greater than zero(%FG),
+# - Less than Zero(%FL).
+# The concept of orderedness has been removed but can still be accessed.
+# If a result %FZF=0 and %FGF=0 and %FLF=0 then it must be an unordered result.
+#  %FGF is 1 iff the fcc field of the FSR = 2
+#  %FLF is 1 iff the fcc field of the FSR = 1
+#  %FZF is 1 iff the fcc field of the FSR = 0
 # operators exist and have been setup correctly as at 14/12/1998
 
-COND2_C   := { "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
-            "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
-            "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
-            "~%FLF", "~(%FZF | %FGF | %FLF)", "(%FZF | %FGF | %FLF)" };
+FBA     reloc   *32*%pc := %npc     *32* %npc := [ 1                     ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBN     reloc   *32*%pc := %npc     *32* %npc := [ 0                     ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBNE    reloc   *32*%pc := %npc     *32* %npc := [ ~%FZF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBE     reloc   *32*%pc := %npc     *32* %npc := [ %FZF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBG     reloc   *32*%pc := %npc     *32* %npc := [ %FGF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBLE    reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUE    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FGF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUL    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBGE    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FZF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBL     reloc   *32*%pc := %npc     *32* %npc := [ %FLF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBLG    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUG    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBULE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FGF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUGE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FLF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBU     reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF | %FLF) ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBO     reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FGF | %FLF)  ? reloc : %npc+4 ]      *1* %CTI := 1;
 
-COND2     := { "1", "0", "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
-            "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
-            "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
-            "~%FLF", "~(%FZF | %FGF | %FLF)", "(%FZF | %FGF | %FLF)" };
 
-JUMPS2_C  := { "FBNE", "FBE", "FBG", "FBLE", "FBUE",
-            "FBUL", "FBGE", "FBL", "FBLG", "FBUG", "FBULE",
-            "FBUGE", "FBU", "FBO" };
-JUMPS2 := { "FBA", "FBN", "FBNE", "FBE", "FBG", "FBLE", "FBUE",
-            "FBUL", "FBGE", "FBL", "FBLG", "FBUG", "FBULE",
-            "FBUGE", "FBU", "FBO" };
+# Anullable FP branches
+FBAA    reloc   *32* %pc := reloc       *32* %npc := reloc + 4      *1* %CTI := 1;
+FBNA    reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8       *1* %CTI := 1;
 
-JUMPS2[idx]  reloc
-    *32* %pc := %npc
-    *32* %npc := [(COND2[idx] = 0) ? %npc+4 : reloc]
-    *1* %CTI := 1
-;
+FBNEA   reloc   *32* %pc := [ ~%FZF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FZF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBEA    reloc   *32* %pc := [ %FZF                  ? %npc : %npc+4 ]   *32* %npc := [ %FZF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBGA    reloc   *32* %pc := [ %FGF                  ? %npc : %npc+4 ]   *32* %npc := [ %FGF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLEA   reloc   *32* %pc := [ (%FZF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUEA   reloc   *32* %pc := [ ~(%FGF | %FLF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FGF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBULA   reloc   *32* %pc := [ ~(%FZF | %FGF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBGEA   reloc   *32* %pc := [ (%FGF | %FZF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FZF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLA    reloc   *32* %pc := [ %FLF                  ? %npc : %npc+4 ]   *32* %npc := [ %FLF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLGA   reloc   *32* %pc := [ (%FGF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUGA   reloc   *32* %pc := [  ~(%FZF | %FLF)       ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBULEA  reloc   *32* %pc := [ ~%FGF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FGF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUGEA  reloc   *32* %pc := [ ~%FLF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FLF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUA    reloc   *32* %pc := [ ~(%FZF | %FGF | %FLF) ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF | %FLF)  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBOA    reloc   *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FGF | %FLF)   ? reloc : %npc+8 ]    *1* %CTI := 1;
 
-FBAA    reloc
-    *32* %pc := reloc
-    *32* %npc := reloc + 4
-    *1* %CTI := 1
-;
-
-FBNA    reloc
-    *32* %pc := %npc + 4
-    *32* %npc := %npc + 8
-    *1* %CTI := 1
-;
-
-JUMPS2_C[idx] . A  reloc
-    *32* %pc := [(COND2_C[idx] = 0) ? %npc+4 : %npc ]
-    *32* %npc := [(COND2_C[idx] = 0) ? %npc+8 : reloc]
-    *1* %CTI := 1
-;
 
 # Loading and storing Floating point registers.
 LDFSR      eaddr       *32* %FSR := m[eaddr];
@@ -709,71 +707,3 @@ LDDF eaddr, fdd        *64* fdd := m[eaddr];
 STFSR      eaddr       *32* m[eaddr] := %FSR;
 STF   fds, eaddr       *32* m[eaddr] := fds;
 STDF  fdd, eaddr       *64* m[eaddr] := fdd;
-
-TRAPS := { "TA", "TN", "TNE", "TE", "TG", "TLE", "TGE", "TL",
-           "TGU", "TLEU", "TCC", "TCS", "TPOS", "TNEG", "TVC", "TVS" };
-COND3 := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))",
-           "%ZF | (%NF ^ %OF)", "~(%NF ^ %OF)", "%NF ^ %OF",
-           "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF",
-           "~%NF", "%NF", "~%OF", "%OF" };
-
-TRAPS[idx]  eaddr
-    TRAP((COND3[idx] = 1), eaddr+128)
-;
-
-#####################################################################
-# These are the semantics for certain prologues and epilogues that we
-# need to see for CSR analysis. We need the semantics for a logue to
-# be specified when it uses and/or defines locations that relevant for
-# CSR analysis involving the logue. For example, the callee epilogue
-# "restore_copies_ret_val" on SPARC defines %o0 which is the location
-# used for return values (as specified in sparc.csr).
-#####################################################################
-
-# This is the semantics for a ret/restore, with %o0 as the destination of
-# the implicit add of the restore.
-# Note: we don't want to re-use the more elaborate semantics of the
-# call/restore (below), because this can clutter the output (.c) file with
-# redundant moves, but more importantly it causes all the I registers to be
-# use before define, and that forces 6 parameters for the enclosing procedure
-RET_REG_VAL rs1, rs2         *32* %o0 := rs1 + rs2;
-RET_IMM_VAL rs1, imm         *32* %o0 := rs1 + imm;
-
-# A restore in the delay slot of a call.
-# The temp is needed because the sources are in the old register window, and
-# and the destination is in the new window. Consider foo(1, 2) implemented as:
-# mov 1, %i0
-# mov 2, %o0                # Note: old window %o0
-# call foo
-# restore %g0, %o0, %o1     # This has been seen in real code!
-# Note: the (possibly) redundant moves here will make it appear that the call
-# uses all 6 register parameters, unless the live-ins are considered as well
-DLY_RST_REG rs1, rs2, rd
-    *32* tmp1 := rs1 + rs2
-    *32* %o0 := %i0
-    *32* %o1 := %i1
-    *32* %o2 := %i2
-    *32* %o3 := %i3
-    *32* %o4 := %i4
-    *32* %o5 := %i5
-    *32* rd := tmp1
-;
-
-# Same as above but for immediates
-DLY_RST_IMM rs1, imm, rd
-    *32* tmp1 := rs1 + imm
-    *32* %o0 := %i0
-    *32* %o1 := %i1
-    *32* %o2 := %i2
-    *32* %o3 := %i3
-    *32* %o4 := %i4
-    *32* %o5 := %i5
-    *32* rd := tmp1
-;
-
-# Semantics for the standard return, i.e. ret/restore. The effect is to copy
-# i0 to o0, so o0 is the real return location (for integers) for all types of
-# procedures
-STD_RET
-    *32* %o0 := %i0
-;
