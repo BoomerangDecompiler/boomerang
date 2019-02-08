@@ -227,24 +227,6 @@ exp_term:
   | TRUNC_FUNC LPAREN exp RPAREN { $$ = Unary::get(opFtrunc, $3); }
   | FABS_FUNC LPAREN exp RPAREN  { $$ = Unary::get(opFabs, $3); }
   | TRANSCEND LPAREN exp RPAREN  { $$ = Unary::get(drv.strToOper($1), $3); }
-  | NAME_LOOKUP LBRACKET IDENT RBRACKET {
-        /* example: *Use* of COND[idx] */
-        if (drv.indexrefmap.find($3) == drv.indexrefmap.end()) {
-            throw SSL2::parser::syntax_error(drv.location, "Index not declared for use.");
-        }
-        else if (drv.TableDict.find($1) == drv.TableDict.end()) {
-            throw SSL2::parser::syntax_error(drv.location, "Table not declared for use.");
-        }
-        else if (drv.TableDict[$1]->getType() != EXPRTABLE) {
-            throw SSL2::parser::syntax_error(drv.location, "Table is not an expression table.");
-        }
-        else if (std::static_pointer_cast<ExprTable>(drv.TableDict[$1])->expressions.size() !=
-                 drv.indexrefmap[$3]->getNumTokens()) {
-            throw SSL2::parser::syntax_error(drv.location, "Table size does not match index size.");
-        }
-
-        $$ = Binary::get(opExpTable, Const::get($1), Const::get($3));
-    }
   ;
 
 location:

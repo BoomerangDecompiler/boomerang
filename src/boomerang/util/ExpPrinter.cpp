@@ -76,7 +76,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opRotR,           { "",           " rr ",     "",         ""      } },
     { opRotLC,          { "",           " rlc ",    "",         ""      } },
     { opRotRC,          { "",           " rrc ",    "",         ""      } },
-    { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
     { opAt,             { "",           "@[",       ":",        "]"     } },

@@ -136,9 +136,6 @@ SharedExp listExpToExp(std::list<SharedExp> *le)
 }
 
 
-static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
-
-
 /**
  * Expand tables in an RTL and save to dictionary
  * \note    This may generate many entries
@@ -157,30 +154,14 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
 
     // Expand the tables (if any) in this instruction
     for (int i = 0; i < m; i++, iname->increment()) {
-        QString name = iname->getInstruction();
+        const QString instructionName = iname->getInstruction();
 
         // Need to make substitutions to a copy of the RTL
         RTL rtl(*o_rtlist); // deep copy of contents
 
-        for (Statement *s : rtl) {
-            std::list<SharedExp> le;
-            // Expression tables
-            assert(s->getKind() == StmtType::Assign);
-
-            if (((Assign *)s)->searchAll(srchExpr, le)) {
-                for (SharedExp e : le) {
-                    QString tbl    = (e)->access<Const, 1>()->getStr();
-                    QString idx    = (e)->access<Const, 2>()->getStr();
-                    SharedExp repl = std::static_pointer_cast<ExprTable>(TableDict[tbl])
-                                         ->expressions[indexrefmap[idx]->getValue()];
-                    s->searchAndReplace(*e, repl);
-                }
-            }
-        }
-
-        if (dict->insert(name, *params, rtl) != 0) {
+        if (dict->insert(instructionName, *params, rtl) != 0) {
             LOG_ERROR("Pattern %1 conflics with an earlier declaration of %2.",
-                      iname->getInsPattern(), name);
+                      iname->getInsPattern(), instructionName);
             return false;
         }
     }
