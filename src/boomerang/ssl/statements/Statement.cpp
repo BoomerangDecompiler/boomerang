@@ -120,8 +120,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 }
 
 
-bool Statement::propagateTo(Settings *settings,
-                            std::map<SharedExp, int, lessExpStar> *destCounts,
+bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
                             LocationSet *usedByDomPhi, bool force)
 {
     bool change            = false;
@@ -246,8 +245,8 @@ bool Statement::propagateTo(Settings *settings,
 
 bool Statement::propagateFlagsTo(Settings *settings)
 {
-    bool change  = false;
-    int changes  = 0;
+    bool change = false;
+    int changes = 0;
 
     do {
         LocationSet exps;

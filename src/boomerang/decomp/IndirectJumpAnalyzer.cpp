@@ -315,8 +315,8 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // it refuses to propagate memofs because of the alias safety issue. Eventually, we should
         // use an alias-safe incremental propagation, but for now we'll assume no alias problems and
         // force the propagation
-        lastStmt->propagateTo(proc->getProg()->getProject()->getSettings(), nullptr,
-            nullptr, true /* force */);
+        lastStmt->propagateTo(proc->getProg()->getProject()->getSettings(), nullptr, nullptr,
+                              true /* force */);
 
         SharedExp jumpDest = lastStmt->getDest();
         if (!jumpDest) {

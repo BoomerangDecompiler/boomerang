@@ -757,7 +757,7 @@ void ProcDecompiler::saveDecodedICTs(UserProc *proc)
 }
 
 
-ProcStatus ProcDecompiler::reDecompileRecursive(UserProc* proc)
+ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
 
@@ -781,9 +781,9 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc* proc)
 
     assert(m_callStack.back() == proc);
 
-    m_callStack.pop_back();      // Remove self from call stack
+    m_callStack.pop_back();                          // Remove self from call stack
     ProcStatus status = tryDecompileRecursive(proc); // Restart decompiling this proc
-    m_callStack.push_back(proc); // Restore self to call stack
+    m_callStack.push_back(proc);                     // Restore self to call stack
 
     return status;
 }
@@ -794,7 +794,7 @@ bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
     bool change = false;
     for (BasicBlock *bb : *proc->getCFG()) {
         if (bb->isType(BBType::CompCall)) {
-            CallStatement *call = static_cast<CallStatement *>(bb->getLastStmt());
+            CallStatement *call  = static_cast<CallStatement *>(bb->getLastStmt());
             const bool converted = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();

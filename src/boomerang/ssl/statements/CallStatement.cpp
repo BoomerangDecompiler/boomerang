@@ -674,7 +674,7 @@ bool CallStatement::tryConvertToDirect()
     QString calleeName;
 
     if (e->isGlobal()) {
-        calleeName = e->access<Const, 1>()->getStr();
+        calleeName      = e->access<Const, 1>()->getStr();
         Address gloAddr = prog->getGlobalAddrByName(calleeName);
         callDest        = Address(prog->readNative4(gloAddr));
     }
@@ -692,13 +692,13 @@ bool CallStatement::tryConvertToDirect()
 
     const bool isNewProc = p == nullptr;
     if (isNewProc) {
-        p = prog->getOrCreateFunction(callDest);
+        p          = prog->getOrCreateFunction(callDest);
         calleeName = p->getName();
     }
 
     assert(p != nullptr);
     LOG_VERBOSE("Found call to %1 function '%2' by converting indirect call to direct call",
-                (isNewProc ? "new" :"existing"), p->getName());
+                (isNewProc ? "new" : "existing"), p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
