@@ -79,8 +79,6 @@ endif ()
 
 add_definitions(-DDEBUG=0)
 
-add_definitions(-DDEBUG_SPLIT_FOR_BRANCH=0)
-add_definitions(-DNEW=0)
 add_definitions(-DCHECK_REAL_PHI_LOOPS=0)
 add_definitions(-DPRINT_BBINDEX=0)    # Non zero to print <index>: before <statement number>
 add_definitions(-DPRINT_BACK_EDGES=0) # Non zero to generate green back edges
