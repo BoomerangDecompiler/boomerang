@@ -78,8 +78,6 @@ endif ()
 
 
 add_definitions(-DDEBUG=0)
-
 add_definitions(-DCHECK_REAL_PHI_LOOPS=0)
-add_definitions(-DDEBUG_SIMP=0)       # Set to 1 to print every change
 add_definitions(-DDEBUG_PARAMS=1)
 add_definitions(-DV9_ONLY=0)
