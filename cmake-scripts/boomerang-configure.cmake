@@ -79,7 +79,6 @@ endif ()
 
 add_definitions(-DDEBUG=0)
 
-add_definitions(-DSYMS_IN_BACK_END=0)
 add_definitions(-DDEBUG_SPLIT_FOR_BRANCH=0)
 add_definitions(-DNEW=0)
 add_definitions(-DCHECK_REAL_PHI_LOOPS=0)
