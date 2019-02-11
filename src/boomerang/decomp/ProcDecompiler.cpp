@@ -586,6 +586,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
         }
     }
 
+    tryConvertCallsToDirect(proc);
+
     proc->setStatus(ProcStatus::MiddleDone);
 
     project->alertDecompileDebugPoint(proc, "after middle");
@@ -784,4 +786,26 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc* proc)
     m_callStack.push_back(proc); // Restore self to call stack
 
     return status;
+}
+
+
+bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
+{
+    bool change = false;
+    for (BasicBlock *bb : *proc->getCFG()) {
+        if (bb->isType(BBType::CompCall)) {
+            CallStatement *call = static_cast<CallStatement *>(bb->getLastStmt());
+            const bool converted = call->tryConvertToDirect();
+            if (converted) {
+                Function *f = call->getDestProc();
+                if (f && !f->isLib()) {
+                    tryDecompileRecursive(static_cast<UserProc *>(f));
+                    call->setCalleeReturn(static_cast<UserProc *>(f)->getRetStmt());
+                    change = true;
+                }
+            }
+        }
+    }
+
+    return change;
 }

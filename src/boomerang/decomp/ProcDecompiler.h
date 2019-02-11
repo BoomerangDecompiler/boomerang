@@ -68,6 +68,12 @@ private:
      */
     ProcStatus reDecompileRecursive(UserProc *proc);
 
+    /**
+     * Tries to convert indirect call statements to direct call statements.
+     * If successfully converted, decompiles the callee recursively.
+     */
+    bool tryConvertCallsToDirect(UserProc *proc);
+
 private:
     ProcList m_callStack;
 
