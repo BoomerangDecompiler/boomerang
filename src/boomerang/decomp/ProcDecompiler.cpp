@@ -388,8 +388,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     // is a call. The first stage bypass yields m[r1{2}]{11}, which needs another round of
     // propagation to yield m[r1{-}-32]{11} (which can safely be processed at depth 1). Except that
     // this is now inherent in the visitor nature of the latest algorithm.
-    PassManager::get()->executePass(PassID::CallAndPhiFix,
-                                    proc); // Bypass children that are finalised (if any)
+    // Bypass children that are finalised (if any)
+    PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
     proc->debugPrintAll("After call and phi bypass (1)");
 
     if (proc->getStatus() != ProcStatus::InCycle) { // FIXME: need this test?
@@ -407,9 +407,6 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     PassManager::get()->executePass(PassID::CallAndPhiFix, proc); // Propagate and bypass sp
 
     proc->debugPrintAll("After preservation, bypass and propagation");
-
-    // Oh, no, we keep doing preservations till almost the end...
-    // setStatus(PROC_PRESERVEDS);        // Preservation done
 
     if (project->getSettings()->usePromotion) {
         // We want functions other than main to be promoted. Needed before mapExpressionsToLocals
@@ -447,8 +444,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     do {
         // Redo the renaming process to take into account the arguments
         change = PassManager::get()->executePass(PassID::PhiPlacement, proc);
-        change |= PassManager::get()->executePass(PassID::BlockVarRename,
-                                                  proc); // E.g. for new arguments
+        // E.g. for new arguments
+        change |= PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
@@ -532,8 +529,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
     // Now that memofs are renamed, the bypassing for memofs can work
-    PassManager::get()->executePass(PassID::CallAndPhiFix,
-                                    proc); // Bypass children that are finalised (if any)
+    // Bypass children that are finalised (if any)
+    PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
 
     if (project->getSettings()->nameParameters) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
