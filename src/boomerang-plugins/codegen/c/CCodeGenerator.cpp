@@ -2388,7 +2388,12 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
             assert(!lastRTL->empty());
 
             GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
-            addLineComment("goto " + gs->getDest()->toString());
+            if (gs && gs->getDest()) {
+                addLineComment("goto " + gs->getDest()->toString());
+            }
+            else {
+                addLineComment("goto <unknown_dest>");
+            }
         }
 
         return;

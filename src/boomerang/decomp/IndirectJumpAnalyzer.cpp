@@ -319,6 +319,9 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         lastStmt->propagateTo(convert, proc->getProg()->getProject()->getSettings(), nullptr,
                               nullptr, true /* force */);
         SharedExp jumpDest = lastStmt->getDest();
+        if (!jumpDest) {
+            return false;
+        }
 
         SwitchType switchType = SwitchType::Invalid;
 
