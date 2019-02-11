@@ -622,7 +622,7 @@ void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) 
 }
 
 
-bool CallStatement::convertToDirect()
+bool CallStatement::tryConvertToDirect()
 {
     if (!m_isComputed) {
         return false;

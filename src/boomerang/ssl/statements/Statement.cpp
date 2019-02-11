@@ -120,7 +120,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 }
 
 
-bool Statement::propagateTo(bool &convert, Settings *settings,
+bool Statement::propagateTo(Settings *settings,
                             std::map<SharedExp, int, lessExpStar> *destCounts,
                             LocationSet *usedByDomPhi, bool force)
 {
@@ -216,19 +216,19 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= doPropagateTo(e, def, convert, settings);
+                change |= doPropagateTo(e, def, settings);
             }
             else {
                 std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
-                    change |= doPropagateTo(e, def, convert, settings);
+                    change |= doPropagateTo(e, def, settings);
                 }
                 else if (ff->second <= 1) {
-                    change |= doPropagateTo(e, def, convert, settings);
+                    change |= doPropagateTo(e, def, settings);
                 }
                 else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
-                    change |= doPropagateTo(e, def, convert, settings);
+                    change |= doPropagateTo(e, def, settings);
                 }
             }
         }
@@ -247,7 +247,6 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
 bool Statement::propagateFlagsTo(Settings *settings)
 {
     bool change  = false;
-    bool convert = false;
     int changes  = 0;
 
     do {
@@ -269,7 +268,7 @@ bool Statement::propagateFlagsTo(Settings *settings)
             SharedExp base = e->access<Exp, 1>(); // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
-                change |= doPropagateTo(e, def, convert, settings);
+                change |= doPropagateTo(e, def, settings);
             }
         }
     } while (change && ++changes < 10);
@@ -285,8 +284,7 @@ void Statement::setTypeForExp(SharedExp, SharedType)
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool &convert,
-                              Settings *settings)
+bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings)
 {
     // Respect the -p N switch
     if (settings->numToPropagate >= 0) {
@@ -298,16 +296,13 @@ bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool &convert
     }
 
     LOG_VERBOSE2("Propagating %1 into %2", def, this);
-
-    bool change = replaceRef(e, def, convert);
-
+    const bool change = replaceRef(e, def);
     LOG_VERBOSE2("    result %1", this);
-
     return change;
 }
 
 
-bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
+bool Statement::replaceRef(SharedExp e, Assignment *def)
 {
     SharedExp rhs = def->getRight();
 
@@ -455,14 +450,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
 
     // do the replacement
     // bool convert = doReplaceRef(re, rhs);
-    bool ret = searchAndReplace(*e, rhs, true); // Last parameter true to change collectors
-    // assert(ret);
-
-    if (ret && isCall()) {
-        convert |= static_cast<CallStatement *>(this)->convertToDirect();
-    }
-
-    return ret;
+    return searchAndReplace(*e, rhs, true); // Last parameter true to change collectors
 }
 
 

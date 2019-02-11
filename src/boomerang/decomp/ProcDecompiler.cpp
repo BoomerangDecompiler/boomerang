@@ -554,6 +554,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
         return;
     }
 
+
     PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
 
     // Used to be later...

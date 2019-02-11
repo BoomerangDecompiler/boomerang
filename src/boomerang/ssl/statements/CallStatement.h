@@ -215,7 +215,7 @@ public:
     /// NOTE: at present, we igore the possibility that some other statement
     /// will modify the global. This is a serious limitation!!
     /// \returns true if converted
-    bool convertToDirect();
+    bool tryConvertToDirect();
 
     /// direct call
     void useColfromSSAForm(Statement *s) { m_useCol.fromSSAForm(m_proc, s); }

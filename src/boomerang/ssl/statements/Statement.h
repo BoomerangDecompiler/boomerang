@@ -234,12 +234,11 @@ public:
     /**
      * Propagate to this statement.
      * \param destCounts is a map that indicates how may times a statement's definition is used
-     * \param convert set true if an indirect call is changed to direct (otherwise, no change)
      * \param force set to true to propagate even memofs (for switch analysis)
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
      */
-    bool propagateTo(bool &convert, Settings *settings, ExpIntMap *destCounts = nullptr,
+    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr,
                      LocationSet *usedByDomPhi = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
@@ -286,13 +285,12 @@ public:
     /// Parameter convert is set true if an indirect call is converted to direct
     /// Return true if a change made
     /// Note: this procedure does not control what part of this statement is propagated to
-    bool doPropagateTo(const SharedExp &e, Assignment *def, bool &convert, Settings *settings);
+    bool doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings);
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement
-    /// \param convert set to true if an indirect call was converted to a direct call
     /// \returns true if change
-    bool replaceRef(SharedExp e, Assignment *def, bool &convert);
+    bool replaceRef(SharedExp e, Assignment *def);
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
