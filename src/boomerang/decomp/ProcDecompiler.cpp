@@ -567,6 +567,25 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
 
     PassManager::get()->executePass(PassID::DuplicateArgsRemoval, proc);
 
+    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis
+    // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
+    // additional parameters to printf/scanf), and removing unused statements is unsafe without full
+    // use information
+    if (proc->getStatus() < ProcStatus::FinalDone) {
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
+
+        // Now that locals are identified, redo the dataflow
+        PassManager::get()->executePass(PassID::PhiPlacement, proc);
+
+        PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation,
+                                        proc); // Surely need propagation too
+
+        if (project->getSettings()->verboseOutput) {
+            proc->debugPrintAll("after propagating locals");
+        }
+    }
+
     proc->setStatus(ProcStatus::MiddleDone);
 
     project->alertDecompileDebugPoint(proc, "after middle");
@@ -680,25 +699,6 @@ void ProcDecompiler::lateDecompile(UserProc *proc)
     project->alertDecompileDebugPoint(proc, "Before Final");
 
     LOG_VERBOSE("### Removing unused statements for %1 ###", proc->getName());
-
-    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis
-    // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
-    // additional parameters to printf/scanf), and removing unused statements is unsafe without full
-    // use information
-    if (proc->getStatus() < ProcStatus::FinalDone) {
-        PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
-
-        // Now that locals are identified, redo the dataflow
-        PassManager::get()->executePass(PassID::PhiPlacement, proc);
-
-        PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation,
-                                        proc); // Surely need propagation too
-
-        if (project->getSettings()->verboseOutput) {
-            proc->debugPrintAll("after propagating locals");
-        }
-    }
 
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, proc);
     PassManager::get()->executePass(PassID::FinalParameterSearch, proc);
