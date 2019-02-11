@@ -1,4 +1,4 @@
-int global_0x080486c4[9999999];
+union { int; __size32 *; } global_0x080486c4[9999999];
 int main(int argc, char *argv[]);
 __size32 b(int param1);
 __size32 c(unsigned int param1);
@@ -6,9 +6,9 @@ __size32 d(int param1);
 __size32 f(int param1);
 __size32 h(int param1);
 __size32 j(int param1);
-__size32 l(int param1);
+__size32 l(union { int; __size32 *; } param1);
 __size32 e(int param1);
-__size32 g(int param1);
+__size32 g(union { int; __size32 *; } param1);
 __size32 i(int param1);
 __size32 k(int param1);
 
@@ -124,7 +124,7 @@ __size32 j(int param1)
 }
 
 /** address: 0x080485d5 */
-__size32 l(int param1)
+__size32 l(union { int; __size32 *; } param1)
 {
     int eax; 		// r24
     __size32 ecx; 		// r25
@@ -150,7 +150,7 @@ __size32 e(int param1)
 }
 
 /** address: 0x080484f8 */
-__size32 g(int param1)
+__size32 g(union { int; __size32 *; } param1)
 {
     int eax; 		// r24
     __size32 ecx; 		// r25
