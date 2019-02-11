@@ -7678,25 +7678,6 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &re
                     else {
                         result.rtl = instantiate(pc, name, { DIS_RD, DIS_DISP, DIS_NZRA });
                     }
-
-                    //    | XLb_ (b0, b1) [name] =>
-
-#if BCCTR_LONG // Prefer to see bltctr instead of bcctr 12,0
-               // But also affects return instructions (bclr)
-
-                    /*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring
-                     * control registers) */
-
-                    result.rtl = instantiate(pc, name);
-
-                    result.rtl = new RTL(pc, stmts);
-
-                    result.rtl->append(new ReturnStatement);
-
-                    unused(b0);
-
-                    unused(b1);
-#endif
                 }
 
                 break;

@@ -354,9 +354,6 @@ SharedExp Exp::accumulate(std::list<SharedExp> &exprs)
 
 SharedExp Exp::simplify()
 {
-#if DEBUG_SIMP
-    SharedExp save = clone();
-#endif
     bool changed  = false; // True if simplified at this or lower level
     SharedExp res = shared_from_this();
 
@@ -366,16 +363,6 @@ SharedExp Exp::simplify()
         changed = es.isModified();
     } while (changed); // If modified at this (or a lower) level, redo
 
-    // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is
-    // the same as a + b + K No! This slows everything down, and it's slow enough as it is. Call
-    // only where needed:
-    //    res = res->simplifyArith();
-
-#if DEBUG_SIMP
-    if (!(*res == *save)) {
-        LOG_MSG("Simplified %1 to %2", save, res);
-    }
-#endif
     return res;
 }
 

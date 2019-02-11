@@ -78,17 +78,6 @@ endif ()
 
 
 add_definitions(-DDEBUG=0)
-
-add_definitions(-DBCCTR_LONG=0)
-add_definitions(-DYYMAXDEPTH=10000)
-add_definitions(-DSYMS_IN_BACK_END=0)
-add_definitions(-DDEBUG_SPLIT_FOR_BRANCH=0)
-add_definitions(-DNEW=0)
 add_definitions(-DCHECK_REAL_PHI_LOOPS=0)
-add_definitions(-DPRINT_BBINDEX=0)    # Non zero to print <index>: before <statement number>
-add_definitions(-DPRINT_BACK_EDGES=0) # Non zero to generate green back edges
-add_definitions(-DDEBUG_SIMP=0)       # Set to 1 to print every change
-add_definitions(-DDEBUG_PARAMS=1)     #
-add_definitions(-DRECURSION_WIP=0)
-add_definitions(-DPRINT_UNION=0)      # Set to 1 to debug unions to stderr
+add_definitions(-DDEBUG_PARAMS=1)
 add_definitions(-DV9_ONLY=0)

@@ -144,15 +144,8 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         }
     }
     else {
-        // For each caller
         for (CallStatement *cc : proc->getCallers()) {
-#if RECURSION_WIP
-            // TODO: prevent function from blocking it's own removals, needs more work
-            if (cc->getProc()->doesRecurseTo(this)) {
-                continue;
-            }
-#endif
-            // Union in the set of locations live at this call
+            // TODO: prevent function from blocking its own removals
             UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
         }

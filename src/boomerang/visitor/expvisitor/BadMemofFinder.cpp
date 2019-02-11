@@ -43,16 +43,6 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChi
         if (m_found) {
             return false; // Don't continue searching
         }
-
-#if NEW // FIXME: not ready for this until have incremental propagation
-        const char *sym = proc->lookupSym(e);
-
-        if (sym == nullptr) {
-            found    = true; // Found a memof that is not a symbol
-            override = true; // Don't look inside the refexp
-            return false;
-        }
-#endif
     }
 
     visitChildren = false; // Don't look inside the refexp

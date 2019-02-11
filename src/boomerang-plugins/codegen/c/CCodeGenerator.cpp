@@ -37,27 +37,6 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool isBareMemof(const Exp &exp, UserProc *)
-{
-#if SYMS_IN_BACK_END
-    if (!e.isMemOf()) {
-        return false;
-    }
-
-    // Check if it maps to a symbol
-    const char *symName = proc->lookupSym(e);
-
-    if (symName == nullptr) {
-        symName = proc->lookupSym(e->getSubExp1());
-    }
-
-    return symName == nullptr; // Only a bare memof if it is not a symbol
-#else
-    return exp.isMemOf();
-#endif
-}
-
-
 CCodeGenerator::CCodeGenerator(Project *project)
     : ICodeGenerator(project)
 {
@@ -156,13 +135,12 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
     SharedType asgnType = asgn->getType();
     SharedExp lhs       = asgn->getLeft();
     SharedExp rhs       = asgn->getRight();
-    UserProc *proc      = asgn->getProc();
 
     if (*lhs == *rhs) {
         return; // never want to see a = a;
     }
 
-    if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
+    if (lhs->isMemOf() && asgnType && !asgnType->isVoid()) {
         appendExp(ost, TypedExp(asgnType, lhs), OpPrec::Assign);
     }
     else if (lhs->isGlobal() && asgn->getType()->isArray()) {
@@ -992,20 +970,6 @@ void CCodeGenerator::addLineComment(const QString &cmt)
 void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, bool uns /* = false */)
 {
     const OPER op = exp.getOper();
-
-#if SYMS_IN_BACK_END // Should no longer be any unmapped symbols by the back end
-    // Check if it's mapped to a symbol
-    if (m_proc && !exp->isTypedExp()) { // Beware: lookupSym will match (cast)r24 to local0,
-                                        // stripping the cast!
-        const char *sym = m_proc->lookupSym(exp);
-
-        if (sym) {
-            str << sym;
-            return;
-        }
-    }
-#endif
-
     const Const &constExp(static_cast<const Const &>(exp));
     const Unary &unaryExp(static_cast<const Unary &>(exp));
     const Binary &binaryExp(static_cast<const Binary &>(exp));
@@ -1106,12 +1070,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             }
         }
 
-#if SYMS_IN_BACK_END
-        if (sub->isMemOf() && (m_proc->lookupSym(sub) == nullptr)) { // }
-#else
         if (sub->isMemOf()) {
-#endif
-
             // Avoid &*(type*)sub, just emit sub
             appendExp(str, *sub->getSubExp1(), OpPrec::Unary);
         }
@@ -1625,18 +1584,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opTypedExp: {
-#if SYMS_IN_BACK_END
-        Exp *b          = u.getSubExp1();         // Base expression
-        const char *sym = m_proc->lookupSym(exp); // Check for (cast)sym
-
-        if (sym) {
-            str << "(";
-            appendType(str, ((TypedExp *)u)->getType());
-            str << ")" << sym;
-            break;
-        }
-#endif
-
         if (unaryExp.getSubExp1()->isTypedExp() &&
             (*static_cast<const TypedExp &>(unaryExp).getType() ==
              *unaryExp.access<TypedExp, 1>()->getType())) {
@@ -1671,23 +1618,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             closeParen(str, curPrec, OpPrec::Unary);
         }
         else {
-            // Check for (tt)b where tt is a pointer; could be &local
             SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
-
-            if (std::dynamic_pointer_cast<const PointerType>(tt)) {
-#if SYMS_IN_BACK_END
-                const char *sym = m_proc->lookupSym(Location::memOf(b));
-
-                if (sym) {
-                    openParen(str, curPrec, OpPrec::PREC_UNARY);
-                    str << "&" << sym;
-                    closeParen(str, curPrec, OpPrec::PREC_UNARY);
-                    break;
-                }
-#endif
-            }
-
-            // Otherwise, fall back to (tt)b
             str << "(";
             appendType(str, tt);
             str << ")";
