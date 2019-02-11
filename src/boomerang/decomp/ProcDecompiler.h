@@ -62,6 +62,12 @@ private:
      */
     void saveDecodedICTs(UserProc *proc);
 
+    /**
+     * Re-decompile \p proc from scratch. The proc must be at the top of the call stack
+     * (i.e. the one that is currently decompiled).
+     */
+    ProcStatus reDecompileRecursive(UserProc *proc);
+
 private:
     ProcList m_callStack;
 

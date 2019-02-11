@@ -553,34 +553,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
         // what has been done to this function so far is invalid. So redo everything. Very
         // expensive!! Code pointed to by the switch table entries has merely had
         // FrontEnd::processFragment() called on it
-        LOG_MSG(
-            "Restarting decompilation of '%1' because indirect jumps or calls have been analyzed",
-            proc->getName());
-
-        project->alertDecompileDebugPoint(
-            proc,
-            "Before restarting decompilation because indirect jumps or calls have been analyzed");
-
-        // First copy any new indirect jumps or calls that were decoded this time around. Just copy
-        // them all, the map will prevent duplicates
-        saveDecodedICTs(proc);
-
-        // Now, decode from scratch
-        proc->removeRetStmt();
-        proc->getCFG()->clear();
-
-        if (!proc->getProg()->reDecode(proc)) {
-            return;
-        }
-
-        proc->getDataFlow()->setRenameLocalsParams(false); // Start again with memofs
-        proc->setStatus(ProcStatus::Visited);              // Back to only visited progress
-
-        assert(m_callStack.back() == proc);
-
-        m_callStack.pop_back();      // Remove self from call stack
-        tryDecompileRecursive(proc); // Restart decompiling this proc
-        m_callStack.push_back(proc); // Restore self to call stack
+        reDecompileRecursive(proc);
         return;
     }
 
@@ -781,4 +754,36 @@ void ProcDecompiler::saveDecodedICTs(UserProc *proc)
 
         proc->getProg()->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
     }
+}
+
+
+ProcStatus ProcDecompiler::reDecompileRecursive(UserProc* proc)
+{
+    Project *project = proc->getProg()->getProject();
+
+    LOG_MSG("Restarting decompilation of '%1'", proc->getName());
+    project->alertDecompileDebugPoint(proc, "Before restarting decompilation");
+
+    // First copy any new indirect jumps or calls that were decoded this time around. Just copy
+    // them all, the map will prevent duplicates
+    saveDecodedICTs(proc);
+
+    // Now, decode from scratch
+    proc->removeRetStmt();
+    proc->getCFG()->clear();
+
+    if (!proc->getProg()->reDecode(proc)) {
+        return ProcStatus::Undecoded;
+    }
+
+    proc->getDataFlow()->setRenameLocalsParams(false); // Start again with memofs
+    proc->setStatus(ProcStatus::Visited);              // Back to only visited progress
+
+    assert(m_callStack.back() == proc);
+
+    m_callStack.pop_back();      // Remove self from call stack
+    ProcStatus status = tryDecompileRecursive(proc); // Restart decompiling this proc
+    m_callStack.push_back(proc); // Restore self to call stack
+
+    return status;
 }
