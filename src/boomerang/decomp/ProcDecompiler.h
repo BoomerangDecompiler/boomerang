@@ -74,6 +74,22 @@ private:
      */
     bool tryConvertCallsToDirect(UserProc *proc);
 
+    /**
+     * Tries to find and decompile functions whose addresses are assigned to function pointers,
+     * e.g. for
+     *  *func* foo := 0x08049190
+     * we can decompile the address 0x08049190.
+     */
+    bool tryConvertFunctionPointerAssignments(UserProc *proc);
+
+    /**
+     * Tries to decompile the function starting at address \p addr.
+     * Does not decompile library functions.
+     * If the function does not exist, it is created.
+     * \returns the new function.
+     */
+    Function *tryDecompileRecursive(Address entryAddr, Prog *prog);
+
 private:
     ProcList m_callStack;
 

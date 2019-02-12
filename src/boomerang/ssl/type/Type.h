@@ -118,6 +118,7 @@ public:
     bool resolvesToCompound() const;
     bool resolvesToUnion() const;
     bool resolvesToSize() const;
+    bool resolvesToFuncPtr() const;
 
     /// \returns false if some info is missing, e.g. unknown sign, size or basic type
     virtual bool isComplete() { return true; }

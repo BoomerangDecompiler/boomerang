@@ -140,6 +140,12 @@ RESOLVES_TO_TYPE(Union)
 RESOLVES_TO_TYPE(Size)
 
 
+bool Type::resolvesToFuncPtr() const
+{
+    return resolvesToPointer() && as<PointerType>()->resolvesToFunc();
+}
+
+
 SharedType Type::resolveNamedType()
 {
     if (isNamed()) {

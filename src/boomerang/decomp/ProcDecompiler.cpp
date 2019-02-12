@@ -17,6 +17,8 @@
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
@@ -587,6 +589,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     }
 
     tryConvertCallsToDirect(proc);
+    tryConvertFunctionPointerAssignments(proc);
 
     proc->setStatus(ProcStatus::MiddleDone);
 
@@ -808,4 +811,57 @@ bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
     }
 
     return change;
+}
+
+
+bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
+{
+    bool changed = false;
+    StatementList statements;
+    proc->getStatements(statements);
+
+    for (Statement *stmt : statements) {
+        if (stmt->isAssign()) {
+            Assign *asgn = static_cast<Assign *>(stmt);
+            if (asgn->getType()->resolvesToFunc()) {
+                if (asgn->getRight()->isIntConst()) {
+                    std::shared_ptr<Const> rhs = asgn->getRight()->access<Const>();
+                    Function *f = tryDecompileRecursive(rhs->getAddr(), proc->getProg());
+                    asgn->setRight(Const::get(f));
+                    changed = true;
+                }
+                else if (asgn->getRight()->getOper() == opTern &&
+                         asgn->getRight()->getSubExp2()->isIntConst() &&
+                         asgn->getRight()->getSubExp3()->isIntConst()) {
+                    std::shared_ptr<Const> rhsLeft  = asgn->getRight()->access<Const, 2>();
+                    std::shared_ptr<Const> rhsRight = asgn->getRight()->access<Const, 3>();
+
+                    Function *fLeft  = tryDecompileRecursive(rhsLeft->getAddr(), proc->getProg());
+                    Function *fRight = tryDecompileRecursive(rhsRight->getAddr(), proc->getProg());
+
+                    asgn->setRight(Ternary::get(opTern, asgn->getRight()->getSubExp1(),
+                                                Const::get(fLeft), Const::get(fRight)));
+                }
+            }
+        }
+    }
+
+    return changed;
+}
+
+
+Function *ProcDecompiler::tryDecompileRecursive(Address entryAddr, Prog *prog)
+{
+    if (entryAddr == Address::INVALID) {
+        return nullptr;
+    }
+
+    Function *f = prog->getOrCreateFunction(entryAddr);
+
+    assert(f);
+    if (!f->isLib()) {
+        tryDecompileRecursive(static_cast<UserProc *>(f));
+    }
+
+    return f;
 }
