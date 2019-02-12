@@ -142,7 +142,7 @@ RESOLVES_TO_TYPE(Size)
 
 bool Type::resolvesToFuncPtr() const
 {
-    return resolvesToPointer() && as<PointerType>()->resolvesToFunc();
+    return resolvesToPointer() && as<PointerType>()->getPointsTo()->resolvesToFunc();
 }
 
 

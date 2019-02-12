@@ -226,7 +226,8 @@ void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
         if (callStmt->getDest()->isSubscript()) {
             std::shared_ptr<RefExp> ref = callStmt->getDest()->access<RefExp>();
             Statement *def              = ref->getDef();
-            def->setTypeForExp(ref->getSubExp1(), FuncType::get(callStmt->getSignature()));
+            def->setTypeForExp(ref->getSubExp1(),
+                               PointerType::get(FuncType::get(callStmt->getSignature())));
         }
     }
 

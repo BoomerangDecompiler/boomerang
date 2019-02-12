@@ -823,7 +823,7 @@ bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
     for (Statement *stmt : statements) {
         if (stmt->isAssign()) {
             Assign *asgn = static_cast<Assign *>(stmt);
-            if (asgn->getType()->resolvesToFunc()) {
+            if (asgn->getType()->resolvesToFuncPtr()) {
                 if (asgn->getRight()->isIntConst()) {
                     std::shared_ptr<Const> rhs = asgn->getRight()->access<Const>();
                     Function *f = tryDecompileRecursive(rhs->getAddr(), proc->getProg());

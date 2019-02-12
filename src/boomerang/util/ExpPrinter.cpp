@@ -201,6 +201,8 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
 
     case opStrConst: os << "\"" << exp->access<const Const>()->getStr() << "\""; return;
 
+    case opFuncConst: os << "func[" << exp->access<const Const>()->getFuncName() << "]"; return;
+
     case opRegOf:
         if (exp->getSubExp1()->isIntConst()) {
             os << "r" << exp->access<const Const, 1>()->getInt();
