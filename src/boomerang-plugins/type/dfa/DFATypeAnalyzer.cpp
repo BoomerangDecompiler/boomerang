@@ -215,11 +215,12 @@ void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
     // The destination is a pointer to a function with this function's signature (if any)
     if (callStmt->getDest()) {
         if (callStmt->getSignature()) {
-            m_changed |= callStmt->getDest()->descendType(FuncType::get(callStmt->getSignature()));
+            m_changed |= callStmt->getDest()->descendType(
+                PointerType::get(FuncType::get(callStmt->getSignature())));
         }
         else if (callStmt->getDestProc()) {
             m_changed |= callStmt->getDest()->descendType(
-                FuncType::get(callStmt->getDestProc()->getSignature()));
+                PointerType::get(FuncType::get(callStmt->getDestProc()->getSignature())));
         }
     }
 
