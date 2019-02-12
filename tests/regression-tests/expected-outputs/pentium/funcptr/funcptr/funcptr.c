@@ -4,7 +4,7 @@ void hello();
 /** address: 0x08048358 */
 int main(int argc, char *argv[])
 {
-    __size32 eax; 		// r24
+    void (void) *eax; 		// r24
     int ebp; 		// r29
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
