@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 cparam(int param1, __size32 param2);
 
+
 /** address: 0x000106a0 */
 int main(int argc, char *argv[])
 {

@@ -11,6 +11,7 @@ void proc_0x0001209c();
 void proc_0x000120b4();
 void proc_0x00012030();
 
+
 /** address: 0x000006e0 */
 int main(int argc, char *argv[])
 {

@@ -2,6 +2,7 @@ int main(int argc, char *argv[]);
 __size32 fib1();
 __size32 fib2(int param1);
 
+
 /** address: 0x10000504 */
 int main(int argc, char *argv[])
 {

@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 void rux_encrypt(void *param1);
 
+
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
 {

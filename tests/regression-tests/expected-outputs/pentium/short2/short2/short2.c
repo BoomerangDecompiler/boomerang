@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 test(int param1, int param2, int param3);
 
+
 /** address: 0x08048398 */
 int main(int argc, char *argv[])
 {

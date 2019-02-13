@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 void test(int param1);
 
+
 /** address: 0x1000048c */
 int main(int argc, char *argv[])
 {
