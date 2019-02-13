@@ -155,8 +155,7 @@ void DFATypeRecovery::replaceArrayIndices(Statement *s)
             }
             else if (s->isCall()) {
                 // array of function pointers
-                prog->markGlobalUsed(
-                    base, ArrayType::get(PointerType::get(FuncType::get())));
+                prog->markGlobalUsed(base, ArrayType::get(PointerType::get(FuncType::get())));
             }
         }
     }
