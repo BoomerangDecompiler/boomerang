@@ -950,7 +950,12 @@ void CCodeGenerator::addGlobal(const QString &name, SharedType type, const Share
         // Get the component type
         SharedType base = type->as<ArrayType>()->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << type->as<ArrayType>()->getLength() << "]";
+
+        s << " " << name << "[";
+        if (!type->as<ArrayType>()->isUnbounded()) {
+            s << type->as<ArrayType>()->getLength();
+        }
+        s << "]";
     }
     else if (type->isPointer() && type->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
