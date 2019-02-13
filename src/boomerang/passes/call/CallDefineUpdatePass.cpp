@@ -93,12 +93,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
     }
     else {
         // Ensure that everything in the UseCollector has an entry in oldDefines
-        LocationSet::iterator ll;
-
-        for (ll = callStmt->getUseCollector()->begin(); ll != callStmt->getUseCollector()->end();
-             ++ll) {
-            SharedExp loc = *ll;
-
+        for (SharedExp loc : *callStmt->getUseCollector()) {
             if (proc->filterReturns(loc)) {
                 continue; // Filtered out
             }
@@ -112,43 +107,34 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         }
     }
 
-    for (StatementList::reverse_iterator it = newDefines.rbegin(); it != newDefines.rend(); ++it) {
+    for (Statement *stmt : newDefines) {
         // Make sure the LHS is still in the return or collector
-        Assignment *as = static_cast<Assignment *>(*it);
+        Assignment *as = static_cast<Assignment *>(stmt);
         SharedExp lhs  = as->getLeft();
 
         if (callStmt->getCalleeReturn()) {
             if (!callStmt->getCalleeReturn()->definesLoc(lhs)) {
-                delete *it;
+                delete stmt;
                 continue; // Not in callee returns
             }
         }
         else if (!callStmt->getUseCollector()->exists(lhs)) {
-            delete *it;
+            delete stmt;
             continue; // Not in collector: delete it (don't copy it)
         }
 
         if (proc->filterReturns(lhs)) {
-            delete *it;
+            delete stmt;
             continue; // Filtered out: delete it
         }
 
-        // Insert as, in order, into the existing set of definitions
-        bool inserted = false;
-
-        for (auto nn = callStmt->getDefines().begin(); nn != callStmt->getDefines().end(); ++nn) {
-            // If the new assignment is less than the current one
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {
-                nn = callStmt->getDefines().insert(nn, as); // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            callStmt->getDefines().append(as); // In case larger than all existing elements
-        }
+        callStmt->getDefines().append(stmt);
     }
+
+    callStmt->getDefines().sort([sig] (Statement *left, Statement *right) {
+        return sig->returnCompare(*static_cast<Assignment *>(left),
+                                  *static_cast<Assignment *>(right));
+    });
 
     return true;
 }

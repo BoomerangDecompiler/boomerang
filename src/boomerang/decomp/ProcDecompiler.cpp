@@ -112,8 +112,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     if (proc->getStatus() < ProcStatus::Visited) {
-        proc->setStatus(
-            ProcStatus::Visited); // We have at least visited this proc "on the way down"
+        // We have at least visited this proc "on the way down"
+        proc->setStatus(ProcStatus::Visited);
     }
 
     m_callStack.push_back(proc);
