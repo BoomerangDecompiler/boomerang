@@ -452,8 +452,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
         if (proc->getRetStmt()) {
-            proc->getRetStmt()
-                ->updateModifieds(); // Everything including new arguments reaching the exit
+            // Everything including new arguments reaching the exit
+            proc->getRetStmt()->updateModifieds();
             proc->getRetStmt()->updateReturns();
         }
 
