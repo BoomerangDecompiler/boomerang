@@ -1363,38 +1363,25 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
     else {
         // For a call with no destination at this late stage, use everything live at the call except
         // for the stack pointer register. Needs to be sorted
-        UseCollector::iterator rr;  // Iterates through reaching definitions
-        StatementList::iterator nn; // Iterates through new results
-        auto sig = m_proc->getSignature();
-        int sp   = sig->getStackRegister();
+        auto sig        = m_proc->getSignature();
+        const RegNum sp = sig->getStackRegister();
 
-        for (rr = m_useCol.begin(); rr != m_useCol.end(); ++rr) {
-            SharedExp loc = *rr;
-
+        for (SharedExp loc : m_useCol) {
             if (m_proc->filterReturns(loc)) {
                 continue; // Ignore filtered locations
             }
-
-            if (loc->isRegN(sp)) {
+            else if (loc->isRegN(sp)) {
                 continue; // Ignore the stack pointer
             }
 
             ImplicitAssign *as = new ImplicitAssign(loc);
-            bool inserted      = false;
-
-            for (nn = result->begin(); nn != result->end(); ++nn) {
-                // If the new assignment is less than the current one,
-                if (sig->returnCompare(*as, static_cast<const Assignment &>(**nn))) {
-                    nn       = result->insert(nn, as); // then insert before this position
-                    inserted = true;
-                    break;
-                }
-            }
-
-            if (!inserted) {
-                result->insert(result->end(), as); // In case larger than all existing elements
-            }
+            result->append(as);
         }
+
+        result->sort([sig] (const Statement *left, const Statement *right) {
+            return sig->returnCompare(*static_cast<const Assignment *>(left),
+                                      *static_cast<const Assignment *>(right));
+        });
     }
 
     return result;
