@@ -131,7 +131,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         callStmt->getDefines().append(stmt);
     }
 
-    callStmt->getDefines().sort([sig] (Statement *left, Statement *right) {
+    callStmt->getDefines().sort([sig](Statement *left, Statement *right) {
         return sig->returnCompare(*static_cast<Assignment *>(left),
                                   *static_cast<Assignment *>(right));
     });

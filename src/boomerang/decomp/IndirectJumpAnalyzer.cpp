@@ -300,356 +300,10 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 #endif
 
     if (bb->isType(BBType::CompJump)) {
-        assert(!bb->getRTLs()->empty());
-        RTL *lastRTL = bb->getLastRTL();
-
-        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
-        }
-
-        assert(!lastRTL->empty());
-        CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRTL->back());
-
-        // Note: some programs might not have the case expression propagated to, because of the -l
-        // switch (?) We used to use ordinary propagation here to get the memory expression, but now
-        // it refuses to propagate memofs because of the alias safety issue. Eventually, we should
-        // use an alias-safe incremental propagation, but for now we'll assume no alias problems and
-        // force the propagation
-        lastStmt->propagateTo(proc->getProg()->getProject()->getSettings(), nullptr, nullptr,
-                              true /* force */);
-
-        SharedExp jumpDest = lastStmt->getDest();
-        if (!jumpDest) {
-            return false;
-        }
-
-        SwitchType switchType = SwitchType::Invalid;
-
-        for (auto &val : hlForms) {
-            if (jumpDest->equalNoSubscript(*val.pattern)) {
-                switchType = val.type;
-
-                if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-                    LOG_MSG("Indirect jump matches form %1", static_cast<char>(switchType));
-                }
-
-                break;
-            }
-        }
-
-        if (switchType != SwitchType::Invalid) {
-            SwitchInfo *swi = new SwitchInfo;
-            swi->switchType = switchType;
-            Address T       = Address::INVALID;
-            SharedExp expr;
-            findSwParams(switchType, jumpDest, expr, T);
-
-            if (expr) {
-                swi->tableAddr       = T;
-                swi->numTableEntries = findNumCases(bb);
-
-                // TMN: Added actual control of the array members, to possibly truncate what
-                // findNumCases() thinks is the number of cases, when finding the first array
-                // element not pointing to code.
-                if (switchType == SwitchType::A) {
-                    const Prog *prog = proc->getProg();
-
-                    for (int entryIdx = 0; entryIdx < swi->numTableEntries; ++entryIdx) {
-                        Address switchEntryAddr = Address(
-                            prog->readNative4(swi->tableAddr + entryIdx * 4));
-
-                        if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(),
-                                           prog->getLimitTextHigh())) {
-                            if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-                                LOG_WARN("Truncating type A indirect jump array to %1 entries "
-                                         "due to finding an array entry pointing outside valid "
-                                         "code; %2 isn't in %3..%4",
-                                         entryIdx, switchEntryAddr, prog->getLimitTextLow(),
-                                         prog->getLimitTextHigh());
-                            }
-
-                            // Found an array that isn't a pointer-to-code. Assume array has ended.
-                            swi->numTableEntries = entryIdx;
-                            break;
-                        }
-                    }
-                }
-
-                if (swi->numTableEntries <= 0) {
-                    LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
-                    return false;
-                }
-
-                // TODO: missing switchType = 'R' offset is not being set
-                swi->upperBound = swi->numTableEntries - 1;
-                swi->lowerBound = 0;
-
-                if ((expr->getOper() == opMinus) && expr->getSubExp2()->isIntConst()) {
-                    swi->lowerBound = expr->access<Const, 2>()->getInt();
-                    swi->upperBound += swi->lowerBound;
-                    expr = expr->getSubExp1();
-                }
-
-                swi->switchExp = expr;
-                lastStmt->setDest(nullptr);
-                lastStmt->setSwitchInfo(swi);
-                return swi->numTableEntries != 0;
-            }
-        }
-        else {
-            // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at
-            // the leaves of the phi tree. Basically, a location with a reference, e.g. m[r28{-} -
-            // 16]{87}
-            if (jumpDest->isSubscript()) {
-                SharedExp sub = jumpDest->getSubExp1();
-
-                if (sub->isLocation()) {
-                    // Yes, we have <location>{ref}. Follow the tree and store the constant values
-                    // that <location> could be assigned to in dests
-                    std::list<int> dests;
-                    findConstantValues(jumpDest->access<RefExp>()->getDef(), dests);
-                    // The switch info wants an array of native addresses
-                    size_t num_dests = dests.size();
-
-                    if (num_dests > 0) {
-                        int *destArray = new int[num_dests];
-                        std::copy(dests.begin(), dests.end(), destArray);
-                        SwitchInfo *swi = new SwitchInfo;
-                        swi->switchType = SwitchType::F; // The "Fortran" form
-                        swi->switchExp  = jumpDest;
-                        swi->tableAddr  = Address(
-                            HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the
-                                                              // tableAddr member as a pointer
-                        swi->lowerBound      = 1;             // Not used, except to compute
-                        swi->upperBound      = static_cast<int>(num_dests); // the number of options
-                        swi->numTableEntries = static_cast<int>(num_dests);
-                        lastStmt->setDest(nullptr);
-                        lastStmt->setSwitchInfo(swi);
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        return analyzeCompJump(bb, proc);
     }
     else if (bb->isType(BBType::CompCall)) {
-        assert(!bb->getRTLs()->empty());
-        RTL *lastRTL = bb->getLastRTL();
-
-        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("decodeIndirectJmp: COMPCALL:");
-            LOG_MSG("%1", lastRTL->toString());
-        }
-
-        assert(!lastRTL->empty());
-        CallStatement *lastStmt = static_cast<CallStatement *>(lastRTL->back());
-        SharedExp e             = lastStmt->getDest();
-        // Indirect calls may sometimes not be propagated to, because of limited propagation (-l
-        // switch). Propagate to e, but only keep the changes if the expression matches (don't want
-        // excessive propagation to a genuine function pointer expression, even though it's hard to
-        // imagine).
-        e = e->propagateAll();
-
-        // We also want to replace any m[K]{-} with the actual constant from the (presumably)
-        // read-only data section
-        ConstGlobalConverter cgc(proc->getProg());
-        e = e->acceptModifier(&cgc);
-        // Simplify the result, e.g. for m[m[(r24{16} + m[0x8048d74]{-}) + 12]{-}]{-} get
-        // m[m[(r24{16} + 20) + 12]{-}]{-}, want m[m[r24{16} + 32]{-}]{-}. Note also that making the
-        // ConstGlobalConverter a simplifying expression modifier won't work in this case, since the
-        // simplifying converter will only simplify the direct parent of the changed expression
-        // (which is r24{16} + 20).
-        e = e->simplify();
-
-        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1",
-                    e);
-        }
-
-        int n           = sizeof(hlVfc) / sizeof(SharedExp);
-        bool recognised = false;
-        int i;
-
-        for (i = 0; i < n; i++) {
-            if (e->equalNoSubscript(*hlVfc[i])) {
-                recognised = true;
-
-                if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-                    LOG_MSG("Indirect call matches form %1", i);
-                }
-
-                break;
-            }
-        }
-
-        if (!recognised) {
-            return false;
-        }
-
-        lastStmt->setDest(e); // Keep the changes to the indirect call expression
-        int K1, K2;
-        SharedExp vtExp, t1;
-        Prog *prog = proc->getProg();
-
-        switch (i) {
-        case 0: {
-            // This is basically an indirection on a global function pointer.  If it is initialised,
-            // we have a decodable entry point.  Note: it could also be a library function (e.g.
-            // Windows) Pattern 0: global<name>{0}[0]{0}
-            K2 = 0;
-
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e             = e->getSubExp1(); // e is global<name>{0}[0]
-            t1            = e->getSubExp2();
-            auto t1_const = t1->access<Const>();
-
-            if (e->isArrayIndex() && (t1->isIntConst()) && (t1_const->getInt() == 0)) {
-                e = e->getSubExp1(); // e is global<name>{0}
-            }
-
-            if (e->isSubscript()) {
-                e = e->getSubExp1(); // e is global<name>
-            }
-
-            std::shared_ptr<Const> con = e->access<Const, 1>(); // e is <name>
-            Global *global             = prog->getGlobalByName(con->getStr());
-            assert(global);
-            // Set the type to pointer to function, if not already
-            SharedType ty = global->getType();
-
-            if (!ty->isPointer() && !ty->as<PointerType>()->getPointsTo()->isFunc()) {
-                global->setType(PointerType::get(FuncType::get()));
-            }
-
-            Address addr = global->getAddress();
-            // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?)
-            // entry in the data map that overlaps with addr For now, let K1 = 0:
-            K1    = 0;
-            vtExp = Const::get(addr);
-            break;
-        }
-
-        case 1: {
-            // Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e             = e->getSubExp1(); // e = m[r27{25} + 8]{-} + 8
-            SharedExp rhs = e->getSubExp2(); // rhs = 8
-            K2            = rhs->access<Const>()->getInt();
-            SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
-
-            if (lhs->isSubscript()) {
-                lhs = lhs->getSubExp1(); // lhs = m[r27{25} + 8]
-            }
-
-            vtExp         = lhs;
-            lhs           = lhs->getSubExp1(); // lhs =   r27{25} + 8
-            SharedExp CK1 = lhs->getSubExp2();
-            K1            = CK1->access<Const>()->getInt();
-            break;
-        }
-
-        case 2: {
-            // Example pattern: e = m[m[r27{25}]{-} + 8]{-}
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e             = e->getSubExp1(); // e = m[r27{25}]{-} + 8
-            SharedExp rhs = e->getSubExp2(); // rhs = 8
-            K2            = rhs->access<Const>()->getInt();
-            SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
-
-            if (lhs->isSubscript()) {
-                lhs = lhs->getSubExp1(); // lhs = m[r27{25}]
-            }
-
-            vtExp = lhs;
-            K1    = 0;
-            break;
-        }
-
-        case 3: {
-            // Example pattern: e = m[m[r27{25} + 8]{-}]{-}
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e  = e->getSubExp1(); // e = m[r27{25} + 8]{-}
-            K2 = 0;
-
-            if (e->isSubscript()) {
-                e = e->getSubExp1(); // e = m[r27{25} + 8]
-            }
-
-            vtExp = e;
-            K1    = e->access<Const, 1, 2>()->getInt();
-            break;
-        }
-
-        case 4:
-
-            // Example pattern: e = m[m[r27{25}]{-}]{-}
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e  = e->getSubExp1(); // e = m[r27{25}]{-}
-            K2 = 0;
-
-            if (e->isSubscript()) {
-                e = e->getSubExp1(); // e = m[r27{25}]
-            }
-
-            vtExp = e;
-            K1    = 0;
-            // Exp* object = ((Unary*)e)->getSubExp1();
-            break;
-
-        default:
-            K1 = K2 = -1; // Suppress warnings
-            vtExp   = nullptr;
-        }
-
-        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6", i,
-                    lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
-        }
-
-        // The vt expression might not be a constant yet, because of expressions not fully
-        // propagated, or because of m[K] in the expression (fixed with the ConstGlobalConverter).
-        // If so, look it up in the defCollector in the call
-        vtExp = lastStmt->findDefFor(vtExp);
-
-        if (vtExp && proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("VT expression boils down to this: %1", vtExp);
-        }
-
-        // Danger. For now, only do if -ic given
-        const bool decodeThru = proc->getProg()->getProject()->getSettings()->decodeThruIndCall;
-
-        if (decodeThru && vtExp && vtExp->isIntConst()) {
-            Address addr  = vtExp->access<Const>()->getAddr();
-            Address pfunc = Address(prog->readNative4(addr));
-
-            if (prog->getFunctionByAddr(pfunc) == nullptr) {
-                // A new, undecoded procedure
-                if (!prog->getProject()->getSettings()->decodeChildren) {
-                    return false;
-                }
-
-                prog->decodeEntryPoint(pfunc);
-                // Since this was not decoded, this is a significant change, and we want to redecode
-                // the current function now that the callee has been decoded
-                return true;
-            }
-        }
+        return analyzeCompCall(bb, proc);
     }
 
     return false;
@@ -810,4 +464,363 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
         proc->getProg()->getProject()->alertDecompileDebugPoint(proc, tmp);
         prog->decodeFragment(proc, addr);
     }
+}
+
+
+bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
+{
+    assert(!bb->getRTLs()->empty());
+    RTL *lastRTL = bb->getLastRTL();
+
+    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+        LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
+    }
+
+    assert(!lastRTL->empty());
+    CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRTL->back());
+
+    // Note: some programs might not have the case expression propagated to, because of the -l
+    // switch (?) We used to use ordinary propagation here to get the memory expression, but now
+    // it refuses to propagate memofs because of the alias safety issue. Eventually, we should
+    // use an alias-safe incremental propagation, but for now we'll assume no alias problems and
+    // force the propagation
+    lastStmt->propagateTo(proc->getProg()->getProject()->getSettings(), nullptr, nullptr,
+                          true /* force */);
+
+    SharedExp jumpDest = lastStmt->getDest();
+    if (!jumpDest) {
+        return false;
+    }
+
+    SwitchType switchType = SwitchType::Invalid;
+
+    for (auto &val : hlForms) {
+        if (jumpDest->equalNoSubscript(*val.pattern)) {
+            switchType = val.type;
+
+            if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+                LOG_MSG("Indirect jump matches form %1", static_cast<char>(switchType));
+            }
+
+            break;
+        }
+    }
+
+    if (switchType != SwitchType::Invalid) {
+        SwitchInfo *swi = new SwitchInfo;
+        swi->switchType = switchType;
+        Address T       = Address::INVALID;
+        SharedExp expr;
+        findSwParams(switchType, jumpDest, expr, T);
+
+        if (expr) {
+            swi->tableAddr       = T;
+            swi->numTableEntries = findNumCases(bb);
+
+            // TMN: Added actual control of the array members, to possibly truncate what
+            // findNumCases() thinks is the number of cases, when finding the first array
+            // element not pointing to code.
+            if (switchType == SwitchType::A) {
+                const Prog *prog = proc->getProg();
+
+                for (int entryIdx = 0; entryIdx < swi->numTableEntries; ++entryIdx) {
+                    Address switchEntryAddr = Address(
+                        prog->readNative4(swi->tableAddr + entryIdx * 4));
+
+                    if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(),
+                                       prog->getLimitTextHigh())) {
+                        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+                            LOG_WARN("Truncating type A indirect jump array to %1 entries "
+                                     "due to finding an array entry pointing outside valid "
+                                     "code; %2 isn't in %3..%4",
+                                     entryIdx, switchEntryAddr, prog->getLimitTextLow(),
+                                     prog->getLimitTextHigh());
+                        }
+
+                        // Found an array that isn't a pointer-to-code. Assume array has ended.
+                        swi->numTableEntries = entryIdx;
+                        break;
+                    }
+                }
+            }
+
+            if (swi->numTableEntries <= 0) {
+                LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
+                return false;
+            }
+
+            // TODO: missing switchType = 'R' offset is not being set
+            swi->upperBound = swi->numTableEntries - 1;
+            swi->lowerBound = 0;
+
+            if ((expr->getOper() == opMinus) && expr->getSubExp2()->isIntConst()) {
+                swi->lowerBound = expr->access<Const, 2>()->getInt();
+                swi->upperBound += swi->lowerBound;
+                expr = expr->getSubExp1();
+            }
+
+            swi->switchExp = expr;
+            lastStmt->setDest(nullptr);
+            lastStmt->setSwitchInfo(swi);
+            return swi->numTableEntries != 0;
+        }
+    }
+    else {
+        // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at
+        // the leaves of the phi tree. Basically, a location with a reference, e.g. m[r28{-} -
+        // 16]{87}
+        if (jumpDest->isSubscript()) {
+            SharedExp sub = jumpDest->getSubExp1();
+
+            if (sub->isLocation()) {
+                // Yes, we have <location>{ref}. Follow the tree and store the constant values
+                // that <location> could be assigned to in dests
+                std::list<int> dests;
+                findConstantValues(jumpDest->access<RefExp>()->getDef(), dests);
+                // The switch info wants an array of native addresses
+                size_t num_dests = dests.size();
+
+                if (num_dests > 0) {
+                    int *destArray = new int[num_dests];
+                    std::copy(dests.begin(), dests.end(), destArray);
+                    SwitchInfo *swi = new SwitchInfo;
+                    swi->switchType = SwitchType::F; // The "Fortran" form
+                    swi->switchExp  = jumpDest;
+                    swi->tableAddr  = Address(
+                        HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the
+                    // tableAddr member as a pointer
+                    swi->lowerBound      = 1; // Not used, except to compute
+                    swi->upperBound      = static_cast<int>(num_dests); // the number of options
+                    swi->numTableEntries = static_cast<int>(num_dests);
+                    lastStmt->setDest(nullptr);
+                    lastStmt->setSwitchInfo(swi);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
+{
+    assert(!bb->getRTLs()->empty());
+    RTL *lastRTL = bb->getLastRTL();
+
+    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+        LOG_MSG("decodeIndirectJmp: COMPCALL:");
+        LOG_MSG("%1", lastRTL->toString());
+    }
+
+    assert(!lastRTL->empty());
+    CallStatement *lastStmt = static_cast<CallStatement *>(lastRTL->back());
+    SharedExp e             = lastStmt->getDest();
+    // Indirect calls may sometimes not be propagated to, because of limited propagation (-l
+    // switch). Propagate to e, but only keep the changes if the expression matches (don't want
+    // excessive propagation to a genuine function pointer expression, even though it's hard to
+    // imagine).
+    e = e->propagateAll();
+
+    // We also want to replace any m[K]{-} with the actual constant from the (presumably)
+    // read-only data section
+    ConstGlobalConverter cgc(proc->getProg());
+    e = e->acceptModifier(&cgc);
+    // Simplify the result, e.g. for m[m[(r24{16} + m[0x8048d74]{-}) + 12]{-}]{-} get
+    // m[m[(r24{16} + 20) + 12]{-}]{-}, want m[m[r24{16} + 32]{-}]{-}. Note also that making the
+    // ConstGlobalConverter a simplifying expression modifier won't work in this case, since the
+    // simplifying converter will only simplify the direct parent of the changed expression
+    // (which is r24{16} + 20).
+    e = e->simplify();
+
+    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+        LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1", e);
+    }
+
+    int n           = sizeof(hlVfc) / sizeof(SharedExp);
+    bool recognised = false;
+    int i;
+
+    for (i = 0; i < n; i++) {
+        if (e->equalNoSubscript(*hlVfc[i])) {
+            recognised = true;
+
+            if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+                LOG_MSG("Indirect call matches form %1", i);
+            }
+
+            break;
+        }
+    }
+
+    if (!recognised) {
+        return false;
+    }
+
+    lastStmt->setDest(e); // Keep the changes to the indirect call expression
+    int K1, K2;
+    SharedExp vtExp, t1;
+    Prog *prog = proc->getProg();
+
+    switch (i) {
+    case 0: {
+        // This is basically an indirection on a global function pointer.  If it is initialised,
+        // we have a decodable entry point.  Note: it could also be a library function (e.g.
+        // Windows) Pattern 0: global<name>{0}[0]{0}
+        K2 = 0;
+
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        e             = e->getSubExp1(); // e is global<name>{0}[0]
+        t1            = e->getSubExp2();
+        auto t1_const = t1->access<Const>();
+
+        if (e->isArrayIndex() && (t1->isIntConst()) && (t1_const->getInt() == 0)) {
+            e = e->getSubExp1(); // e is global<name>{0}
+        }
+
+        if (e->isSubscript()) {
+            e = e->getSubExp1(); // e is global<name>
+        }
+
+        std::shared_ptr<Const> con = e->access<Const, 1>(); // e is <name>
+        Global *global             = prog->getGlobalByName(con->getStr());
+        assert(global);
+        // Set the type to pointer to function, if not already
+        SharedType ty = global->getType();
+
+        if (!ty->isPointer() && !ty->as<PointerType>()->getPointsTo()->isFunc()) {
+            global->setType(PointerType::get(FuncType::get()));
+        }
+
+        Address addr = global->getAddress();
+        // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?)
+        // entry in the data map that overlaps with addr For now, let K1 = 0:
+        K1    = 0;
+        vtExp = Const::get(addr);
+        break;
+    }
+
+    case 1: {
+        // Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        e             = e->getSubExp1(); // e = m[r27{25} + 8]{-} + 8
+        SharedExp rhs = e->getSubExp2(); // rhs = 8
+        K2            = rhs->access<Const>()->getInt();
+        SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
+
+        if (lhs->isSubscript()) {
+            lhs = lhs->getSubExp1(); // lhs = m[r27{25} + 8]
+        }
+
+        vtExp         = lhs;
+        lhs           = lhs->getSubExp1(); // lhs =   r27{25} + 8
+        SharedExp CK1 = lhs->getSubExp2();
+        K1            = CK1->access<Const>()->getInt();
+        break;
+    }
+
+    case 2: {
+        // Example pattern: e = m[m[r27{25}]{-} + 8]{-}
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        e             = e->getSubExp1(); // e = m[r27{25}]{-} + 8
+        SharedExp rhs = e->getSubExp2(); // rhs = 8
+        K2            = rhs->access<Const>()->getInt();
+        SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
+
+        if (lhs->isSubscript()) {
+            lhs = lhs->getSubExp1(); // lhs = m[r27{25}]
+        }
+
+        vtExp = lhs;
+        K1    = 0;
+        break;
+    }
+
+    case 3: {
+        // Example pattern: e = m[m[r27{25} + 8]{-}]{-}
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        e  = e->getSubExp1(); // e = m[r27{25} + 8]{-}
+        K2 = 0;
+
+        if (e->isSubscript()) {
+            e = e->getSubExp1(); // e = m[r27{25} + 8]
+        }
+
+        vtExp = e;
+        K1    = e->access<Const, 1, 2>()->getInt();
+        break;
+    }
+
+    case 4:
+
+        // Example pattern: e = m[m[r27{25}]{-}]{-}
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        e  = e->getSubExp1(); // e = m[r27{25}]{-}
+        K2 = 0;
+
+        if (e->isSubscript()) {
+            e = e->getSubExp1(); // e = m[r27{25}]
+        }
+
+        vtExp = e;
+        K1    = 0;
+        // Exp* object = ((Unary*)e)->getSubExp1();
+        break;
+
+    default:
+        K1 = K2 = -1; // Suppress warnings
+        vtExp   = nullptr;
+    }
+
+    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+        LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6", i,
+                lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
+    }
+
+    // The vt expression might not be a constant yet, because of expressions not fully
+    // propagated, or because of m[K] in the expression (fixed with the ConstGlobalConverter).
+    // If so, look it up in the defCollector in the call
+    vtExp = lastStmt->findDefFor(vtExp);
+
+    if (vtExp && proc->getProg()->getProject()->getSettings()->debugSwitch) {
+        LOG_MSG("VT expression boils down to this: %1", vtExp);
+    }
+
+    // Danger. For now, only do if -ic given
+    const bool decodeThru = proc->getProg()->getProject()->getSettings()->decodeThruIndCall;
+
+    if (decodeThru && vtExp && vtExp->isIntConst()) {
+        Address addr  = vtExp->access<Const>()->getAddr();
+        Address pfunc = Address(prog->readNative4(addr));
+
+        if (prog->getFunctionByAddr(pfunc) == nullptr) {
+            // A new, undecoded procedure
+            if (!prog->getProject()->getSettings()->decodeChildren) {
+                return false;
+            }
+
+            prog->decodeEntryPoint(pfunc);
+            // Since this was not decoded, this is a significant change, and we want to redecode
+            // the current function now that the callee has been decoded
+            return true;
+        }
+    }
+
+    return false;
 }

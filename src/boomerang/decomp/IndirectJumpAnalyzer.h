@@ -50,4 +50,7 @@ public:
      * used as an index into the array of code pointers.
      */
     int findNumCases(const BasicBlock *bb);
+
+    bool analyzeCompJump(BasicBlock *bb, UserProc *proc);
+    bool analyzeCompCall(BasicBlock *bb, UserProc *proc);
 };

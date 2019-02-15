@@ -1378,7 +1378,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
             result->append(as);
         }
 
-        result->sort([sig] (const Statement *left, const Statement *right) {
+        result->sort([sig](const Statement *left, const Statement *right) {
             return sig->returnCompare(*static_cast<const Assignment *>(left),
                                       *static_cast<const Assignment *>(right));
         });
