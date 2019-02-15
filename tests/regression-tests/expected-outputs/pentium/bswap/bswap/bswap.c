@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 bswap(int param1);
 
+
 /** address: 0x0804837a */
 int main(int argc, char *argv[])
 {

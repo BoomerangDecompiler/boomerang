@@ -153,6 +153,10 @@ void DFATypeRecovery::replaceArrayIndices(Statement *s)
                 prog->markGlobalUsed(
                     base, ArrayType::get(static_cast<const ImplicitAssign *>(s)->getType()));
             }
+            else if (s->isCall()) {
+                // array of function pointers
+                prog->markGlobalUsed(base, ArrayType::get(PointerType::get(FuncType::get())));
+            }
         }
     }
 }
@@ -313,7 +317,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         findConstantsInStmt(s, constList);
 
         for (const std::shared_ptr<Const> &con : constList) {
-            if (!con || con->isStrConst()) {
+            if (!con || con->isStrConst() || con->isFuncPtrConst()) {
                 continue;
             }
 

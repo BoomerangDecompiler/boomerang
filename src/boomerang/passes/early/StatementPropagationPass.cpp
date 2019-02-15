@@ -57,17 +57,15 @@ bool StatementPropagationPass::execute(UserProc *proc)
     }
 
     // Finally the actual propagation
-    bool convert = false;
-
     for (Statement *s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateTo(convert, settings, &destCounts, &usedByDomPhi);
+            change |= s->propagateTo(settings, &destCounts, &usedByDomPhi);
         }
     }
 
     propagateToCollector(&proc->getUseCollector());
 
-    return change || convert;
+    return change;
 }
 
 

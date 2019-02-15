@@ -49,24 +49,6 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
     const bool generate_all = cluster == nullptr || cluster == prog->getRootModule();
     bool all_procedures     = (proc == nullptr);
 
-    if (generate_all) {
-        if (proc == nullptr) {
-            bool global = false;
-
-            for (auto &elem : prog->getGlobals()) {
-                // Check for an initial value
-                SharedExp e = elem->getInitialValue();
-                // if (e) {
-                addGlobal(elem->getName(), elem->getType(), e);
-                global = true;
-            }
-
-            if (global) {
-                print(prog->getRootModule());
-            }
-        }
-    }
-
     // First declare prototypes
     for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
@@ -75,11 +57,27 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
             }
 
             UserProc *_proc = static_cast<UserProc *>(func);
-            addPrototype(_proc); // May be the wrong signature if up has ellipsis
+            addPrototype(_proc); // May be the wrong signature if _proc has ellipsis
         }
+        appendLine("");
     }
 
     if (generate_all) {
+        if (proc == nullptr) {
+            const bool global = !prog->getGlobals().empty();
+
+            for (auto &elem : prog->getGlobals()) {
+                // Check for an initial value
+                SharedExp e = elem->getInitialValue();
+                // if (e) {
+                addGlobal(elem->getName(), elem->getType(), e);
+            }
+
+            if (global) {
+                print(prog->getRootModule());
+            }
+        }
+
         appendLine(""); // Separate prototype(s) from first proc
         print(prog->getRootModule());
     }
@@ -928,7 +926,12 @@ void CCodeGenerator::addGlobal(const QString &name, SharedType type, const Share
         // Get the component type
         SharedType base = type->as<ArrayType>()->getBaseType();
         appendType(s, base);
-        s << " " << name << "[" << type->as<ArrayType>()->getLength() << "]";
+
+        s << " " << name << "[";
+        if (!type->as<ArrayType>()->isUnbounded()) {
+            s << type->as<ArrayType>()->getLength();
+        }
+        s << "]";
     }
     else if (type->isPointer() && type->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
@@ -2319,7 +2322,12 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
             assert(!lastRTL->empty());
 
             GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
-            addLineComment("goto " + gs->getDest()->toString());
+            if (gs && gs->getDest()) {
+                addLineComment("goto " + gs->getDest()->toString());
+            }
+            else {
+                addLineComment("goto <unknown_dest>");
+            }
         }
 
         return;

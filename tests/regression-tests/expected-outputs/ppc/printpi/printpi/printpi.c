@@ -1,5 +1,6 @@
 int main(int argc, union { double; char *[] *; } argv);
 
+
 /** address: 0x10000418 */
 int main(int argc, union { double; char *[] *; } argv)
 {

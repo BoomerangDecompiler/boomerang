@@ -123,10 +123,10 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         PhiAssign *phi = static_cast<PhiAssign *>(s);
 
         if (phi->getNumDefs() == 0) {
-            continue; // Can happen e.g. for m[...] := phi {} when this proc is
+            // Can happen e.g. for m[...] := phi {} when this proc is involved in a recursion group
+            continue;
         }
 
-        // involved in a recursion group
         auto lhs     = phi->getLeft();
         bool allSame = true;
         // Let first be a reference built from the first parameter

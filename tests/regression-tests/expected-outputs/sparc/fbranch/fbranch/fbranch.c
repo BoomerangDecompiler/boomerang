@@ -1,5 +1,6 @@
-union { int; float; } global_0x00010938;
 int main(int argc, char *argv[]);
+
+union { int; float; } global_0x00010938;
 
 /** address: 0x000106d0 */
 int main(int argc, char *argv[])

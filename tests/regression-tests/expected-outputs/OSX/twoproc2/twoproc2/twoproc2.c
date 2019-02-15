@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 proc1(__size32 param1, __size32 param2);
 
+
 /** address: 0x00001d3c */
 int main(int argc, char *argv[])
 {

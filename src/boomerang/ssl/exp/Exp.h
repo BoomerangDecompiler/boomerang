@@ -163,6 +163,8 @@ public:
     bool isStrConst() const { return m_oper == opStrConst; }
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
+    /// True if is function pointer const
+    bool isFuncPtrConst() const { return m_oper == opFuncConst; }
 
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }

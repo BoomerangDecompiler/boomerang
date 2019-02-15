@@ -622,7 +622,7 @@ void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) 
 }
 
 
-bool CallStatement::convertToDirect()
+bool CallStatement::tryConvertToDirect()
 {
     if (!m_isComputed) {
         return false;
@@ -650,10 +650,11 @@ bool CallStatement::convertToDirect()
         e = e->access<RefExp, 1>();
     }
 
+    Address callDest = Address::INVALID;
+
     if (e->isIntConst()) {
-        // ADDRESS u = (ADDRESS)((Const*)e)->getInt();
         // Just convert it to a direct call!
-        // FIXME: to be completed
+        callDest = e->access<Const>()->getAddr();
     }
     else if (e->isMemOf()) {
         // It might be a global that has not been processed yet
@@ -669,37 +670,41 @@ bool CallStatement::convertToDirect()
         }
     }
 
-    if (!e->isGlobal()) {
-        return false;
-    }
+    Prog *prog = m_proc->getProg();
+    QString calleeName;
 
-    QString name    = e->access<Const, 1>()->getStr();
-    Prog *prog      = m_proc->getProg();
-    Address gloAddr = prog->getGlobalAddrByName(name);
-    Address dest    = Address(prog->readNative4(gloAddr));
+    if (e->isGlobal()) {
+        calleeName      = e->access<Const, 1>()->getStr();
+        Address gloAddr = prog->getGlobalAddrByName(calleeName);
+        callDest        = Address(prog->readNative4(gloAddr));
+    }
 
     // Note: If gloAddr is in BSS, dest will be 0 (since we do not track
     // assignments to global variables yet), which is usually outside of text limits.
-    if (!Util::inRange(dest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
+    if (!Util::inRange(callDest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
         return false; // Not a valid proc pointer
     }
 
-    Function *p          = prog->getFunctionByName(name);
-    const bool isNewProc = p == nullptr;
-
-    if (isNewProc) {
-        p = prog->getOrCreateFunction(dest);
+    Function *p = nullptr;
+    if (e->isGlobal()) {
+        p = prog->getFunctionByName(calleeName);
     }
 
-    LOG_VERBOSE("%1 procedure for call to global '%2' is %3", (isNewProc ? "new" : "existing"),
-                name, p->getName());
+    const bool isNewProc = p == nullptr;
+    if (isNewProc) {
+        p          = prog->getOrCreateFunction(callDest);
+        calleeName = p->getName();
+    }
+
+    assert(p != nullptr);
+    LOG_VERBOSE("Found call to %1 function '%2' by converting indirect call to direct call",
+                (isNewProc ? "new" : "existing"), p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
     // 2) call fixCallBypass (now CallAndPhiFix) on the enclosing procedure
     // 3) fix the arguments (this will only affect the implicit arguments, the regular arguments
-    // should
-    //    be empty at this point)
+    //    should be empty at this point)
     // 3a replace current arguments with those of the new proc
     // 3b copy the signature from the new proc
     // 4) change this to a non-indirect call
@@ -707,7 +712,7 @@ bool CallStatement::convertToDirect()
     auto sig   = p->getSignature();
     // m_dest is currently still global5{-}, but we may as well make it a constant now, since that's
     // how it will be treated now
-    m_dest = Const::get(dest);
+    m_dest = Const::get(callDest);
 
     // 1
     // 2
@@ -1358,38 +1363,25 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
     else {
         // For a call with no destination at this late stage, use everything live at the call except
         // for the stack pointer register. Needs to be sorted
-        UseCollector::iterator rr;  // Iterates through reaching definitions
-        StatementList::iterator nn; // Iterates through new results
-        auto sig = m_proc->getSignature();
-        int sp   = sig->getStackRegister();
+        auto sig        = m_proc->getSignature();
+        const RegNum sp = sig->getStackRegister();
 
-        for (rr = m_useCol.begin(); rr != m_useCol.end(); ++rr) {
-            SharedExp loc = *rr;
-
+        for (SharedExp loc : m_useCol) {
             if (m_proc->filterReturns(loc)) {
                 continue; // Ignore filtered locations
             }
-
-            if (loc->isRegN(sp)) {
+            else if (loc->isRegN(sp)) {
                 continue; // Ignore the stack pointer
             }
 
             ImplicitAssign *as = new ImplicitAssign(loc);
-            bool inserted      = false;
-
-            for (nn = result->begin(); nn != result->end(); ++nn) {
-                // If the new assignment is less than the current one,
-                if (sig->returnCompare(*as, static_cast<const Assignment &>(**nn))) {
-                    nn       = result->insert(nn, as); // then insert before this position
-                    inserted = true;
-                    break;
-                }
-            }
-
-            if (!inserted) {
-                result->insert(result->end(), as); // In case larger than all existing elements
-            }
+            result->append(as);
         }
+
+        result->sort([sig](const Statement *left, const Statement *right) {
+            return sig->returnCompare(*static_cast<const Assignment *>(left),
+                                      *static_cast<const Assignment *>(right));
+        });
     }
 
     return result;

@@ -156,8 +156,6 @@ SharedType FuncType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
 bool FuncType::isCompatible(const Type &other, bool /*all*/) const
 {
-    assert(m_signature != nullptr);
-
     if (other.resolvesToVoid()) {
         return true;
     }
@@ -175,9 +173,10 @@ bool FuncType::isCompatible(const Type &other, bool /*all*/) const
     }
 
     if (other.resolvesToFunc()) {
-        assert(other.as<FuncType>()->m_signature != nullptr);
-
-        if (*other.as<FuncType>()->m_signature == *m_signature) {
+        if (getSignature() && other.as<FuncType>()->getSignature()) {
+            return *getSignature() == *other.as<FuncType>()->getSignature();
+        }
+        else if (getSignature() == other.as<FuncType>()->getSignature()) {
             return true;
         }
     }

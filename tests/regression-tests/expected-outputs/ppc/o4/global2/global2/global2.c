@@ -1,5 +1,6 @@
-int b = 7;
 int main(int argc, char *argv[]);
+
+int b = 7;
 
 /** address: 0x10000498 */
 int main(int argc, char *argv[])

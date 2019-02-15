@@ -6,6 +6,7 @@ void proc_0x000120cc();
 void proc_0x00012078();
 void proc_0x000120a8();
 
+
 /** address: 0x00000a40 */
 int main(int argc, char *argv[])
 {

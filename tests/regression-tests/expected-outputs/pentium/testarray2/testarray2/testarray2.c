@@ -2,6 +2,7 @@ int main(int argc, char *argv[]);
 void mid(__size32 param1);
 void fst(__size32 param1);
 
+
 /** address: 0x080483ac */
 int main(int argc, char *argv[])
 {

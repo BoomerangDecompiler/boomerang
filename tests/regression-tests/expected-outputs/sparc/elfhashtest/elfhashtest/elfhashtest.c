@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 elf_hash(char *param1, int param2);
 
+
 /** address: 0x00010678 */
 int main(int argc, char *argv[])
 {

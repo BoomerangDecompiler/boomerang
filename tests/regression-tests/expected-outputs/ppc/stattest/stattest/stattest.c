@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 __stat();
 
+
 /** address: 0x10000440 */
 int main(int argc, char *argv[])
 {

@@ -69,11 +69,11 @@ Const::Const(const char *rawString)
 }
 
 
-Const::Const(Function *p)
+Const::Const(Function *func)
     : Exp(opFuncConst)
-    , m_type(VoidType::get())
+    , m_type(PointerType::get(FuncType::get(func->getSignature())))
 {
-    m_value = p;
+    m_value = func;
 }
 
 

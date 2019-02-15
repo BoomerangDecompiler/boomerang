@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 void proc1(int param1, char *param2, int param3);
 
+
 /** address: 0x100004f4 */
 int main(int argc, char *argv[])
 {

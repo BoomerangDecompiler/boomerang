@@ -1,8 +1,9 @@
-union { double; __size32; } a;
-int b = 7;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();
+
+union { double; __size32; } a;
+int b = 7;
 
 /** address: 0x00010754 */
 int main(int argc, char *argv[])
