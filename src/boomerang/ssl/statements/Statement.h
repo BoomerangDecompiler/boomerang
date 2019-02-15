@@ -282,9 +282,8 @@ public:
     virtual void setTypeForExp(SharedExp exp, SharedType ty);
 
     /// Propagate to e from definition statement def.
-    /// Parameter convert is set true if an indirect call is converted to direct
-    /// Return true if a change made
-    /// Note: this procedure does not control what part of this statement is propagated to
+    /// \returns true if a change made
+    /// \note this procedure does not control what part of this statement is propagated to
     bool doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings);
 
 private:
