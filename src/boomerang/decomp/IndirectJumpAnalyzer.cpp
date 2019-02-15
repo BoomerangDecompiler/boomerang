@@ -109,33 +109,6 @@ static const SwitchForm hlForms[] = {
 // clang-format on
 
 
-// Vcall high level patterns
-// Pattern 0: global<wild>[0]
-static const SharedConstExp vfc_funcptr = Binary::get(
-    opArrayIndex, Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr), Const::get(0));
-
-// Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
-// K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only
-// memory
-static const SharedConstExp vfc_both = Location::memOf(Binary::get(
-    opPlus,
-    Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))),
-    Terminal::get(opWildIntConst)));
-
-// Pattern 2: m[ m[ <expr> ] + K2]
-static const SharedConstExp vfc_vto = Location::memOf(
-    Binary::get(opPlus, Location::memOf(Terminal::get(opWild)), Terminal::get(opWildIntConst)));
-
-// Pattern 3: m[ m[ <expr> + K1] ]
-static const SharedConstExp vfc_vfo = Location::memOf(
-    Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))));
-
-// Pattern 4: m[ m[ <expr> ] ]
-static const SharedConstExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
-
-static const SharedConstExp hlVfc[] = { vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none };
-
-
 /// Find all the possible constant values that the location defined by s could be assigned with
 static void findConstantValues(const Statement *s, std::list<int> &dests)
 {
@@ -604,12 +577,86 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
 }
 
 
+// clang-format off
+
+enum class IndCallPattern
+{
+    Invalid = 0,
+    Funcptr,
+    Both,
+    VTO,
+    VFO,
+    None,
+    BareArray,
+    Bare
+};
+
+static const std::vector<std::pair<const SharedConstExp, IndCallPattern>> hlCallPatterns = {
+    {
+        // Pattern 0: global<wild>[0]
+        Binary::get(opArrayIndex,
+                    Location::get(opGlobal,
+                                  Terminal::get(opWildStrConst), nullptr),
+                    Const::get(0)),
+        IndCallPattern::Funcptr
+    },
+    {
+        // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
+        // K1 is vtable offset, K2 is virtual function offset (could come from m[A2],
+        // if A2 is in read-only memory
+        Location::memOf(Binary::get(opPlus,
+                                    Location::memOf(Binary::get(opPlus,
+                                                                Terminal::get(opWild),
+                                                                Terminal::get(opWildIntConst))),
+                                    Terminal::get(opWildIntConst))),
+        IndCallPattern::Both
+    },
+    {
+        // Pattern 2: m[ m[ <expr> ] + K2]
+        Location::memOf(Binary::get(opPlus,
+                                    Location::memOf(Terminal::get(opWild)),
+                                    Terminal::get(opWildIntConst))),
+        IndCallPattern::VTO
+    },
+    {
+        // Pattern 3: m[ m[ <expr> + K1] ]
+        Location::memOf(Location::memOf(Binary::get(opPlus,
+                                                    Terminal::get(opWild),
+                                                    Terminal::get(opWildIntConst)))),
+        IndCallPattern::VFO
+    },
+    {
+        // Pattern 4: m[ m[ <expr> ] ]
+        Location::memOf(Location::memOf(Terminal::get(opWild))),
+        IndCallPattern::None
+    },
+    {
+        Location::memOf(Binary::get(opPlus,
+                                    Binary::get(opMult,
+                                                Terminal::get(opWild),
+                                                Const::get(4)),
+                                    Terminal::get(opWildIntConst))),
+        IndCallPattern::BareArray
+    },
+    {
+        // Pattern 6: m[ <expr> ]
+        // note that this must be checked for *after* all m[ m[ <expr> ] ] patterns because
+        // m[m[<expr>]] is a subset of m[<expr>]
+        Location::memOf(Terminal::get(opWild)),
+        IndCallPattern::Bare
+    }
+};
+
+// clang-format on
+
+
 bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
 {
+    Prog *prog = proc->getProg();
     assert(!bb->getRTLs()->empty());
     RTL *lastRTL = bb->getLastRTL();
 
-    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+    if (prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: COMPCALL:");
         LOG_MSG("%1", lastRTL->toString());
     }
@@ -617,16 +664,18 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
     assert(!lastRTL->empty());
     CallStatement *lastStmt = static_cast<CallStatement *>(lastRTL->back());
     SharedExp e             = lastStmt->getDest();
-    // Indirect calls may sometimes not be propagated to, because of limited propagation (-l
-    // switch). Propagate to e, but only keep the changes if the expression matches (don't want
-    // excessive propagation to a genuine function pointer expression, even though it's hard to
-    // imagine).
+
+    // Indirect calls may sometimes not be propagated to, because of limited propagation
+    // (-l switch). Propagate to e, but only keep the changes if the expression matches
+    // (don't want excessive propagation to a genuine function pointer expression,
+    // even though it's hard to imagine).
     e = e->propagateAll();
 
     // We also want to replace any m[K]{-} with the actual constant from the (presumably)
     // read-only data section
-    ConstGlobalConverter cgc(proc->getProg());
+    ConstGlobalConverter cgc(prog);
     e = e->acceptModifier(&cgc);
+
     // Simplify the result, e.g. for m[m[(r24{16} + m[0x8048d74]{-}) + 12]{-}]{-} get
     // m[m[(r24{16} + 20) + 12]{-}]{-}, want m[m[r24{16} + 32]{-}]{-}. Note also that making the
     // ConstGlobalConverter a simplifying expression modifier won't work in this case, since the
@@ -634,51 +683,47 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
     // (which is r24{16} + 20).
     e = e->simplify();
 
-    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+    if (prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1", e);
     }
 
-    int n           = sizeof(hlVfc) / sizeof(SharedExp);
-    bool recognised = false;
-    int i;
+    IndCallPattern foundPatternID = IndCallPattern::Invalid;
 
-    for (i = 0; i < n; i++) {
-        if (e->equalNoSubscript(*hlVfc[i])) {
-            recognised = true;
-
-            if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-                LOG_MSG("Indirect call matches form %1", i);
+    for (auto &[pattern, patternID] : hlCallPatterns) {
+        if (e->equalNoSubscript(*pattern)) {
+            foundPatternID = patternID;
+            if (prog->getProject()->getSettings()->debugSwitch) {
+                LOG_MSG("Indirect call matches pattern '%1'", pattern);
             }
 
             break;
         }
     }
 
-    if (!recognised) {
+    if (foundPatternID == IndCallPattern::Invalid) {
+        if (prog->getProject()->getSettings()->debugSwitch) {
+            LOG_MSG("Indirect call expression '%1' does not match any pattern", e);
+        }
         return false;
     }
 
     lastStmt->setDest(e); // Keep the changes to the indirect call expression
-    int K1, K2;
-    SharedExp vtExp, t1;
-    Prog *prog = proc->getProg();
 
-    switch (i) {
-    case 0: {
-        // This is basically an indirection on a global function pointer.  If it is initialised,
+    SharedExp vtExp;
+
+    switch (foundPatternID) {
+    case IndCallPattern::Funcptr: {
+        // This is basically an indirection on a global function pointer. If it is initialised,
         // we have a decodable entry point.  Note: it could also be a library function (e.g.
         // Windows) Pattern 0: global<name>{0}[0]{0}
-        K2 = 0;
-
         if (e->isSubscript()) {
             e = e->getSubExp1();
         }
 
-        e             = e->getSubExp1(); // e is global<name>{0}[0]
-        t1            = e->getSubExp2();
-        auto t1_const = t1->access<Const>();
+        e = e->getSubExp1(); // e is global<name>{0}[0]
 
-        if (e->isArrayIndex() && (t1->isIntConst()) && (t1_const->getInt() == 0)) {
+        if (e->isArrayIndex() && e->getSubExp2()->isIntConst() &&
+            e->access<Const, 2>()->getInt() == 0) {
             e = e->getSubExp1(); // e is global<name>{0}
         }
 
@@ -686,9 +731,9 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
             e = e->getSubExp1(); // e is global<name>
         }
 
-        std::shared_ptr<Const> con = e->access<Const, 1>(); // e is <name>
-        Global *global             = prog->getGlobalByName(con->getStr());
-        assert(global);
+        Global *global = prog->getGlobalByName(e->access<Const, 1>()->getStr());
+        assert(global != nullptr);
+
         // Set the type to pointer to function, if not already
         SharedType ty = global->getType();
 
@@ -696,101 +741,83 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
             global->setType(PointerType::get(FuncType::get()));
         }
 
-        Address addr = global->getAddress();
-        // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?)
-        // entry in the data map that overlaps with addr For now, let K1 = 0:
-        K1    = 0;
-        vtExp = Const::get(addr);
-        break;
-    }
+        vtExp = Const::get(global->getAddress());
+    } break;
 
-    case 1: {
+    case IndCallPattern::Both:
         // Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
         if (e->isSubscript()) {
             e = e->getSubExp1();
         }
 
-        e             = e->getSubExp1(); // e = m[r27{25} + 8]{-} + 8
-        SharedExp rhs = e->getSubExp2(); // rhs = 8
-        K2            = rhs->access<Const>()->getInt();
-        SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
-
-        if (lhs->isSubscript()) {
-            lhs = lhs->getSubExp1(); // lhs = m[r27{25} + 8]
+        vtExp = e->access<Exp, 1, 1>(); // lhs = m[r27{25} + 8]{-}
+        if (vtExp->isSubscript()) {
+            vtExp = vtExp->getSubExp1(); // lhs = m[r27{25} + 8]
         }
 
-        vtExp         = lhs;
-        lhs           = lhs->getSubExp1(); // lhs =   r27{25} + 8
-        SharedExp CK1 = lhs->getSubExp2();
-        K1            = CK1->access<Const>()->getInt();
         break;
-    }
 
-    case 2: {
+    case IndCallPattern::VTO:
         // Example pattern: e = m[m[r27{25}]{-} + 8]{-}
         if (e->isSubscript()) {
             e = e->getSubExp1();
         }
 
-        e             = e->getSubExp1(); // e = m[r27{25}]{-} + 8
-        SharedExp rhs = e->getSubExp2(); // rhs = 8
-        K2            = rhs->access<Const>()->getInt();
-        SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
+        vtExp = e->access<Exp, 1, 1>(); // vtExp = m[r27{25}]{-}
 
-        if (lhs->isSubscript()) {
-            lhs = lhs->getSubExp1(); // lhs = m[r27{25}]
+        if (vtExp->isSubscript()) {
+            vtExp = vtExp->getSubExp1(); // vtExp = m[r27{25}]
         }
 
-        vtExp = lhs;
-        K1    = 0;
         break;
-    }
 
-    case 3: {
+    case IndCallPattern::VFO:
         // Example pattern: e = m[m[r27{25} + 8]{-}]{-}
         if (e->isSubscript()) {
             e = e->getSubExp1();
         }
 
-        e  = e->getSubExp1(); // e = m[r27{25} + 8]{-}
-        K2 = 0;
+        e = e->getSubExp1(); // e = m[r27{25} + 8]{-}
 
         if (e->isSubscript()) {
             e = e->getSubExp1(); // e = m[r27{25} + 8]
         }
 
         vtExp = e;
-        K1    = e->access<Const, 1, 2>()->getInt();
         break;
-    }
 
-    case 4:
-
+    case IndCallPattern::None:
         // Example pattern: e = m[m[r27{25}]{-}]{-}
         if (e->isSubscript()) {
             e = e->getSubExp1();
         }
 
-        e  = e->getSubExp1(); // e = m[r27{25}]{-}
-        K2 = 0;
+        e = e->getSubExp1(); // e = m[r27{25}]{-}
 
         if (e->isSubscript()) {
             e = e->getSubExp1(); // e = m[r27{25}]
         }
 
         vtExp = e;
-        K1    = 0;
-        // Exp* object = ((Unary*)e)->getSubExp1();
         break;
 
-    default:
-        K1 = K2 = -1; // Suppress warnings
-        vtExp   = nullptr;
-    }
+    case IndCallPattern::BareArray:
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
 
-    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-        LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6", i,
-                lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
+        vtExp = e->access<Exp, 1, 2>();
+        break;
+
+    case IndCallPattern::Bare:
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        vtExp = e->getSubExp1();
+        break;
+
+    default: assert(false); break;
     }
 
     // The vt expression might not be a constant yet, because of expressions not fully
@@ -798,26 +825,31 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
     // If so, look it up in the defCollector in the call
     vtExp = lastStmt->findDefFor(vtExp);
 
-    if (vtExp && proc->getProg()->getProject()->getSettings()->debugSwitch) {
+    if (vtExp && prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("VT expression boils down to this: %1", vtExp);
     }
 
     // Danger. For now, only do if -ic given
-    const bool decodeThru = proc->getProg()->getProject()->getSettings()->decodeThruIndCall;
+    const bool decodeThru = prog->getProject()->getSettings()->decodeThruIndCall;
 
     if (decodeThru && vtExp && vtExp->isIntConst()) {
         Address addr  = vtExp->access<Const>()->getAddr();
         Address pfunc = Address(prog->readNative4(addr));
 
-        if (prog->getFunctionByAddr(pfunc) == nullptr) {
-            // A new, undecoded procedure
+        if (Util::inRange(pfunc, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
+            Function *callee = prog->getOrCreateFunction(pfunc);
             if (!prog->getProject()->getSettings()->decodeChildren) {
                 return false;
             }
+            else if (callee->isLib()) {
+                return false;
+            }
+            else if (!static_cast<UserProc *>(callee)->isDecoded()) {
+                prog->reDecode(static_cast<UserProc *>(callee));
+            }
 
-            prog->decodeEntryPoint(pfunc);
-            // Since this was not decoded, this is a significant change, and we want to redecode
-            // the current function now that the callee has been decoded
+            // Re-decompile the current function regardless of whether the callee is already
+            // decompiled. This is because finding the new callee is a significant change.
             return true;
         }
     }
