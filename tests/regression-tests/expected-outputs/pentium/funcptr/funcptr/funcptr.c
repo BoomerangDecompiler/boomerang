@@ -5,7 +5,7 @@ void hello();
 /** address: 0x08048358 */
 int main(int argc, char *argv[])
 {
-    void (void) *eax; 		// r24
+    __size32 eax; 		// r24
     int ebp; 		// r29
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     ecx = hello(); /* Warning: also results in edx, esp_1 */
     *(__size32*)(ebp - 4) = 0x8048340;
     eax = *(ebp - 4);
-    (*eax)(eax, ebp, <all>, flags, ZF, CF, NF, OF, local0, local1, local2, ecx, edx, argc, argv);
+    (**(ebp - 4))(eax, ebp, <all>, flags, ZF, CF, NF, OF, local0, local1, local2, ecx, edx, argc, argv);
     return 0;
 }
 
