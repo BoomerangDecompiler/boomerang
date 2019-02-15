@@ -28,6 +28,7 @@ v0.5.0 (in development)
 - Improved: General processing of overlapped registers (not just hard-coded ones).
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
 - Improved: Type Analysis of code containing ternary ?: operator.
+- Improved: Analysis of calls via function pointers.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
