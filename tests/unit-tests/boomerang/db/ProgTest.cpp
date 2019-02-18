@@ -470,12 +470,6 @@ void ProgTest::testReDecode()
 }
 
 
-void ProgTest::testFinishDecode()
-{
-    QSKIP("TODO");
-}
-
-
 void ProgTest::testCreateGlobal()
 {
     Prog prog("test", nullptr);

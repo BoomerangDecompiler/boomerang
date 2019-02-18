@@ -62,7 +62,6 @@ private slots:
     void testDecodeEntryPoint();
     void testDecodeFragment();
     void testReDecode();
-    void testFinishDecode();
 
     void testCreateGlobal();
     void testGetGlobalNameByAddr();
