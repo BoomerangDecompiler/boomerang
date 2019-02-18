@@ -29,13 +29,11 @@ bb0x804836e:
                     if (argc > 4) {
                         goto bb0x804836e;
                     }
-                    goto bb0x80483b0;
                 }
             }
             else {
                 goto bb0x8048390;
             }
-bb0x80483b0:
         } while (argc <= 5);
     }
     return 7;
