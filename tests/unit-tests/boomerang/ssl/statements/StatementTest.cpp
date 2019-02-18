@@ -1119,8 +1119,6 @@ void StatementTest::testAddUsedLocsBool()
 
 void StatementTest::testBypass()
 {
-    QSKIP("Disabled.");
-
     QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = m_project.getProg();
@@ -1146,6 +1144,7 @@ void StatementTest::testBypass()
 
     // Number the statements
     proc->numberStatements();
+
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Find various needed statements
@@ -1168,8 +1167,9 @@ void StatementTest::testBypass()
     OStream ost(&actual);
     ost << s20;
 
+
     // TODO ???
-    QString expected = "20 *32* r28 := r28{15} - 16";
+    QString expected = "  20 *32* r28 := r28{15} + 16";
 
     QCOMPARE(actual, expected);
 
@@ -1179,10 +1179,8 @@ void StatementTest::testBypass()
     actual = "";
     ost << s20;
 
-    expected = "  20 *32* r28 := r28{-} - 16";
+    expected = "  20 *32* r28 := r28{15} + 16";
     QCOMPARE(actual, expected);
-
-    delete prog;
 }
 
 

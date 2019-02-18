@@ -152,7 +152,8 @@ bool BlockVarRenamePass::renameBlockVars(
         }
 
         // MVE: Check for Call and Return Statements; these have DefCollector objects that need to
-        // be updated Do before the below, so CallStatements have not yet processed their defines
+        // be updated
+        // Do before the below, so CallStatements have not yet processed their defines
         if (S->isCall() || S->isReturn()) {
             DefCollector *col;
 
