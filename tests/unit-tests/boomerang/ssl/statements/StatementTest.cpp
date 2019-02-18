@@ -1139,8 +1139,15 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
+    // Number the statements
+    proc->numberStatements();
+
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
+
+    // Note: we need to have up to date call defines before transforming to SSA form,
+    // because otherwise definitions of calls get ignored.
+    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Find various needed statements
@@ -1152,21 +1159,18 @@ void StatementTest::testBypass()
         ++it;
     }
     QVERIFY(it != stmts.end());
-
-    CallStatement *call = static_cast<CallStatement *>(*it); // Statement 18, a call to printf
-    call->setDestProc(proc);                    // A recursive call
-
     Statement *s20 = *std::next(it, 2); // Statement 20
     QVERIFY(s20->getKind() == StmtType::Assign);
 
-    // Number the statements
-    proc->numberStatements();
-
-    // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
-    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 16");
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{18} + 16");
 
     s20->bypass();        // r28 should bypass the call
-    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 16");
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
+
+    // Second pass (should do nothing because r28{15} is the only reference to r28
+    // that reaches the call)
+    s20->bypass();
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
 }
 
 
