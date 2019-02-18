@@ -225,6 +225,15 @@ public:
 
     bool hasStatement(const Statement *stmt) const;
 
+    /// \returns true iff the BB does not contain any statements.
+    /// \note This is different from a BB that does not contain
+    /// any RTLs, since all RTLs could be empty.
+    bool isEmpty() const;
+
+    /// \returns true iff the BB only contains an unconditional jump statement.
+    /// \note this disregards the type of the BB (e.g. Oneway)
+    bool isEmptyJump() const;
+
 public:
     /// \returns the destination procedure of the call if this is a call BB.
     /// Returns nullptr for all other BB types.

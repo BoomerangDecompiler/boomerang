@@ -51,4 +51,6 @@ private slots:
     void testGetDest();
     void testHasStatement();
     void testUpdateBBAddresses();
+    void testIsEmpty();
+    void testIsEmptyJump();
 };

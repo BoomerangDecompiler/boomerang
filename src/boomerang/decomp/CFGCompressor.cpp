@@ -42,7 +42,7 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
     for (BasicBlock *bb : *cfg) {
         // Check if the BB can be removed
         if (bb->getNumSuccessors() == 1 && bb != cfg->getEntryBB() &&
-            (isEmptyBB(bb) || isEmptyJump(bb))) {
+            (bb->isEmpty() || bb->isEmptyJump())) {
             bbsToRemove.push_back(bb);
         }
     }
@@ -77,29 +77,6 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
     }
 
     return changed;
-}
-
-
-bool CFGCompressor::isEmptyBB(const BasicBlock *bb) const
-{
-    if (bb->getRTLs() == nullptr) {
-        return true;
-    }
-
-    for (const auto &rtl : *bb->getRTLs()) {
-        if (!rtl->empty()) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-bool CFGCompressor::isEmptyJump(const BasicBlock *jmpBB) const
-{
-    return jmpBB->getRTLs()->size() == 1 && jmpBB->getRTLs()->front()->size() == 1 &&
-           jmpBB->getRTLs()->front()->front()->isGoto();
 }
 
 

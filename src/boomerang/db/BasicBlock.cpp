@@ -773,3 +773,30 @@ void BasicBlock::removeRTL(RTL *rtl)
         updateBBAddresses();
     }
 }
+
+
+bool BasicBlock::isEmpty() const
+{
+    if (getRTLs() == nullptr) {
+        return true;
+    }
+
+    for (const auto &rtl : *getRTLs()) {
+        if (!rtl->empty()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool BasicBlock::isEmptyJump() const
+{
+    if (getRTLs() == nullptr) {
+        return false;
+    }
+
+    return getRTLs()->size() == 1 && getRTLs()->front()->size() == 1 &&
+        getRTLs()->front()->front()->isGoto();
+}

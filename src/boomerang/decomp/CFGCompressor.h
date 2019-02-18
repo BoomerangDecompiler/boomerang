@@ -36,14 +36,6 @@ private:
     /// Removes empty jumps and empty BBs.
     bool removeEmptyJumps(ProcCFG *cfg);
 
-    /// \returns true iff \p bb does not contain any statements.
-    /// \note This is different from a BB that does not contain
-    /// any RTLs, since all RTLs could be empty.
-    bool isEmptyBB(const BasicBlock *bb) const;
-
-    /// \returns true iff \p bb only contains an unconditional jump statement.
-    bool isEmptyJump(const BasicBlock *bb) const;
-
     /// Removes BBs that are not reachable from the entry BB.
     bool removeOrphanBBs(ProcCFG *cfg);
 };
