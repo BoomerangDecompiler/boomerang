@@ -42,19 +42,22 @@ DataFlow::~DataFlow()
 
 void DataFlow::dfs(int myIdx, int parentIdx)
 {
-    if (m_dfnum[myIdx] == -1) {
-        m_dfnum[myIdx]  = N;
-        m_vertex[N]     = myIdx;
-        m_parent[myIdx] = parentIdx;
+    if (m_dfnum[myIdx] != -1) {
+        // already visited
+        return;
+    }
 
-        N++;
+    m_dfnum[myIdx]  = N;
+    m_vertex[N]     = myIdx;
+    m_parent[myIdx] = parentIdx;
 
-        // Recurse to successors
-        BasicBlock *bb = m_BBs[myIdx];
+    N++;
 
-        for (BasicBlock *succ : bb->getSuccessors()) {
-            dfs(m_indices[succ], myIdx);
-        }
+    // Recurse to successors
+    BasicBlock *bb = m_BBs[myIdx];
+
+    for (BasicBlock *succ : bb->getSuccessors()) {
+        dfs(m_indices[succ], myIdx);
     }
 }
 
@@ -72,9 +75,11 @@ bool DataFlow::calculateDominators()
     N = 0;
     allocateData();
 
+    // calculate spanning tree
     dfs(0, -1);
     assert(N >= 1);
 
+    // Process BBs in reverse pre-traversal order (i.e. return blocks first)
     for (int i = N - 1; i >= 1; i--) {
         int n = m_vertex[i];
         int p = m_parent[n];
@@ -84,11 +89,8 @@ bool DataFlow::calculateDominators()
         // for each predecessor v of n
         for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(pred) == m_indices.end()) {
-                OStream q_cerr(stderr);
-
-                q_cerr << "BB not in indices: ";
-                pred->print(q_cerr);
-                assert(false);
+                LOG_ERROR("BB not in indices: ", pred->toString());
+                return false;
             }
 
             int v     = m_indices[pred];
@@ -197,7 +199,7 @@ void DataFlow::computeDF(int n)
 
     // for each child c of n in the dominator tree
     // Note: this is a linear search!
-    int sz = m_idom.size(); // ? Was ancestor.size()
+    const int sz = m_idom.size(); // ? Was ancestor.size()
 
     for (int c = 0; c < sz; ++c) {
         if (m_idom[c] != n) {
