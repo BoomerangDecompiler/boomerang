@@ -45,7 +45,45 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 }
 
 
-void DataFlowTest::testCalculateDominators()
+void DataFlowTest::testCalculateDominators1()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    ProcCFG *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
+
+    BasicBlock *entry = cfg->createBB(BBType::Ret, createRTLs(Address(0x1000), 1));
+
+    proc.setEntryBB();
+
+    QVERIFY(df->calculateDominators());
+    QCOMPARE(df->getSemiDominator(entry), entry);
+
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
+}
+
+
+void DataFlowTest::testCalculateDominators2()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    ProcCFG *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
+
+    BasicBlock *entry = cfg->createBB(BBType::Call, createRTLs(Address(0x1000), 1));
+    BasicBlock *exit  = cfg->createBB(BBType::Ret, createRTLs(Address(0x1001), 1));
+
+    cfg->addEdge(entry, exit);
+    proc.setEntryBB();
+
+    QVERIFY(df->calculateDominators());
+    QCOMPARE(df->getSemiDominator(entry), entry);
+    QCOMPARE(df->getSemiDominator(exit), entry);
+
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
+    QCOMPARE(df->getDominanceFrontier(exit), std::set<const BasicBlock *>({}));
+}
+
+
+void DataFlowTest::testCalculateDominatorsComplex()
 {
     // Appel, Figure 19.8
     UserProc proc(Address(0x1000), "test", nullptr);
@@ -82,7 +120,7 @@ void DataFlowTest::testCalculateDominators()
     proc.setEntryBB();
 
     // test!
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
 
     QCOMPARE(df->getSemiDominator(b), a); QCOMPARE(df->getDominator(b), a);
     QCOMPARE(df->getSemiDominator(c), a); QCOMPARE(df->getDominator(c), a);

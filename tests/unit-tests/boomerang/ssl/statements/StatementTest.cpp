@@ -17,6 +17,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -714,58 +715,73 @@ void StatementTest::testWildLocationSet()
 
 void StatementTest::testRecursion()
 {
-    QSKIP("Disabled.");
-
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
     ProcCFG *cfg   = proc->getCFG();
 
-    // push bp
-    // r28 := r28 + -4
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
-
-    // m[r28] := r29
-    Assign *a2 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP));
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { a1, a2 })));
-    bbRTLs.reset(); // ???
 
-    // push arg+1
-    // r28 := r28 + -4
-    Assign *a3 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
+    // the fallthrough bb
+    {
+        // push bp
+        // r28 := r28 + -4
+        Assign *a1 = new Assign(Location::regOf(REG_PENT_ESP),
+                                Binary::get(opPlus,
+                                            Location::regOf(REG_PENT_ESP),
+                                            Const::get(-4)));
+        a1->setProc(proc);
 
-    // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
-    // esp+8 is return address; esp+12 is our arg
-    // m[r28] := m[r28+12] + 1
-    Assign *a4 = new Assign(
-        Location::memOf(Location::regOf(REG_PENT_ESP)),
-        Binary::get(opPlus, Location::memOf(
-                        Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(12))), Const::get(1)));
+        // m[r28] := r29
+        Assign *a2 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP));
+        a2->setProc(proc);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1004), { a1, a2 })));
 
-    a4->setProc(proc);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { a3, a4 })));
+        // push arg+1
+        // r28 := r28 + -4
+        Assign *a3 = (Assign *)a1->clone();
+        a3->setProc(proc);
+
+        // Reference our parameter. At esp+0 is this arg; at esp+4 is old ebp;
+        // esp+8 is return address; esp+12 is our arg
+        // m[r28] := m[r28+12] + 1
+        Assign *a4 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)),
+                                Binary::get(opPlus,
+                                            Location::memOf(Binary::get(opPlus,
+                                                                        Location::regOf(REG_PENT_ESP),
+                                                                        Const::get(12))),
+                                            Const::get(1)));
+
+        a4->setProc(proc);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1006), { a3, a4 })));
+    }
+
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
     // The call BB
     bbRTLs.reset(new RTLList);
+    {
+        // r28 := r28 + -4
+        Assign *a5 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
+        a5->setProc(proc);
+        // m[r28] := pc
+        Assign *a6 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC));
+        a6->setProc(proc);
 
-    // r28 := r28 + -4
-    Assign *a5 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
-    // m[r28] := pc
-    Assign *a6 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC));
-    // %pc := (%pc + 5) + 135893848
-    Assign *a7 = new Assign(Terminal::get(opPC),
-                   Binary::get(opPlus,
-                               Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
-                               Const::get(135893848)));
-    a7->setProc(proc);
+        // %pc := (%pc + 5) + 135893848
+        Assign *a7 = new Assign(Terminal::get(opPC),
+                    Binary::get(opPlus,
+                                Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
+                                Const::get(0x8199358)));
+        a7->setProc(proc);
 
-    CallStatement *c = new CallStatement;
-    c->setDestProc(proc); // Just call self
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x0001), { a5, a6, a7, c })));
+        CallStatement *c = new CallStatement;
+        c->setDestProc(proc); // Just call self
+
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1008), { a5, a6, a7, c })));
+    }
+
     BasicBlock *callbb = cfg->createBB(BBType::Call, std::move(bbRTLs));
 
     first->addSuccessor(callbb);
@@ -773,40 +789,72 @@ void StatementTest::testRecursion()
     callbb->addSuccessor(callbb);
     callbb->addPredecessor(callbb);
 
+    // the ret bb
     bbRTLs.reset(new RTLList);
-    ReturnStatement *retStmt = new ReturnStatement;
-    // This ReturnStatement requires the following two sets of semantics to pass the
-    // tests for standard Pentium calling convention
-    // pc = m[r28]
-    a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP)));
-    // r28 = r28 + 4
-    a2 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)));
+    {
+        ReturnStatement *retStmt = new ReturnStatement;
+        // This ReturnStatement requires the following two sets of semantics to pass the
+        // tests for standard Pentium calling convention
+        // pc = m[r28]
+        Assign *a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP)));
+        // r28 = r28 + 4
+        Assign *a2 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)));
 
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { retStmt, a1, a2 })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x100C), { a1, a2, retStmt })));
+    }
 
     BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
+
     callbb->addSuccessor(ret);
     ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
 
+    proc->setEntryAddress(Address(0x1004));
+
     // decompile the "proc"
+    prog->addEntryPoint(Address(0x1004));
     ProgDecompiler dcomp(prog);
     dcomp.decompile();
+
+    proc->numberStatements();
 
     // print cfg to a string
     QString     actual;
     OStream st(&actual);
     cfg->print(st);
 
-    QString expected = "Control Flow Graph:\n"
-                       "Fall BB: reach in: \n"
-                       "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-                       "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-                       "Call BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
-                       "00000001 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
-                       "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
-                       "cfg reachExit: \n";
-    QCOMPARE(actual, expected);
+    const QString expected =
+        "Control Flow Graph:\n"
+        "Fall BB:\n"
+        "  in edges: \n"
+        "  out edges: 0x00001008 \n"
+        "0x00000000    1 *union* r28 := -\n"
+        "              2 *32* r29 := -\n"
+        "              3 *v* m[r28{1} + 4] := -\n"
+        "0x00001004    4 *32* m[r28{1} - 4] := r29{2}\n"
+        "0x00001006    5 *union* r28 := r28{1} - 8\n"
+        "              6 *v* m[r28{1} - 8] := m[r28{1} + 4]{3} + 1\n"
+        "Call BB:\n"
+        "  in edges: 0x00001006(0x00001004) 0x00001008(0x00001008) \n"
+        "  out edges: 0x00001008 0x0000100c \n"
+        "0x00000000    7 *union* r28 := phi{5 11}\n"
+        "              8 *32* m[r28{1} - 4] := phi{4 11}\n"
+        "              9 *v* m[r28{1} - 8] := phi{6 11}\n"
+        "0x00001008   10 *u32* m[r28{7} - 4] := %pc\n"
+        "             11 *union* r28 := CALL test(<all>)\n"
+        "              Reaching definitions: r28=r28{7} - 4,   r29=r29{2},   m[r28{1} + 4]=m[r28{1} + 4]{3},\n"
+        "                m[r28{1} - 4]=m[r28{1} - 4]{8},   m[r28{1} - 8]=m[r28{1} - 8]{9}\n"
+        "              Live variables: r28,  m[r28{1} - 4],  m[r28{1} - 8]\n"
+        "Ret BB:\n"
+        "  in edges: 0x00001008(0x00001008) \n"
+        "  out edges: \n"
+        "0x0000100c   12 RET\n"
+        "              Modifieds: <None>\n"
+        "              Reaching definitions: r28=r28{11} + 4,   r29=r29{11},   m[r28{1} + 4]=m[r28{1} + 4]{11},\n"
+        "                m[r28{1} - 4]=m[r28{1} - 4]{11},   m[r28{1} - 8]=m[r28{1} - 8]{11},   <all>=<all>{11}\n"
+        "\n";
+
+    compareLongStrings(actual, expected);
 }
 
 
@@ -1071,8 +1119,6 @@ void StatementTest::testAddUsedLocsBool()
 
 void StatementTest::testBypass()
 {
-    QSKIP("Disabled.");
-
     QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = m_project.getProg();
@@ -1093,11 +1139,15 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
+    // Number the statements
+    proc->numberStatements();
+
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
 
-    // Number the statements
-    proc->numberStatements();
+    // Note: we need to have up to date call defines before transforming to SSA form,
+    // because otherwise definitions of calls get ignored.
+    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Find various needed statements
@@ -1109,32 +1159,18 @@ void StatementTest::testBypass()
         ++it;
     }
     QVERIFY(it != stmts.end());
-
-    CallStatement *call = static_cast<CallStatement *>(*it); // Statement 18, a call to printf
-    call->setDestProc(proc);                    // A recursive call
-
     Statement *s20 = *std::next(it, 2); // Statement 20
     QVERIFY(s20->getKind() == StmtType::Assign);
 
-    QString     actual;
-    OStream ost(&actual);
-    ost << s20;
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{18} + 16");
 
-    // TODO ???
-    QString expected = "20 *32* r28 := r28{15} - 16";
-
-    QCOMPARE(actual, expected);
-
-    // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
     s20->bypass();        // r28 should bypass the call
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
 
-    actual = "";
-    ost << s20;
-
-    expected = "  20 *32* r28 := r28{-} - 16";
-    QCOMPARE(actual, expected);
-
-    delete prog;
+    // Second pass (should do nothing because r28{15} is the only reference to r28
+    // that reaches the call)
+    s20->bypass();
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
 }
 
 

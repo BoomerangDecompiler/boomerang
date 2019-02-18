@@ -269,15 +269,15 @@ void ProgTest::testIsWin32()
 }
 
 
-void ProgTest::testGetRegName()
+void ProgTest::testGetRegNameByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
-void ProgTest::testGetRegSize()
+void ProgTest::testGetRegSizeByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
@@ -467,12 +467,6 @@ void ProgTest::testReDecode()
     QVERIFY(!m_project.getProg()->reDecode(nullptr));
     QVERIFY(m_project.getProg()->reDecode(mainProc)); // actually processing for the first time
     QVERIFY(m_project.getProg()->reDecode(mainProc)); // actual re-decode
-}
-
-
-void ProgTest::testFinishDecode()
-{
-    QSKIP("TODO");
 }
 
 

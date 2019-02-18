@@ -10,12 +10,13 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/db/proc/UserProc.h"
 
 #include <unordered_map>
 
 
-class ProcDecompiler
+class BOOMERANG_API ProcDecompiler
 {
 public:
     ProcDecompiler();

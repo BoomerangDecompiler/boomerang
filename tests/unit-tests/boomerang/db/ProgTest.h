@@ -40,8 +40,8 @@ private slots:
 
     void testIsWellFormed();
     void testIsWin32();
-    void testGetRegName();
-    void testGetRegSize();
+    void testGetRegNameByNum();
+    void testGetRegSizeByNum();
 
     void testGetMachine();
     void testGetDefaultSignature();
@@ -62,7 +62,6 @@ private slots:
     void testDecodeEntryPoint();
     void testDecodeFragment();
     void testReDecode();
-    void testFinishDecode();
 
     void testCreateGlobal();
     void testGetGlobalNameByAddr();
