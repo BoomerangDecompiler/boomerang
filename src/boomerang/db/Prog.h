@@ -136,7 +136,7 @@ public:
     /// \returns true if function was found and removed.
     bool removeFunction(const QString &name);
 
-    /// \param userOnly If true, only count user functions, not lbrary functions.
+    /// \param userOnly If true, only count user functions, not library functions.
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
