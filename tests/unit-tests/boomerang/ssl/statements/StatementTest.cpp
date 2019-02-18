@@ -1141,10 +1141,6 @@ void StatementTest::testBypass()
 
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
-
-    // Number the statements
-    proc->numberStatements();
-
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Find various needed statements
@@ -1163,24 +1159,14 @@ void StatementTest::testBypass()
     Statement *s20 = *std::next(it, 2); // Statement 20
     QVERIFY(s20->getKind() == StmtType::Assign);
 
-    QString     actual;
-    OStream ost(&actual);
-    ost << s20;
-
-
-    // TODO ???
-    QString expected = "  20 *32* r28 := r28{15} + 16";
-
-    QCOMPARE(actual, expected);
+    // Number the statements
+    proc->numberStatements();
 
     // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 16");
+
     s20->bypass();        // r28 should bypass the call
-
-    actual = "";
-    ost << s20;
-
-    expected = "  20 *32* r28 := r28{15} + 16";
-    QCOMPARE(actual, expected);
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 16");
 }
 
 
