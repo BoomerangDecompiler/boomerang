@@ -47,7 +47,7 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
         }
     }
 
-    const bool changed = !bbsToRemove.empty();
+    bool bbsRemoved = false;
 
     while (!bbsToRemove.empty()) {
         BasicBlock *bb = bbsToRemove.front();
@@ -74,9 +74,10 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
 
         bb->removeAllPredecessors();
         cfg->removeBB(bb);
+        bbsRemoved = true;
     }
 
-    return changed;
+    return bbsRemoved;
 }
 
 
