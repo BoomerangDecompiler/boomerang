@@ -793,10 +793,22 @@ bool BasicBlock::isEmpty() const
 
 bool BasicBlock::isEmptyJump() const
 {
-    if (getRTLs() == nullptr) {
+    if (m_listOfRTLs == nullptr || m_listOfRTLs->empty()) {
         return false;
     }
+    else if (m_listOfRTLs->back()->size() != 1) {
+        return false;
+    }
+    else if (!m_listOfRTLs->back()->back()->isGoto()) {
+        return false;
+    }
+    else {
+        for (auto it = m_listOfRTLs->begin(); it != std::prev(m_listOfRTLs->end()); ++it) {
+            if (!(*it)->empty()) {
+                return false;
+            }
+        }
+    }
 
-    return getRTLs()->size() == 1 && getRTLs()->front()->size() == 1 &&
-        getRTLs()->front()->front()->isGoto();
+    return true;
 }
