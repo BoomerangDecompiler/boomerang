@@ -269,15 +269,15 @@ void ProgTest::testIsWin32()
 }
 
 
-void ProgTest::testGetRegName()
+void ProgTest::testGetRegNameByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
-void ProgTest::testGetRegSize()
+void ProgTest::testGetRegSizeByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
