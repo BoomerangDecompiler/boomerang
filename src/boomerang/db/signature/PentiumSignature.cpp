@@ -172,10 +172,16 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
         case REG_PENT_ESP:                                                            // esp
             return Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)); // esp+4
 
+        case REG_PENT_BX:
+        case REG_PENT_BP:
+        case REG_PENT_SI:
+        case REG_PENT_DI:
+        case REG_PENT_BL:
+        case REG_PENT_BH:
+        case REG_PENT_EBX:
         case REG_PENT_EBP:
         case REG_PENT_ESI:
-        case REG_PENT_EDI:
-        case REG_PENT_EBX: return Location::regOf(r);
+        case REG_PENT_EDI: return Location::regOf(r);
         }
     }
 
