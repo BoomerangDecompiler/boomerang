@@ -22,7 +22,9 @@ class DataFlowTest : public BoomerangTestWithPlugins
 
 private slots:
     /// Test calculating (semi-)dominators and the Dominance Frontier
-    void testCalculateDominators();
+    void testCalculateDominators1();
+    void testCalculateDominators2();
+    void testCalculateDominatorsComplex();
 
     /// Test the placing of phi functions
     void testPlacePhi();

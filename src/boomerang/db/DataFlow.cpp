@@ -106,8 +106,8 @@ bool DataFlow::calculateDominators()
         }
 
         m_semi[n] = s;
-        /* Calculation of n's dominator is deferred until the path from s to n has been linked into
-         * the forest */
+        /* Calculation of n's dominator is deferred until the path from s to n has been linked
+         * intothe forest */
         m_bucket[s].insert(n);
         link(p, n);
 
@@ -138,6 +138,10 @@ bool DataFlow::calculateDominators()
             m_idom[n] = m_idom[m_samedom[n]]; // Deferred success!
         }
     }
+
+    // the entry BB is always executed.
+    m_idom[0] = 0;
+    m_semi[0] = 0;
 
     computeDF(0); // Finally, compute the dominance frontiers
     return true;
@@ -170,7 +174,7 @@ void DataFlow::link(int p, int n)
 
 bool DataFlow::doesDominate(int n, int w)
 {
-    while (m_idom[w] != -1) {
+    while (m_idom[w] != w) {
         if (m_idom[w] == n) {
             return true;
         }
@@ -185,7 +189,7 @@ bool DataFlow::doesDominate(int n, int w)
 void DataFlow::computeDF(int n)
 {
     std::set<int> S;
-    /* This loop computes DF_local[n] */
+    // This loop computes DF_local[n]
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
 
@@ -205,8 +209,9 @@ void DataFlow::computeDF(int n)
         if (m_idom[c] != n) {
             continue;
         }
-
-        computeDF(c);
+        else if (c != n) { // do not calculate DF for entry BB again
+            computeDF(c);
+        }
 
         /* This loop computes DF_up[c] */
         // for each element w of DF[c]
@@ -483,10 +488,10 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
     // Note: this is a linear search!
     // Note also that usedByDomPhi0 may have some irrelevant entries, but this will do no harm, and
     // attempting to erase the irrelevant ones would probably cost more than leaving them alone
-    const size_t sz = m_idom.size();
+    const int sz = m_idom.size();
 
-    for (size_t c = 0; c < sz; ++c) {
-        if (m_idom[c] != n) {
+    for (int c = 0; c < sz; ++c) {
+        if (m_idom[c] != n || n == c) {
             continue;
         }
 

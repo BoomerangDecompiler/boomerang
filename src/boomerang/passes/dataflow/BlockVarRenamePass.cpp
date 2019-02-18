@@ -252,7 +252,8 @@ bool BlockVarRenamePass::renameBlockVars(
     const int numBB = proc->getCFG()->getNumBBs();
 
     for (int X = 0; X < numBB; X++) {
-        if (proc->getDataFlow()->getIdom(X) == n) { // if 'n' is immediate dominator of X
+        const int idom = proc->getDataFlow()->getIdom(X);
+        if (idom == n && X != n) { // if 'n' is immediate dominator of X
             renameBlockVars(proc, X, stacks);
         }
     }
