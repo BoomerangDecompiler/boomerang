@@ -283,11 +283,18 @@ void ProcCFG::removeBB(BasicBlock *bb)
         return;
     }
 
-    BBStartMap::iterator bbIt = m_bbStartMap.find(bb->getLowAddr());
-    if (bbIt != m_bbStartMap.end()) {
-        m_bbStartMap.erase(bbIt);
+    BBStartMap::iterator firstIt, lastIt;
+    std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getLowAddr());
+
+    for (auto it = firstIt; it != lastIt; ++it) {
+        if (it->second == bb) {
+            m_bbStartMap.erase(it);
+            delete bb;
+            return;
+        }
     }
 
+    LOG_WARN("Tried to remove BB at address %1; does not exist in CFG", bb->getLowAddr());
     delete bb;
 }
 
