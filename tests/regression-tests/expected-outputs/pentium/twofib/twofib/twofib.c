@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-void twofib(__size32 param3, int param4, int *param3, int param4);
+void twofib(__size32 param3, __size32 param4, __size32 *param3, __size32 param4);
 
 
 /** address: 0x080483f5 */
@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     int local0; 		// m[esp - 8]
     __size32 local1; 		// m[esp - 76]
-    int local2; 		// m[esp - 72]
+    __size32 local2; 		// m[esp - 72]
     int local3; 		// m[esp - 20]
 
     printf("Enter number: ");
@@ -18,14 +18,14 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x0804839c */
-void twofib(__size32 param3, int param4, int *param3, int param4)
+void twofib(__size32 param3, __size32 param4, __size32 *param3, __size32 param4)
 {
-    union { int; int *; } esp; 		// r28
+    union { int; __size32 *; } esp; 		// r28
     int local0; 		// m[esp - 12]
     int local1; 		// m[esp - 8]
-    int local10; 		// m[esp - 88]
+    __size32 local10; 		// m[esp - 88]
     __size32 local11; 		// m[esp - 52]
-    int local12; 		// m[esp - 48]
+    __size32 local12; 		// m[esp - 48]
     __size32 local9; 		// m[esp - 92]
 
     if (param4 != 0) {
@@ -37,7 +37,7 @@ void twofib(__size32 param3, int param4, int *param3, int param4)
         local0 = 0;
         local1 = 1;
     }
-    *(int*)param3 = local0;
+    *(__size32*)param3 = local0;
     *(__size32*)(param3 + 4) = local1;
     return;
 }
