@@ -34,6 +34,10 @@ private:
     void addToRecursionGroup(UserProc *proc, const std::shared_ptr<ProcSet> &recursionGroup);
 
 private:
+    /// Decompile \p callee recursively when called by \p caller
+    /// \returns caller->getStatus();
+    ProcStatus decompileCallee(UserProc *callee, UserProc *caller);
+
     /// Early decompile:
     /// sort CFG, number statements, dominator tree, place phi functions, number statements, first
     /// rename, propagation: ready for preserveds.
@@ -92,7 +96,7 @@ private:
      * If the function does not exist, it is created.
      * \returns the new function.
      */
-    Function *tryDecompileRecursive(Address entryAddr, Prog *prog);
+    Function *tryDecompileRecursive(Address entryAddr, Prog *prog, UserProc *caller);
 
 private:
     ProcList m_callStack;

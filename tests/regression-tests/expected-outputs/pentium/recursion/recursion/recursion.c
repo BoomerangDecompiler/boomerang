@@ -128,8 +128,8 @@ __size32 j(int param1)
 __size32 l(union { int; __size32 *; } param1)
 {
     int eax; 		// r24
-    __size32 ecx; 		// r25
-    __size32 edx; 		// r26
+    int ecx; 		// r25
+    int edx; 		// r26
 
     eax = printf("l(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 1) {
@@ -154,8 +154,8 @@ __size32 e(int param1)
 __size32 g(union { int; __size32 *; } param1)
 {
     int eax; 		// r24
-    __size32 ecx; 		// r25
-    __size32 edx; 		// r26
+    int ecx; 		// r25
+    int edx; 		// r26
 
     eax = printf("g(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 1) {
@@ -179,8 +179,8 @@ __size32 i(int param1)
 __size32 k(int param1)
 {
     int eax; 		// r24
-    __size32 ecx; 		// r25
-    __size32 edx; 		// r26
+    int ecx; 		// r25
+    int edx; 		// r26
 
     eax = printf("k(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 1) {

@@ -101,59 +101,10 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                 continue;
             }
 
-            // check if the callee has already been visited but not done (apart from global
-            // analyses). This means that we have found a new cycle or a part of an existing cycle
-            if ((callee->getStatus() >= ProcStatus::Visited) &&
-                (callee->getStatus() <= ProcStatus::MiddleDone)) {
-                // if callee is in callStack
-                ProcList::iterator calleeIt = std::find(m_callStack.begin(), m_callStack.end(),
-                                                        callee);
+            decompileCallee(callee, proc);
 
-                if (calleeIt != m_callStack.end()) {
-                    // This is a completely new cycle
-                    std::shared_ptr<ProcSet> newRecursionGroup(new ProcSet());
-                    newRecursionGroup->insert(calleeIt, m_callStack.end());
-                    createRecursionGoup(newRecursionGroup);
-                }
-                else if (callee->getRecursionGroup()) {
-                    // This is a new branch of an existing cycle that was visited previously
-                    std::shared_ptr<ProcSet> recursionGroup = callee->getRecursionGroup();
-
-                    // Find first element func of callStack that is in callee->recursionGroup
-                    ProcList::iterator _pi = std::find_if(
-                        m_callStack.begin(), m_callStack.end(), [callee](UserProc *func) {
-                            return callee->getRecursionGroup()->find(func) !=
-                                   callee->getRecursionGroup()->end();
-                        });
-
-                    // Insert every proc after func to the end of path into child
-                    assert(_pi != m_callStack.end());
-                    for (auto it = std::next(_pi); it != m_callStack.end(); ++it) {
-                        addToRecursionGroup(*it, recursionGroup);
-                    }
-                }
-
-                proc->setStatus(ProcStatus::InCycle);
-            }
-            else {
-                // No new cycle
-                LOG_VERBOSE("Preparing to decompile callee '%1' of '%2'", callee->getName(),
-                            proc->getName());
-
-                if (project->getSettings()->usePromotion) {
-                    callee->promoteSignature();
-                }
-
-                tryDecompileRecursive(callee);
-                // Callee has at least done middleDecompile(), possibly more
-                call->setCalleeReturn(callee->getRetStmt());
-
-                if (proc->getStatus() != ProcStatus::InCycle &&
-                    m_recursionGroups.find(proc) != m_recursionGroups.end()) {
-                    proc->setStatus(ProcStatus::InCycle);
-                    proc->setRecursionGroup(m_recursionGroups.find(proc)->second);
-                }
-            }
+            // Callee has at least done middleDecompile(), possibly more
+            call->setCalleeReturn(callee->getRetStmt());
         }
     }
 
@@ -752,7 +703,7 @@ bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
             if (converted) {
                 Function *f = call->getDestProc();
                 if (f && !f->isLib()) {
-                    tryDecompileRecursive(static_cast<UserProc *>(f));
+                    decompileCallee(static_cast<UserProc *>(f), proc);
                     call->setCalleeReturn(static_cast<UserProc *>(f)->getRetStmt());
                     change = true;
                 }
@@ -776,7 +727,7 @@ bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
             if (asgn->getType()->resolvesToFuncPtr()) {
                 if (asgn->getRight()->isIntConst()) {
                     std::shared_ptr<Const> rhs = asgn->getRight()->access<Const>();
-                    Function *f = tryDecompileRecursive(rhs->getAddr(), proc->getProg());
+                    Function *f = tryDecompileRecursive(rhs->getAddr(), proc->getProg(), proc);
                     asgn->setRight(Const::get(f));
                     changed = true;
                 }
@@ -786,8 +737,10 @@ bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
                     std::shared_ptr<Const> rhsLeft  = asgn->getRight()->access<Const, 2>();
                     std::shared_ptr<Const> rhsRight = asgn->getRight()->access<Const, 3>();
 
-                    Function *fLeft  = tryDecompileRecursive(rhsLeft->getAddr(), proc->getProg());
-                    Function *fRight = tryDecompileRecursive(rhsRight->getAddr(), proc->getProg());
+                    Function *fLeft  = tryDecompileRecursive(rhsLeft->getAddr(), proc->getProg(),
+                                                            proc);
+                    Function *fRight = tryDecompileRecursive(rhsRight->getAddr(), proc->getProg(),
+                                                             proc);
 
                     asgn->setRight(Ternary::get(opTern, asgn->getRight()->getSubExp1(),
                                                 Const::get(fLeft), Const::get(fRight)));
@@ -800,7 +753,7 @@ bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
 }
 
 
-Function *ProcDecompiler::tryDecompileRecursive(Address entryAddr, Prog *prog)
+Function *ProcDecompiler::tryDecompileRecursive(Address entryAddr, Prog *prog, UserProc *caller)
 {
     if (entryAddr == Address::INVALID) {
         return nullptr;
@@ -810,8 +763,67 @@ Function *ProcDecompiler::tryDecompileRecursive(Address entryAddr, Prog *prog)
 
     assert(f);
     if (!f->isLib()) {
-        tryDecompileRecursive(static_cast<UserProc *>(f));
+        decompileCallee(static_cast<UserProc *>(f), caller);
     }
 
     return f;
+}
+
+
+ProcStatus ProcDecompiler::decompileCallee(UserProc *callee, UserProc *proc)
+{
+    Project *project = proc->getProg()->getProject();
+
+    // check if the callee has already been visited but not done (apart from global
+    // analyses). This means that we have found a new cycle or a part of an existing cycle
+    if ((callee->getStatus() >= ProcStatus::Visited) &&
+        (callee->getStatus() <= ProcStatus::MiddleDone)) {
+        // if callee is in callStack
+        ProcList::iterator calleeIt = std::find(m_callStack.begin(), m_callStack.end(), callee);
+
+        if (calleeIt != m_callStack.end()) {
+            // This is a completely new cycle
+            std::shared_ptr<ProcSet> newRecursionGroup(new ProcSet());
+            newRecursionGroup->insert(calleeIt, m_callStack.end());
+            createRecursionGoup(newRecursionGroup);
+        }
+        else if (callee->getRecursionGroup()) {
+            // This is a new branch of an existing cycle that was visited previously
+            std::shared_ptr<ProcSet> recursionGroup = callee->getRecursionGroup();
+
+            // Find first element func of callStack that is in callee->recursionGroup
+            ProcList::iterator _pi = std::find_if(
+                m_callStack.begin(), m_callStack.end(), [callee](UserProc *func) {
+                    return callee->getRecursionGroup()->find(func) !=
+                           callee->getRecursionGroup()->end();
+                });
+
+            // Insert every proc after func to the end of path into child
+            assert(_pi != m_callStack.end());
+            for (auto it = std::next(_pi); it != m_callStack.end(); ++it) {
+                addToRecursionGroup(*it, recursionGroup);
+            }
+        }
+
+        proc->setStatus(ProcStatus::InCycle);
+    }
+    else {
+        // No new cycle
+        LOG_VERBOSE("Preparing to decompile callee '%1' of '%2'", callee->getName(),
+                    proc->getName());
+
+        if (project->getSettings()->usePromotion) {
+            callee->promoteSignature();
+        }
+
+        tryDecompileRecursive(callee);
+
+        if (proc->getStatus() != ProcStatus::InCycle &&
+            m_recursionGroups.find(proc) != m_recursionGroups.end()) {
+            proc->setStatus(ProcStatus::InCycle);
+            proc->setRecursionGroup(m_recursionGroups.find(proc)->second);
+        }
+    }
+
+    return proc->getStatus();
 }
