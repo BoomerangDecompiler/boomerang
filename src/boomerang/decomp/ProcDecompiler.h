@@ -16,6 +16,9 @@
 #include <unordered_map>
 
 
+/**
+ * Contains the algorithm that determines how and in which order UserProcs are decompiled.
+ */
 class BOOMERANG_API ProcDecompiler
 {
 public:
