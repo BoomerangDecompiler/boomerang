@@ -38,72 +38,22 @@ void ProcDecompiler::decompileRecursive(UserProc *proc)
 
 ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 {
-    /* Cycle detection logic:
-     * *********************
-     * cycleGrp is an initially null pointer to a set of procedures, representing the procedures
-     * involved in the current recursion group, if any. These procedures have to be analysed
-     * together as a group, after individual pre-group analysis. child is a set of procedures,
-     * cleared at the top of decompile(), representing the cycles associated with the current
-     * procedure and all of its children. If this is empty, the current procedure is not involved in
-     * recursion, and can be decompiled up to and including removing unused statements. callStack is
-     * an initially empty list of procedures, representing the call stack from the current entry
-     * point to the current procedure, inclusive. If (after all children have been processed:
-     * important!) the first element in callStack and also cycleGrp is the current procedure, we
-     * have the maximal set of distinct cycles, so we can do the recursion group analysis and return
-     * an empty set. At the end of the recursion group analysis, the whole group is complete, ready
-     * for the global analyses.
-     *
-     *   cycleSet decompile(ProcList callStack)        // call stack initially empty
-     *     child = new ProcSet
-     *     push this proc to the call stack
-     *     for each child c called by this proc
-     *       if c has already been visited but not finished
-     *         // have new cycle
-     *         if c is in callStack
-     *           // this is a completely new cycle
-     *           insert every proc from c to the end of callStack into child
-     *         else
-     *           // this is a new branch of an existing cycle
-     *           child = c->cycleGrp
-     *           find first element f of callStack that is in cycleGrp
-     *           insert every proc after f to the end of callStack into child
-     *           for each element e of child
-     *         insert e->cycleGrp into child
-     *         e->cycleGrp = child
-     *       else
-     *         // no new cycle
-     *         tmp = c->decompile(callStack)
-     *         child = union(child, tmp)
-     *         set return statement in call to that of c
-     *
-     *     if (child empty)
-     *       earlyDecompile()
-     *       child = middleDecompile()
-     *       removeUnusedStatments()            // Not involved in recursion
-     *     else
-     *       // Is involved in recursion
-     *       find first element f in callStack that is also in cycleGrp
-     *       if (f == this) // The big test: have we got the complete strongly connected component?
-     *         recursionGroupAnalysis() // Yes, we have
-     *         child = new ProcSet      // Don't add these processed cycles to the parent
-     *     remove last element (= this) from callStack
-     *     return child
-     */
-
     Project *project = proc->getProg()->getProject();
 
-    LOG_MSG("%1 procedure '%2'",
-            (proc->getStatus() >= ProcStatus::Visited) ? "Re-visiting" : "Visiting",
-            proc->getName());
-    project->alertDiscovered(proc);
+    if (proc->getStatus() >= ProcStatus::Visited) {
+        LOG_MSG("Visiting procedure '%1'", proc->getName());
+    }
+    else {
+        project->alertDiscovered(proc);
+        LOG_MSG("Re-visiting procedure '%1'", proc->getName());
+    }
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (proc->isDecompiled()) {
         LOG_WARN("Not decompiling '%1' because it is already decompiled.", proc->getName());
         return ProcStatus::FinalDone;
     }
-
-    if (proc->getStatus() < ProcStatus::Decoded) {
+    else if (proc->getStatus() < ProcStatus::Decoded) {
         // Can happen e.g. if a callee is visible only after analysing a switch statement
         // Actually decoding for the first time, not REdecoding
         if (!proc->getProg()->reDecode(proc)) {
