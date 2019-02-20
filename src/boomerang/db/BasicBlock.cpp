@@ -773,3 +773,42 @@ void BasicBlock::removeRTL(RTL *rtl)
         updateBBAddresses();
     }
 }
+
+
+bool BasicBlock::isEmpty() const
+{
+    if (getRTLs() == nullptr) {
+        return true;
+    }
+
+    for (const auto &rtl : *getRTLs()) {
+        if (!rtl->empty()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool BasicBlock::isEmptyJump() const
+{
+    if (m_listOfRTLs == nullptr || m_listOfRTLs->empty()) {
+        return false;
+    }
+    else if (m_listOfRTLs->back()->size() != 1) {
+        return false;
+    }
+    else if (!m_listOfRTLs->back()->back()->isGoto()) {
+        return false;
+    }
+    else {
+        for (auto it = m_listOfRTLs->begin(); it != std::prev(m_listOfRTLs->end()); ++it) {
+            if (!(*it)->empty()) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}

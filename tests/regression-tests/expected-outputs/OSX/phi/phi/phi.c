@@ -30,7 +30,7 @@ __size32 fib(int param1)
     g30 = g1 - 96;
     g31 = /* machine specific */ (int) LR;
     if (param1 <= 1) {
-        if (param1 == 1) {
+        if (param1 != 1) {
         }
     }
     else {

@@ -44,8 +44,6 @@ __size32 c(unsigned int param1)
     if (param1 <= 6) {
         eax = global_0x080486c4[param1];
         switch(param1) {
-        case 0:
-        case 1:
         case 2:
             eax = d(2); /* Warning: also results in ecx, edx */
             break;
@@ -61,6 +59,8 @@ __size32 c(unsigned int param1)
         case 6:
             eax = l(6); /* Warning: also results in ecx, edx */
             break;
+        case 0:
+        case 1:
         }
     }
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */

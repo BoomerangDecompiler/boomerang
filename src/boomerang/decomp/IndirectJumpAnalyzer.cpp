@@ -429,13 +429,12 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     // Decode the newly discovered switch code arms, if any, and if not already decoded
     int count = 0;
 
-    for (Address addr : dests) {
-        char tmp[1024];
+    for (Address dest : dests) {
         count++;
-        snprintf(tmp, 1024, "before decoding fragment %i of %zu (%s)", count, dests.size(),
-                 qPrintable(addr.toString()));
-        proc->getProg()->getProject()->alertDecompileDebugPoint(proc, tmp);
-        prog->decodeFragment(proc, addr);
+        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)", bb->getHiAddr(),
+                    count, dests.size(), dest);
+
+        prog->decodeFragment(proc, dest);
     }
 }
 

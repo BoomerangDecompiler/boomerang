@@ -7,6 +7,7 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is a string instruction.
 - Fixed: Crash when decompiling x86 binaries that contain instructions accessing FS or GS segment registers.
 - Fixed: Crash when decompiling tail-recursive functions.
+- Fixed: Crash when removing an empty jump in a delay slot on SPARC.
 - Fixed: Crash when analyzing data-flow for functions consisting of a single Basic Block.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
@@ -31,6 +32,7 @@ v0.5.0 (in development)
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
 - Improved: Type Analysis of code containing ternary ?: operator.
 - Improved: Analysis of calls via function pointers.
+- Improved: Ordering of case labels in high-level switch statements.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.

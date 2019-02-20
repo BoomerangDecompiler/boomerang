@@ -548,4 +548,46 @@ void BasicBlockTest::testUpdateBBAddresses()
 }
 
 
+void BasicBlockTest::testIsEmpty()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.isEmpty());
+
+    bb1.setRTLs(std::unique_ptr<RTLList>(new RTLList));
+    QVERIFY(bb1.isEmpty());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000))));
+    QVERIFY(bb1.isEmpty());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001))));
+    QVERIFY(bb1.isEmpty());
+
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { jump })));
+
+    QVERIFY(!bb1.isEmpty());
+}
+
+
+void BasicBlockTest::testIsEmptyJump()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(!bb1.isEmptyJump());
+
+    bb1.setRTLs(std::unique_ptr<RTLList>(new RTLList));
+    QVERIFY(!bb1.isEmptyJump());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000))));
+    QVERIFY(!bb1.isEmptyJump());
+
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
+    QVERIFY(bb1.isEmptyJump());
+
+    Assign *asgn = new Assign(Terminal::get(opNil), Terminal::get(opNil));
+    bb1.getRTLs()->back()->push_front(asgn);
+    QVERIFY(!bb1.isEmptyJump());
+}
+
+
 QTEST_GUILESS_MAIN(BasicBlockTest)
