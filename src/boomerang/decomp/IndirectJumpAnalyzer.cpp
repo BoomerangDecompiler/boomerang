@@ -431,8 +431,8 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
     for (Address dest : dests) {
         count++;
-        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)",
-                    bb->getHiAddr(), count, dests.size(), dest);
+        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)", bb->getHiAddr(),
+                    count, dests.size(), dest);
 
         prog->decodeFragment(proc, dest);
     }

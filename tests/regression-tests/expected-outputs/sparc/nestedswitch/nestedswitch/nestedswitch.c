@@ -13,7 +13,6 @@ bb0x106d0:
     }
     switch(argc) {
     case 0:
-        goto bb0x106d0;
     case 1:
         goto bb0x106d0;
     case 2:

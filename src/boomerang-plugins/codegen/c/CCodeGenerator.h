@@ -31,6 +31,7 @@ class LocationSet;
 class BinaryImage;
 class Statement;
 
+struct SwitchInfo;
 
 /// Operator precedence
 /**
@@ -305,6 +306,16 @@ private:
     bool isGenerated(const BasicBlock *bb) const;
 
     void emitCodeForStmt(const Statement *stmt);
+
+    /**
+     * Computes the optimal case ordering of switch statements.
+     * The ordering is determined by the position in the list; by traversing the list front-to-back,
+     * one emits the case statements in the correct order.
+     * The value or the case label is determined by the value of the first part of the pair,
+     * the jump destination for the case is determined by the second part of the pair.
+     */
+    std::list<std::pair<SharedExp, const BasicBlock *>>
+    computeOptimalCaseOrdering(const BasicBlock *caseHead, SwitchInfo *switchInfo);
 
 private:
     void print(const Module *module);

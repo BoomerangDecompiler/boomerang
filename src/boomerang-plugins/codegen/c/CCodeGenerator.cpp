@@ -2234,29 +2234,23 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
             addIfCondEnd();
         }
     }
-    else { // case header
-           // TODO: linearly emitting each branch of the switch does not result in optimal
-           // fall-through. generate code for each out branch
-        for (int i = 0; i < bb->getNumSuccessors(); i++) {
-            // emit a case label
-            // FIXME: Not valid for all switch types
-            Const caseVal(0);
+    else {
+        // case header
 
-            if (psi->switchType == SwitchType::F) { // "Fortran" style?
-                // Yes, use the table value itself
-                caseVal.setInt(reinterpret_cast<int *>(psi->tableAddr.value())[i]);
+        // first, determine the optimal fall-through ordering
+        std::list<std::pair<SharedExp, const BasicBlock *>>
+            switchDests = computeOptimalCaseOrdering(bb, psi);
+
+        for (auto it = switchDests.begin(); it != switchDests.end(); ++it) {
+            SharedExp caseValue    = it->first;
+            const BasicBlock *succ = it->second;
+
+            addCaseCondOption(*caseValue);
+            if (std::next(it) != switchDests.end() && std::next(it)->second == succ) {
+                // multiple case values; generate the BB only for the last case value
+                continue;
             }
-            else {
-                // Note that uTable has the address of an int array
-                caseVal.setInt(static_cast<int>(psi->lowerBound + i));
-            }
 
-            addCaseCondOption(caseVal);
-
-            // generate code for the current out-edge
-            const BasicBlock *succ = bb->getSuccessor(i);
-
-            // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
             if (isGenerated(succ)) {
                 emitGotoAndLabel(bb, succ);
             }
@@ -2538,6 +2532,55 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
     case StmtType::ImpAssign: LOG_ERROR("Encountered Implicit Assign in back end"); break;
     case StmtType::INVALID: LOG_ERROR("Encountered Invalid Statement in back end"); break;
     }
+}
+
+
+std::list<std::pair<SharedExp, const BasicBlock *>>
+CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, SwitchInfo *psi)
+{
+    using CaseEntry = std::pair<SharedExp, const BasicBlock *>;
+    std::list<CaseEntry> result;
+
+    for (int i = 0; i < caseHead->getNumSuccessors(); ++i) {
+        const BasicBlock *origSucc = caseHead->getSuccessor(i);
+        SharedExp caseVal;
+        if (psi->switchType == SwitchType::F) { // "Fortran" style?
+            // Yes, use the table value itself
+            caseVal = Const::get(reinterpret_cast<int *>(psi->tableAddr.value())[i]);
+        }
+        else {
+            // Note that uTable has the address of an int array
+            caseVal = Const::get(static_cast<int>(psi->lowerBound + i));
+        }
+
+        const BasicBlock *realSucc = origSucc;
+        while (realSucc->getNumSuccessors() == 1 &&
+               (realSucc->isEmpty() || realSucc->isEmptyJump())) {
+            realSucc = realSucc->getSuccessor(0);
+        }
+
+        result.push_back({ caseVal, realSucc });
+    }
+
+    result.sort([](const CaseEntry &left, const CaseEntry &right) {
+        const int leftVal  = left.first->access<Const>()->getInt();
+        const int rightVal = right.first->access<Const>()->getInt();
+
+        // TODO: Sort by optimal fallthrough, i.e. correctly emit the following code:
+        // switch (foo) {
+        // case 5:
+        //   bar();
+        // case 1:
+        //   baz();
+        // case 3:
+        //   puts("Hello");
+        //   break;
+        // }
+
+        return leftVal < rightVal;
+    });
+
+    return result;
 }
 
 
