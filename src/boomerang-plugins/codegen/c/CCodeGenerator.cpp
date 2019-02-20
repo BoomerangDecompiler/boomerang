@@ -2563,21 +2563,24 @@ CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, SwitchInf
     }
 
     result.sort([](const CaseEntry &left, const CaseEntry &right) {
-        const int leftVal  = left.first->access<Const>()->getInt();
-        const int rightVal = right.first->access<Const>()->getInt();
+        const BasicBlock *leftBB  = left.second;
+        const BasicBlock *rightBB = right.second;
 
-        // TODO: Sort by optimal fallthrough, i.e. correctly emit the following code:
-        // switch (foo) {
-        // case 5:
-        //   bar();
-        // case 1:
-        //   baz();
-        // case 3:
-        //   puts("Hello");
-        //   break;
-        // }
+        const BasicBlock *leftSucc = leftBB;
 
-        return leftVal < rightVal;
+        while (leftSucc->getType() != BBType::Ret) {
+            if (leftSucc == rightBB) {
+                return true; // the left case is a fallthrough to the right case
+            }
+            else if (leftSucc->getNumSuccessors() != 1) {
+                break;
+            }
+
+            leftSucc = leftSucc->getSuccessor(0);
+        }
+
+        // No fallthrough found; compare by address
+        return leftBB->getLowAddr() < rightBB->getLowAddr();
     });
 
     return result;
