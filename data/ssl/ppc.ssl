@@ -550,3 +550,14 @@ bnslr  BIcr            _;
 bunlr  BIcr            _;
 bnulr  BIcr            _;
 
+
+# Trap instructions
+TDI     cc, ra, simm    _;
+TDGTI   ra, simm        _;
+TDLTI   ra, simm        _;
+TDNEI   ra, simm        _;
+
+TWI     cc, ra, simm    _;
+TWGTI   ra, simm        _;
+TWLTI   ra, simm        _;
+TWNEI   ra, simm        _;
