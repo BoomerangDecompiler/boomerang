@@ -160,7 +160,7 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
         RTL rtl(*o_rtlist); // deep copy of contents
 
         if (dict->insert(instructionName, *params, rtl) != 0) {
-            LOG_ERROR("Pattern %1 conflics with an earlier declaration of %2.",
+            LOG_ERROR("Pattern %1 conflicts with an earlier declaration of %2.",
                       iname->getInsPattern(), instructionName);
             return false;
         }
