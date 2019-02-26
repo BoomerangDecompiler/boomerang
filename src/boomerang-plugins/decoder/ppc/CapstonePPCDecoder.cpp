@@ -63,12 +63,13 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     size_t numInstructions = cs_disasm(m_handle, instructionData, PPC_MAX_INSTRUCTION_LENGTH,
                                        pc.value(), 1, &decodedInstruction);
 
-    printf("%lx %s %s\n", decodedInstruction->address, decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.valid = numInstructions > 0;
     if (!result.valid) {
         return false;
     }
+
+    printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32*)instructionData, decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type = ICLASS::NOP; // only relevant for architectures with delay slots
     result.numBytes = PPC_MAX_INSTRUCTION_LENGTH;
@@ -136,7 +137,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID = insnID.toUpper();
 
-    if (insnID == "CMPLWI" || insnID == "CMPWI") {
+    if (insnID == "CMPLWI" || insnID == "CMPWI" || insnID == "CMPW") {
         insnID = insnID + QString::number(numOperands);
     }
     else if (insnID.endsWith("+") || insnID.endsWith("-")) {
@@ -151,7 +152,12 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "BL") {
+    if (insnID == "B") {
+        GotoStatement *jump = new GotoStatement(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setIsComputed(false);
+        rtl->append(jump);
+    }
+    else if (insnID == "BL") {
         Address callDest = Address(instruction->detail->ppc.operands[0].imm);
         CallStatement *callStmt = new CallStatement();
         callStmt->setDest(callDest);
@@ -168,9 +174,48 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "BGT") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[1].imm));
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
         jump->setCondType(BranchType::JSG);
         rtl->append(jump);
+    }
+    else if (insnID == "BGE") {
+        BranchStatement *jump = new BranchStatement();
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setCondType(BranchType::JSGE);
+        rtl->append(jump);
+    }
+    else if (insnID == "BLT") {
+        BranchStatement *jump = new BranchStatement();
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setCondType(BranchType::JSL);
+        rtl->append(jump);
+    }
+    else if (insnID == "BLE") {
+        BranchStatement *jump = new BranchStatement();
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setCondType(BranchType::JSLE);
+        rtl->append(jump);
+    }
+    else if (insnID == "BNE") {
+        BranchStatement *jump = new BranchStatement();
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setCondType(BranchType::JNE);
+        rtl->append(jump);
+    }
+    else if (insnID == "BEQ") {
+        BranchStatement *jump = new BranchStatement();
+        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setCondType(BranchType::JE);
+        rtl->append(jump);
+    }
+    else if (insnID == "BDNZL") {
+        const Address dest = Address(instruction->detail->ppc.operands[0].imm);
+        if (dest != pc + PPC_MAX_INSTRUCTION_LENGTH) {
+            BranchStatement *jump = new BranchStatement();
+            jump->setDest(dest);
+            jump->setCondType(BranchType::JNE);
+            rtl->append(jump);
+        }
     }
     else if (insnID == "CRCLR") {
         // This is because of a bug in Capstone: See https://github.com/aquynh/capstone/issues/971
@@ -188,7 +233,42 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
                                             Const::get(bitNum)),
                                Const::get(0)));
     }
+    else if (insnID == "STMW") {
+        rtl->clear();
+        const RegNum startRegNum = fixRegNum(operands[0].reg);
+        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))->simplify();
 
+        for (RegNum reg = startRegNum; reg <= REG_PPC_G31; ++reg) {
+            const int i = reg - startRegNum;
+            const SharedExp memExp = Location::memOf(Binary::get(opPlus,
+                                                                 startAddrExp->clone(),
+                                                                 Const::get(4*i)));
+
+            Assign *asgn = new Assign(SizeType::get(STD_SIZE),
+                                      memExp->simplify(),
+                                      Location::regOf(reg));
+
+            rtl->append(asgn);
+        }
+    }
+    else if (insnID == "LMW") {
+        rtl->clear();
+        const RegNum startRegNum = fixRegNum(operands[0].reg);
+        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))->simplify();
+
+        for (RegNum reg = startRegNum; reg <= REG_PPC_G31; ++reg) {
+            const int i = reg - startRegNum;
+            const SharedExp memExp = Location::memOf(Binary::get(opPlus,
+                                                                 startAddrExp->clone(),
+                                                                 Const::get(4*i)));
+
+            Assign *asgn = new Assign(SizeType::get(STD_SIZE),
+                                      Location::regOf(reg),
+                                      memExp->simplify());
+
+            rtl->append(asgn);
+        }
+    }
 
     return rtl;
 }

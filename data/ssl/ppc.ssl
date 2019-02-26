@@ -313,6 +313,7 @@ ORCq        rd, ra, rb          *32* rd := ra | (~rb)           SETFLAGS0(rd);
 
 # Note: SRAW/SRAWI also set the carry flag (%XERCA) in some weird way
 SLW         Rd, Rs, op2         *32* Rd := Rs <<  op2;
+SLWI        Rd, Rs, op2         *32* Rd := Rs <<  op2;
 SRW         Rd, Rs, op2         *32* Rd := Rs >>  op2;
 SRAW        Rd, Rs, op2         *32* Rd := Rs >>A op2;
 SRAWI       Rd, Rs, op2         *32* Rd := Rs >>A op2;
@@ -351,93 +352,23 @@ RLWIMIq     ra, rs, uimm, beg, end
 
 LWZ         dest, src               *32* dest := src;
 LWZX        dest, src               *32* dest := zfill(16, 32, src);
-LBZ         rd, eaddr, ra           *32* rd := zfill(8, 32, m[eaddr]);
-LHZ         rd, eaddr, ra           *32* rd := zfill(16, 32, m[eaddr]);
+LBZ         dest, src               *32* dest := zfill(8, 32, src);
+LHZ         dest, src               *32* dest := zfill(16, 32, src);
 LHA         rd, eaddr, ra           *32* rd := sgnex(16, 32, m[eaddr]);
 LBZX        rd, eaddr, ra           *32* rd := zfill(8, 32, m[eaddr]);
 
 STWU        src, dest               *32* dest := src    *32* src := addr(dest);
 STW         src, dest               *32* dest := src;
-STWX        rs, eaddr               *32* m[eaddr] := rs;
-STH         rs, eaddr, ra           *16* m[eaddr] := truncs(32, 16, rs);
-STHX        rs, eaddr               *16* m[eaddr] := truncs(32, 16, rs);
-STB         rs, eaddr, ra           *8*  m[eaddr] := truncs(32, 8, rs);
-STBX        rs, eaddr               *8*  m[eaddr] := truncs(32, 8, rs);
+STWX        src, dest               *32* dest := src;
+STH         src, dest               *16* dest := truncs(32, 16, src);
+STHX        src, dest               *16* dest := truncs(32, 16, src);
+STB         src, dest               *8*  dest := truncs(32, 8, src);
+STBX        src, dest               *8*  dest := truncs(32, 8, src);
 
 
 # Multi word load and store
-
-LMW         rd, eaddr, d
-        *32* tmp := 0
-        *32* d <=  0 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  0 => tmp := tmp + 1
-        *32* d <=  1 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  1 => tmp := tmp + 1
-        *32* d <=  2 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  2 => tmp := tmp + 1
-        *32* d <=  3 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  3 => tmp := tmp + 1
-        *32* d <=  4 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  4 => tmp := tmp + 1
-        *32* d <=  5 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  5 => tmp := tmp + 1
-        *32* d <=  6 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  6 => tmp := tmp + 1
-        *32* d <=  7 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  7 => tmp := tmp + 1
-        *32* d <=  8 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  8 => tmp := tmp + 1
-        *32* d <=  9 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <=  9 => tmp := tmp + 1
-        *32* d <= 10 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 10 => tmp := tmp + 1
-        *32* d <= 11 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 11 => tmp := tmp + 1
-        *32* d <= 12 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 12 => tmp := tmp + 1
-        *32* d <= 13 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 13 => tmp := tmp + 1
-        *32* d <= 14 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 14 => tmp := tmp + 1
-        *32* d <= 15 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 15 => tmp := tmp + 1
-        *32* d <= 16 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 16 => tmp := tmp + 1
-        *32* d <= 17 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 17 => tmp := tmp + 1
-        *32* d <= 18 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 18 => tmp := tmp + 1
-        *32* d <= 19 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 19 => tmp := tmp + 1
-        *32* d <= 20 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 20 => tmp := tmp + 1
-        *32* d <= 21 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 21 => tmp := tmp + 1
-        *32* d <= 22 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 22 => tmp := tmp + 1
-        *32* d <= 23 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 23 => tmp := tmp + 1
-        *32* d <= 24 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 24 => tmp := tmp + 1
-        *32* d <= 25 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 25 => tmp := tmp + 1
-        *32* d <= 26 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 26 => tmp := tmp + 1
-        *32* d <= 27 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 27 => tmp := tmp + 1
-        *32* d <= 28 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 28 => tmp := tmp + 1
-        *32* d <= 29 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 29 => tmp := tmp + 1
-        *32* d <= 30 => r[d + tmp] := m[eaddr + (tmp*4)]        *32* d <= 30 => tmp := tmp + 1
-        *32* d <= 31 => r[d + tmp] := m[eaddr + (tmp*4)]
-;
-
-STMW        rs, eaddr, s
-        *32* tmp := 0
-        *32* s <=  0 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  0 => tmp := tmp + 1
-        *32* s <=  1 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  1 => tmp := tmp + 1
-        *32* s <=  2 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  2 => tmp := tmp + 1
-        *32* s <=  3 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  3 => tmp := tmp + 1
-        *32* s <=  4 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  4 => tmp := tmp + 1
-        *32* s <=  5 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  5 => tmp := tmp + 1
-        *32* s <=  6 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  6 => tmp := tmp + 1
-        *32* s <=  7 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  7 => tmp := tmp + 1
-        *32* s <=  8 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  8 => tmp := tmp + 1
-        *32* s <=  9 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <=  9 => tmp := tmp + 1
-        *32* s <= 10 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 10 => tmp := tmp + 1
-        *32* s <= 11 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 11 => tmp := tmp + 1
-        *32* s <= 12 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 12 => tmp := tmp + 1
-        *32* s <= 13 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 13 => tmp := tmp + 1
-        *32* s <= 14 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 14 => tmp := tmp + 1
-        *32* s <= 15 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 15 => tmp := tmp + 1
-        *32* s <= 16 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 16 => tmp := tmp + 1
-        *32* s <= 17 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 17 => tmp := tmp + 1
-        *32* s <= 18 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 18 => tmp := tmp + 1
-        *32* s <= 19 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 19 => tmp := tmp + 1
-        *32* s <= 20 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 20 => tmp := tmp + 1
-        *32* s <= 21 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 21 => tmp := tmp + 1
-        *32* s <= 22 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 22 => tmp := tmp + 1
-        *32* s <= 23 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 23 => tmp := tmp + 1
-        *32* s <= 24 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 24 => tmp := tmp + 1
-        *32* s <= 25 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 25 => tmp := tmp + 1
-        *32* s <= 26 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 26 => tmp := tmp + 1
-        *32* s <= 27 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 27 => tmp := tmp + 1
-        *32* s <= 28 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 28 => tmp := tmp + 1
-        *32* s <= 29 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 29 => tmp := tmp + 1
-        *32* s <= 30 => m[eaddr + (tmp*4)] := r[s + tmp]        *32* s <= 30 => tmp := tmp + 1
-        *32* s <= 31 => m[eaddr + (tmp*4)] := r[s + tmp]
-;
+LMW         s, dest     _;
+STMW        s, dest     _;
 
 
 # Floating point loads
@@ -482,7 +413,8 @@ BLR                                 _; # Semantics are hard-coded (see CapstoneP
 CMP         crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
 CMPI        crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
 
-CMPW        crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
+CMPW2       ra, rb                  SUBFLAGSNL(ra, rb, 0);
+CMPW3       crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
 CMPWI2      ra, simm                SUBFLAGSNS(ra, simm, 0);
 CMPWI3      crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
 
@@ -498,6 +430,7 @@ FCMPU       crfd, fa, fb            SETFFLAGSN(fa, fb,crfd);    # in exception h
 
 
 # condition register manipulation
+CRCLR           d                   _;
 CRAND           d, a, b             *1* d := a & b;
 CROR            d, a, b             *1* d := a | b;
 CRXOR           d, a, b             *1* d := a ^ b;
@@ -554,18 +487,19 @@ FDIVSq          fd, fa, fb        *64* fd := fa /f fb;        # Yet result is in
 # Note: The semantics for the instructions below are still hard-coded so they are not defined explicitly.
 
 # BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
-blt     BIcr, reloc     _;
-ble     BIcr, reloc     _;
-beq     BIcr, reloc     _;
-bge     BIcr, reloc     _;
-bgt     BIcr, reloc     _;
-bnl     BIcr, reloc     _;
-bne     BIcr, reloc     _;
-bng     BIcr, reloc     _;
-bso     BIcr, reloc     _;
-bns     BIcr, reloc     _;
-bun     BIcr, reloc     _;
-bnu     BIcr, reloc     _;
+b       dest            _;
+blt     dest            _;
+ble     dest            _;
+beq     dest            _;
+bge     dest            _;
+bgt     dest            _;
+bnl     dest            _;
+bne     dest            _;
+bng     dest            _;
+bso     dest            _;
+bns     dest            _;
+bun     dest            _;
+bnu     dest            _;
 
 # BRCONDSCTR[IDX] BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
 bltctr  BIcr            _;
@@ -595,20 +529,49 @@ bnslr  BIcr            _;
 bunlr  BIcr            _;
 bnulr  BIcr            _;
 
+# Decrement CTR, branch conditionally
+BDNZL   dest            *32* %LR := dest    *32* %CTR := %CTR - 1; # %pc update is hard-coded
+
 
 # Trap instructions
 TDI     cc, ra, simm    _;
 TDGTI   ra, simm        _;
 TDLTI   ra, simm        _;
+TDLGTI  ra, simm        _;
+TDLLTI  ra, simm        _;
 TDNEI   ra, simm        _;
+TDEQI   ra, simm        _;
+TDUI    ra, simm        _;
 
 TWI     cc, ra, simm    _;
 TWGTI   ra, simm        _;
 TWLTI   ra, simm        _;
 TWNEI   ra, simm        _;
-
+TWLGTI  ra, simm        _;
+TWLLTI  ra, simm        _;
+TWEQI   ra, simm        _;
+TWUI    ra, simm        _;
 
 # Vector instructions
+VADDCUW vd, va, vb
+    *64* tmp1 := zfill(32, 64, va@[0:31])   + zfill(32, 64, vb@[0:31])
+    *64* tmp2 := zfill(32, 64, va@[32:63])  + zfill(32, 64, vb@[32:63])
+    *64* tmp3 := zfill(32, 64, va@[64:95])  + zfill(32, 64, vb@[64:95])
+    *64* tmp4 := zfill(32, 64, va@[96:127]) + zfill(32, 64, vb@[96:127])
+    *32* vd@[0:31]   := zfill(1, 32, tmp1@[32:32])
+    *32* vd@[32:63]  := zfill(1, 32, tmp2@[32:32])
+    *32* vd@[64:95]  := zfill(1, 32, tmp3@[32:32])
+    *32* vd@[96:127] := zfill(1, 32, tmp4@[32:32])
+;
+
+VADDFP vd, va, vb
+    *32* vd@[0:31]   := va@[0:31]   +f vb@[0:31]
+    *32* vd@[32:63]  := va@[32:63]  +f vb@[32:63]
+    *32* vd@[64:95]  := va@[64:95]  +f vb@[64:95]
+    *32* vd@[96:127] := va@[96:127] +f vb@[96:127]
+;
+
+
 VADDUBM vd, va, vb
     *8* vd@[0:7]     := (va@[0:7]     + vb@[0:7])     & 0xFF
     *8* vd@[8:15]    := (va@[8:15]    + vb@[8:15])    & 0xFF
@@ -627,3 +590,47 @@ VADDUBM vd, va, vb
     *8* vd@[112:119] := (va@[112:119] + vb@[112:119]) & 0xFF
     *8* vd@[120:127] := (va@[120:127] + vb@[120:127]) & 0xFF
 ;
+
+VADDUHM vd, va, vb
+    *16* vd@[0:15]    := (va@[0:15]    + vb@[0:15])    & 0xFFFF
+    *16* vd@[15:31]   := (va@[15:31]   + vb@[15:31])   & 0xFFFF
+    *16* vd@[32:47]   := (va@[32:47]   + vb@[32:47])   & 0xFFFF
+    *16* vd@[48:63]   := (va@[48:63]   + vb@[48:63])   & 0xFFFF
+    *16* vd@[64:79]   := (va@[64:79]   + vb@[64:79])   & 0xFFFF
+    *16* vd@[80:95]   := (va@[80:95]   + vb@[80:95])   & 0xFFFF
+    *16* vd@[96:111]  := (va@[96:111]  + vb@[96:111])  & 0xFFFF
+    *16* vd@[112:127] := (va@[112:127] + vb@[112:127]) & 0xFFFF
+;
+
+VADDUWM vd, va, vb
+    *32* vd@[0:31]    := (va@[0:31]    + vb@[0:31])    & 0xFFFFFFFF
+    *32* vd@[32:63]   := (va@[32:63]   + vb@[32:63])   & 0xFFFFFFFF
+    *32* vd@[64:95]   := (va@[64:95]   + vb@[64:95])   & 0xFFFFFFFF
+    *32* vd@[96:127]  := (va@[96:127]  + vb@[96:127])  & 0xFFFFFFFF
+;
+
+VAND vd, va, vb
+    *128* vd := va & vb
+;
+
+VANDC vd, va, vb
+    *128* vd := va & ~vb
+;
+
+VSR vd, va, vb
+    *128* vd := va >> vb@[125:127]
+;
+
+VUPKLSH vd, vb
+    *32* vd@[0:31]   := sgnex(16, 32, vb@[0:15])
+    *32* vd@[32:63]  := sgnex(16, 32, vb@[16:31])
+    *32* vd@[64:95]  := sgnex(16, 32, vb@[32:47])
+    *32* vd@[96:127] := sgnex(16, 32, vb@[48:63])
+;
+
+VXOR vd, va, vb
+    *128* vd := va ^ vb
+;
+
+# Misc other instructions
+ATTN                    _;
