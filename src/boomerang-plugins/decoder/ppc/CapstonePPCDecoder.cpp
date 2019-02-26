@@ -136,6 +136,10 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID = insnID.toUpper();
 
+    if (insnID == "CMPLWI" || insnID == "CMPWI") {
+        insnID = insnID + QString::number(numOperands);
+    }
+
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
 
     if (rtl == nullptr) {
