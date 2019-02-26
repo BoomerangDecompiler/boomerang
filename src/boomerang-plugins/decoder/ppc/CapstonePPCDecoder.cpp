@@ -139,6 +139,9 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     if (insnID == "CMPLWI" || insnID == "CMPWI") {
         insnID = insnID + QString::number(numOperands);
     }
+    else if (insnID.endsWith("+") || insnID.endsWith("-")) {
+        insnID = insnID.left(insnID.length()-1);
+    }
 
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
 
