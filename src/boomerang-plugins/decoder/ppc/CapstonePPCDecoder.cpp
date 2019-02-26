@@ -138,6 +138,12 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
 
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
 
+    if (rtl == nullptr) {
+        LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
+                  insnID, instruction->op_str);
+        return std::make_unique<RTL>(pc);
+    }
+
     if (insnID == "BL") {
         Address callDest = Address(instruction->detail->ppc.operands[0].imm);
         CallStatement *callStmt = new CallStatement();
@@ -176,10 +182,6 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
                                Const::get(0)));
     }
 
-    if (rtl == nullptr) {
-        LOG_ERROR("Encountered invalid instruction, treating instruction as NOP");
-        rtl = std::make_unique<RTL>(pc);
-    }
 
     return rtl;
 }
