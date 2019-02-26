@@ -172,42 +172,42 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "BGT") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JSG);
         rtl->append(jump);
     }
     else if (insnID == "BGE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JSGE);
         rtl->append(jump);
     }
     else if (insnID == "BLT") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JSL);
         rtl->append(jump);
     }
     else if (insnID == "BLE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JSLE);
         rtl->append(jump);
     }
     else if (insnID == "BNE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JNE);
         rtl->append(jump);
     }
     else if (insnID == "BEQ") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(Address(instruction->detail->ppc.operands[0].imm));
+        jump->setDest(operandToExp(operands[0]));
         jump->setCondType(BranchType::JE);
         rtl->append(jump);
     }
     else if (insnID == "BDNZL") {
-        const Address dest = Address(instruction->detail->ppc.operands[0].imm);
+        const Address dest = operandToExp(operands[numOperands-1])->access<Const>()->getAddr();
         if (dest != pc + PPC_MAX_INSTRUCTION_LENGTH) {
             BranchStatement *jump = new BranchStatement();
             jump->setDest(dest);
