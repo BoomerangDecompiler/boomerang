@@ -137,10 +137,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID = insnID.toUpper();
 
-    if (insnID == "CMPLWI" || insnID == "CMPWI" || insnID == "CMPW") {
-        insnID = insnID + QString::number(numOperands);
-    }
-    else if (insnID.endsWith("+") || insnID.endsWith("-")) {
+    // Chop off branch prediction hints
+    if (insnID.endsWith("+") || insnID.endsWith("-")) {
         insnID = insnID.left(insnID.length()-1);
     }
 
@@ -294,15 +292,9 @@ std::unique_ptr<RTL> CapstonePPCDecoder::instantiateRTL(Address pc, const char *
         LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, argNames);
     }
 
-    bool found;
-    const std::pair<QString, DWord> &signature = m_dict.getSignature(instructionID, &found);
-
-    if (found) {
-        return m_dict.instantiateRTL(signature.first, pc, args);
-    }
-    else {
-        return nullptr;
-    }
+    // Take the argument, convert it to upper case and remove any .'s
+    const QString sanitizedName = QString(instructionID).remove(".").toUpper();
+    return m_dict.instantiateRTL(sanitizedName, pc, args);
 }
 
 

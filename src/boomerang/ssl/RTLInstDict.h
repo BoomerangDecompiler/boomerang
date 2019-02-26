@@ -61,9 +61,6 @@ public:
      */
     bool readSSLFile(const QString &sslFileName);
 
-    /// \returns the name and the number of operands of the instruction
-    std::pair<QString, DWord> getSignature(const QString &name, bool *found = nullptr) const;
-
     /**
      * Returns a new RTL containing the semantics of the instruction with name \p name.
      *
@@ -129,5 +126,5 @@ private:
     std::set<QString> m_flagFuncs;
 
     /// The actual instruction dictionary.
-    std::map<QString, TableEntry> m_instructions;
+    std::map<std::pair<QString, int>, TableEntry> m_instructions;
 };

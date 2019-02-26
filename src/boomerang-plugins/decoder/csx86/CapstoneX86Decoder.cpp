@@ -418,6 +418,9 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(Address pc, const char *
                                                         int numOperands,
                                                         const cs::cs_x86_op *operands)
 {
+    // Take the argument, convert it to upper case and remove any .'s
+    const QString sanitizedName = QString(instructionID).remove(".").toUpper();
+
     std::vector<SharedExp> args(numOperands);
     for (int i = 0; i < numOperands; i++) {
         args[i] = operandToExp(operands[i]);
@@ -435,15 +438,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(Address pc, const char *
         LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, argNames);
     }
 
-    bool found;
-    const std::pair<QString, DWord> &signature = m_dict.getSignature(instructionID, &found);
-
-    if (found) {
-        return m_dict.instantiateRTL(signature.first, pc, args);
-    }
-    else {
-        return nullptr;
-    }
+    return m_dict.instantiateRTL(sanitizedName, pc, args);
 }
 
 

@@ -59,24 +59,8 @@ bool NJMCDecoder::initialize(Project *project)
 std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
                                               const std::initializer_list<SharedExp> &args)
 {
-    // Get the signature of the instruction and extract its parts
-    std::pair<QString, int> sig = m_rtlDict.getSignature(name);
-    QString opcode              = sig.first;
-    int numOperands             = sig.second;
-
-    if (numOperands == -1) {
-        LOG_ERROR("Could not find semantics for instruction '%1', treating instruction as NOP",
-                  name);
-        return m_rtlDict.instantiateRTL("NOP", pc, {});
-    }
-    else if (numOperands != (int)args.size()) {
-        QString msg = QString("Disassembled instruction '%1' has %2 arguments, "
-                              "but the instruction has %3 parameters in the RTL dictionary")
-                          .arg(name)
-                          .arg(args.size())
-                          .arg(numOperands);
-        throw std::runtime_error(msg.toStdString());
-    }
+    // Take the argument, convert it to upper case and remove any .'s
+    const QString sanitizedName = QString(name).remove(".").toUpper();
 
     // Put the operands into a vector
     std::vector<SharedExp> actuals(args);
@@ -107,7 +91,14 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
         q_cout << '\n';
     }
 
-    return m_rtlDict.instantiateRTL(opcode, pc, actuals);
+    std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, pc, actuals);
+    if (!rtl) {
+        LOG_ERROR("Could not find semantics for instruction '%1', treating instruction as NOP",
+                  name);
+        return m_rtlDict.instantiateRTL("NOP", pc, {});
+    }
+
+    return rtl;
 }
 
 
