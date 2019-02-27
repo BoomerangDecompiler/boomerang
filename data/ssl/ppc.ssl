@@ -347,6 +347,8 @@ RLWIMIq     ra, rs, uimm, beg, end
         SETFLAGS0(ra)
 ;
 
+CLRLWI  rd, ra, ct      *32* rd := ra@[0:(32-ct)];
+
 
 # Memory access. rA is passed twice; as part of eaddr, and by itself for the U versions (update rA)
 
