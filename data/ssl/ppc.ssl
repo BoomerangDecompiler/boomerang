@@ -412,7 +412,6 @@ BLR                                 _; # Semantics are hard-coded (see CapstoneP
 # Comparisons. Ignore XER[SO] for now.
 CMP         crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
 CMPI        crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
-
 CMPW        ra, rb                  SUBFLAGSNL(ra, rb, 0);
 CMPW        crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
 CMPWI       ra, simm                SUBFLAGSNS(ra, simm, 0);
@@ -420,10 +419,10 @@ CMPWI       crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
 
 CMPL        crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
 CMPLI       crfd, ra, uimm          SUBFLAGSNL(ra, uimm, crfd);
-
+CMPLW       ra, rb                  SUBFLAGSNL(ra, rb, 0);
+CMPLW       crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
 CMPLWI      ra, uimm                SUBFLAGSNL(ra, uimm, 0);
 CMPLWI      crfd, ra, uimm          SUBFLAGSNL(ra, uimm, crfd);
-
 
 FCMPO       crfd, fa, fb            SETFFLAGSN(fa, fb,crfd);    # Difference between O and U forms is
 FCMPU       crfd, fa, fb            SETFFLAGSN(fa, fb,crfd);    # in exception handling
