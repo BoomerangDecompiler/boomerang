@@ -350,8 +350,7 @@ RLWIMIq     ra, rs, uimm, beg, end
 CLRLWI  rd, ra, ct      *32* rd := ra@[0:(32-ct)];
 
 
-# Memory access. rA is passed twice; as part of eaddr, and by itself for the U versions (update rA)
-
+# Memory access.
 LWZ         dest, src               *32* dest := src;
 LWZX        dest, src               *32* dest := zfill(16, 32, src);
 LBZ         dest, src               *32* dest := zfill(8, 32, src);

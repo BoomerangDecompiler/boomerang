@@ -142,6 +142,9 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
         insnID = insnID.left(insnID.length()-1);
     }
 
+    // . cannot be part of an identifier -> use q instead
+    insnID = insnID.replace('.', 'q');
+
     // Adjust the operands of cr* instructions (e.g. crxor).
     // This is to work around a bug in Capstone: The operands are disassembled as PPC_OP_REG
     // instead of PPC_OP_IMM or PPC_OP_CRX. See https://github.com/aquynh/capstone/issues/971
