@@ -541,8 +541,9 @@ bunlr  BIcr            _;
 bnulr  BIcr            _;
 
 # Decrement CTR, branch conditionally
-BDNZL   dest            *32* %LR := dest    *32* %CTR := %CTR - 1; # %pc update is hard-coded
+BDNZL   dest            *32* %LR := dest        *32* %CTR := %CTR - 1; # %pc update is hard-coded
 
+BCTRL                   *32*%LR := %pc + 4      *32* %pc := %CTR;
 
 # Trap instructions
 TDI     cc, ra, simm    _;

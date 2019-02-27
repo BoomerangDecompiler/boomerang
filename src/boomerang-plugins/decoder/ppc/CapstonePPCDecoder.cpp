@@ -167,6 +167,12 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
             callStmt->setDestProc(callee);
         }
     }
+    else if (insnID == "BCTRL") {
+        CallStatement *call = new CallStatement();
+        call->setDest(Location::regOf(getRegNumByName("CTR")));
+        call->setIsComputed(true);
+        rtl->append(call);
+    }
     else if (insnID == "BLR") {
         rtl->append(new ReturnStatement());
     }
