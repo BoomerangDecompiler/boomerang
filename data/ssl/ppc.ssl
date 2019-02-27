@@ -432,6 +432,7 @@ FCMPU       crfd, fa, fb            SETFFLAGSN(fa, fb,crfd);    # in exception h
 
 # condition register manipulation
 CRCLR           d                   _;
+CRSET           d                   _;
 CRAND           d, a, b             *1* d := a & b;
 CROR            d, a, b             *1* d := a | b;
 CRXOR           d, a, b             *1* d := a ^ b;

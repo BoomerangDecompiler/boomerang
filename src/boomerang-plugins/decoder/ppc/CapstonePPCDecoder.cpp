@@ -221,6 +221,22 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
             rtl->append(jump);
         }
     }
+    else if (insnID == "CRSET") {
+        // This is because of a bug in Capstone: See https://github.com/aquynh/capstone/issues/971
+        rtl->clear();
+
+        // 4 == number of bits in a single condition register
+        int bitNum = (instruction->detail->ppc.operands[0].reg - cs::PPC_REG_R0);
+        const RegNum adjustedRegNum = (bitNum/4) + REG_PPC_CR0;
+        bitNum %= 4;
+
+        rtl->append(new Assign(SizeType::get(1),
+                               Ternary::get(opAt,
+                                            Location::regOf(adjustedRegNum),
+                                            Const::get(bitNum),
+                                            Const::get(bitNum)),
+                               Const::get(1)));
+    }
     else if (insnID == "CRCLR") {
         // This is because of a bug in Capstone: See https://github.com/aquynh/capstone/issues/971
         rtl->clear();
