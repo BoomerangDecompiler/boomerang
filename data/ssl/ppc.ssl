@@ -374,14 +374,14 @@ STMW        s, dest     _;
 
 
 # Floating point loads
-LFD         fd, eaddr, ra           *64* fd := m[eaddr];
-LFDU        fd, eaddr, ra           *64* fd := m[eaddr]                     *32* ra := eaddr;
-LFDX        fd, eaddr, ra           *64* fd := m[eaddr];
-LFDUX       fd, eaddr, ra           *64* fd := m[eaddr]                     *32* ra := eaddr;
-LFS         fd, eaddr, ra           *32* fd := fsize(32, 64, m[eaddr]);
-LFSU        fd, eaddr, ra           *32* fd := fsize(32, 64, m[eaddr])      *32* ra := eaddr;
-LFSX        fd, eaddr, ra           *64* fd := fsize(32, 64, m[eaddr]);
-LFSUX       fd, eaddr, ra           *32* fd := fsize(32, 64, m[eaddr])      *32* ra := eaddr;
+LFD         dest, src               *64* dest := src;
+LFDU        dest, src               *64* dest := src                        *32* src := addr(dest);
+LFDX        dest, src               *64* dest := src;
+LFDUX       dest, src               *64* dest := src                        *32* src := addr(dest);
+LFS         dest, src               *32* dest := fsize(32, 64, src);
+LFSU        dest, src               *32* dest := fsize(32, 64, src)         *32* src := addr(dest);
+LFSX        dest, src               *32* dest := fsize(32, 64, src);
+LFSUX       dest, src               *32* dest := fsize(32, 64, src)         *32* src := addr(dest);
 
 # Floating point stores
 STFD        fd, eaddr, ra           *64* m[eaddr] := fd;
