@@ -431,16 +431,16 @@ FCMPU       crfd, fa, fb            SETFFLAGSN(fa, fb,crfd);    # in exception h
 
 
 # condition register manipulation
-CRCLR           d                   _;
-CRSET           d                   _;
-CRAND           d, a, b             *1* d := a & b;
-CROR            d, a, b             *1* d := a | b;
-CRXOR           d, a, b             *1* d := a ^ b;
-CRNAND          d, a, b             *1* d := ~(a & b);
-CRNOR           d, a, b             *1* d := ~(a | b);
-CREQV           d, a, b             *1* d := ~(a ^ b);
-CRANDC          d, a, b             *1* d := a & (~b);
-CRORC           d, a, b             *1* d := a | (~b);
+CRCLR           d                   *1* %CR@[d:d] := 0;
+CRSET           d                   *1* %CR@[d:d] := 1;
+CRAND           d, a, b             *1* %CR@[d:d] := %CR@[a:a] & %CR@[b:b];
+CROR            d, a, b             *1* %CR@[d:d] := %CR@[a:a] | %CR@[b:b];
+CRXOR           d, a, b             *1* %CR@[d:d] := %CR@[a:a] ^ %CR@[b:b];
+CRNAND          d, a, b             *1* %CR@[d:d] := ~(%CR@[a:a] & %CR@[b:b]);
+CRNOR           d, a, b             *1* %CR@[d:d] := ~(%CR@[a:a] | %CR@[b:b]);
+CREQV           d, a, b             *1* %CR@[d:d] := ~(%CR@[a:a] ^ %CR@[b:b]);
+CRANDC          d, a, b             *1* %CR@[d:d] := %CR@[a:a] & (~%CR@[b:b]);
+CRORC           d, a, b             *1* %CR@[d:d] := %CR@[a:a] | (~%CR@[b:b]);
 # Note: no CRXORC
 
 

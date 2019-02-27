@@ -43,4 +43,7 @@ private:
 
     std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
                                         const cs::cs_ppc_op *operands);
+
+    /// \returns true if the instruction is a CR manipulation instruction, e.g. crxor
+    bool isCRManip(const cs::cs_insn *instruction) const;
 };

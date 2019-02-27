@@ -131,8 +131,8 @@ SharedExp operandToExp(const cs::cs_ppc_op &operand)
 
 std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs::cs_insn *instruction)
 {
-    const int numOperands         = instruction->detail->ppc.op_count;
-    const cs::cs_ppc_op *operands = instruction->detail->ppc.operands;
+    const int numOperands   = instruction->detail->ppc.op_count;
+    cs::cs_ppc_op *operands = instruction->detail->ppc.operands;
 
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID = insnID.toUpper();
@@ -140,6 +140,18 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     // Chop off branch prediction hints
     if (insnID.endsWith("+") || insnID.endsWith("-")) {
         insnID = insnID.left(insnID.length()-1);
+    }
+
+    // Adjust the operands of cr* instructions (e.g. crxor).
+    // This is to work around a bug in Capstone: The operands are disassembled as PPC_OP_REG
+    // instead of PPC_OP_IMM or PPC_OP_CRX. See https://github.com/aquynh/capstone/issues/971
+    // for details.
+    if (isCRManip(instruction)) {
+        for (int i = 0; i < numOperands; ++i) {
+            const int bitNum = operands[i].reg - cs::PPC_REG_R0;
+            operands[i].type = cs::PPC_OP_IMM;
+            operands[i].imm = bitNum;
+        }
     }
 
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
@@ -221,38 +233,6 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
             rtl->append(jump);
         }
     }
-    else if (insnID == "CRSET") {
-        // This is because of a bug in Capstone: See https://github.com/aquynh/capstone/issues/971
-        rtl->clear();
-
-        // 4 == number of bits in a single condition register
-        int bitNum = (instruction->detail->ppc.operands[0].reg - cs::PPC_REG_R0);
-        const RegNum adjustedRegNum = (bitNum/4) + REG_PPC_CR0;
-        bitNum %= 4;
-
-        rtl->append(new Assign(SizeType::get(1),
-                               Ternary::get(opAt,
-                                            Location::regOf(adjustedRegNum),
-                                            Const::get(bitNum),
-                                            Const::get(bitNum)),
-                               Const::get(1)));
-    }
-    else if (insnID == "CRCLR") {
-        // This is because of a bug in Capstone: See https://github.com/aquynh/capstone/issues/971
-        rtl->clear();
-
-        // 4 == number of bits in a single condition register
-        int bitNum = (instruction->detail->ppc.operands[0].reg - cs::PPC_REG_R0);
-        const RegNum adjustedRegNum = (bitNum/4) + REG_PPC_CR0;
-        bitNum %= 4;
-
-        rtl->append(new Assign(SizeType::get(1),
-                               Ternary::get(opAt,
-                                            Location::regOf(adjustedRegNum),
-                                            Const::get(bitNum),
-                                            Const::get(bitNum)),
-                               Const::get(0)));
-    }
     else if (insnID == "STMW") {
         rtl->clear();
         const RegNum startRegNum = fixRegNum(operands[0].reg);
@@ -317,6 +297,28 @@ std::unique_ptr<RTL> CapstonePPCDecoder::instantiateRTL(Address pc, const char *
     // Take the argument, convert it to upper case and remove any .'s
     const QString sanitizedName = QString(instructionID).remove(".").toUpper();
     return m_dict.instantiateRTL(sanitizedName, pc, args);
+}
+
+
+bool CapstonePPCDecoder::isCRManip(const cs::cs_insn *instruction) const
+{
+    switch (instruction->id) {
+    case cs::PPC_INS_CRAND:
+    case cs::PPC_INS_CRANDC:
+    case cs::PPC_INS_CRCLR:
+    case cs::PPC_INS_CREQV:
+    case cs::PPC_INS_CRMOVE:
+    case cs::PPC_INS_CRNAND:
+    case cs::PPC_INS_CRNOR:
+    case cs::PPC_INS_CRNOT:
+    case cs::PPC_INS_CROR:
+    case cs::PPC_INS_CRORC:
+    case cs::PPC_INS_CRSET:
+    case cs::PPC_INS_CRXOR:
+        return true;
+    }
+
+    return false;
 }
 
 
