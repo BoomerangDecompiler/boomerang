@@ -407,7 +407,7 @@ MTCTR       rs                      *32* %CTR := rs;
 BL          reloc                   *32* %LR := %pc + 4
                                     *32* %pc := reloc;
 
-BLR                                 _; # Semantics are hard-coded (see CapstonePPCDecoder.ssl)
+BLR                                 _; # Semantics are hard-coded (see CapstonePPCDecoder.cpp)
 
 # Comparisons. Ignore XER[SO] for now.
 CMP         crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
