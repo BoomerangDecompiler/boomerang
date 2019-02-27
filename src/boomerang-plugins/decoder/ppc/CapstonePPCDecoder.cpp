@@ -208,7 +208,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "BEQ") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[0]));
+        jump->setDest(operandToExp(operands[numOperands-1]));
         jump->setCondType(BranchType::JE);
         rtl->append(jump);
     }
