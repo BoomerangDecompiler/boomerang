@@ -323,6 +323,12 @@ SRWq        Rd, Rs, op2         *32* Rd := Rs >>  op2           SETFLAGS0(Rd);
 SRAWq       Rd, Rs, op2         *32* Rd := Rs >>A op2           SETFLAGS0(Rd);
 SRAWIq      Rd, Rs, op2         *32* Rd := Rs >>A op2           SETFLAGS0(Rd);
 
+ROTLWI      rd, rs, amount      *32* rd := rs rl amount;
+ROTLWIq     rd, rs, amount      *32* rd := rs rl amount         SETFLAGS0(rd);
+ROTRWI      rd, rs, amount      *32* rd := rs rr amount;
+ROTRWIq     rd, rs, amount      *32* rd := rs rr amount         SETFLAGS0(rd);
+
+
 RLWINM      ra, rs, uimm, beg, end
         *32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end))
         *32* ra := rs rl uimm & tmp_mask                       # rl = rotate left
