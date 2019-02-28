@@ -18,8 +18,9 @@ v0.5.0 (in development)
 - Fixed: Wrong decompilation of parameter types in function signatures in some cases.
 - Fixed: Wrong decompilation of x86 binaries containing a `cmovCC`-type instruction.
 - Fixed: Wrong decompilation of x86 binaries using the `sahf` instruction in floating point comparisons.
-- Fixed: Unnecessary union types in high-level code due to non-symmetric type meet operator.
-- Fixed: Missing rotation amount for left and right rotates in high-level code.
+- Fixed: Unnecessary union types in high level code due to non-symmetric type meet operator.
+- Fixed: Missing rotation amount for left and right rotates in high level code.
+- Fixed: High level code output for bit extraction operator on right hand side of assignments.
 - Fixed: Functions used as members in global function pointer arrays before they were declared.
 - Fixed: Memory leaks in parsers.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
@@ -31,12 +32,15 @@ v0.5.0 (in development)
 - Improved: Performance of decoding x86 instructions.
 - Improved: General processing of overlapped registers (not just hard-coded ones).
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
+- Improved: Better high level code output quality for PPC binaries due to more accurate instruction semantics.
 - Improved: Type Analysis of code containing ternary ?: operator.
 - Improved: Analysis of calls via function pointers.
-- Improved: Ordering of case labels in high-level switch statements.
+- Improved: Ordering of case labels in high level switch statements.
+- Improved: High level code output for increments of pointers to non-32 bit data.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
+- Changed: Replaced old PPC decoder by x86 decoder using libcapstone for decoding instructions.
 - Changed: Replaced old SSL parser by new GNU flex+bison SSL2 parser.
 - Changed: Replaced old C signature parser by new GNU flex+bison C signature parser.
 - Removed: HP SOM binary file loader.
