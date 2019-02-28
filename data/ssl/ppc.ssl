@@ -420,8 +420,8 @@ BLR                                 _; # Semantics are hard-coded (see CapstoneP
 # Comparisons. Ignore XER[SO] for now.
 CMP         crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
 CMPI        crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
-CMPW        ra, rb                  SUBFLAGSNL(ra, rb, 0);
-CMPW        crfd, ra, rb            SUBFLAGSNL(ra, rb, crfd);
+CMPW        ra, rb                  SUBFLAGSNS(ra, rb, 0);
+CMPW        crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
 CMPWI       ra, simm                SUBFLAGSNS(ra, simm, 0);
 CMPWI       crfd, ra, simm          SUBFLAGSNS(ra, simm, crfd);
 
@@ -572,8 +572,8 @@ bunlr  BIcr            _;
 bnulr  BIcr            _;
 
 # Decrement CTR, branch conditionally
-BDNZ    dest            *32* %CTR := %CTR - 1; # %pc update is hard-coded
-BDNZL   dest            *32* %LR := dest        *32* %CTR := %CTR - 1; # %pc update is hard-coded
+BDNZ    dest            _; # %pc update is hard-coded
+BDNZL   dest            *j32* %LR := dest;      # %pc update is hard-coded
 
 BCTR                    *32* %pc := %CTR;
 BCTRL                   *32* %LR := %pc + 4      *32* %pc := %CTR;
