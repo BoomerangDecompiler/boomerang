@@ -358,8 +358,8 @@ CLRLWI  rd, ra, ct      *32* rd := ra@[0:(32-ct)];
 
 
 # Memory access.
-LWZ         dest, src               *32* dest := src;
-LWZX        dest, src               *32* dest := zfill(16, 32, src);
+LWZ         dest, src               *32* dest := m[src];
+LWZX        dest, src1, src2        *32* dest := m[src1+src2];
 LBZ         dest, src               *32* dest := zfill(8, 32, src);
 LHZ         dest, src               *32* dest := zfill(16, 32, src);
 LHA         rd, eaddr, ra           *32* rd := sgnex(16, 32, m[eaddr]);
@@ -371,10 +371,11 @@ STWX        src, dest               *32* dest := src;
 STH         src, dest               *16* dest := truncs(32, 16, src);
 STHX        src, dest               *16* dest := truncs(32, 16, src);
 STB         src, dest               *8*  dest := truncs(32, 8, src);
-STBX        src, dest               *8*  dest := truncs(32, 8, src);
+STBU        src, dest               *8*  dest := truncs(32, 8, src)         *32* src := addr(dest);
+STBX        rs, ra, rb              *8*  m[ra + rb] := truncs(32, 8, rs);
 
 
-# Multi word load and store
+# Multi word load and store (hard-coded)
 LMW         s, dest     _;
 STMW        s, dest     _;
 
@@ -390,15 +391,14 @@ LFSX        dest, src               *32* dest := fsize(32, 64, src);
 LFSUX       dest, src               *32* dest := fsize(32, 64, src)         *32* src := addr(dest);
 
 # Floating point stores
-STFD        fd, eaddr, ra           *64* m[eaddr] := fd;
-STFDU       fd, eaddr, ra           *64* m[eaddr] := fd                     *32* ra := eaddr;
-STFDX       fd, eaddr, ra           *64* m[eaddr] := fd;
-STFDUX      fd, eaddr, ra           *64* m[eaddr] := fd                     *32* ra := eaddr;
-STFS        fd, eaddr, ra           *32* m[eaddr] := fsize(64, 32, fd);
-STFSU       fd, eaddr, ra           *32* m[eaddr] := fsize(64, 32, fd)      *32* ra := eaddr;
-STFSX       fd, eaddr, ra           *32* m[eaddr] := fsize(64, 32, fd);
-STFSUX      fd, eaddr, ra           *32* m[eaddr] := fsize(64, 32, fd)      *32* ra := eaddr;
-
+STFD        src, dest               *64* dest := src;
+STFDU       src, dest               *64* dest := src                        *32* src := addr(dest);
+STFDX       src, dest               *64* dest := src;
+STFDUX      src, dest               *64* dest := src                        *32* src := addr(dest);
+STFS        src, dest               *32* dest := fsize(64, 32, src);
+STFSU       src, dest               *32* dest := fsize(64, 32, src)         *32* src := addr(dest);
+STFSX       src, dest               *32* dest := fsize(64, 32, src);
+STFSUX      src, dest               *32* dest := fsize(64, 32, src)         *32* src := addr(dest);
 
 BALLR                               *32* %pc := %LR;
 MFLR        rd                      *32* rd := %LR;
