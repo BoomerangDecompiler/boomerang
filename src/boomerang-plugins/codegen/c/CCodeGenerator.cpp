@@ -148,13 +148,13 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
              lhs->getSubExp3()->isIntConst()) {
         // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
         SharedExp exp1 = lhs->getSubExp1();
-        int n          = lhs->access<Const, 2>()->getInt();
-        int m          = lhs->access<Const, 3>()->getInt();
+        const int n    = lhs->access<Const, 2>()->getInt();
+        const int m    = lhs->access<Const, 3>()->getInt();
         appendExp(ost, *exp1, OpPrec::Assign);
         ost << " = ";
 
         // MSVC winges without most of these parentheses
-        int mask = ~(((1 << (m - n + 1)) - 1) << m);
+        const int mask = ~(((1 << (m - n + 1)) - 1) << m);
 
         // clang-format off
         rhs = Binary::get(opBitAnd,
