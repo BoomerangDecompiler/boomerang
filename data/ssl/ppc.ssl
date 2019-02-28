@@ -358,7 +358,7 @@ CLRLWI  rd, ra, ct      *32* rd := ra@[0:(32-ct)];
 
 
 # Memory access.
-LWZ         dest, src               *32* dest := m[src];
+LWZ         dest, src               *32* dest := src;
 LWZX        dest, src1, src2        *32* dest := m[src1+src2];
 LBZ         dest, src               *32* dest := zfill(8, 32, src);
 LHZ         dest, src               *32* dest := zfill(16, 32, src);
