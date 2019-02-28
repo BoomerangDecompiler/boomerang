@@ -189,8 +189,10 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
                 useIncrement = true;
             }
             else if (asgn->getType()->isPointer()) {
-                // add ptr, 4 for 32 bit pointers in assembly is ptr++ in C code
-                const Type::Size ptrSize = asgn->getType()->as<PointerType>()->getSize();
+                // add ptr, 4 in assembly for pointers to 32 bit data is ptr++ in C code
+                const Type::Size
+                    ptrSize = asgn->getType()->as<PointerType>()->getPointsTo()->getSize();
+
                 if (ptrSize == (Type::Size)rhs->access<const Const, 2>()->getInt() * 8) {
                     useIncrement = true;
                 }
