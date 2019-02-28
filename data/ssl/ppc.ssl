@@ -496,28 +496,40 @@ FDIVSq          fd, fa, fb        *64* fd := fa /f fb;        # Yet result is in
 
 # BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
 b       dest            _;
+blt                     _;
 blt     dest            _;
 blt     cr, dest        _;
+ble                     _;
 ble     dest            _;
 ble     cr, dest        _;
+beq                     _;
 beq     dest            _;
 beq     cr, dest        _;
+bge                     _;
 bge     dest            _;
 bge     cr, dest        _;
+bgt                     _;
 bgt     dest            _;
 bgt     cr, dest        _;
+bnl                     _;
 bnl     dest            _;
 bnl     cr, dest        _;
+bne                     _;
 bne     dest            _;
 bne     cr, dest        _;
+bng                     _;
 bng     dest            _;
 bng     cr, dest        _;
+bso                     _;
 bso     dest            _;
 bso     cr, dest        _;
+bns                     _;
 bns     dest            _;
 bns     cr, dest        _;
+bun                     _;
 bun     dest            _;
 bun     cr, dest        _;
+bnu                     _;
 bnu     dest            _;
 bnu     cr, dest        _;
 
@@ -550,9 +562,11 @@ bunlr  BIcr            _;
 bnulr  BIcr            _;
 
 # Decrement CTR, branch conditionally
+BDNZ    dest            *32* %CTR := %CTR - 1; # %pc update is hard-coded
 BDNZL   dest            *32* %LR := dest        *32* %CTR := %CTR - 1; # %pc update is hard-coded
 
-BCTRL                   *32*%LR := %pc + 4      *32* %pc := %CTR;
+BCTR                    *32* %pc := %CTR;
+BCTRL                   *32* %LR := %pc + 4      *32* %pc := %CTR;
 
 # Trap instructions
 TDI     cc, ra, simm    _;

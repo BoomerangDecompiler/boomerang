@@ -14,6 +14,7 @@
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -182,6 +183,12 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
             callStmt->setDestProc(callee);
         }
     }
+    else if (insnID == "BCTR") {
+        CaseStatement *jump = new CaseStatement();
+        jump->setDest(Location::regOf(getRegNumByName("CTR")));
+        jump->setIsComputed(true);
+        rtl->append(jump);
+    }
     else if (insnID == "BCTRL") {
         CallStatement *call = new CallStatement();
         call->setDest(Location::regOf(getRegNumByName("CTR")));
@@ -193,41 +200,71 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "BGT") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JSG);
         rtl->append(jump);
     }
     else if (insnID == "BGE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JSGE);
         rtl->append(jump);
     }
     else if (insnID == "BLT") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JSL);
         rtl->append(jump);
     }
     else if (insnID == "BLE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JSLE);
         rtl->append(jump);
     }
     else if (insnID == "BNE") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JNE);
         rtl->append(jump);
     }
     else if (insnID == "BEQ") {
         BranchStatement *jump = new BranchStatement();
-        jump->setDest(operandToExp(operands[numOperands-1]));
+        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+            jump->setDest(pc);
+        }
+        else {
+            jump->setDest(operandToExp(operands[numOperands-1]));
+        }
         jump->setCondType(BranchType::JE);
         rtl->append(jump);
     }
-    else if (insnID == "BDNZL") {
+    else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = operandToExp(operands[numOperands-1])->access<Const>()->getAddr();
         if (dest != pc + PPC_MAX_INSTRUCTION_LENGTH) {
             BranchStatement *jump = new BranchStatement();
