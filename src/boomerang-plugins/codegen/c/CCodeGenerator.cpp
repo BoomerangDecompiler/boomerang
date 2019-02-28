@@ -1227,18 +1227,28 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opAt: {
-        // I guess that most people will find this easier to read
-        // s1 >> last & 0xMASK
         openParen(str, curPrec, OpPrec::BitAnd);
-        appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
+
+        // I guess that most people will find this easier to read
         auto first = ternaryExp.access<const Const, 2>();
         auto last  = ternaryExp.access<const Const, 3>();
+        const bool needsShift = !first->isIntConst() || first->access<Const>()->getInt() != 0;
 
-        str << " >> ";
-        appendExp(str, *last, OpPrec::BitShift);
+        if (needsShift) {
+            openParen(str, OpPrec::BitAnd, OpPrec::BitShift);
+            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
+
+            str << " >> ";
+            appendExp(str, *first, OpPrec::BitShift);
+            closeParen(str, OpPrec::BitAnd, OpPrec::BitShift);
+        }
+        else {
+            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitAnd);
+        }
+
         str << " & ";
 
-        SharedExp maskExp = Binary::get(opPlus, Binary::get(opMinus, first->clone(), last->clone()),
+        SharedExp maskExp = Binary::get(opPlus, Binary::get(opMinus, last->clone(), first->clone()),
                                         Const::get(1))
                                 ->simplify();
 
