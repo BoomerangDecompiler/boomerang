@@ -13,8 +13,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -24,8 +24,7 @@
 // only map those registers that are mapped to a number
 // different from -1 in the SSL file.
 // not all registers supported by capstone
-static std::map<cs::ppc_reg, RegNum> oldRegMap = {
-};
+static std::map<cs::ppc_reg, RegNum> oldRegMap = {};
 
 
 /**
@@ -70,14 +69,15 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return false;
     }
 
-    printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32*)instructionData, decodedInstruction->mnemonic, decodedInstruction->op_str);
+    printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+           decodedInstruction->mnemonic, decodedInstruction->op_str);
 
-    result.type = ICLASS::NOP; // only relevant for architectures with delay slots
-    result.numBytes = PPC_MAX_INSTRUCTION_LENGTH;
-    result.reDecode = false;
-    result.rtl = createRTLForInstruction(pc, decodedInstruction);
+    result.type         = ICLASS::NOP; // only relevant for architectures with delay slots
+    result.numBytes     = PPC_MAX_INSTRUCTION_LENGTH;
+    result.reDecode     = false;
+    result.rtl          = createRTLForInstruction(pc, decodedInstruction);
     result.forceOutEdge = Address::ZERO;
-    result.valid = (result.rtl != nullptr);
+    result.valid        = (result.rtl != nullptr);
 
     cs_free(decodedInstruction, numInstructions);
     return true;
@@ -112,35 +112,36 @@ int CapstonePPCDecoder::getRegSizeByNum(RegNum regNum) const
 SharedExp operandToExp(const cs::cs_ppc_op &operand)
 {
     switch (operand.type) {
-        case cs::PPC_OP_IMM: {
-            return Const::get(Address(operand.imm));
-        }
-        case cs::PPC_OP_REG: {
-            return Location::regOf(fixRegNum(operand.reg));
-        }
-        case cs::PPC_OP_MEM: {
-            return Location::memOf(Binary::get(opPlus,
-                                               Location::regOf(fixRegNum(operand.mem.base)),
-                                               Const::get(operand.mem.disp)))->simplifyArith();
-        }
-        default: LOG_ERROR("Unknown ppc instruction operand type %1", operand.type); break;
+    case cs::PPC_OP_IMM: {
+        return Const::get(Address(operand.imm));
+    }
+    case cs::PPC_OP_REG: {
+        return Location::regOf(fixRegNum(operand.reg));
+    }
+    case cs::PPC_OP_MEM: {
+        return Location::memOf(Binary::get(opPlus, Location::regOf(fixRegNum(operand.mem.base)),
+                                           Const::get(operand.mem.disp)))
+            ->simplifyArith();
+    }
+    default: LOG_ERROR("Unknown ppc instruction operand type %1", operand.type); break;
     }
 
     return nullptr;
 }
 
 
-std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs::cs_insn *instruction)
+std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
+                                                                 cs::cs_insn *instruction)
 {
     const int numOperands   = instruction->detail->ppc.op_count;
     cs::cs_ppc_op *operands = instruction->detail->ppc.operands;
 
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
-    insnID = insnID.toUpper();
+    insnID         = insnID.toUpper();
 
     // Chop off branch prediction hints
     if (insnID.endsWith("+") || insnID.endsWith("-")) {
-        insnID = insnID.left(insnID.length()-1);
+        insnID = insnID.left(insnID.length() - 1);
     }
 
     // . cannot be part of an identifier -> use q instead
@@ -154,7 +155,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
         for (int i = 0; i < numOperands; ++i) {
             const int bitNum = operands[i].reg - cs::PPC_REG_R0;
             operands[i].type = cs::PPC_OP_IMM;
-            operands[i].imm = bitNum;
+            operands[i].imm  = bitNum;
         }
     }
 
@@ -172,7 +173,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
         rtl->append(jump);
     }
     else if (insnID == "BL") {
-        Address callDest = Address(instruction->detail->ppc.operands[0].imm);
+        Address callDest        = Address(instruction->detail->ppc.operands[0].imm);
         CallStatement *callStmt = new CallStatement();
         callStmt->setDest(callDest);
         callStmt->setIsComputed(false);
@@ -200,72 +201,72 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "BGT") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JSG);
         rtl->append(jump);
     }
     else if (insnID == "BGE") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JSGE);
         rtl->append(jump);
     }
     else if (insnID == "BLT") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JSL);
         rtl->append(jump);
     }
     else if (insnID == "BLE") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JSLE);
         rtl->append(jump);
     }
     else if (insnID == "BNE") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JNE);
         rtl->append(jump);
     }
     else if (insnID == "BEQ") {
         BranchStatement *jump = new BranchStatement();
-        if (numOperands == 0 || operands[numOperands-1].type != cs::PPC_OP_IMM) {
+        if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
-            jump->setDest(operandToExp(operands[numOperands-1]));
+            jump->setDest(operandToExp(operands[numOperands - 1]));
         }
         jump->setCondType(BranchType::JE);
         rtl->append(jump);
     }
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
-        const Address dest = operandToExp(operands[numOperands-1])->access<Const>()->getAddr();
+        const Address dest = operandToExp(operands[numOperands - 1])->access<Const>()->getAddr();
         if (dest != pc + PPC_MAX_INSTRUCTION_LENGTH) {
             BranchStatement *jump = new BranchStatement();
             jump->setDest(dest);
@@ -275,17 +276,16 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "STMW") {
         rtl->clear();
-        const RegNum startRegNum = fixRegNum(operands[0].reg);
-        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))->simplify();
+        const RegNum startRegNum          = fixRegNum(operands[0].reg);
+        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))
+                                                ->simplify();
 
         for (RegNum reg = startRegNum; reg <= REG_PPC_G31; ++reg) {
-            const int i = reg - startRegNum;
-            const SharedExp memExp = Location::memOf(Binary::get(opPlus,
-                                                                 startAddrExp->clone(),
-                                                                 Const::get(4*i)));
+            const int i            = reg - startRegNum;
+            const SharedExp memExp = Location::memOf(
+                Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            Assign *asgn = new Assign(SizeType::get(STD_SIZE),
-                                      memExp->simplify(),
+            Assign *asgn = new Assign(SizeType::get(STD_SIZE), memExp->simplify(),
                                       Location::regOf(reg));
 
             rtl->append(asgn);
@@ -293,17 +293,16 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
     }
     else if (insnID == "LMW") {
         rtl->clear();
-        const RegNum startRegNum = fixRegNum(operands[0].reg);
-        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))->simplify();
+        const RegNum startRegNum          = fixRegNum(operands[0].reg);
+        const SharedConstExp startAddrExp = Unary::get(opAddrOf, operandToExp(operands[1]))
+                                                ->simplify();
 
         for (RegNum reg = startRegNum; reg <= REG_PPC_G31; ++reg) {
-            const int i = reg - startRegNum;
-            const SharedExp memExp = Location::memOf(Binary::get(opPlus,
-                                                                 startAddrExp->clone(),
-                                                                 Const::get(4*i)));
+            const int i            = reg - startRegNum;
+            const SharedExp memExp = Location::memOf(
+                Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            Assign *asgn = new Assign(SizeType::get(STD_SIZE),
-                                      Location::regOf(reg),
+            Assign *asgn = new Assign(SizeType::get(STD_SIZE), Location::regOf(reg),
                                       memExp->simplify());
 
             rtl->append(asgn);
@@ -315,7 +314,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc, cs:
 
 
 std::unique_ptr<RTL> CapstonePPCDecoder::instantiateRTL(Address pc, const char *instructionID,
-                                                        int numOperands, const cs::cs_ppc_op *operands)
+                                                        int numOperands,
+                                                        const cs::cs_ppc_op *operands)
 {
     std::vector<SharedExp> args(numOperands);
     for (int i = 0; i < numOperands; i++) {
@@ -354,8 +354,7 @@ bool CapstonePPCDecoder::isCRManip(const cs::cs_insn *instruction) const
     case cs::PPC_INS_CROR:
     case cs::PPC_INS_CRORC:
     case cs::PPC_INS_CRSET:
-    case cs::PPC_INS_CRXOR:
-        return true;
+    case cs::PPC_INS_CRXOR: return true;
     }
 
     return false;

@@ -1230,8 +1230,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         openParen(str, curPrec, OpPrec::BitAnd);
 
         // I guess that most people will find this easier to read
-        auto first = ternaryExp.access<const Const, 2>();
-        auto last  = ternaryExp.access<const Const, 3>();
+        auto first            = ternaryExp.access<const Const, 2>();
+        auto last             = ternaryExp.access<const Const, 3>();
         const bool needsShift = !first->isIntConst() || first->access<Const>()->getInt() != 0;
 
         if (needsShift) {
