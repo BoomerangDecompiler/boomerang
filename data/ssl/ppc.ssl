@@ -315,6 +315,7 @@ ORCq        rd, ra, rb          *32* rd := ra | (~rb)           SETFLAGS0(rd);
 SLW         Rd, Rs, op2         *32* Rd := Rs <<  op2;
 SLWI        Rd, Rs, op2         *32* Rd := Rs <<  op2;
 SRW         Rd, Rs, op2         *32* Rd := Rs >>  op2;
+SRWI        Rd, Rs, op2         *32* Rd := Rs >>  op2;
 SRAW        Rd, Rs, op2         *32* Rd := Rs >>A op2;
 SRAWI       Rd, Rs, op2         *32* Rd := Rs >>A op2;
 
