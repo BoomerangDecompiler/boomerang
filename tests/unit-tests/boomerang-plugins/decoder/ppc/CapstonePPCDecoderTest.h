@@ -18,7 +18,7 @@ class CapstonePPCDecoderTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
-    void setupTestCase();
+    void initTestCase();
 
     void testInstructions();
     void testInstructions_data();

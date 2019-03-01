@@ -252,6 +252,9 @@ ADDMEq      rd, ra              *32* rd := ra + %XERCA - 1      SETFLAGS0(rd);
 ADDZE       rd, ra              *32* rd := ra + %XERCA;
 ADDZEq      rd, ra              *32* rd := ra + %XERCA          SETFLAGS0(rd);
 
+DIVD        rt, ra, rb          *64* rt := ra / rb;
+DIVDU       rt, ra, rb          *64* rt := ra / rb;     # TODO: OV and SO are affected, too
+
 DIVW        rd, ra, rb          *32* rd := ra / rb;
 DIVWq       rd, ra, rb          *32* rd := ra / rb              SETFLAGS0(rd);
 
@@ -269,10 +272,15 @@ MULLW       rd, ra, rb          *32* rd := ra * rb;
 MULLWq      rd, ra, rb          *32* rd := ra * rb              SETFLAGS0(rd);
 
 SUBF        rd, ra, rb          *32* rd := rb - ra;
+SUBFq       rd, ra, rb          *32* rd := rb - ra              SETFLAGS0(rd);
+
 SUBFE       rd, ra, rb          *32* rd := rb + %XERCA - ra;
 
 SUBFIC      rd, ra, simm        *32* rd := simm - ra            SUBFLAGSX(rd, simm, ra);
 SUBFC       rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);
+
+SUBFZE      rt, ra              *32* rt := ~ra + %XERCA;
+SUBFZEq     rt, ra              *32* rt := ~ra + %XERCA         SUBFLAGS0(rt);
 
 SUBFCQ      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd, rb, ra);
 SUBFCO      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);  # Also supposed to set overflow bits
@@ -364,21 +372,40 @@ CLRLWI      rd, ra, ct              *32* rd := ra@[0:(31-ct)];
 
 
 # Memory access.
-LWZ         dest, src               *32* dest := src;
-LWZX        dest, src1, src2        *32* dest := m[src1+src2];
 LBZ         dest, src               *32* dest := zfill(8, 32, src);
 LHZ         dest, src               *32* dest := zfill(16, 32, src);
-LHA         rd, eaddr, ra           *32* rd := sgnex(16, 32, m[eaddr]);
-LBZX        rd, eaddr, ra           *32* rd := zfill(8, 32, m[eaddr]);
+LWZ         dest, src               *32* dest := src;
 
-STWU        src, dest               *32* dest := src    *32* src := addr(dest);
-STW         src, dest               *32* dest := src;
-STWX        src, dest               *32* dest := src;
-STH         src, dest               *16* dest := truncs(32, 16, src);
-STHX        src, dest               *16* dest := truncs(32, 16, src);
+LBZX        rt, ra, rb              *32* rt := zfill(8, 32, m[ra + rb]);
+LHZX        rt, ra, rb              *32* rt := zfill(16, 32, m[ra + rb]);
+LWZX        rt, ra, rb              *32* rt := m[ra + rb];
+
+LBZUX       rt, ra, rb              *32* rt := zfill(8,  32, m[ra + rb])     *32* ra := ra + rb;
+LHZUX       rt, ra, rb              *32* rt := zfill(16, 32, m[ra + rb])     *32* ra := ra + rb;
+LWZUX       rt, ra, rb              *32* rt := m[ra + rb]                    *32* ra := ra + rb;
+
+
+# LBZU        dest, src               *32* dest := zfill(8, 32, src)          *32* src := addr(src);
+
+LHA         dest, src               *32* dest := sgnex(16, 32, src);
+# LHAU
+LHAX        rt, ra, rb              *32* rt := m[ra + rb];
+LHAUX       rt, ra, rb              *32* rt := m[ra + rb]                   *32* ra := ra + rb;
+
+
 STB         src, dest               *8*  dest := truncs(32, 8, src);
+STH         src, dest               *16* dest := truncs(32, 16, src);
+STW         src, dest               *32* dest := src;
 STBU        src, dest               *8*  dest := truncs(32, 8, src)         *32* src := addr(dest);
+STHU        src, dest               *16* dest := truncs(32, 16, src)        *32* src := addr(dest);
+STWU        src, dest               *32* dest := src                        *32* src := addr(dest);
+
 STBX        rs, ra, rb              *8*  m[ra + rb] := truncs(32, 8, rs);
+STHX        rs, ra, rb              *16* m[ra + rb] := truncs(32, 16, rs);
+STWX        rs, ra, rb              *32* m[ra + rb] := rs;
+STBUX       rs, ra, rb              *8*  m[ra + rb] := truncs(32, 8, rs)     *32* ra := ra + rb;
+STHUX       rs, ra, rb              *16* m[ra + rb] := truncs(32, 16, rs)    *32* ra := ra + rb;
+STWUX       rs, ra, rb              *32* m[ra + rb] := rs                    *32* ra := ra + rb;
 
 
 # Multi word load and store (hard-coded)
@@ -387,27 +414,33 @@ STMW        s, dest     _;
 
 
 # Floating point loads
-LFD         dest, src               *64* dest := src;
-LFDU        dest, src               *64* dest := src                        *32* src := addr(dest);
-LFDX        dest, src               *64* dest := src;
-LFDUX       dest, src               *64* dest := src                        *32* src := addr(dest);
 LFS         dest, src               *32* dest := fsize(32, 64, src);
-LFSU        dest, src               *32* dest := fsize(32, 64, src)         *32* src := addr(dest);
-LFSX        dest, src               *32* dest := fsize(32, 64, src);
-LFSUX       dest, src               *32* dest := fsize(32, 64, src)         *32* src := addr(dest);
+LFD         dest, src               *64* dest := src;
+# LFDU        dest, src               *64* dest := src                      *32* src := addr(dest);
+# LFSU        dest, src               *32* dest := fsize(32, 64, src)       *32* src := addr(dest);
+
+LFSX        rt, ra, rb              *32* rt := fsize(32, 64, m[ra + rb]);
+LFSUX       rt, ra, rb              *32* rt := fsize(32, 64, m[ra + rb])    *32* ra := ra + rb;
+LFDX        rt, ra, rb              *64* rt := m[ra + rb];
+LFDUX       rt, ra, rb              *64* rt := m[ra + rb]                   *32* ra := ra + rb;
+
 
 # Floating point stores
-STFD        src, dest               *64* dest := src;
-STFDU       src, dest               *64* dest := src                        *32* src := addr(dest);
-STFDX       src, dest               *64* dest := src;
-STFDUX      src, dest               *64* dest := src                        *32* src := addr(dest);
 STFS        src, dest               *32* dest := fsize(64, 32, src);
 STFSU       src, dest               *32* dest := fsize(64, 32, src)         *32* src := addr(dest);
-STFSX       src, dest               *32* dest := fsize(64, 32, src);
-STFSUX      src, dest               *32* dest := fsize(64, 32, src)         *32* src := addr(dest);
+STFD        src, dest               *64* dest := src;
+STFDU       src, dest               *64* dest := src                        *32* src := addr(dest);
+
+STFSX       frs, ra, rb             *32* m[ra + rb] := fsize(64, 32, frs);
+STFSUX      frs, ra, rb             *32* m[ra + rb] := fsize(64, 32, frs)   *32* ra := ra + rb;
+STFDX       frs, ra, rb             *64* m[ra + rb] := frs;
+STFDUX      frs, ra, rb             *64* m[ra + rb] := frs                  *32* ra := ra + rb;
+
+
 
 BALLR                               *32* %pc := %LR;
 MFLR        rd                      *32* rd := %LR;
+MCRF        bf, bfa                 *4*  bf := bfa;
 MFCR        rd                      *32* rd := (%CR0 << 28) + (%CR1 << 24)
                                              + (%CR2 << 20) + (%CR3 << 16)
                                              + (%CR4 << 12) + (%CR5 <<  8)
