@@ -242,8 +242,8 @@ ADDE        rd, ra, rb          *32* rd := ra + rb + %XERCA;
 ADDEq       rd, ra, rb          *32* rd := ra + rb + %XERCA     SETFLAGS0(rd);
 
 ADDI        rd, rs, simm        *32* rd := rs + sgnex(16, 32, simm);
-ADDIC       rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX(rd, rs, simm);    # Set carry
-ADDICq      rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX0(rd, rs, simm);   # Set carry and CR0
+ADDIC       rd, rs, simm        *32* rd := rs + sgnex(16, 32, simm)     ADDFLAGSX(rd, rs,  sgnex(16, 32, simm));   # Set carry
+ADDICq      rd, rs, simm        *32* rd := rs + sgnex(16, 32, simm)     ADDFLAGSX0(rd, rs, sgnex(16, 32, simm));   # Set carry and CR0
 ADDIS       rd, rs, simm        *32* rd := rs + (simm << 16);
 
 ADDME       rd, ra              *32* rd := ra + %XERCA - 1;
@@ -260,6 +260,9 @@ DIVWUq      rd, ra, rb          *32* rd := ra / rb              SETFLAGS0(rd);
 
 EXTSB       rd, ra              *32* rd := sgnex(8, 32, ra);
 EXTSBq      rd, ra              *32* rd := sgnex(8, 32, ra)     SETFLAGS0(rd);
+
+EXTSH       rd, ra              *32* rd := sgnex(16, 32, ra);
+EXTSHq      rd, ra              *32* rd := sgnex(16, 32, ra)    SETFLAGS0(rd);
 
 MULLI       rd, ra, simm        *32* rd := ra * sgnex(16, 32, simm);
 MULLW       rd, ra, rb          *32* rd := ra * rb;
@@ -415,10 +418,14 @@ MTLR        rs                      *32* %LR := rs;
 MTXER       rs                      SETXER(rs);
 MTCTR       rs                      *32* %CTR := rs;
 
-BL          reloc                   *32* %LR := %pc + 4
-                                    *32* %pc := reloc;
+# Branches
+# Semantics are hard-coded (see CapstonePPCDecoder.cpp)
+B           dest                    _;
+BA          dest                    _;
+BL          dest                    _;
+BLA         dest                    _;
+BLR                                 _;
 
-BLR                                 _; # Semantics are hard-coded (see CapstonePPCDecoder.cpp)
 
 # Comparisons. Ignore XER[SO] for now.
 CMP         crfd, ra, rb            SUBFLAGSNS(ra, rb, crfd);
@@ -508,7 +515,6 @@ FDIVSq          fd, fa, fb        *64* fd := fa /f fb;        # Yet result is in
 # Note: The semantics for the instructions below are still hard-coded so they are not defined explicitly.
 
 # BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
-b       dest            _;
 blt                     _;
 blt     dest            _;
 blt     cr, dest        _;

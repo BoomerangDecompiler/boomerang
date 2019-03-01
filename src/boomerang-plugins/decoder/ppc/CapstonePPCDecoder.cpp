@@ -69,8 +69,8 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return false;
     }
 
-    printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-           decodedInstruction->mnemonic, decodedInstruction->op_str);
+//     printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+//            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type         = ICLASS::NOP; // only relevant for architectures with delay slots
     result.numBytes     = PPC_MAX_INSTRUCTION_LENGTH;
@@ -167,21 +167,26 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "B") {
-        GotoStatement *jump = new GotoStatement(Address(instruction->detail->ppc.operands[0].imm));
+    if (insnID == "B" || insnID == "BA") {
+        GotoStatement *jump = new GotoStatement(Address(operands[0].imm));
         jump->setIsComputed(false);
         rtl->append(jump);
     }
-    else if (insnID == "BL") {
-        Address callDest        = Address(instruction->detail->ppc.operands[0].imm);
+    else if (insnID == "BL" || insnID == "BLA") {
+        Address callDest        = Address(operands[0].imm);
         CallStatement *callStmt = new CallStatement();
         callStmt->setDest(callDest);
         callStmt->setIsComputed(false);
+
+        rtl->append(new Assign(SizeType::get(32), Location::regOf(getRegNumByName("LR")),
+                               Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
         rtl->append(callStmt);
 
-        Function *callee = m_prog->getOrCreateFunction(callDest);
-        if (callee && callee != reinterpret_cast<Function *>(-1)) {
-            callStmt->setDestProc(callee);
+        if (m_prog) {
+            Function *callee = m_prog->getOrCreateFunction(callDest);
+            if (callee && callee != reinterpret_cast<Function *>(-1)) {
+                callStmt->setDestProc(callee);
+            }
         }
     }
     else if (insnID == "BCTR") {
