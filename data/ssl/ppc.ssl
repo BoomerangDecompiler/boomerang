@@ -235,6 +235,9 @@ LI          rd, val             *32* rd := sgnex(16, 32, val);
 ADD         rd, ra, rb          *32* rd := ra + rb;
 ADDq        rd, ra, rb          *32* rd := ra + rb              SETFLAGS0(rd);
 
+ADDC        rd, ra, rb          *32* rd := ra + rb              ADDFLAGSX(rd, ra, rb);
+ADDCq       rd, ra, rb          *32* rd := ra + rb              ADDFLAGSX0(rd, ra, rb);
+
 ADDE        rd, ra, rb          *32* rd := ra + rb + %XERCA;
 ADDEq       rd, ra, rb          *32* rd := ra + rb + %XERCA     SETFLAGS0(rd);
 
