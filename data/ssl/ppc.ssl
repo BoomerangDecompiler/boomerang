@@ -487,6 +487,9 @@ FCTIWq          fd, fb            *64* fd := zfill(32, 64, ftoi(64, 32, fb));
 FCTIWZ          fd, fb            *64* fd := zfill(32, 64, ftoi(64, 32, fb));
 FCTIWZq         fd, fb            *64* fd := zfill(32, 64, ftoi(64, 32, fb));
 
+FABS            fd, fs            *64* fd := fabs(fs);
+FABSq           fd, fs            *64* fd := fabs(fs); # TODO: Update flags
+
 FADD            fd, fa, fb        *64* fd := fa +f fb;
 FADDq           fd, fa, fb        *64* fd := fa +f fb;        # Note: floating point flags not implemented yet
 
