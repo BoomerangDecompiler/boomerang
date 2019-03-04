@@ -89,10 +89,6 @@ protected:
 };
 
 
-/**
- * These are the macros that each of the .m files depend upon.
- */
-
 #define SHOW_ASM(output)                                                                           \
     if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
         QString asmStr;                                                                            \
@@ -100,30 +96,3 @@ protected:
         ost << output;                                                                             \
         LOG_MSG("%1: %2", pc, asmStr);                                                             \
     }
-
-/*
- * addresstoPC returns the raw number as the address.  PC could be an
- * abstract type, in our case, PC is the raw address.
- */
-#define addressToPC(pc) pc
-
-// Macros for branches. Note: don't put inside a "match" statement, since
-// the ordering is changed and multiple copies may be made
-
-#define COND_JUMP(name, size, relocd, cond)                                                        \
-    BranchStatement *jump = new BranchStatement;                                                   \
-    result.rtl->append(jump);                                                                      \
-    result.numBytes = size;                                                                        \
-    jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta)));                     \
-    jump->setCondType(cond);                                                                       \
-    SHOW_ASM(name << " " << relocd)
-
-// This one is X86 specific
-#define SETS(name, dest, cond)                                                                     \
-    BoolAssign *bs = new BoolAssign(8);                                                            \
-    bs->setLeftFromList(result.rtl->getStatements());                                              \
-    result.rtl->clear();                                                                           \
-    result.rtl->append(bs);                                                                        \
-    bs->setCondType(cond);                                                                         \
-    result.numBytes = 3;                                                                           \
-    SHOW_ASM(name << " " << dest)

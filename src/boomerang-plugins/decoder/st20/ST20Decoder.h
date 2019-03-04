@@ -50,8 +50,8 @@ public:
      */
     SharedExp dis_Reg(int regNum);
 
-    void processUnconditionalJump(const char *name, int size, HostAddress relocd,
-                                  ptrdiff_t delta, Address pc, DecodeResult &result);
+    void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
+                                  Address pc, DecodeResult &result);
 
 private:
     DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
