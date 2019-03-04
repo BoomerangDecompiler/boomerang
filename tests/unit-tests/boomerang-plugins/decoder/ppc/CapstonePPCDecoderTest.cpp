@@ -139,14 +139,12 @@ void CapstonePPCDecoderTest::testInstructions_data()
     TEST_DECODE("ba 0x2000", "\x48\x00\x20\x02", "0x00001000    0 GOTO 0x00002000\n");
 
     TEST_DECODE("bl 0x2000", "\x48\x00\x10\x01",
-                "0x00001000    0 *32* r0 := 0x1004\n"
-                "              0 <all> := CALL 0x2000(<all>)\n"
+                "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n");
 
     TEST_DECODE("bla 0x2000", "\x48\x00\x20\x03",
-                "0x00001000    0 *32* r0 := 0x1004\n"
-                "              0 <all> := CALL 0x2000(<all>)\n"
+                "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n");
 
@@ -314,7 +312,10 @@ void CapstonePPCDecoderTest::testInstructions_data()
     TEST_DECODE("lbz 3, 5(2)", "\x88\x62\x00\x05",
                 "0x00001000    0 *32* r3 := zfill(8, 32, m[r2 + 5])\n");
 
-    TEST_DECODE("lbzu 3, 5(2)", "\x8c\x62\x00\x05", "");
+    TEST_DECODE("lbzu 3, 4(2)", "\x8c\x62\x00\x05",
+                "0x00001000    0 *8* r3 := zfill(8, 32, m[r2 + 4])\n"
+                "              0 *8* r2 := r2 + 4\n"
+    );
 
     // lbz[u]e TODO
 
@@ -338,7 +339,8 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("lfdu 3, 1(2)", "\xcc\x62\x00\x01",
-                ""
+                "0x00001000    0 *64* r35 := m[r2 + 1]\n"
+                "              0 *32* r2 := r2 + 1\n"
     );
 
     // TODO lfd[u]e
@@ -359,7 +361,8 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("lfsu 3, 1(2)", "\xc4\x62\x00\x01",
-                ""
+                "0x00001000    0 *32* r35 := fsize(32, 64, m[r2 + 1])\n"
+                "              0 *32* r2 := r2 + 1"
     );
 
     // TODO lfs[u]e
@@ -380,7 +383,8 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("lhau 3, 1(2)", "\xac\x62\x00\x01",
-                ""
+                "0x00001000    0 *32* r3 := sgnex(16, 32, m[r2 + 1])\n"
+                "              0 *32* r2 := r2 + 1"
     );
 
     // TODO lha[u]e
@@ -402,7 +406,10 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* r3 := zfill(16, 32, m[r2 + 1])\n"
     );
 
-    TEST_DECODE("lhzu 3, 1(2)", "\xa4\x62\x00\x01", "");
+    TEST_DECODE("lhzu 3, 1(2)", "\xa4\x62\x00\x01",
+                "0x00001000    0 *32* r3 := zfill(16, 32, m[r2 + 1])\n"
+                "              0 *32* r2 := r2 + 1"
+    );
 
     // TODO lhz[u]e
 
@@ -433,7 +440,10 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
 
-    TEST_DECODE("lwzu 3, 1(2)", "\x84\x62\x00\x01", "");
+    TEST_DECODE("lwzu 3, 1(2)", "\x84\x62\x00\x01",
+                "0x00001000    0 *32* r3 := m[r2 + 1]\n"
+                "              0 *32* r2 := r2 + 1"
+    );
 
     // TODO lwz[u]e
 
@@ -582,13 +592,21 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *8* m[r2 + 1] := truncs(32, 8, r3)\n"
     );
 
-    TEST_DECODE("stbu 3, 1(2)", "\x9c\x62\x00\x01", "");
+    TEST_DECODE("stbu 3, 1(2)", "\x9c\x62\x00\x01",
+                "0x00001000    0 *8* m[r2 + 1] := truncs(32, 8, r3)\n"
+                "              0 *32* r3 := r2 + 1\n"
+    );
 
     // TODO stb[u]e
 
-    TEST_DECODE("stbx 3, 1(2)", "\x7c\x61\x11\xae", "");
+    TEST_DECODE("stbx 3, 1(2)", "\x7c\x61\x11\xae",
+                "0x00001000    0 *8* m[r1 + r2] := truncs(32, 8, r3)\n"
+    );
 
-    TEST_DECODE("stbux 3, 1(2)", "\x7c\x61\x11\xee", "");
+    TEST_DECODE("stbux 3, 1(2)", "\x7c\x61\x11\xee",
+                "0x00001000    0 *8* m[r1 + r2] := truncs(32, 8, r3)\n"
+                "              0 *32* r1 := r1 + r2\n"
+    );
 
     // TODO stb[u]xe
 
@@ -599,29 +617,49 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO std[u]xe
 
-    TEST_DECODE("stfd 3, 1(2)", "\xd8\x62\x00\x01", "");
+    TEST_DECODE("stfd 3, 1(2)", "\xd8\x62\x00\x01",
+                "0x00001000    0 *64* m[r2 + 1] := r35\n"
+    );
 
-    TEST_DECODE("stfdu 3, 1(2)", "\xdc\x62\x00\x01", "");
+    TEST_DECODE("stfdu 3, 1(2)", "\xdc\x62\x00\x01",
+                "0x00001000    0 *64* m[r2 + 1] := r35\n"
+                "              0 *32* r2 := r2 + 1"
+    );
 
     // TODO stfd[u]e
 
-    TEST_DECODE("stfdx 3, 1(2)", "\x7c\x61\x15\xae", "");
+    TEST_DECODE("stfdx 3, 1(2)", "\x7c\x61\x15\xae",
+                "0x00001000    0 *64* m[r1 + r2] := r35\n"
+    );
 
-    TEST_DECODE("stfdux 3, 1(2)", "\x7c\x61\x15\xee", "");
+    TEST_DECODE("stfdux 3, 1(2)", "\x7c\x61\x15\xee",
+                "0x00001000    0 *64* m[r1 + r2] := r35\n"
+                "              0 *32* r1 := r1 + r2\n"
+    );
 
     // TODO stfd[u]xe
 
     // TODO stfiwx[e]
 
-    TEST_DECODE("stfs 3, 1(2)", "\xd0\x62\x00\x01", "");
+    TEST_DECODE("stfs 3, 1(2)", "\xd0\x62\x00\x01",
+                "0x00001000    0 *32* m[r2 + 1] := fsize(64, 32, r35)\n"
+    );
 
-    TEST_DECODE("stfsu 3, 1(2)", "\xd4\x62\x00\x01", "");
+    TEST_DECODE("stfsu 3, 1(2)", "\xd4\x62\x00\x01",
+                "0x00001000    0 *32* m[r2 + 1] := fsize(64, 32, r35)\n"
+                "              0 *32* r2 := r2 + 1\n"
+    );
 
     // TODO stfs[u]e
 
-    TEST_DECODE("stfsx 3, 1(2)", "\x7c\x61\x15\x2e", "");
+    TEST_DECODE("stfsx 3, 1(2)", "\x7c\x61\x15\x2e",
+                "0x00001000    0 *32* m[r1 + r2] := fsize(64, 32, r35)\n"
+    );
 
-    TEST_DECODE("stfsux 3, 1(2)", "\x7c\x61\x15\x6e", "");
+    TEST_DECODE("stfsux 3, 1(2)", "\x7c\x61\x15\x6e",
+                "0x00001000    0 *32* m[r1 + r2] := fsize(64, 32, r35)\n"
+                "              0 *32* r1 := r1 + r2\n"
+    );
 
     // TODO stfs[u]xe
 

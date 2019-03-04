@@ -376,6 +376,10 @@ LBZ         dest, src               *32* dest := zfill(8, 32, src);
 LHZ         dest, src               *32* dest := zfill(16, 32, src);
 LWZ         dest, src               *32* dest := src;
 
+#LBZU         dest, src               *32* dest := zfill(8, 32, src);
+#LHZU         dest, src               *32* dest := zfill(16, 32, src);
+#LWZU         dest, src               *32* dest := src;
+
 LBZX        rt, ra, rb              *32* rt := zfill(8, 32, m[ra + rb]);
 LHZX        rt, ra, rb              *32* rt := zfill(16, 32, m[ra + rb]);
 LWZX        rt, ra, rb              *32* rt := m[ra + rb];
@@ -384,8 +388,6 @@ LBZUX       rt, ra, rb              *32* rt := zfill(8,  32, m[ra + rb])     *32
 LHZUX       rt, ra, rb              *32* rt := zfill(16, 32, m[ra + rb])     *32* ra := ra + rb;
 LWZUX       rt, ra, rb              *32* rt := m[ra + rb]                    *32* ra := ra + rb;
 
-
-# LBZU        dest, src               *32* dest := zfill(8, 32, src)          *32* src := addr(src);
 
 LHA         dest, src               *32* dest := sgnex(16, 32, src);
 # LHAU
