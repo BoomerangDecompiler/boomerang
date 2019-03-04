@@ -115,6 +115,13 @@ private:
      */
     DWord getDword(HostAddress lc);
 
+    /**
+     * Converts a number to a Exp* expression.
+     * \param        num - a number
+     * \returns      the Exp* representation of the given number
+     */
+    SharedExp dis_Num(unsigned num);
+
 private:
     std::unique_ptr<SPARCMachine> machine;
 };

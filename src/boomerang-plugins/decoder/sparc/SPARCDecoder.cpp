@@ -2311,5 +2311,11 @@ SPARCDecoder::SPARCDecoder(Project *project)
 }
 
 
+SharedExp SPARCDecoder::dis_Num(unsigned num)
+{
+    return Const::get(num); // TODO: what about signed values ?
+}
+
+
 BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, SPARCDecoder, "SPARC decoder plugin",
                         BOOMERANG_VERSION, "Boomerang developers")

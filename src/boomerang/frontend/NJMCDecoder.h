@@ -73,13 +73,6 @@ protected:
     std::unique_ptr<RTL> instantiate(Address pc, const char *name,
                                      const std::initializer_list<SharedExp> &args = {});
 
-    /**
-     * Converts a number to a Exp* expression.
-     * \param        num - a number
-     * \returns      the Exp* representation of the given number
-     */
-    SharedExp dis_Num(unsigned num);
-
 protected:
     // Dictionary of instruction patterns, and other information summarised from the SSL file
     // (e.g. source machine's endianness)

@@ -102,12 +102,6 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
 }
 
 
-SharedExp NJMCDecoder::dis_Num(unsigned num)
-{
-    return Const::get(num); // TODO: what about signed values ?
-}
-
-
 QString NJMCDecoder::getRegNameByNum(RegNum regNum) const
 {
     return m_rtlDict.getRegDB()->getRegNameByNum(regNum);
