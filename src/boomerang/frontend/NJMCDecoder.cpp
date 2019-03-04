@@ -102,54 +102,9 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
 }
 
 
-SharedExp NJMCDecoder::dis_Reg(int regNum)
-{
-    return Location::regOf(regNum);
-}
-
-
 SharedExp NJMCDecoder::dis_Num(unsigned num)
 {
     return Const::get(num); // TODO: what about signed values ?
-}
-
-
-void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddress relocd,
-                                           ptrdiff_t delta, Address pc, DecodeResult &result)
-{
-    result.numBytes     = size;
-    GotoStatement *jump = new GotoStatement();
-    jump->setDest(Address((relocd - delta).value()));
-    result.rtl->append(jump);
-    SHOW_ASM(name << " " << relocd - delta)
-}
-
-
-void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                                      DecodeResult &result)
-{
-    result.numBytes = size;
-
-    GotoStatement *jump = new GotoStatement();
-    jump->setDest(dest);
-    jump->setIsComputed(true);
-    result.rtl->append(jump);
-
-    SHOW_ASM(name << " " << dest)
-}
-
-
-void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                                      DecodeResult &result)
-{
-    result.numBytes = size;
-
-    CallStatement *call = new CallStatement();
-    call->setDest(dest);
-    call->setIsComputed(true);
-    result.rtl->append(call);
-
-    SHOW_ASM(name << " " << dest)
 }
 
 

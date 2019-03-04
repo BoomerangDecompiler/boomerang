@@ -43,6 +43,16 @@ public:
      */
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
+    /**
+     * Converts a numbered register to a suitable expression.
+     * \param   regNum - the register number, e.g. 0 for eax
+     * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
+     */
+    SharedExp dis_Reg(int regNum);
+
+    void processUnconditionalJump(const char *name, int size, HostAddress relocd,
+                                  ptrdiff_t delta, Address pc, DecodeResult &result);
+
 private:
     DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
     SWord getWord(intptr_t lc);

@@ -42,32 +42,7 @@ public:
 public:
     bool initialize(Project *project) override;
 
-
     const RTLInstDict *getDict() const override { return &m_rtlDict; }
-
-
-    /**
-     * Process an indirect jump instruction.
-     * \param   name name of instruction (for debugging)
-     * \param   size size of instruction in bytes
-     * \param   dest destination Exp*
-     * \param   pc native pc
-     * \param   stmts list of statements (?)
-     * \param   result ref to decoder result object
-     */
-    void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                             DecodeResult &result);
-
-    /**
-     * Process an indirect call instruction.
-     * \param   name name of instruction (for debugging)
-     * \param   size size of instruction in bytes
-     * \param   dest destination Exp*
-     * \param   pc native pc
-     * \param   result ref to decoder result object
-     */
-    void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                             DecodeResult &result);
 
     /// \copydoc IDecoder::getRegName
     QString getRegNameByNum(RegNum num) const override;
@@ -97,26 +72,6 @@ protected:
      */
     std::unique_ptr<RTL> instantiate(Address pc, const char *name,
                                      const std::initializer_list<SharedExp> &args = {});
-
-    /**
-     * Process an unconditional jump instruction
-     * Also check if the destination is a label (MVE: is this done?)
-     *
-     * \param   name name of instruction (for debugging)
-     * \param   size size of instruction in bytes
-     * \param   pc native pc
-     * \param   result ref to decoder result object
-     */
-    void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
-                                  Address pc, DecodeResult &result);
-
-
-    /**
-     * Converts a numbered register to a suitable expression.
-     * \param   regNum - the register number, e.g. 0 for eax
-     * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
-     */
-    SharedExp dis_Reg(int regNum);
 
     /**
      * Converts a number to a Exp* expression.
