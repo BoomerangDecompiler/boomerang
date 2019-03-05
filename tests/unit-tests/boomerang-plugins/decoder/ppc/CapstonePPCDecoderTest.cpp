@@ -287,9 +287,9 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO: fnabs
 
-//     TEST_DECODE("fneg 3, 1", "\xfc\x60\x08\x50", "0x00001000    0 *64* r35 := 0.0 - r33\n");
-//
-//     TEST_DECODE("fneg. 3, 1", "\xfc\x60\x08\x51", "0x00001000    0 *64* r35 := 0.0 - r33\n");
+    TEST_DECODE("fneg 3, 1",  "\xfc\x60\x08\x50", "0x00001000    0 *64* r35 := -r33\n");
+
+    TEST_DECODE("fneg. 3, 1", "\xfc\x60\x08\x51", "0x00001000    0 *64* r35 := -r33\n");
 
     // TODO fnmadd[s][.]
 
