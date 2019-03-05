@@ -313,6 +313,13 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
             rtl->append(asgn);
         }
     }
+    else if (insnID == "LBZU" || insnID == "LHZU" || insnID == "LWZU" || insnID == "LFSU" ||
+             insnID == "LFDU" || insnID == "LHAU" || insnID == "STFSU" || insnID == "STFDU") {
+        const SharedExp srcBase = Location::regOf(fixRegNum(operands[1].mem.base));
+        const SharedExp offset  = Const::get(operands[1].mem.disp);
+
+        rtl->append(new Assign(SizeType::get(32), srcBase, Binary::get(opPlus, srcBase, offset)));
+    }
 
     return rtl;
 }

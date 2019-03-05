@@ -376,9 +376,9 @@ LBZ         dest, src               *32* dest := zfill(8, 32, src);
 LHZ         dest, src               *32* dest := zfill(16, 32, src);
 LWZ         dest, src               *32* dest := src;
 
-#LBZU         dest, src               *32* dest := zfill(8, 32, src);
-#LHZU         dest, src               *32* dest := zfill(16, 32, src);
-#LWZU         dest, src               *32* dest := src;
+LBZU        dest, src               *32* dest := zfill(8, 32, src);     # Update is hard-coded
+LHZU        dest, src               *32* dest := zfill(16, 32, src);
+LWZU        dest, src               *32* dest := src;
 
 LBZX        rt, ra, rb              *32* rt := zfill(8, 32, m[ra + rb]);
 LHZX        rt, ra, rb              *32* rt := zfill(16, 32, m[ra + rb]);
@@ -390,7 +390,7 @@ LWZUX       rt, ra, rb              *32* rt := m[ra + rb]                    *32
 
 
 LHA         dest, src               *32* dest := sgnex(16, 32, src);
-# LHAU
+LHAU        dest, src               *32* dest := sgnex(16, 32, src);        # Update is hard-coded
 LHAX        rt, ra, rb              *32* rt := m[ra + rb];
 LHAUX       rt, ra, rb              *32* rt := m[ra + rb]                   *32* ra := ra + rb;
 
@@ -417,9 +417,9 @@ STMW        s, dest     _;
 
 # Floating point loads
 LFS         dest, src               *32* dest := fsize(32, 64, src);
+LFSU        dest, src               *32* dest := fsize(32, 64, src); # Update is hard-coded
 LFD         dest, src               *64* dest := src;
-# LFDU        dest, src               *64* dest := src                      *32* src := addr(dest);
-# LFSU        dest, src               *32* dest := fsize(32, 64, src)       *32* src := addr(dest);
+LFDU        dest, src               *64* dest := src;                # Update is hard-coded
 
 LFSX        rt, ra, rb              *32* rt := fsize(32, 64, m[ra + rb]);
 LFSUX       rt, ra, rb              *32* rt := fsize(32, 64, m[ra + rb])    *32* ra := ra + rb;
@@ -429,9 +429,9 @@ LFDUX       rt, ra, rb              *64* rt := m[ra + rb]                   *32*
 
 # Floating point stores
 STFS        src, dest               *32* dest := fsize(64, 32, src);
-STFSU       src, dest               *32* dest := fsize(64, 32, src)         *32* src := addr(dest);
+STFSU       src, dest               *32* dest := fsize(64, 32, src);    # Update is hard-coded
 STFD        src, dest               *64* dest := src;
-STFDU       src, dest               *64* dest := src                        *32* src := addr(dest);
+STFDU       src, dest               *64* dest := src;                   # Update is hard-coded
 
 STFSX       frs, ra, rb             *32* m[ra + rb] := fsize(64, 32, frs);
 STFSUX      frs, ra, rb             *32* m[ra + rb] := fsize(64, 32, frs)   *32* ra := ra + rb;
