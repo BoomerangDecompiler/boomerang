@@ -190,8 +190,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         callStmt->setDest(callDest);
         callStmt->setIsComputed(false);
 
-        //         rtl->append(new Assign(SizeType::get(32), Location::regOf(getRegNumByName("LR")),
-        //                                Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
+        rtl->append(new Assign(SizeType::get(32), Location::regOf(REG_PPC_LR),
+                                Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
         rtl->append(callStmt);
 
         if (m_prog) {
