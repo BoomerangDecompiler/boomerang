@@ -577,18 +577,7 @@ bne     cr, dest        _;
 bng                     _;
 bng     dest            _;
 bng     cr, dest        _;
-bso                     _;
-bso     dest            _;
-bso     cr, dest        _;
-bns                     _;
-bns     dest            _;
-bns     cr, dest        _;
-bun                     _;
-bun     dest            _;
-bun     cr, dest        _;
-bnu                     _;
-bnu     dest            _;
-bnu     cr, dest        _;
+
 
 # BRCONDSCTR[IDX] BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
 bltctr  BIcr            _;
@@ -599,10 +588,6 @@ bgtctr  BIcr            _;
 bnlctr  BIcr            _;
 bnectr  BIcr            _;
 bngctr  BIcr            _;
-bsoctr  BIcr            _;
-bnsctr  BIcr            _;
-bunctr  BIcr            _;
-bnuctr  BIcr            _;
 
 # BRCONDSLR[IDX]  BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];
 bltlr  BIcr            _;
@@ -613,10 +598,6 @@ bgtlr  BIcr            _;
 bnllr  BIcr            _;
 bnelr  BIcr            _;
 bnglr  BIcr            _;
-bsolr  BIcr            _;
-bnslr  BIcr            _;
-bunlr  BIcr            _;
-bnulr  BIcr            _;
 
 # Decrement CTR, branch conditionally
 BDNZ    dest            _; # %pc update is hard-coded
