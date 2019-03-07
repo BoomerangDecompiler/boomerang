@@ -646,6 +646,9 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 
 #define REG_PPC_CR0 RegNum(100) // Control register
 
+#define REG_PPC_LR RegNum(300)  // Link register
+#define REG_PPC_CTR RegNum(301) // Counter register
+
 
 // ST20
 #define REG_ST20_A RegNum(0)

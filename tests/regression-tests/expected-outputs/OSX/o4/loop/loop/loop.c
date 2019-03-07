@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     do {
     } while (flags);
-    printf(/* machine specific */ (int) LR + 648);
+    printf("%i\n", 10);
     return 0;
 }
 

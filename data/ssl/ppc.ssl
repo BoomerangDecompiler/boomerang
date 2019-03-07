@@ -132,8 +132,8 @@ INTEGER %XEROV[1] -> 201 SHARES %XER@[30..30];
 INTEGER %XERCA[1] -> 202 SHARES %XER@[29..29];
 
 
-INTEGER %LR[32]  -> -1;     # Link Register
-INTEGER %CTR[32] -> -1;     # Count Register
+INTEGER %LR[32]  -> 300;     # Link Register
+INTEGER %CTR[32] -> 301;     # Count Register
 
 INTEGER %pc[32] -> -1;
 

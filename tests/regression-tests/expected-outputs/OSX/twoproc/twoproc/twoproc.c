@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     int g3; 		// r3
 
     g3 = proc1(11, 4);
-    printf(/* machine specific */ (int) LR + 324);
+    printf("%i\n", g3);
     return g3;
 }
 

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 /** address: 0x10000440 */
 __size32 fib(int param1)
 {
-    __size32 CR; 		// r100
+    __size32 CR; 		// r99
     int g3; 		// r3
     int g3_2; 		// r3{5}
     int local5; 		// m[g1 - 32]

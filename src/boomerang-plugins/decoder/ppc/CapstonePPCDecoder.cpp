@@ -24,7 +24,10 @@
 // only map those registers that are mapped to a number
 // different from -1 in the SSL file.
 // not all registers supported by capstone
-static std::map<cs::ppc_reg, RegNum> oldRegMap = {};
+static std::map<cs::ppc_reg, RegNum> oldRegMap = {
+    { cs::PPC_REG_LR, REG_PPC_LR },
+    { cs::PPC_REG_CTR, REG_PPC_CTR }
+};
 
 
 /**
@@ -39,12 +42,15 @@ RegNum fixRegNum(int csRegID)
     }
     // FPR
     else if (csRegID >= cs::PPC_REG_F0 && csRegID <= cs::PPC_REG_F31) {
-        return 32 + (csRegID - cs::PPC_REG_F0);
+        return REG_PPC_F0 + (csRegID - cs::PPC_REG_F0);
     }
     // Vector regs
-
+    else if (csRegID >= cs::PPC_REG_V0 && csRegID <= cs::PPC_REG_V31) {
+        return REG_PPC_VR0 + (csRegID - cs::PPC_REG_V0);
+    }
+    // CR fields
     else if (csRegID >= cs::PPC_REG_CR0 && csRegID <= cs::PPC_REG_CR7) {
-        return 64 + (csRegID - cs::PPC_REG_CR0);
+        return REG_PPC_CR0 + (csRegID - cs::PPC_REG_CR0);
     }
 
     auto it = oldRegMap.find((cs::ppc_reg)csRegID);
@@ -195,13 +201,13 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
     }
     else if (insnID == "BCTR") {
         CaseStatement *jump = new CaseStatement();
-        jump->setDest(Location::regOf(getRegNumByName("CTR")));
+        jump->setDest(Location::regOf(REG_PPC_CTR));
         jump->setIsComputed(true);
         rtl->append(jump);
     }
     else if (insnID == "BCTRL") {
         CallStatement *call = new CallStatement();
-        call->setDest(Location::regOf(getRegNumByName("CTR")));
+        call->setDest(Location::regOf(REG_PPC_CTR));
         call->setIsComputed(true);
         rtl->append(call);
     }

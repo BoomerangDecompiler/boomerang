@@ -4,7 +4,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00002778 */
 int main(int argc, char *argv[])
 {
-    int XERCA; 		// r203
+    int XERCA; 		// r202
     unsigned int g0; 		// r0
     union { int; __size8 *; } g1; 		// r1
     int g10; 		// r10
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     __size32 local8; 		// m[g1 - 128]{15}
 
     g3 = malloc(12);
-    *(__size32*)(g3 + 4) = /* machine specific */ (int) LR + 0x1864;
+    *(__size32*)(g3 + 4) = 0x3ff4;
     local4 = 2;
     local5 = g3 + 4;
     local8 = local4;
@@ -49,7 +49,7 @@ bb0x2810:
 bb0x2874:
                 if (local1 <= 6) {
                     g10 = local2 * 8 + g1 + local1 - 96;
-                    g11 = (((local0 >> 3) + XERCA) * 7 + local7) * 4 + /* machine specific */ (int) LR + 0x1890;
+                    g11 = (((local0 >> 3) + XERCA) * 7 + local7) * 4 + 0x4020;
                     g0 = *g11;
                     g0 = *(unsigned char*)((local0 - ((local0 >> 3) + XERCA) * 8) * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
@@ -71,7 +71,7 @@ bb0x2874:
             local7++;
             goto bb0x2810;
         }
-        puts(/* machine specific */ (int) LR + 1108);
+        puts("");
         local5++;
         local8 = local4;
         local4 = local8 - 1;

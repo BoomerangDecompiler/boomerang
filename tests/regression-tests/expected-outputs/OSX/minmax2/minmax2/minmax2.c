@@ -22,9 +22,10 @@ void test(int param1)
     if (param1 < -2) {
         local0 = -2;
     }
-    if (local0 <= 3) {
+    if (local0 > 3) {
+        local0 = 3;
     }
-    printf(/* machine specific */ (int) LR + 772);
+    printf("MinMax result %d\n", local0);
     return;
 }
 

@@ -5,16 +5,16 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     if ((unsigned int)argc > (unsigned int)0xee6b27ff) {
-        printf(/* machine specific */ (int) LR + 772);
+        printf("Population exceeds %u\n", (unsigned int)0xee6b2800);
     }
     if ((unsigned int)argc <= (unsigned int)0xefffffff) {
-        printf(/* machine specific */ (int) LR + 796);
+        printf("The mask is %x\n", (unsigned int)0xf0000000);
     }
     if ((unsigned int)argc > 1) {
-        puts(/* machine specific */ (int) LR + 812);
+        puts("Arguments supplied");
     }
     if (0 - argc < -2) {
-        puts(/* machine specific */ (int) LR + 832);
+        puts("Three or more arguments");
     }
     return 0;
 }

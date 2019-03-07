@@ -18,6 +18,7 @@ v0.5.0 (in development)
 - Fixed: Wrong decompilation of parameter types in function signatures in some cases.
 - Fixed: Wrong decompilation of x86 binaries containing a `cmovCC`-type instruction.
 - Fixed: Wrong decompilation of x86 binaries using the `sahf` instruction in floating point comparisons.
+- Fixed: Wrong decompilation of ppc binaries using the LR or CTR register in calls or switch statements.
 - Fixed: Unnecessary union types in high level code due to non-symmetric type meet operator.
 - Fixed: Missing rotation amount for left and right rotates in high level code.
 - Fixed: High level code output for bit extraction operator on right hand side of assignments.

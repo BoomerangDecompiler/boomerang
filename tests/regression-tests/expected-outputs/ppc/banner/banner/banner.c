@@ -4,7 +4,7 @@ int main(int argc, char *argv[]);
 /** address: 0x10000468 */
 int main(int argc, char *argv[])
 {
-    int XERCA; 		// r203
+    int XERCA; 		// r202
     unsigned int g0; 		// r0
     union { int; __size8 *; } g1; 		// r1
     int g10; 		// r10

@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
     local0 = 0;
     do {
         local0++;
-        printf(/* machine specific */ (int) LR + 696);
+        printf("%d ", local0);
     } while (local0 <= 9);
-    printf(/* machine specific */ (int) LR + 700);
+    printf("a is %d, x is %d\n", local0, local0);
     return 0;
 }
 

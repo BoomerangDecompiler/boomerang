@@ -4,14 +4,14 @@ int main(union { int; char *[] *; } argc, union { int; char *[] *; } argv);
 /** address: 0x10000418 */
 int main(union { int; char *[] *; } argc, union { int; char *[] *; } argv)
 {
-    int CR0; 		// r64
-    int CR1; 		// r65
-    int CR2; 		// r66
-    int CR3; 		// r67
-    int CR4; 		// r68
-    int CR5; 		// r69
-    int CR6; 		// r70
-    __size32 CR7; 		// r71
+    int CR0; 		// r100
+    int CR1; 		// r101
+    int CR2; 		// r102
+    int CR3; 		// r103
+    int CR4; 		// r104
+    int CR5; 		// r105
+    int CR6; 		// r106
+    __size32 CR7; 		// r107
     unsigned int g0; 		// r0
     unsigned int g0_1; 		// r0{44}
     int g3; 		// r3
