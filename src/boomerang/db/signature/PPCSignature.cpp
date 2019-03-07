@@ -98,12 +98,7 @@ void PPCSignature::addParameter(const QString &name, const SharedExp &e, SharedT
 
 SharedExp PPCSignature::getProven(SharedExp left) const
 {
-    if (!left->isRegOfConst()) {
-        return nullptr;
-    }
-
-    const RegNum regNum = left->access<Const, 1>()->getInt();
-    return (regNum == REG_PPC_SP) ? left : nullptr;
+    return left->isRegN(REG_PPC_SP) ? left : nullptr;
 }
 
 
@@ -113,7 +108,6 @@ bool PPCSignature::isPreserved(SharedExp e) const
 }
 
 
-// Return a list of locations defined by library calls
 void PPCSignature::getLibraryDefines(StatementList &defs)
 {
     if (defs.size() > 0) {
