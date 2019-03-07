@@ -21,11 +21,11 @@ int main(int argc, char *argv[])
     int local3; 		// m[g1 - 32]
     union { int; void *; } local4; 		// m[g1 - 96]
 
-    (*global_0x00002024)(global_0x00002024, 0x1d4c, global_0x00002024, g1 - 96, 0x1d4c, pc + 4, global_0x00002024, LR, g31, g30, global_0x00002024, g1, argc, argv);
+    (*global_0x00002024)(global_0x00002024, 0x1d4c, global_0x00002024, g1 - 96, 0x1d4c, 0x1d6c, global_0x00002024, LR, g31, g30, global_0x00002024, g1, argc, argv);
     g0 = *(g31 + 724);
     *(__size32*)(g30 + 64) = g0;
     g0 = *(g30 + 64);
-    (**(g30 + 64))(g0, g31, g0, g30, g31, pc + 4, g0, <all>, local0, local1, local2, local3, local4, g3, g4);
+    (**(g30 + 64))(g0, g31, g0, g30, g31, 0x1d88, g0, <all>, local0, local1, local2, local3, local4, g3, g4);
     return 0;
 }
 

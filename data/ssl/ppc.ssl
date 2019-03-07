@@ -604,8 +604,8 @@ bnglr  BIcr            _;
 BDNZ    dest            _; # %pc update is hard-coded
 BDNZL   dest            *j32* %LR := dest;      # %pc update is hard-coded
 
-BCTR                    *32* %pc := %CTR;
-BCTRL                   *32* %LR := %pc + 4      *32* %pc := %CTR;
+BCTR                    _; # hard-coded
+BCTRL                   _; # hard-coded
 
 # Trap instructions
 TDI     cc, ra, simm    _;

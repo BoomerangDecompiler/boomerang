@@ -208,6 +208,9 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         rtl->append(jump);
     }
     else if (insnID == "BCTRL") {
+        rtl->append(new Assign(SizeType::get(32), Location::regOf(REG_PPC_LR),
+                               Const::get(Address(pc + 4))));
+
         CallStatement *call = new CallStatement();
         call->setDest(Location::regOf(REG_PPC_CTR));
         call->setIsComputed(true);
