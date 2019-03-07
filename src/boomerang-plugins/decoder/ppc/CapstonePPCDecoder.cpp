@@ -24,10 +24,12 @@
 // only map those registers that are mapped to a number
 // different from -1 in the SSL file.
 // not all registers supported by capstone
+// clang-format off
 static std::map<cs::ppc_reg, RegNum> oldRegMap = {
     { cs::PPC_REG_LR, REG_PPC_LR },
     { cs::PPC_REG_CTR, REG_PPC_CTR }
 };
+// clang-format on
 
 
 /**

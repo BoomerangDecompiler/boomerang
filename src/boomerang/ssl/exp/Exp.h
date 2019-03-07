@@ -640,7 +640,7 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_PPC_G13 RegNum(13)
 #define REG_PPC_G31 RegNum(31)
 
-#define REG_PPC_F0  RegNum(32)
+#define REG_PPC_F0 RegNum(32)
 
 #define REG_PPC_VR0 RegNum(64)
 
