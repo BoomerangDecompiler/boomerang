@@ -110,13 +110,13 @@ bool PPCSignature::isPreserved(SharedExp e) const
 
 void PPCSignature::getLibraryDefines(StatementList &defs)
 {
-    if (defs.size() > 0) {
+    if (!defs.empty()) {
         return; // Do only once
     }
 
-    for (int r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
-        defs.append(
-            new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
+    // Registers 3-12 are volatile (caller save)
+    for (RegNum r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
+        defs.append(new ImplicitAssign(Location::regOf(r)));
     }
 }
 
