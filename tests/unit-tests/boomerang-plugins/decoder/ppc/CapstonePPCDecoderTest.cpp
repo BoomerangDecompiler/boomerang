@@ -56,97 +56,131 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // instructions listed alphabetically
 
-    TEST_DECODE("add r0, r1, r2", "\x7c\x01\x12\x14", "0x00001000    0 *32* r0 := r1 + r2\n");
+    TEST_DECODE("add r0, r1, r2", "\x7c\x01\x12\x14",
+                "0x00001000    0 *32* r0 := r1 + r2\n"
+    );
 
     TEST_DECODE("add. r0, r1, r2", "\x7c\x01\x12\x15",
                 "0x00001000    0 *32* r0 := r1 + r2\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // Capstone does not support addo and addo. yet
 
 
     TEST_DECODE("addc r0, r1, r2", "\x7c\x01\x10\x14",
                 "0x00001000    0 *32* r0 := r1 + r2\n"
-                "              0 *v* %flags := ADDFLAGSX( r0, r1, r2 )\n");
+                "              0 *v* %flags := ADDFLAGSX( r0, r1, r2 )\n"
+    );
 
     TEST_DECODE("addc. r0, r1, r2", "\x7c\x01\x10\x15",
                 "0x00001000    0 *32* r0 := r1 + r2\n"
-                "              0 *v* %flags := ADDFLAGSX0( r0, r1, r2 )\n");
+                "              0 *v* %flags := ADDFLAGSX0( r0, r1, r2 )\n"
+    );
 
     // Capstone does not support addco and addco. yet
 
     TEST_DECODE("adde r0, r1, r2", "\x7c\x01\x11\x14",
-                "0x00001000    0 *32* r0 := r1 + (r2 + r203)\n");
+                "0x00001000    0 *32* r0 := r1 + (r2 + r203)\n"
+    );
 
     TEST_DECODE("adde. r0, r1, r2", "\x7c\x01\x11\x15",
                 "0x00001000    0 *32* r0 := r1 + (r2 + r203)\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
-    TEST_DECODE("addi r0, r1, -10", "\x38\x01\xff\xf6", "0x00001000    0 *32* r0 := r1 - 10\n");
+    TEST_DECODE("addi r0, r1, -10", "\x38\x01\xff\xf6",
+                "0x00001000    0 *32* r0 := r1 - 10\n"
+    );
 
 
     TEST_DECODE("addic r0, r1, -10", "\x30\x01\xff\xf6",
                 "0x00001000    0 *32* r0 := r1 - 10\n"
-                "              0 *v* %flags := ADDFLAGSX( r0, r1, -10 )\n");
+                "              0 *v* %flags := ADDFLAGSX( r0, r1, -10 )\n"
+    );
 
     TEST_DECODE("addic. r0, r1, -10", "\x34\x01\xff\xf6",
                 "0x00001000    0 *32* r0 := r1 - 10\n"
-                "              0 *v* %flags := ADDFLAGSX0( r0, r1, -10 )\n");
+                "              0 *v* %flags := ADDFLAGSX0( r0, r1, -10 )\n"
+    );
 
     TEST_DECODE("addis r0, r1, -10", "\x3c\x01\xff\xf6",
-                "0x00001000    0 *32* r0 := r1 - 0xa0000\n");
+                "0x00001000    0 *32* r0 := r1 - 0xa0000\n"
+    );
 
-    TEST_DECODE("addme r0, r1", "\x7c\x01\x01\xd4", "0x00001000    0 *32* r0 := (r1 + r203) - 1\n");
+    TEST_DECODE("addme r0, r1", "\x7c\x01\x01\xd4",
+                "0x00001000    0 *32* r0 := (r1 + r203) - 1\n"
+    );
 
     TEST_DECODE("addme. r0, r1", "\x7c\x01\x01\xd5",
                 "0x00001000    0 *32* r0 := (r1 + r203) - 1\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // Capstone does not support addmeo[.] and addme64[o] yet
 
-    TEST_DECODE("addze r0, r1", "\x7c\x01\x01\x94", "0x00001000    0 *32* r0 := r1 + r203\n");
+    TEST_DECODE("addze r0, r1", "\x7c\x01\x01\x94",
+                "0x00001000    0 *32* r0 := r1 + r203\n"
+    );
 
     TEST_DECODE("addze. r0, r1", "\x7c\x01\x01\x95",
                 "0x00001000    0 *32* r0 := r1 + r203\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // Capstone does not support addzeo[.] and addze64[o] yet
 
-    TEST_DECODE("and r0, r1, r2", "\x7c\x20\x10\x38", "0x00001000    0 *32* r0 := r1 & r2\n");
+    TEST_DECODE("and r0, r1, r2", "\x7c\x20\x10\x38",
+                "0x00001000    0 *32* r0 := r1 & r2\n"
+    );
 
     TEST_DECODE("and. r0, r1, r2", "\x7c\x20\x10\x39",
                 "0x00001000    0 *32* r0 := r1 & r2\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     TEST_DECODE("andi. r0, r1, 10", "\x70\x20\x00\x0a",
                 "0x00001000    0 *32* r0 := r1 & 10\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     TEST_DECODE("andis. r0, r1, 10", "\x74\x20\x00\x0a",
                 "0x00001000    0 *32* r0 := r1 & 0xa0000\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
-    TEST_DECODE("andc r0, r1, r2", "\x7c\x20\x10\x78", "0x00001000    0 *32* r0 := r1 & ~r2\n");
+    TEST_DECODE("andc r0, r1, r2", "\x7c\x20\x10\x78",
+                "0x00001000    0 *32* r0 := r1 & ~r2\n"
+    );
 
     TEST_DECODE("andc. r0, r1, r2", "\x7c\x20\x10\x79",
                 "0x00001000    0 *32* r0 := r1 & ~r2\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
-    TEST_DECODE("b 0x0800", "\x4b\xff\xf8\x00", "0x00001000    0 GOTO 0x00000800\n");
+    TEST_DECODE("b 0x0800", "\x4b\xff\xf8\x00",
+                "0x00001000    0 GOTO 0x00000800\n"
+    );
 
-    TEST_DECODE("b 0x2000", "\x48\x00\x10\x00", "0x00001000    0 GOTO 0x00002000\n");
+    TEST_DECODE("b 0x2000", "\x48\x00\x10\x00",
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
 
-    TEST_DECODE("ba 0x2000", "\x48\x00\x20\x02", "0x00001000    0 GOTO 0x00002000\n");
+    TEST_DECODE("ba 0x2000", "\x48\x00\x20\x02",
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
 
     TEST_DECODE("bl 0x2000", "\x48\x00\x10\x01",
                 "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
-                "              Live variables: <None>\n");
+                "              Live variables: <None>\n"
+    );
 
     TEST_DECODE("bla 0x2000", "\x48\x00\x20\x03",
                 "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
-                "              Live variables: <None>\n");
+                "              Live variables: <None>\n"
+    );
 
     // TODO: Conditional branches BC*
 
@@ -208,58 +242,85 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // Capstone does not support divdou yet
 
-    TEST_DECODE("divw 0, 1, 2", "\x7c\x01\x13\xd6", "0x00001000    0 *32* r0 := r1 / r2\n");
+    TEST_DECODE("divw 0, 1, 2", "\x7c\x01\x13\xd6",
+                "0x00001000    0 *32* r0 := r1 / r2\n"
+    );
 
     TEST_DECODE("divw. 0, 1, 2", "\x7c\x01\x13\xd7",
                 "0x00001000    0 *32* r0 := r1 / r2\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // Capstone does not support divwo[.] yet
 
-    TEST_DECODE("divwu 0, 1, 2", "\x7c\x01\x13\x96", "0x00001000    0 *32* r0 := r1 / r2\n");
+    TEST_DECODE("divwu 0, 1, 2", "\x7c\x01\x13\x96",
+                "0x00001000    0 *32* r0 := r1 / r2\n"
+    );
 
     TEST_DECODE("divwu. 0, 1, 2", "\x7c\x01\x13\x97",
                 "0x00001000    0 *32* r0 := r1 / r2\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // Capstone does not support divwuo[.] yet
 
-    TEST_DECODE("eqv 0, 1, 2", "\x7c\x20\x12\x38", "0x00001000    0 *32* r0 := ~(r1 ^ r2)\n");
+    TEST_DECODE("eqv 0, 1, 2", "\x7c\x20\x12\x38",
+                "0x00001000    0 *32* r0 := ~(r1 ^ r2)\n"
+    );
 
     TEST_DECODE("eqv. 0, 1, 2", "\x7c\x20\x12\x39",
                 "0x00001000    0 *32* r0 := ~(r1 ^ r2)\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
-    TEST_DECODE("extsb 0, 1", "\x7c\x20\x07\x74", "0x00001000    0 *32* r0 := sgnex(8, 32, r1)\n");
+    TEST_DECODE("extsb 0, 1", "\x7c\x20\x07\x74",
+                "0x00001000    0 *32* r0 := sgnex(8, 32, r1)\n"
+    );
 
     TEST_DECODE("extsb. 0, 1", "\x7c\x20\x07\x75",
                 "0x00001000    0 *32* r0 := sgnex(8, 32, r1)\n"
                 "              0 *v* %flags := SETFLAGS0( r0 )\n");
 
-    TEST_DECODE("extsh 0, 1", "\x7c\x20\x07\x34", "0x00001000    0 *32* r0 := sgnex(16, 32, r1)\n");
-
-    TEST_DECODE("extsb 0, 1", "\x7c\x20\x07\x35",
+    TEST_DECODE("extsh 0, 1", "\x7c\x20\x07\x34",
                 "0x00001000    0 *32* r0 := sgnex(16, 32, r1)\n"
-                "              0 *v* %flags := SETFLAGS0( r0 )\n");
+    );
+
+    TEST_DECODE("extsh. 0, 1", "\x7c\x20\x07\x35",
+                "0x00001000    0 *32* r0 := sgnex(16, 32, r1)\n"
+                "              0 *v* %flags := SETFLAGS0( r0 )\n"
+    );
 
     // TODO extsw
 
-    TEST_DECODE("fabs 1, 2", "\xfc\x20\x12\x10", "0x00001000    0 *64* r33 := fabs(r34)\n");
+    TEST_DECODE("fabs 1, 2", "\xfc\x20\x12\x10",
+                "0x00001000    0 *64* r33 := fabs(r34)\n"
+    );
 
-    TEST_DECODE("fabs. 1, 2", "\xfc\x20\x12\x11", "0x00001000    0 *64* r33 := fabs(r34)\n");
+    TEST_DECODE("fabs. 1, 2", "\xfc\x20\x12\x11",
+                "0x00001000    0 *64* r33 := fabs(r34)\n"
+    );
 
-    TEST_DECODE("fadd 1, 2, 3", "\xfc\x22\x18\x2a", "0x00001000    0 *64* r33 := r34 +f r35\n");
+    TEST_DECODE("fadd 1, 2, 3", "\xfc\x22\x18\x2a",
+                "0x00001000    0 *64* r33 := r34 +f r35\n"
+    );
 
-    TEST_DECODE("fadd. 1, 2, 3", "\xfc\x22\x18\x2b", "0x00001000    0 *64* r33 := r34 +f r35\n");
+    TEST_DECODE("fadd. 1, 2, 3", "\xfc\x22\x18\x2b",
+                "0x00001000    0 *64* r33 := r34 +f r35\n"
+    );
 
-    TEST_DECODE("fadds 1, 2, 3", "\xec\x22\x18\x2a", "0x00001000    0 *64* r33 := r34 +f r35\n");
+    TEST_DECODE("fadds 1, 2, 3", "\xec\x22\x18\x2a",
+                "0x00001000    0 *64* r33 := r34 +f r35\n"
+    );
 
-    TEST_DECODE("fadds. 1, 2, 3", "\xec\x22\x18\x2b", "0x00001000    0 *64* r33 := r34 +f r35\n");
+    TEST_DECODE("fadds. 1, 2, 3", "\xec\x22\x18\x2b",
+                "0x00001000    0 *64* r33 := r34 +f r35\n"
+    );
 
     // TODO fcfid
 
     TEST_DECODE("fcmpu 1, 2, 3", "\xfc\x82\x18\x00",
-                "0x00001000    0 *v* %flags := SETFFLAGSN( r34, r35, r65 )\n");
+                "0x00001000    0 *v* %flags := SETFFLAGSN( r34, r35, r65 )\n"
+    );
 
     // Capstone does not support fcmpo
 
@@ -267,19 +328,31 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO fctiw[z][.]
 
 
-    TEST_DECODE("fdiv 1, 2, 3", "\xfc\x22\x18\x24", "0x00001000    0 *64* r33 := r34 /f r35\n");
+    TEST_DECODE("fdiv 1, 2, 3", "\xfc\x22\x18\x24",
+                "0x00001000    0 *64* r33 := r34 /f r35\n"
+    );
 
-    TEST_DECODE("fdiv. 1, 2, 3", "\xfc\x22\x18\x25", "0x00001000    0 *64* r33 := r34 /f r35\n");
+    TEST_DECODE("fdiv. 1, 2, 3", "\xfc\x22\x18\x25",
+                "0x00001000    0 *64* r33 := r34 /f r35\n"
+    );
 
-    TEST_DECODE("fdivs 1, 2, 3", "\xec\x22\x18\x24", "0x00001000    0 *64* r33 := r34 /f r35\n");
+    TEST_DECODE("fdivs 1, 2, 3", "\xec\x22\x18\x24",
+                "0x00001000    0 *64* r33 := r34 /f r35\n"
+    );
 
-    TEST_DECODE("fdivs. 1, 2, 3", "\xec\x22\x18\x25", "0x00001000    0 *64* r33 := r34 /f r35\n");
+    TEST_DECODE("fdivs. 1, 2, 3", "\xec\x22\x18\x25",
+                "0x00001000    0 *64* r33 := r34 /f r35\n"
+    );
 
     // TODO: fmadd
 
-    TEST_DECODE("fmr 3, 1", "\xfc\x60\x08\x90", "0x00001000    0 *64* r35 := r33\n");
+    TEST_DECODE("fmr 3, 1", "\xfc\x60\x08\x90",
+                "0x00001000    0 *64* r35 := r33\n"
+    );
 
-    TEST_DECODE("fmr. 3, 1", "\xfc\x60\x08\x91", "0x00001000    0 *64* r35 := r33\n");
+    TEST_DECODE("fmr. 3, 1", "\xfc\x60\x08\x91",
+                "0x00001000    0 *64* r35 := r33\n"
+    );
 
     // TODO: fmsub
 
@@ -287,9 +360,13 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO: fnabs
 
-    TEST_DECODE("fneg 3, 1",  "\xfc\x60\x08\x50", "0x00001000    0 *64* r35 := -r33\n");
+    TEST_DECODE("fneg 3, 1",  "\xfc\x60\x08\x50",
+                "0x00001000    0 *64* r35 := -r33\n"
+    );
 
-    TEST_DECODE("fneg. 3, 1", "\xfc\x60\x08\x51", "0x00001000    0 *64* r35 := -r33\n");
+    TEST_DECODE("fneg. 3, 1", "\xfc\x60\x08\x51",
+                "0x00001000    0 *64* r35 := -r33\n"
+    );
 
     // TODO fnmadd[s][.]
 
@@ -664,20 +741,24 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO stfs[u]xe
 
     TEST_DECODE("sth 3, 1(2)", "\xb0\x62\x00\x01",
-                "0x00001000    0 *16* m[r2 + 1] := truncs(32, 16, r3)\n");
+                "0x00001000    0 *16* m[r2 + 1] := truncs(32, 16, r3)\n"
+    );
 
     TEST_DECODE("sthu 3, 1(2)", "\xb4\x62\x00\x01",
                 "0x00001000    0 *16* m[r2 + 1] := truncs(32, 16, r3)\n"
-                "              0 *32* r3 := r2 + 1\n");
+                "              0 *32* r3 := r2 + 1\n"
+    );
 
     // TODO sth[u]e
 
     TEST_DECODE("sthx 3, 1(2)", "\x7c\x61\x13\x2e",
-                "0x00001000    0 *16* m[r1 + r2] := truncs(32, 16, r3)\n");
+                "0x00001000    0 *16* m[r1 + r2] := truncs(32, 16, r3)\n"
+    );
 
     TEST_DECODE("sthux 3, 1(2)", "\x7c\x61\x13\x6e",
                 "0x00001000    0 *16* m[r1 + r2] := truncs(32, 16, r3)\n"
-                "              0 *32* r1 := r1 + r2\n");
+                "              0 *32* r1 := r1 + r2\n"
+    );
 
     // TODO sth[u]xe
 
@@ -691,15 +772,20 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO stswx
 
-    TEST_DECODE("stw 3, 1(2)", "\x90\x62\x00\x01", "0x00001000    0 *32* m[r2 + 1] := r3\n");
+    TEST_DECODE("stw 3, 1(2)", "\x90\x62\x00\x01",
+                "0x00001000    0 *32* m[r2 + 1] := r3\n"
+    );
 
     TEST_DECODE("stwu 3, 1(2)", "\x94\x62\x00\x01",
                 "0x00001000    0 *32* m[r2 + 1] := r3\n"
-                "              0 *32* r3 := r2 + 1\n");
+                "              0 *32* r3 := r2 + 1\n"
+    );
 
     // TODO stw[u]e
 
-    TEST_DECODE("stwx 3, 1(2)", "\x7c\x61\x11\x2e", "0x00001000    0 *32* m[r1 + r2] := r3\n");
+    TEST_DECODE("stwx 3, 1(2)", "\x7c\x61\x11\x2e",
+                "0x00001000    0 *32* m[r1 + r2] := r3\n"
+    );
 
     TEST_DECODE("stwux 3, 1(2)", "\x7c\x61\x11\x6e",
                 "0x00001000    0 *32* m[r1 + r2] := r3\n"
@@ -711,11 +797,13 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO stwcx[e].
 
-    TEST_DECODE("subf 3, 1, 2", "\x7c\x61\x10\x50", "0x00001000    0 *32* r3 := r2 - r1\n");
+    TEST_DECODE("subf 3, 1, 2", "\x7c\x61\x10\x50",
+                "0x00001000    0 *32* r3 := r2 - r1\n"
+    );
 
-    TEST_DECODE(
-        "subf. 3, 1, 2", "\x7c\x61\x10\x51",
-        "0x00001000    0 *32* r3 := r2 - r1\n              0 *v* %flags := SETFLAGS0( r3 )\n");
+    TEST_DECODE("subf. 3, 1, 2", "\x7c\x61\x10\x51",
+                "0x00001000    0 *32* r3 := r2 - r1\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n");
 
     // TODO subfo[.]
 
@@ -737,7 +825,9 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO subfme*
 
-    TEST_DECODE("subfze 3, 1", "\x7c\x61\x01\x90", "0x00001000    0 *32* r3 := ~r1 + r203\n");
+    TEST_DECODE("subfze 3, 1", "\x7c\x61\x01\x90",
+                "0x00001000    0 *32* r3 := ~r1 + r203\n"
+    );
 
     TEST_DECODE("subfze. 3, 1", "\x7c\x61\x01\x91",
                 "0x00001000    0 *32* r3 := ~r1 + r203\n"
@@ -755,15 +845,22 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO wrtee[i]
 
-    TEST_DECODE("xor 3, 1, 2", "\x7c\x23\x12\x78", "0x00001000    0 *32* r3 := r1 ^ r2\n");
+    TEST_DECODE("xor 3, 1, 2", "\x7c\x23\x12\x78",
+                "0x00001000    0 *32* r3 := r1 ^ r2\n"
+    );
 
     TEST_DECODE("xor. 3, 1, 2", "\x7c\x23\x12\x79",
                 "0x00001000    0 *32* r3 := r1 ^ r2\n"
-                "              0 *v* %flags := SETFLAGS0( r3 )\n");
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
 
-    TEST_DECODE("xori 2, 3, 0x40", "\x68\x62\x00\x40", "0x00001000    0 *32* r2 := r3 ^ 64\n");
+    TEST_DECODE("xori 2, 3, 0x40", "\x68\x62\x00\x40",
+                "0x00001000    0 *32* r2 := r3 ^ 64\n"
+    );
 
-    TEST_DECODE("xoris 2, 3, 1", "\x6c\x62\x00\x01", "0x00001000    0 *32* r2 := r3 ^ 0x10000\n");
+    TEST_DECODE("xoris 2, 3, 1", "\x6c\x62\x00\x01",
+                "0x00001000    0 *32* r2 := r3 ^ 0x10000\n"
+    );
 }
 
 
