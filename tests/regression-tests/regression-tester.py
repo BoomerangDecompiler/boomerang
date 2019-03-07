@@ -130,7 +130,6 @@ regression_tests = [
     "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
-    "ppc/funcptr",
     "ppc/global1",
     "ppc/global3",
     "ppc/hello",
@@ -290,6 +289,7 @@ smoke_tests = [
 
     "ppc/fibo",
     "ppc/frontier",
+    "ppc/funcptr",
     "ppc/global2",
     "ppc/o4/banner",
     "ppc/o4/branch",
