@@ -182,7 +182,129 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "              Live variables: <None>\n"
     );
 
-    // TODO: Conditional branches BC*
+    // conditional branches (static)
+    TEST_DECODE("blt 0x1000", "\x41\x80\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("blt 0x2000", "\x41\x80\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("blt cr5, 0x2000", "\x41\x94\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("ble 0x1000", "\x40\x81\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("ble 0x2000", "\x40\x81\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("ble cr5, 0x2000", "\x40\x95\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("beq 0x1000", "\x41\x82\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("beq 0x2000", "\x41\x82\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("beq cr5, 0x2000", "\x41\x96\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bge 0x1000", "\x40\x80\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bge 0x2000", "\x40\x80\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bge cr5, 0x2000", "\x40\x94\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bgt 0x1000", "\x41\x81\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bgt 0x2000", "\x41\x81\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bgt cr5, 0x2000", "\x41\x95\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bnl 0x1000", "\x40\x80\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bnl 0x2000", "\x40\x80\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bnl cr5, 0x2000", "\x40\x94\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bne 0x1000", "\x40\x82\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition not equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bne 0x2000", "\x40\x82\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition not equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bne cr5, 0x2000", "\x40\x96\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition not equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bng 0x1000", "\x40\x81\x00\x00",
+                "0x00001000    0 BRANCH 0x00001000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bng 0x2000", "\x40\x81\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bng cr5, 0x2000", "\x40\x95\x10\x00",
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    // TODO bso, bns, bun, bnu
+
 
     TEST_DECODE("cmp 3, 0, 0, 1", "\x7d\x80\x08\x00",
                 "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, r1, r67 )\n");
