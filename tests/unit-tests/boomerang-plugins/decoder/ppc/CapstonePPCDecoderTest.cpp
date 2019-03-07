@@ -81,11 +81,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // Capstone does not support addco and addco. yet
 
     TEST_DECODE("adde r0, r1, r2", "\x7c\x01\x11\x14",
-                "0x00001000    0 *32* r0 := r1 + (r2 + r203)\n"
+                "0x00001000    0 *32* r0 := r1 + (r2 + r202)\n"
     );
 
     TEST_DECODE("adde. r0, r1, r2", "\x7c\x01\x11\x15",
-                "0x00001000    0 *32* r0 := r1 + (r2 + r203)\n"
+                "0x00001000    0 *32* r0 := r1 + (r2 + r202)\n"
                 "              0 *v* %flags := SETFLAGS0( r0 )\n"
     );
 
@@ -109,22 +109,22 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("addme r0, r1", "\x7c\x01\x01\xd4",
-                "0x00001000    0 *32* r0 := (r1 + r203) - 1\n"
+                "0x00001000    0 *32* r0 := (r1 + r202) - 1\n"
     );
 
     TEST_DECODE("addme. r0, r1", "\x7c\x01\x01\xd5",
-                "0x00001000    0 *32* r0 := (r1 + r203) - 1\n"
+                "0x00001000    0 *32* r0 := (r1 + r202) - 1\n"
                 "              0 *v* %flags := SETFLAGS0( r0 )\n"
     );
 
     // Capstone does not support addmeo[.] and addme64[o] yet
 
     TEST_DECODE("addze r0, r1", "\x7c\x01\x01\x94",
-                "0x00001000    0 *32* r0 := r1 + r203\n"
+                "0x00001000    0 *32* r0 := r1 + r202\n"
     );
 
     TEST_DECODE("addze. r0, r1", "\x7c\x01\x01\x95",
-                "0x00001000    0 *32* r0 := r1 + r203\n"
+                "0x00001000    0 *32* r0 := r1 + r202\n"
                 "              0 *v* %flags := SETFLAGS0( r0 )\n"
     );
 
@@ -307,48 +307,48 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
 
     TEST_DECODE("cmp 3, 0, 0, 1", "\x7d\x80\x08\x00",
-                "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, r1, r67 )\n");
+                "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, r1, r103 )\n");
 
     TEST_DECODE("cmpi 0, 0, 0, -10", "\x2c\x00\xff\xf6",
                 "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, -10, 0 )\n");
 
     TEST_DECODE("cmpi 3, 0, 0, -10", "\x2d\x80\xff\xf6",
-                "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, -10, r67 )\n");
+                "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, -10, r103 )\n");
 
     TEST_DECODE("cmpl 3, 0, 0, 1", "\x7d\x80\x08\x40",
-                "0x00001000    0 *v* %flags := SUBFLAGSNL( r0, r1, r67 )\n");
+                "0x00001000    0 *v* %flags := SUBFLAGSNL( r0, r1, r103 )\n");
 
     TEST_DECODE("cmpli 0, 0, 0, 1", "\x28\x00\x00\x01",
                 "0x00001000    0 *v* %flags := SUBFLAGSNL( r0, 1, 0 )\n");
 
     TEST_DECODE("cmpli 3, 0, 0, 1", "\x29\x80\x00\x01",
-                "0x00001000    0 *v* %flags := SUBFLAGSNL( r0, 1, r67 )\n");
+                "0x00001000    0 *v* %flags := SUBFLAGSNL( r0, 1, r103 )\n");
 
     // TODO: Add semantics for cntlzw/cntlzw./cntlzd
 
     TEST_DECODE("crand 0, 2, 7", "\x4c\x02\x3a\x02",
-                "0x00001000    0 *1* r100@[0:0] := (r100@[2:2]) & (r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := (r99@[2:2]) & (r99@[7:7])\n");
 
     TEST_DECODE("crandc 0, 2, 7", "\x4c\x02\x39\x02",
-                "0x00001000    0 *1* r100@[0:0] := (r100@[2:2]) & ~(r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := (r99@[2:2]) & ~(r99@[7:7])\n");
 
     TEST_DECODE("creqv 0, 2, 7", "\x4c\x02\x3a\x42",
-                "0x00001000    0 *1* r100@[0:0] := ~((r100@[2:2]) ^ (r100@[7:7]))\n");
+                "0x00001000    0 *1* r99@[0:0] := ~((r99@[2:2]) ^ (r99@[7:7]))\n");
 
     TEST_DECODE("crnand 0, 2, 7", "\x4c\x02\x39\xc2",
-                "0x00001000    0 *1* r100@[0:0] := ~(r100@[2:2]) | ~(r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := ~(r99@[2:2]) | ~(r99@[7:7])\n");
 
     TEST_DECODE("crnor 0, 2, 7", "\x4c\x02\x38\x42",
-                "0x00001000    0 *1* r100@[0:0] := ~(r100@[2:2]) & ~(r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := ~(r99@[2:2]) & ~(r99@[7:7])\n");
 
     TEST_DECODE("cror 0, 2, 7", "\x4c\x02\x3b\x82",
-                "0x00001000    0 *1* r100@[0:0] := (r100@[2:2]) | (r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := (r99@[2:2]) | (r99@[7:7])\n");
 
     TEST_DECODE("crorc 0, 2, 7", "\x4c\x02\x3b\x42",
-                "0x00001000    0 *1* r100@[0:0] := (r100@[2:2]) | ~(r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := (r99@[2:2]) | ~(r99@[7:7])\n");
 
     TEST_DECODE("crxor 0, 2, 7", "\x4c\x02\x39\x82",
-                "0x00001000    0 *1* r100@[0:0] := (r100@[2:2]) ^ (r100@[7:7])\n");
+                "0x00001000    0 *1* r99@[0:0] := (r99@[2:2]) ^ (r99@[7:7])\n");
 
     // TODO dcb*
 
@@ -441,7 +441,7 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO fcfid
 
     TEST_DECODE("fcmpu 1, 2, 3", "\xfc\x82\x18\x00",
-                "0x00001000    0 *v* %flags := SETFFLAGSN( r34, r35, r65 )\n"
+                "0x00001000    0 *v* %flags := SETFFLAGSN( r34, r35, r101 )\n"
     );
 
     // Capstone does not support fcmpo
@@ -660,7 +660,7 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO mbar
 
     TEST_DECODE("mcrf 2, 3", "\x4d\x0c\x00\x00",
-                "0x00001000    0 *4* r66 := r67\n"
+                "0x00001000    0 *4* r102 := r103\n"
     );
 
     // TODO mcrfs
@@ -672,7 +672,7 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO mfapidi
 
     TEST_DECODE("mfcr 3", "\x7c\x60\x00\x26",
-                "0x00001000    0 *32* r3 := (r64 << 28) + ((r65 << 24) + ((r66 << 20) + ((r67 << 16) + ((r68 << 12) + ((r69 << 8) + ((r70 << 4) + r71))))))\n"
+                "0x00001000    0 *32* r3 := (r100 << 28) + ((r101 << 24) + ((r102 << 20) + ((r103 << 16) + ((r104 << 12) + ((r105 << 8) + ((r106 << 4) + r107))))))\n"
     );
 
     // TODO mfdcr
@@ -948,11 +948,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // TODO subfme*
 
     TEST_DECODE("subfze 3, 1", "\x7c\x61\x01\x90",
-                "0x00001000    0 *32* r3 := ~r1 + r203\n"
+                "0x00001000    0 *32* r3 := ~r1 + r202\n"
     );
 
     TEST_DECODE("subfze. 3, 1", "\x7c\x61\x01\x91",
-                "0x00001000    0 *32* r3 := ~r1 + r203\n"
+                "0x00001000    0 *32* r3 := ~r1 + r202\n"
                 "              0 *v* %flags := SUBFLAGS0( r3 )\n");
 
     // TODO subfzeo[.]

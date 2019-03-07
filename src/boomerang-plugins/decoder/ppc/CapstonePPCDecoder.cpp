@@ -33,12 +33,16 @@ static std::map<cs::ppc_reg, RegNum> oldRegMap = {};
  */
 RegNum fixRegNum(int csRegID)
 {
-    if (csRegID >= cs::PPC_REG_F0 && csRegID <= cs::PPC_REG_F31) {
+    // GPR
+    if (csRegID >= cs::PPC_REG_R0 && csRegID <= cs::PPC_REG_R31) {
+        return REG_PPC_G0 + (csRegID - cs::PPC_REG_R0);
+    }
+    // FPR
+    else if (csRegID >= cs::PPC_REG_F0 && csRegID <= cs::PPC_REG_F31) {
         return 32 + (csRegID - cs::PPC_REG_F0);
     }
-    else if (csRegID >= cs::PPC_REG_R0 && csRegID <= cs::PPC_REG_R31) {
-        return 0 + (csRegID - cs::PPC_REG_R0);
-    }
+    // Vector regs
+
     else if (csRegID >= cs::PPC_REG_CR0 && csRegID <= cs::PPC_REG_CR7) {
         return 64 + (csRegID - cs::PPC_REG_CR0);
     }
