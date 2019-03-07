@@ -171,13 +171,15 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("bl 0x2000", "\x48\x00\x10\x01",
-                "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
+                "0x00001000    0 *32* r300 := 0x1004\n"
+                "              0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n"
     );
 
     TEST_DECODE("bla 0x2000", "\x48\x00\x20\x03",
-                "0x00001000    0 <all> := CALL 0x2000(<all>)\n"
+                "0x00001000    0 *32* r300 := 0x1004\n"
+                "              0 <all> := CALL 0x2000(<all>)\n"
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n"
     );

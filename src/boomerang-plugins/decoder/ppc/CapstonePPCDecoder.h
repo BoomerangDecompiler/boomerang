@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "../csx86/CapstoneDecoder.h"
+#include "../CapstoneDecoder.h"
 
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ssl/exp/Operator.h"
