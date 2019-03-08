@@ -528,33 +528,33 @@ FABSq           fd, fs            *64* fd := fabs(fs); # TODO: Update flags
 
 FADD            fd, fa, fb        *64* fd := fa +f fb;
 FADDq           fd, fa, fb        *64* fd := fa +f fb;        # Note: floating point flags not implemented yet
-
 FADDS           fd, fa, fb        *64* fd := fa +f fb;        # Note: may only operate on 32 bits of precision
 FADDSq          fd, fa, fb        *64* fd := fa +f fb;
 
 FSUB            fd, fa, fb        *64* fd := fa -f fb;
 FSUBq           fd, fa, fb        *64* fd := fa -f fb;
-
 FSUBS           fd, fa, fb        *64* fd := fa -f fb;        # Note as above
 FSUBSq          fd, fa, fb        *64* fd := fa -f fb;
 
+FMUL            fd, fa, fb        *64* fd := fa *f fb;
+FMULq           fd, fa, fb        *64* fd := fa *f fb;
+FMULS           fd, fa, fb        *64* fd := fa *f fb;
+FMULSq          fd, fa, fb        *64* fd := fa *f fb;
+
 FDIV            fd, fa, fb        *64* fd := fa /f fb;
 FDIVq           fd, fa, fb        *64* fd := fa /f fb;
-
 FDIVS           fd, fa, fb        *64* fd := fa /f fb;        # Note: only operates on 64/32 bits of precision
 FDIVSq          fd, fa, fb        *64* fd := fa /f fb;        # Yet result is in 64-bit format
 
 FMADD           ft, fa, fc, fb    *64* ft := (fa *f fc) +f fb;
 FMADDq          ft, fa, fc, fb    *64* ft := (fa *f fc) +f fb; # TODO: Update flags
-
-FMADDS          ft, fa, fc, fb    *32* ft := (fa *f fc) +f fb;
-FMADDSq         ft, fa, fc, fb    *32* ft := (fa *f fc) +f fb; # TODO: Update flags
+FMADDS          ft, fa, fc, fb    *64* ft := (fa *f fc) +f fb;
+FMADDSq         ft, fa, fc, fb    *64* ft := (fa *f fc) +f fb; # TODO: Update flags
 
 FMSUB           ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb;
 FMSUBq          ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb; # TODO: Update flags
-
-FMSUBS          ft, fa, fc, fb    *32* ft := (fa *f fc) -f fb;
-FMSUBSq         ft, fa, fc, fb    *32* ft := (fa *f fc) -f fb; # TODO: Update flags
+FMSUBS          ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb;
+FMSUBSq         ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb; # TODO: Update flags
 
 
 # conditional branch

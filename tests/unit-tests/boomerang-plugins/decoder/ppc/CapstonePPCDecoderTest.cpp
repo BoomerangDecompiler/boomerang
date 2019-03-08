@@ -486,11 +486,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("fmadds 4, 2, 5, 1", "\xec\x82\x09\x7a",
-                "0x00001000    0 *32* r36 := (r34 *f r37) +f r33\n"
+                "0x00001000    0 *64* r36 := (r34 *f r37) +f r33\n"
     );
 
     TEST_DECODE("fmadds. 4, 2, 5, 1", "\xec\x82\x09\x7b",
-                "0x00001000    0 *32* r36 := (r34 *f r37) +f r33\n"
+                "0x00001000    0 *64* r36 := (r34 *f r37) +f r33\n"
     );
 
     TEST_DECODE("fmr 3, 1", "\xfc\x60\x08\x90",
@@ -510,14 +510,28 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("fmsubs 4, 2, 5, 1", "\xec\x82\x09\x78",
-                "0x00001000    0 *32* r36 := (r34 *f r37) -f r33\n"
+                "0x00001000    0 *64* r36 := (r34 *f r37) -f r33\n"
     );
 
     TEST_DECODE("fmsubs. 4, 2, 5, 1", "\xec\x82\x09\x79",
-                "0x00001000    0 *32* r36 := (r34 *f r37) -f r33\n"
+                "0x00001000    0 *64* r36 := (r34 *f r37) -f r33\n"
     );
 
-    // TODO: fmul
+    TEST_DECODE("fmul 3, 1, 2", "\xfc\x61\x00\xb2",
+                "0x00001000    0 *64* r35 := r33 *f r34\n"
+    );
+
+    TEST_DECODE("fmul. 3, 1, 2", "\xfc\x61\x00\xb3",
+                "0x00001000    0 *64* r35 := r33 *f r34\n"
+    );
+
+    TEST_DECODE("fmuls 3, 1, 2", "\xec\x61\x00\xb2",
+                "0x00001000    0 *64* r35 := r33 *f r34\n"
+    );
+
+    TEST_DECODE("fmuls. 3, 1, 2", "\xec\x61\x00\xb3",
+                "0x00001000    0 *64* r35 := r33 *f r34\n"
+    );
 
     // TODO: fnabs
 
