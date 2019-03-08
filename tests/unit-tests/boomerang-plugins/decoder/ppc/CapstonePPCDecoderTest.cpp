@@ -614,7 +614,21 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
 
-    // TODO fsub[.]
+    TEST_DECODE("fsub 3, 1, 2", "\xfc\x61\x10\x28",
+                "0x00001000    0 *64* r35 := r33 -f r34\n"
+    );
+
+    TEST_DECODE("fsub. 3, 1, 2", "\xfc\x61\x10\x29",
+                "0x00001000    0 *64* r35 := r33 -f r34\n"
+    );
+
+    TEST_DECODE("fsubs 3, 1, 2", "\xec\x61\x10\x28",
+                "0x00001000    0 *64* r35 := r33 -f r34\n"
+    );
+
+    TEST_DECODE("fsubs. 3, 1, 2", "\xec\x61\x10\x29",
+                "0x00001000    0 *64* r35 := r33 -f r34\n"
+    );
 
     // Insn cache block instructions icb* TODO
 
