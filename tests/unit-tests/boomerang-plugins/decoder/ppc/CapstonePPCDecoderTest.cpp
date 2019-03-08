@@ -533,7 +533,13 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *64* r35 := r33 *f r34\n"
     );
 
-    // TODO: fnabs
+    TEST_DECODE("fnabs 4, 2", "\xfc\x80\x11\x10",
+                "0x00001000    0 *64* r36 := 0 - fabs(r34)\n"
+    );
+
+    TEST_DECODE("fnabs. 4, 2", "\xfc\x80\x11\x11",
+                "0x00001000    0 *64* r36 := 0 - fabs(r34)\n"
+    );
 
     TEST_DECODE("fneg 3, 1",  "\xfc\x60\x08\x50",
                 "0x00001000    0 *64* r35 := -r33\n"
