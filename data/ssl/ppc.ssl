@@ -550,6 +550,12 @@ FMADDq          ft, fa, fc, fb    *64* ft := (fa *f fc) +f fb; # TODO: Update fl
 FMADDS          ft, fa, fc, fb    *32* ft := (fa *f fc) +f fb;
 FMADDSq         ft, fa, fc, fb    *32* ft := (fa *f fc) +f fb; # TODO: Update flags
 
+FMSUB           ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb;
+FMSUBq          ft, fa, fc, fb    *64* ft := (fa *f fc) -f fb; # TODO: Update flags
+
+FMSUBS          ft, fa, fc, fb    *32* ft := (fa *f fc) -f fb;
+FMSUBSq         ft, fa, fc, fb    *32* ft := (fa *f fc) -f fb; # TODO: Update flags
+
 
 # conditional branch
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)
