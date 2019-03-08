@@ -1455,7 +1455,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opFround:
         // Note: we need roundf or roundl depending on size of operands
         str << "round("; // Note: math.h required
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::None);
         str << ")";
         break;
 

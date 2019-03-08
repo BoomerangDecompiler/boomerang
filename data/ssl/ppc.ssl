@@ -568,6 +568,11 @@ FNMSUBq         ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 FNMSUBS         ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 FNMSUBSq        ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 
+FSQRT           fd, fb            *64* fd := sqrt(fb);
+FSQRTq          fd, fb            *64* fd := sqrt(fb);
+FSQRTS          fd, fb            *64* fd := sqrt(fb);
+FSQRTSq         fd, fb            *64* fd := sqrt(fb);
+
 
 # conditional branch
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)

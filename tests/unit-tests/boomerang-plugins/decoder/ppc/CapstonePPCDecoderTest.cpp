@@ -583,13 +583,36 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO fres[.]
 
-    // TODO frsp[.]
+    TEST_DECODE("frsp 2, 8", "\xfc\x40\x40\x18",
+                "0x00001000    0 *32* tmpf := fsize(64, 32, r40)\n"
+                "              0 *64* r34 := fsize(32, 64, tmpf)\n"
+    );
+
+    TEST_DECODE("frsp. 2, 8", "\xfc\x40\x40\x19",
+                "0x00001000    0 *32* tmpf := fsize(64, 32, r40)\n"
+                "              0 *64* r34 := fsize(32, 64, tmpf)\n"
+    );
 
     // TODO fsqrte[.]
 
     // TODO fsel[.]
 
-    // TODO fsqrt[s][.]
+    TEST_DECODE("fsqrt 4, 3", "\xfc\x80\x18\x2c",
+                "0x00001000    0 *64* r36 := sqrt(r35)\n"
+    );
+
+    TEST_DECODE("fsqrt. 4, 3", "\xfc\x80\x18\x2d",
+                "0x00001000    0 *64* r36 := sqrt(r35)\n"
+    );
+
+    TEST_DECODE("fsqrts 4, 3", "\xec\x80\x18\x2c",
+                "0x00001000    0 *64* r36 := sqrt(r35)\n"
+    );
+
+    TEST_DECODE("fsqrts. 4, 3", "\xec\x80\x18\x2d",
+                "0x00001000    0 *64* r36 := sqrt(r35)\n"
+    );
+
 
     // TODO fsub[.]
 
