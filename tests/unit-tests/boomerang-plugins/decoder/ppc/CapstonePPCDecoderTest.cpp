@@ -477,7 +477,22 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *64* r33 := r34 /f r35\n"
     );
 
-    // TODO: fmadd
+    TEST_DECODE("fmadd 4, 2, 5, 1", "\xfc\x82\x09\x7a",
+                "0x00001000    0 *64* r36 := (r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fmadd. 4, 2, 5, 1", "\xfc\x82\x09\x7b",
+                "0x00001000    0 *64* r36 := (r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fmadds 4, 2, 5, 1", "\xec\x82\x09\x7a",
+                "0x00001000    0 *32* r36 := (r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fmadds. 4, 2, 5, 1", "\xec\x82\x09\x7b",
+                "0x00001000    0 *32* r36 := (r34 *f r37) +f r33\n"
+    );
+
 
     TEST_DECODE("fmr 3, 1", "\xfc\x60\x08\x90",
                 "0x00001000    0 *64* r35 := r33\n"
