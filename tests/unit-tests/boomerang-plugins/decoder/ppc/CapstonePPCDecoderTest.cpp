@@ -534,11 +534,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     TEST_DECODE("fnabs 4, 2", "\xfc\x80\x11\x10",
-                "0x00001000    0 *64* r36 := 0 - fabs(r34)\n"
+                "0x00001000    0 *64* r36 := -fabs(r34)\n"
     );
 
     TEST_DECODE("fnabs. 4, 2", "\xfc\x80\x11\x11",
-                "0x00001000    0 *64* r36 := 0 - fabs(r34)\n"
+                "0x00001000    0 *64* r36 := -fabs(r34)\n"
     );
 
     TEST_DECODE("fneg 3, 1",  "\xfc\x60\x08\x50",
@@ -549,9 +549,37 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *64* r35 := -r33\n"
     );
 
-    // TODO fnmadd[s][.]
+    TEST_DECODE("fnmadd 4, 2, 5, 1", "\xfc\x82\x09\x7e",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) +f r33\n"
+    );
 
-    // TODO fnmsub[s][.]
+    TEST_DECODE("fnmadd. 4, 2, 5, 1", "\xfc\x82\x09\x7f",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fnmadds 4, 2, 5, 1", "\xec\x82\x09\x7e",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fnmadds. 4, 2, 5, 1", "\xec\x82\x09\x7f",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) +f r33\n"
+    );
+
+    TEST_DECODE("fnmsub 4, 2, 5, 1", "\xfc\x82\x09\x7c",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) -f r33\n"
+    );
+
+    TEST_DECODE("fnmsub. 4, 2, 5, 1", "\xfc\x82\x09\x7d",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) -f r33\n"
+    );
+
+    TEST_DECODE("fnmsubs 4, 2, 5, 1", "\xec\x82\x09\x7c",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) -f r33\n"
+    );
+
+    TEST_DECODE("fnmsubs. 4, 2, 5, 1", "\xec\x82\x09\x7d",
+                "0x00001000    0 *64* r36 := -(r34 *f r37) -f r33\n"
+    );
 
     // TODO fres[.]
 
