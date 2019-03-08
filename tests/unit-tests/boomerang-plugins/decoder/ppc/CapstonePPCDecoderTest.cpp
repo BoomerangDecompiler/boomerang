@@ -307,6 +307,15 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO bso, bns, bun, bnu
 
+    TEST_DECODE("bctr", "\x4e\x80\x04\x20",
+                "0x00001000    0 CASE [r301]\n"
+    );
+
+    TEST_DECODE("blr", "\x4e\x80\x00\x20",
+                "0x00001000    0 RET\n"
+                "              Modifieds: <None>\n"
+                "              Reaching definitions: <None>\n"
+    );
 
     TEST_DECODE("cmp 3, 0, 0, 1", "\x7d\x80\x08\x00",
                 "0x00001000    0 *v* %flags := SUBFLAGSNS( r0, r1, r103 )\n");
