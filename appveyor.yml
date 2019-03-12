@@ -43,6 +43,11 @@ init:
   - cmd: cmake --version
   - cmd: msbuild /version
 
+install:
+  - cd C:\Tools\vcpkg
+  - git pull
+  - cd %APPVEYOR_BUILD_FOLDER%
+
 before_build:
   - ps: cd C:\projects\boomerang
   - ps: mkdir build
