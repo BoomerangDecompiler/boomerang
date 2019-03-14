@@ -395,6 +395,7 @@ LHAU        dest, src               *32* dest := sgnex(16, 32, src);        # Up
 LHAX        rt, ra, rb              *32* rt := m[ra + rb];
 LHAUX       rt, ra, rb              *32* rt := m[ra + rb]                   *32* ra := ra + rb;
 
+LHBRX       rt, ra, rb              *16* tmp1 := m[ra + rb]                 *32* rt := tmp1@[8:15] | (tmp1@[0:7] << 8);
 
 STB         src, dest               *8*  dest := truncs(32, 8, src);
 STH         src, dest               *16* dest := truncs(32, 16, src);

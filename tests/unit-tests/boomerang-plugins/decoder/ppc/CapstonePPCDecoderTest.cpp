@@ -736,7 +736,12 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO lha[u]xe
 
-    // TODO lhbrx[e]
+    TEST_DECODE("lhbrx 3, 4, 2", "\x7c\x64\x16\x2c",
+                "0x00001000    0 *16* tmp1 := m[r4 + r2]\n"
+                "              0 *32* r3 := (tmp1@[8:15]) | ((tmp1@[0:7]) << 8)\n"
+    );
+
+    // TODO lhbrxe
 
     TEST_DECODE("lhz 3, 1(2)", "\xa0\x62\x00\x01",
                 "0x00001000    0 *32* r3 := zfill(16, 32, m[r2 + 1])\n"
