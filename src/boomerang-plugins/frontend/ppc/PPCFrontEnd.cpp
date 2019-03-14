@@ -37,22 +37,20 @@ PPCFrontEnd::PPCFrontEnd(Project *project)
 
 Address PPCFrontEnd::findMainEntryPoint(bool &gotMain)
 {
-    gotMain       = true;
-    Address start = m_binaryFile->getMainEntryPoint();
-
-    if (start != Address::INVALID) {
-        return start;
+    const Address mainAddr = m_binaryFile->getMainEntryPoint();
+    if (mainAddr != Address::INVALID) {
+        gotMain = true;
+        return mainAddr;
     }
 
-    start   = m_binaryFile->getEntryPoint();
+    const Address entryPoint = m_binaryFile->getEntryPoint();
+    if (entryPoint != Address::INVALID) {
+        gotMain = true;
+        return entryPoint;
+    }
+
     gotMain = false;
-
-    if (start == Address::INVALID) {
-        return Address::INVALID;
-    }
-
-    gotMain = true;
-    return start;
+    return Address::INVALID;
 }
 
 
