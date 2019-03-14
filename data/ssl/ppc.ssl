@@ -568,6 +568,9 @@ FNMSUBq         ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 FNMSUBS         ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 FNMSUBSq        ft, fa, fc, fb    *64* ft := 0.0 -f ((fa *f fc) -f fb);
 
+FRES            fd, fb            *32* fd := 1 /f fb;
+FRESq           fd, fb            *32* fd := 1 /f fb; # TODO Update flags
+
 FSQRT           fd, fb            *64* fd := sqrt(fb);
 FSQRTq          fd, fb            *64* fd := sqrt(fb);
 FSQRTS          fd, fb            *64* fd := sqrt(fb);

@@ -588,6 +588,13 @@ void CapstonePPCDecoderTest::testInstructions_data()
     );
 
     // TODO fres[.]
+    TEST_DECODE("fres 3, 2", "\xec\x60\x10\x30",
+                "0x00001000    0 *32* r35 := 1 /f r34\n"
+    );
+
+    TEST_DECODE("fres. 3, 2", "\xec\x60\x10\x31",
+                "0x00001000    0 *32* r35 := 1 /f r34\n"
+    );
 
     TEST_DECODE("frsp 2, 8", "\xfc\x40\x40\x18",
                 "0x00001000    0 *32* tmpf := fsize(64, 32, r40)\n"
