@@ -458,8 +458,14 @@ void CapstonePPCDecoderTest::testInstructions_data()
     // Capstone does not support fcmpo
 
     // TODO fctid[z]
-    // TODO fctiw[z][.]
 
+    TEST_DECODE("fctiw 3, 2", "\xfc\x60\x10\x1c",
+                "0x00001000    0 *64* r35 := zfill(32, 64, ftoi(64, 32, r34))\n"
+    );
+
+    TEST_DECODE("fctiwz 3, 2", "\xfc\x60\x10\x1e",
+                "0x00001000    0 *64* r35 := zfill(32, 64, ftoi(64, 32, r34))\n"
+    );
 
     TEST_DECODE("fdiv 1, 2, 3", "\xfc\x22\x18\x24",
                 "0x00001000    0 *64* r33 := r34 /f r35\n"
