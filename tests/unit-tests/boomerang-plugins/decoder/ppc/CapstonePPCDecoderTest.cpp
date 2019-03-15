@@ -924,23 +924,79 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO rldimi
 
-    // TODO rlwimi[.]
+    TEST_DECODE("rlwimi 3, 1, 2, 5, 6", "\x50\x23\x11\x4c",
+                "0x00001000    0 *32* tmp_mask := 0x6000000\n"
+                "              0 *32* r3 := ((r1 rl 2) & tmp_mask) | (r3 & ~tmp_mask)\n"
+    );
 
-    // TODO rlw[i]nm[.]
+    TEST_DECODE("rlwimi. 3, 1, 2, 5, 6", "\x50\x23\x11\x4d",
+                "0x00001000    0 *32* tmp_mask := 0x6000000\n"
+                "              0 *32* r3 := ((r1 rl 2) & tmp_mask) | (r3 & ~tmp_mask)\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
+
+    TEST_DECODE("rlwinm 3, 1, 2, 5, 6", "\x54\x23\x11\x4c",
+                "0x00001000    0 *32* r3 := (r1 rl 2) & 0x6000000\n"
+    );
+
+    TEST_DECODE("rlwinm 3, 1, 2, 5, 6", "\x54\x23\x11\x4d",
+                "0x00001000    0 *32* r3 := (r1 rl 2) & 0x6000000\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
+
+    TEST_DECODE("rlwnm 3, 1, 2, 5, 6", "\x5c\x23\x11\x4c",
+                "0x00001000    0 *32* r3 := (r1 rl r2) & 0x6000000\n"
+    );
+
+    TEST_DECODE("rlwnm. 3, 1, 2, 5, 6", "\x5c\x23\x11\x4d",
+                "0x00001000    0 *32* r3 := (r1 rl r2) & 0x6000000\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
 
     // TODO sc
 
     // TODO sld
 
-    // TODO slw[.]
+    TEST_DECODE("slw 3, 1, 2", "\x7c\x23\x10\x30",
+                "0x00001000    0 *32* r3 := r1 << r2\n"
+    );
+
+    TEST_DECODE("slw. 3, 1, 2", "\x7c\x23\x10\x31",
+                "0x00001000    0 *32* r3 := r1 << r2\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
 
     // TODO srad[i]
 
     // TODO sraw[i][.]
+    TEST_DECODE("sraw 3, 1, 2", "\x7c\x23\x16\x30",
+                "0x00001000    0 *32* r3 := r1 >>A r2\n"
+    );
+
+    TEST_DECODE("sraw. 3, 1, 2", "\x7c\x23\x16\x31",
+                "0x00001000    0 *32* r3 := r1 >>A r2\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
+
+    TEST_DECODE("srawi 3, 1, 2", "\x7c\x23\x16\x70",
+                "0x00001000    0 *32* r3 := r1 >>A 2\n"
+    );
+
+    TEST_DECODE("srawi. 3, 1, 2", "\x7c\x23\x16\x71",
+                "0x00001000    0 *32* r3 := r1 >>A 2\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
 
     // TODO srd
 
-    // TODO srw[.]
+    TEST_DECODE("srw 3, 1, 2", "\x7c\x23\x14\x30",
+                "0x00001000    0 *32* r3 := r1 >> r2\n"
+    );
+
+    TEST_DECODE("srw. 3, 1, 2", "\x7c\x23\x14\x31",
+                "0x00001000    0 *32* r3 := r1 >> r2\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
 
     TEST_DECODE("stb 3, 1(2)", "\x98\x62\x00\x01",
                 "0x00001000    0 *8* m[r2 + 1] := truncs(32, 8, r3)\n"

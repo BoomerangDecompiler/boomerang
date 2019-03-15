@@ -345,27 +345,32 @@ ROTRWI      rd, rs, amount      *32* rd := rs rr amount;
 ROTRWIq     rd, rs, amount      *32* rd := rs rr amount         SETFLAGS0(rd);
 
 
+RLWNM       ra, rs, rb, beg, end
+        *32* ra := (rs rl rb) & ((1 << (32 - beg)) - (1 << (31 - end)))
+;
+
+RLWNMq      ra, rs, rb, beg, end
+        *32* ra := (rs rl rb) & ((1 << (32 - beg)) - (1 << (31 - end)))
+        SETFLAGS0(ra)
+;
+
 RLWINM      ra, rs, uimm, beg, end
-        *32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end))
-        *32* ra := rs rl uimm & tmp_mask                       # rl = rotate left
+        *32* ra := (rs rl uimm) & ((1 << (32 - beg)) - (1 << (31 - end)))
 ;
 
 RLWINMq     ra, rs, uimm, beg, end
-        *32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end))
-        *32* ra := rs rl uimm & tmp_mask                       # rl = rotate left
+        *32* ra := (rs rl uimm) & ((1 << (32 - beg)) - (1 << (31 - end)))
         SETFLAGS0(ra)
 ;
 
 RLWIMI      ra, rs, uimm, beg, end
-        *32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end))
-        *32* tmp_r := rs rl uimm & tmp_mask
-        *32* ra := rs | (ra & ~tmp_mask)
+        *32* tmp_mask := ((1 << (32 - beg)) - (1 << (31 - end)))
+        *32* ra := ((rs rl uimm) & tmp_mask) | (ra & ~tmp_mask)
 ;
 
 RLWIMIq     ra, rs, uimm, beg, end
-        *32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end))
-        *32* tmp_r := rs rl uimm & tmp_mask
-        *32* ra := rs | (ra & ~tmp_mask)
+        *32* tmp_mask := ((1 << (32 - beg)) - (1 << (31 - end)))
+        *32* ra := ((rs rl uimm) & tmp_mask) | (ra & ~tmp_mask)
         SETFLAGS0(ra)
 ;
 
