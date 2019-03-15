@@ -25,8 +25,6 @@ branches:
 skip_commits:
   message: /\[[aA]ppveyor [sS]kip\]/
 
-cache: c:\tools\vcpkg\installed\
-
 clone_folder: C:\projects\boomerang
 
 build:
