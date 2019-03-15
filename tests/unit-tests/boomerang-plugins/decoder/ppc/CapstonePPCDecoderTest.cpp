@@ -855,7 +855,16 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* r3 := r1 * -3\n"
     );
 
-    // TODO mullw[o][.]
+    TEST_DECODE("mullw 3, 1, 2", "\x7c\x61\x11\xd6",
+                "0x00001000    0 *32* r3 := r1 * r2\n"
+    );
+
+    TEST_DECODE("mullw. 3, 1, 2", "\x7c\x61\x11\xd7",
+                "0x00001000    0 *32* r3 := r1 * r2\n"
+                "              0 *v* %flags := SETFLAGS0( r3 )\n"
+    );
+
+    // TODO mullwo[.]
 
     TEST_DECODE("nand 9, 5, 1", "\x7c\xa9\x0b\xb8",
                 "0x00001000    0 *32* r9 := ~r5 | ~r1\n"
