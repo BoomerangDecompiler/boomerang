@@ -805,11 +805,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
                 "0x00001000    0 *4* r102 := r103\n"
     );
 
-    // TODO mcrfs
+    // TODO mcrfs (not yet supported by Capstone)
 
-    // TODO mcrxr
+    // TODO mcrxr (not yet supported by Capstone)
 
-    // TODO mcrxr64
+    // TODO mcrxr64 (not yet supported by Capstone)
 
     // TODO mfapidi
 
@@ -841,15 +841,19 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO mtspr
 
-    // TODO mulhd
-
-    // TODO mulhdu
+    // TODO mulhd[u]
 
     // TODO mulhw[.]
 
     // TODO mulld[o]
 
-    // TODO mulli
+    TEST_DECODE("mulli 3, 1, 2", "\x1c\x61\x00\x02",
+                "0x00001000    0 *32* r3 := r1 * 2\n"
+    );
+
+    TEST_DECODE("mulli 3, 1, -3", "\x1c\x61\xff\xfd",
+                "0x00001000    0 *32* r3 := r1 * -3\n"
+    );
 
     // TODO mullw[o][.]
 
@@ -1026,7 +1030,11 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO sth[u]xe
 
-    // TODO sthbrx[e]
+    TEST_DECODE("sthbrx 3, 1, 2", "\x7c\x61\x17\x2c",
+                "0x00001000    0 *16* m[r1 + r2] := ((r3@[0:7]) << 8) | (r3@[8:15])\n"
+    );
+
+    // TODO sthbrxe
 
     TEST_DECODE("stmw 30, 4(2)", "\xbf\xc2\x00\x04",
                 "0x00001000    0 *32* m[r2 + 4] := r30\n"

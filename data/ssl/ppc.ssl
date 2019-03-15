@@ -411,6 +411,8 @@ STBUX       rs, ra, rb              *8*  m[ra + rb] := truncs(32, 8, rs)     *32
 STHUX       rs, ra, rb              *16* m[ra + rb] := truncs(32, 16, rs)    *32* ra := ra + rb;
 STWUX       rs, ra, rb              *32* m[ra + rb] := rs                    *32* ra := ra + rb;
 
+STHBRX      rs, ra, rb              *16* m[ra + rb] := (rs@[0:7] << 8)| rs@[8:15];
+
 
 # Multi word load and store (hard-coded)
 LMW         s, dest     _;
