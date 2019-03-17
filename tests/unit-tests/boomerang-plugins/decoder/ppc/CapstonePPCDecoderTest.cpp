@@ -45,6 +45,7 @@ void CapstonePPCDecoderTest::testInstructions()
     Address sourceAddr = Address(0x1000);
     ptrdiff_t diff     = (HostAddress(&insnData) - sourceAddr).value();
     QVERIFY(m_decoder->decodeInstruction(sourceAddr, diff, result));
+    result.rtl->simplify();
     QCOMPARE(result.rtl->toString(), expectedResult);
 }
 
