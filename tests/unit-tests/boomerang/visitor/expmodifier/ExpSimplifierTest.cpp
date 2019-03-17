@@ -776,6 +776,13 @@ void ExpSimplifierTest::testSimplify_data()
                                    Const::get(16),
                                    Const::get((int)0xF000F)),
                       Const::get(15));
+
+        TEST_SIMPLIFY("AtConst",
+                      Ternary::get(opAt,
+                                   Const::get(5),
+                                   Const::get(1),
+                                   Const::get(2)),
+                      Const::get(4));
     }
 
     // TypedExp

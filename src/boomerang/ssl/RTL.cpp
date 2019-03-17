@@ -172,6 +172,10 @@ void RTL::simplify()
                 it = erase(it);
                 continue;
             }
+            else if (guard && guard->isTrue()) {
+                // The guard can be deleted
+                static_cast<Assign *>(s)->setGuard(nullptr);
+            }
         }
 
         ++it;
