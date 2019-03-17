@@ -504,14 +504,14 @@ CRORC           d, a, b             *1* %CR@[d:d] := %CR@[a:a] | (~%CR@[b:b]);
 # Note: no CRXORC
 
 MTCRF   mask, src
-    *4* mask@[0:0] => %CR0 := src@[0:3]
-    *4* mask@[1:1] => %CR1 := src@[4:7]
-    *4* mask@[2:2] => %CR2 := src@[8:11]
-    *4* mask@[3:3] => %CR3 := src@[12:15]
-    *4* mask@[4:4] => %CR4 := src@[16:19]
-    *4* mask@[5:5] => %CR5 := src@[20:23]
-    *4* mask@[6:6] => %CR6 := src@[24:27]
-    *4* mask@[7:7] => %CR7 := src@[28:31]
+    *4* mask@[0:0] ~= 0 => %CR0 := src@[0:3]
+    *4* mask@[1:1] ~= 0 => %CR1 := src@[4:7]
+    *4* mask@[2:2] ~= 0 => %CR2 := src@[8:11]
+    *4* mask@[3:3] ~= 0 => %CR3 := src@[12:15]
+    *4* mask@[4:4] ~= 0 => %CR4 := src@[16:19]
+    *4* mask@[5:5] ~= 0 => %CR5 := src@[20:23]
+    *4* mask@[6:6] ~= 0 => %CR6 := src@[24:27]
+    *4* mask@[7:7] ~= 0 => %CR7 := src@[28:31]
 ;
 
 # Floating point operations
