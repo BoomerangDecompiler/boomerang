@@ -166,8 +166,7 @@ void RTL::simplify()
         else if (s->isAssign()) {
             SharedExp guard = static_cast<Assign *>(s)->getGuard();
 
-            if (guard && (guard->isFalse() ||
-                          (guard->isIntConst() && (guard->access<Const>()->getInt() == 0)))) {
+            if (guard && guard->isFalse()) {
                 // This assignment statement can be deleted
                 LOG_VERBOSE("Removing assignment with false guard at %1 %2", getAddress(), *it);
                 it = erase(it);
