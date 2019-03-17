@@ -865,7 +865,10 @@ void CapstonePPCDecoderTest::testInstructions_data()
 
     // TODO msync
 
-    // TODO mtcrf
+    TEST_DECODE("mtcrf 5, 7", "\x7c\xe0\x51\x20",
+                "0x00001000    0 *4* r100 := r7@[0:3]\n"
+                "              0 *4* r102 := r7@[8:11]\n"
+    );
 
     // TODO mtdcr
 
