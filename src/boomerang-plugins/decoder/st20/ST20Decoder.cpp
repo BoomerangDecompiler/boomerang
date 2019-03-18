@@ -25,9 +25,6 @@
 #include <cassert>
 
 
-#define sign_extend(N, SIZE) Util::signExtend(N, SIZE)
-
-
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
     result.reset(); // Clear the result structure (numBytes = 0 etc)
