@@ -43,7 +43,7 @@ static const char *functionNames[] = {
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
     HostAddress hostPC = HostAddress(delta) + pc;
-    int total = 0;              // Total value from all prefixes
+    int total          = 0; // Total value from all prefixes
 
     result.reset();
     result.rtl = std::make_unique<RTL>(pc);
@@ -51,9 +51,10 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
     while (true) {
         result.numBytes++;
 
-        const Byte instructionData = Util::readByte((const void *)(hostPC + result.numBytes).value());
+        const Byte instructionData = Util::readByte(
+            (const void *)(hostPC + result.numBytes).value());
         const Byte functionCode = (instructionData >> 4) & 0xF;
-        const Byte oper         =  instructionData & 0xF;
+        const Byte oper         = instructionData & 0xF;
 
         switch (functionCode) {
         case 0: { // "j"
@@ -107,16 +108,14 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             const char *insnName = getInstructionName(total);
             if (!insnName) {
                 // invalid or unknown instruction
-                result.valid    = false;
+                result.valid = false;
                 return false;
             }
 
             result.rtl = instantiate(pc, insnName);
 
-            const bool isRet =
-                strcmp(insnName, "ret") == 0 ||
-                strcmp(insnName, "iret") == 0 ||
-                strcmp(insnName, "tret") == 0;
+            const bool isRet = strcmp(insnName, "ret") == 0 || strcmp(insnName, "iret") == 0 ||
+                               strcmp(insnName, "tret") == 0;
 
             if (isRet) {
                 result.rtl->append(new ReturnStatement);
@@ -309,7 +308,6 @@ const char *ST20Decoder::getInstructionName(int total) const
 
     return nullptr;
 }
-
 
 
 ST20Decoder::ST20Decoder(Project *project)
