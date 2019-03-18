@@ -53,8 +53,4 @@ public:
     void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
                                   Address pc, DecodeResult &result);
 
-private:
-    DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
-    SWord getWord(intptr_t lc);
-    Byte getByte(intptr_t lc);
 };

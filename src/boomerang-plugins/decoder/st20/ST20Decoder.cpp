@@ -44,7 +44,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 
         unsigned /* [0..255] */ MATCH_w_8_0;
         {
-            MATCH_w_8_0 = getByte(MATCH_p.value());
+            MATCH_w_8_0 = Util::readByte((const void *)MATCH_p.value());
 
             switch ((MATCH_w_8_0 >> 4 & 0xf) /* fc at 0 */) {
             case 0: {
@@ -335,54 +335,11 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 }
 
 
-/**
- * These are machine specific functions used to decode instruction operands into Exp*s.
- */
-
-/**********************************
- * These are the fetch routines.
- **********************************/
-
-/**
- * Returns the word starting at the given address.
- * \param lc - address at which to decode the Byte
- * \returns the decoded Byte
- */
-Byte ST20Decoder::getByte(intptr_t lc)
-/* getByte - returns next byte from image pointed to by lc.     */
-{
-    return Util::readByte(reinterpret_cast<const void *>(lc));
-}
-
-
-/**
- * Returns the word starting at the given address.
- * \param    lc - address at which to decode the Word
- * \returns  the decoded Word
- */
-SWord ST20Decoder::getWord(intptr_t lc)
-/* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
-{
-    return Util::readWord(reinterpret_cast<const void *>(lc), Endian::Little);
-}
-
-
-/**
- * Returns the double starting at the given address.
- * \param        lc - address at which to decode the double
- * \returns             the decoded double
- */
-DWord ST20Decoder::getDword(intptr_t lc)
-/* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
-{
-    return Util::readDWord(reinterpret_cast<const void *>(lc), Endian::Little);
-}
-
-
 ST20Decoder::ST20Decoder(Project *project)
     : NJMCDecoder(project, "ssl/st20.ssl")
 {
 }
+
 
 SharedExp ST20Decoder::dis_Reg(int regNum)
 {
