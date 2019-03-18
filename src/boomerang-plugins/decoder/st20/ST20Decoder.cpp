@@ -95,18 +95,17 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             CallStatement *newCall = new CallStatement;
             newCall->setIsComputed(false);
             newCall->setDest(pc + result.numBytes + total);
+
             result.rtl->append(newCall);
         } break;
-
 
         case 10: {
             BranchStatement *br = new BranchStatement();
             br->setDest(pc + result.numBytes + total + oper);
-            br->setCondExpr(Binary::get(opEquals, dis_Reg(0), Const::get(0)));
+            br->setCondExpr(Binary::get(opEquals, Location::regOf(REG_ST20_A), Const::get(0)));
 
             result.rtl->append(br);
         } break;
-
 
         case 15: {
             total |= oper;
@@ -321,12 +320,6 @@ const char *ST20Decoder::getInstructionName(int total) const
 ST20Decoder::ST20Decoder(Project *project)
     : NJMCDecoder(project, "ssl/st20.ssl")
 {
-}
-
-
-SharedExp ST20Decoder::dis_Reg(int regNum)
-{
-    return Location::regOf(regNum);
 }
 
 
