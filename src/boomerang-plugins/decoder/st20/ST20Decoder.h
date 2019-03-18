@@ -53,4 +53,6 @@ public:
     void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
                                   Address pc, DecodeResult &result);
 
+private:
+    const char *getInstructionName(int totalPrefixes) const;
 };
