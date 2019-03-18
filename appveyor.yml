@@ -25,8 +25,6 @@ branches:
 skip_commits:
   message: /\[[aA]ppveyor [sS]kip\]/
 
-cache: c:\tools\vcpkg\installed\
-
 clone_folder: C:\projects\boomerang
 
 build:
@@ -42,6 +40,11 @@ pull_requests:
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
+
+install:
+  - cd C:\Tools\vcpkg
+  - git pull
+  - cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
   - ps: cd C:\projects\boomerang

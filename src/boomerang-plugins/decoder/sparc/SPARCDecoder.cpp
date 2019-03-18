@@ -45,6 +45,13 @@
 #define DIS_FS2Q (machine->dis_RegRhs((fs2q >> 2) + 80))
 
 
+/*
+ * addresstoPC returns the raw number as the address.  PC could be an
+ * abstract type, in our case, PC is the raw address.
+ */
+#define addressToPC(pc) pc
+
+
 void _DEBUG_STMTS(DecodeResult &result, bool debugDecoder)
 {
     if (debugDecoder) {
@@ -2301,6 +2308,12 @@ SPARCDecoder::SPARCDecoder(Project *project)
     : NJMCDecoder(project, "ssl/sparc.ssl")
     , machine(new SPARCMachine)
 {
+}
+
+
+SharedExp SPARCDecoder::dis_Num(unsigned num)
+{
+    return Const::get(num); // TODO: what about signed values ?
 }
 
 

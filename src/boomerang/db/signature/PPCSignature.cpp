@@ -25,7 +25,7 @@ namespace CallingConvention::StdC
 PPCSignature::PPCSignature(const QString &name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(REG_PPC_G1));
+    Signature::addReturn(Location::regOf(REG_PPC_SP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "r1",
     //                                 Location::regOf(REG_PPC_G1), nullptr);
     // FIXME: Should also add m[r1+4] as an implicit parameter? Holds return address
@@ -65,7 +65,7 @@ SharedExp PPCSignature::getArgumentExp(int n) const
         // PPCs pass the ninth and subsequent parameters at m[%r1+8],
         // m[%r1+12], etc.
         e = Location::memOf(
-            Binary::get(opPlus, Location::regOf(REG_PPC_G1), Const::get(8 + (n - 8) * 4)));
+            Binary::get(opPlus, Location::regOf(REG_PPC_SP), Const::get(8 + (n - 8) * 4)));
     }
     else {
         e = Location::regOf(REG_PPC_G3 + n);
@@ -98,38 +98,25 @@ void PPCSignature::addParameter(const QString &name, const SharedExp &e, SharedT
 
 SharedExp PPCSignature::getProven(SharedExp left) const
 {
-    if (!left->isRegOfConst()) {
-        return nullptr;
-    }
-
-    const RegNum regNum = left->access<Const, 1>()->getInt();
-    return (regNum == REG_PPC_G1) ? left : nullptr;
+    return left->isRegN(REG_PPC_SP) ? left : nullptr;
 }
 
 
 bool PPCSignature::isPreserved(SharedExp e) const
 {
-    if (e->isRegOfConst()) {
-        const RegNum regNum = e->access<Const, 1>()->getInt();
-        if (regNum == REG_PPC_G1) {
-            return true;
-        }
-    }
-
-    return false;
+    return e->isRegN(REG_PPC_SP);
 }
 
 
-// Return a list of locations defined by library calls
 void PPCSignature::getLibraryDefines(StatementList &defs)
 {
-    if (defs.size() > 0) {
+    if (!defs.empty()) {
         return; // Do only once
     }
 
-    for (int r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
-        defs.append(
-            new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
+    // Registers 3-12 are volatile (caller save)
+    for (RegNum r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
+        defs.append(new ImplicitAssign(Location::regOf(r)));
     }
 }
 

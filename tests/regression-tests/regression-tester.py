@@ -130,7 +130,6 @@ regression_tests = [
     "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
-    "ppc/funcptr",
     "ppc/global1",
     "ppc/global3",
     "ppc/hello",
@@ -156,7 +155,6 @@ regression_tests = [
     "ppc/o4/printpi",
     "ppc/o4/set",
     "ppc/o4/stattest",
-    "ppc/o4/sumarray",
     "ppc/o4/superstat",
     "ppc/o4/switch",
     "ppc/o4/twoproc",
@@ -291,6 +289,7 @@ smoke_tests = [
 
     "ppc/fibo",
     "ppc/frontier",
+    "ppc/funcptr",
     "ppc/global2",
     "ppc/o4/banner",
     "ppc/o4/branch",
@@ -303,6 +302,7 @@ smoke_tests = [
     "ppc/o4/frontier",
     "ppc/o4/phi",
     "ppc/o4/semi",
+    "ppc/o4/sumarray",
     "ppc/semi",
 
     "sparc/asgngoto",

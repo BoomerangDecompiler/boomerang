@@ -39,11 +39,12 @@ int RTLInstDict::insert(const QString &name, std::list<QString> &params, const R
 
     opcode.remove(".");
 
-    if (m_instructions.find(opcode) == m_instructions.end()) {
-        m_instructions.emplace(opcode, TableEntry(params, rtl));
+    if (m_instructions.find({ opcode, params.size() }) == m_instructions.end()) {
+        std::pair<QString, int> key{ opcode, params.size() };
+        m_instructions.emplace(key, TableEntry(params, rtl));
     }
     else {
-        return m_instructions[opcode].appendRTL(params, rtl);
+        return m_instructions[{ opcode, params.size() }].appendRTL(params, rtl);
     }
 
     return 0;
@@ -80,7 +81,7 @@ void RTLInstDict::print(OStream &os /*= std::cout*/)
 {
     for (auto &elem : m_instructions) {
         // print the instruction name
-        os << (elem).first << "  ";
+        os << (elem).first.first << "  ";
 
         // print the parameters
         const std::list<QString> &params((elem).second.m_params);
@@ -100,49 +101,21 @@ void RTLInstDict::print(OStream &os /*= std::cout*/)
 }
 
 
-std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionName,
-                                                    bool *found) const
-{
-    // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(instructionName).remove(".").toUpper();
-
-    // Look up the dictionary
-    const auto it = m_instructions.find(sanitizedName);
-    if (it != m_instructions.end()) {
-        if (found) {
-            *found = true;
-        }
-        return { sanitizedName, (it->second).m_params.size() };
-    }
-    else if (found) {
-        *found = false;
-    }
-
-    return { sanitizedName, (DWord)-1 };
-}
-
-
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address natPC,
                                                  const std::vector<SharedExp> &args)
 {
     // TODO try to retrieve fast instruction mappings
     // before trying the verbose instructions
-    auto dict_entry = m_instructions.find(name);
+    auto dict_entry = m_instructions.find({ name, args.size() });
     if (dict_entry == m_instructions.end()) {
+        LOG_ERROR("Cannot instatiate instruction '%1' at address %2: "
+                  "No instruction template takes %3 arguments",
+                  name, natPC, args.size());
         return nullptr; // instruction not found
     }
 
     TableEntry &entry(dict_entry->second);
-    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, args);
-    if (rtl) {
-        return rtl;
-    }
-    else {
-        LOG_ERROR("Cannot instantiate instruction '%1' at address %2: "
-                  "Instruction has %3 parameters, but got %4 arguments",
-                  name, natPC, entry.m_params.size(), args.size());
-        return nullptr;
-    }
+    return instantiateRTL(entry.m_rtl, natPC, entry.m_params, args);
 }
 
 
@@ -150,9 +123,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
                                                  const std::list<QString> &params,
                                                  const std::vector<SharedExp> &args)
 {
-    if (params.size() != args.size()) {
-        return nullptr;
-    }
+    assert(params.size() == args.size());
 
     // Get a deep copy of the template RTL
     std::unique_ptr<RTL> newList(new RTL(existingRTL));

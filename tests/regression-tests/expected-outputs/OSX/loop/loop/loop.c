@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     while (local0 <= 9) {
         local0++;
     }
-    printf(/* machine specific */ (int) LR + 676);
+    printf("%i\n", local0);
     return 0;
 }
 

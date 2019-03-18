@@ -6,10 +6,10 @@ void addem(__size32 param1, __size32 param2, __size32 param3, __size32 *param4);
 /** address: 0x00001d44 */
 int main(int argc, char *argv[])
 {
-    __size32 local0; 		// m[g1 - 32]
+    int local0; 		// m[g1 - 32]
 
     passem(5, 10, 40, &local0);
-    printf(/* machine specific */ (int) LR + 656);
+    printf("Fifty five is %d\n", local0);
     return 0;
 }
 

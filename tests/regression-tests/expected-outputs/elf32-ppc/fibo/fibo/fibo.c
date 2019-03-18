@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-__size32 fib(int param1);
+__size32 fib(int param1, __size32 param2);
 
 
 /** address: 0x100004a8 */
@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
     printf("Input number: ");
     scanf("%d", &local0);
     if (local0 > 1) {
-        g3_2 = fib(local0 - 1);
-        g3 = fib(local0 - 2);
+        g3_2 = fib(local0 - 1, 0x10000524);
+        g3 = fib(local0 - 2, 0x10000530);
         printf("fibonacci(%d) = %d\n", local0, g3_2 + g3);
     }
     else {
@@ -23,16 +23,16 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x10000434 */
-__size32 fib(int param1)
+__size32 fib(int param1, __size32 param2)
 {
     __size32 g0; 		// r0
     int g3; 		// r3
-    __size32 g3_1; 		// r3{8}
+    __size32 g3_1; 		// r3{9}
 
-    g0 = /* machine specific */ (int) LR;
+    g0 = param2;
     if (param1 > 1) {
-        g3_1 = fib(param1 - 1);
-        g0 = fib(param1 - 2); /* Warning: also results in g3 */
+        g3_1 = fib(param1 - 1, 0x1000047c);
+        g0 = fib(param1 - 2, 0x10000488); /* Warning: also results in g3 */
         g3 = g3_1 + g3;
     }
     else {

@@ -51,7 +51,7 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opFMinus,         { "",           " -f ",     "",         ""      } },
     { opFMult,          { "",           " *f ",     "",         ""      } },
     { opFDiv,           { "",           " /f ",     "",         ""      } },
-    { opFNeg,           { "",           " -f ",     "",         ""      } },
+    { opFNeg,           { "-",          "",         "",         ""      } },
     { opAnd,            { "",           " && ",     "",         ""      } },
     { opOr,             { "",           " || ",     "",         ""      } },
     { opEquals,         { "",           " = ",      "",         ""      } },

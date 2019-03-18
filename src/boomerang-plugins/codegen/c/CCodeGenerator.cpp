@@ -148,13 +148,13 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
              lhs->getSubExp3()->isIntConst()) {
         // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
         SharedExp exp1 = lhs->getSubExp1();
-        int n          = lhs->access<Const, 2>()->getInt();
-        int m          = lhs->access<Const, 3>()->getInt();
+        const int n    = lhs->access<Const, 2>()->getInt();
+        const int m    = lhs->access<Const, 3>()->getInt();
         appendExp(ost, *exp1, OpPrec::Assign);
         ost << " = ";
 
         // MSVC winges without most of these parentheses
-        int mask = ~(((1 << (m - n + 1)) - 1) << m);
+        const int mask = ~(((1 << (m - n + 1)) - 1) << m);
 
         // clang-format off
         rhs = Binary::get(opBitAnd,
@@ -189,8 +189,10 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
                 useIncrement = true;
             }
             else if (asgn->getType()->isPointer()) {
-                // add ptr, 4 for 32 bit pointers in assembly is ptr++ in C code
-                const Type::Size ptrSize = asgn->getType()->as<PointerType>()->getSize();
+                // add ptr, 4 in assembly for pointers to 32 bit data is ptr++ in C code
+                const Type::Size
+                    ptrSize = asgn->getType()->as<PointerType>()->getPointsTo()->getSize();
+
                 if (ptrSize == (Type::Size)rhs->access<const Const, 2>()->getInt() * 8) {
                     useIncrement = true;
                 }
@@ -1227,18 +1229,28 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opAt: {
-        // I guess that most people will find this easier to read
-        // s1 >> last & 0xMASK
         openParen(str, curPrec, OpPrec::BitAnd);
-        appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
-        auto first = ternaryExp.access<const Const, 2>();
-        auto last  = ternaryExp.access<const Const, 3>();
 
-        str << " >> ";
-        appendExp(str, *last, OpPrec::BitShift);
+        // I guess that most people will find this easier to read
+        auto first            = ternaryExp.access<const Const, 2>();
+        auto last             = ternaryExp.access<const Const, 3>();
+        const bool needsShift = !first->isIntConst() || first->access<Const>()->getInt() != 0;
+
+        if (needsShift) {
+            openParen(str, OpPrec::BitAnd, OpPrec::BitShift);
+            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
+
+            str << " >> ";
+            appendExp(str, *first, OpPrec::BitShift);
+            closeParen(str, OpPrec::BitAnd, OpPrec::BitShift);
+        }
+        else {
+            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitAnd);
+        }
+
         str << " & ";
 
-        SharedExp maskExp = Binary::get(opPlus, Binary::get(opMinus, first->clone(), last->clone()),
+        SharedExp maskExp = Binary::get(opPlus, Binary::get(opMinus, last->clone(), first->clone()),
                                         Const::get(1))
                                 ->simplify();
 
@@ -1443,7 +1455,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opFround:
         // Note: we need roundf or roundl depending on size of operands
         str << "round("; // Note: math.h required
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::None);
         str << ")";
         break;
 

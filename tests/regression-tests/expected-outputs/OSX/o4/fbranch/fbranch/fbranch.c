@@ -4,30 +4,28 @@ int main(int argc, char *argv[]);
 /** address: 0x00001be4 */
 int main(int argc, char *argv[])
 {
-    union { long long x2; double; __size32; } f31; 		// r63
     __size32 g3; 		// r3
     float local0; 		// m[g1 - 48]
 
-    f31 = *((float *)&*(/* machine specific */ (int) LR + 1024));
-    scanf(/* machine specific */ (int) LR + 928);
-    g3 = printf(/* machine specific */ (int) LR + 932);
-    if (f31 == local0) {
-        g3 = puts(/* machine specific */ (int) LR + 952);
+    scanf("%f", &local0);
+    g3 = printf("a is %f, b is %f\n", 2.3125, 0.);
+    if (5. == local0) {
+        g3 = puts("Equal");
     }
-    if (f31 != local0) {
-        g3 = puts(/* machine specific */ (int) LR + 960);
+    if (5. != local0) {
+        g3 = puts("Not Equal");
     }
-    if (f31 > local0) {
-        g3 = puts(/* machine specific */ (int) LR + 972);
+    if (5. > local0) {
+        g3 = puts("Greater");
     }
-    if (f31 == local0) {
-        g3 = puts(/* machine specific */ (int) LR + 980);
+    if (5. == local0) {
+        g3 = puts("Less or Equal");
     }
-    if (f31 == local0) {
-        g3 = puts(/* machine specific */ (int) LR + 996);
+    if (5. == local0) {
+        g3 = puts("Greater or Equal");
     }
-    if (f31 < local0) {
-        g3 = puts(/* machine specific */ (int) LR + 1016);
+    if (5. < local0) {
+        g3 = puts("Less");
     }
     return g3;
 }

@@ -10,6 +10,7 @@
 #include "ST20Decoder.h"
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/ssl/RTL.h"
@@ -574,6 +575,22 @@ DWord ST20Decoder::getDword(intptr_t lc)
 ST20Decoder::ST20Decoder(Project *project)
     : NJMCDecoder(project, "ssl/st20.ssl")
 {
+}
+
+SharedExp ST20Decoder::dis_Reg(int regNum)
+{
+    return Location::regOf(regNum);
+}
+
+
+void ST20Decoder::processUnconditionalJump(const char *name, int size, HostAddress relocd,
+                                           ptrdiff_t delta, Address pc, DecodeResult &result)
+{
+    result.numBytes     = size;
+    GotoStatement *jump = new GotoStatement();
+    jump->setDest(Address((relocd - delta).value()));
+    result.rtl->append(jump);
+    SHOW_ASM(name << " " << relocd - delta)
 }
 
 

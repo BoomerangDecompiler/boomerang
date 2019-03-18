@@ -1,12 +1,14 @@
 int main(int argc, char *argv[]);
 
+long long a;
+int b;
 
 /** address: 0x00001cc4 */
 int main(int argc, char *argv[])
 {
-    *(__size32*)(/* machine specific */ (int) LR + 856) = 12;
-    printf(/* machine specific */ (int) LR + 796);
-    printf(/* machine specific */ (int) LR + 808);
+    b = 12;
+    printf("a = %lld\n", a);
+    printf("b = %i\n", b);
     return 0;
 }
 
