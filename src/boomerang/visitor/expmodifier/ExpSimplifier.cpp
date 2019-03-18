@@ -772,12 +772,12 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary> &exp)
         }
     }
 
-    if (exp->getOper() == opAt && exp->getSubExp1()->isIntConst() && exp->getSubExp2()->isIntConst() &&
-        exp->getSubExp3()->isIntConst()) {
-        const int val = exp->access<Const, 1>()->getInt();
-        const int from = exp->access<Const, 2>()->getInt();
-        const int to = exp->access<Const, 3>()->getInt();
-        const unsigned int mask = Util::getLowerBitMask(to+1) & ~Util::getLowerBitMask(from);
+    if (exp->getOper() == opAt && exp->getSubExp1()->isIntConst() &&
+        exp->getSubExp2()->isIntConst() && exp->getSubExp3()->isIntConst()) {
+        const int val           = exp->access<Const, 1>()->getInt();
+        const int from          = exp->access<Const, 2>()->getInt();
+        const int to            = exp->access<Const, 3>()->getInt();
+        const unsigned int mask = Util::getLowerBitMask(to + 1) & ~Util::getLowerBitMask(from);
 
         changed = true;
         return Const::get((int)(val & mask));
