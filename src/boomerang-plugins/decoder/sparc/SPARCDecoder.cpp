@@ -28,7 +28,7 @@
 
 
 #define SHOW_ASM(output)                                                                           \
-    if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
+    if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {                             \
         QString asmStr;                                                                            \
         OStream ost(&asmStr);                                                                      \
         ost << output;                                                                             \
@@ -71,7 +71,8 @@ void _DEBUG_STMTS(DecodeResult &result, bool debugDecoder)
     }
 }
 
-#define DEBUG_STMTS(result) _DEBUG_STMTS(result, m_prog->getProject()->getSettings()->debugDecoder)
+#define DEBUG_STMTS(result)                                                                        \
+    _DEBUG_STMTS(result, m_prog && m_prog->getProject()->getSettings()->debugDecoder)
 
 
 std::unique_ptr<RTL> SPARCDecoder::createBranchRTL(const char *insnName, Address pc,
@@ -573,13 +574,17 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
 
                 Address nativeDest = Address(addr.value() - delta);
                 newCall->setDest(nativeDest);
-                Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
-                if (destProc == reinterpret_cast<Function *>(-1)) {
-                    destProc = nullptr;
+                if (m_prog) {
+                    Function *destProc = m_prog->getOrCreateFunction(nativeDest);
+
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
+                        destProc = nullptr;
+                    }
+
+                    newCall->setDestProc(destProc);
                 }
 
-                newCall->setDestProc(destProc);
                 inst.rtl->append(newCall);
                 inst.type = SD;
                 SHOW_ASM("call__ " << (nativeDest))
