@@ -528,13 +528,41 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO wry
 
-    // TODO xnor
+    TEST_DECODE("xnor %g3, %g1, %g2", "\x84\x38\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ ~r1\n"
+    );
 
-    // TODO xnorcc
+    TEST_DECODE("xnor %g3, 1, %g2", "\x84\x38\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ -2\n"
+    );
 
-    // TODO xor
+    TEST_DECODE("xnorcc %g3, %g1, %g2", "\x84\xb8\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ ~r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
 
-    // TODO xorcc
+    TEST_DECODE("xnorcc %g3, 1, %g2", "\x84\xb8\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ -2\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("xor %g3, %g1, %g2", "\x84\x18\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ r1\n"
+    );
+
+    TEST_DECODE("xor %g3, 1, %g2", "\x84\x18\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ 1\n"
+    );
+
+    TEST_DECODE("xorcc %g3, %g1, %g2", "\x84\x98\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("xorcc %g3, 1, %g2", "\x84\x98\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 ^ 1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
 }
 
 
