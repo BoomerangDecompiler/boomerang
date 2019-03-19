@@ -61,11 +61,28 @@ endif ()
 
 
 BOOMERANG_ADD_DECODER(
-    NAME "SPARC"
+    NAME "CapstoneSPARC"
     SOURCES
-        sparc/SPARCDecoder.cpp
-        sparc/SPARCDecoder.h
+        CapstoneDecoder.cpp
+        CapstoneDecoder.h
+        sparc/CapstoneSPARCDecoder.cpp
+        sparc/CapstoneSPARCDecoder.h
+    LIBRARIES
+        Capstone::Capstone
 )
+
+if (MSVC AND BOOMERANG_BUILD_DECODER_CapstoneSPARC)
+    add_custom_command(TARGET boomerang-CapstoneSPARCDecoder POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS
+            -E copy_if_different
+            "${Capstone_DLL}"
+            "${BOOMERANG_OUTPUT_DIR}/bin/"
+    )
+
+    install(FILES "${Capstone_DLL}" DESTINATION "bin/")
+endif ()
+
 
 BOOMERANG_ADD_DECODER(
     NAME "ST20"

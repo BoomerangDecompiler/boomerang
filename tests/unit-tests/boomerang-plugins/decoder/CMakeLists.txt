@@ -23,5 +23,5 @@ BOOMERANG_ADD_TEST(
         sparc/SPARCDecoderTest.h
         sparc/SPARCDecoderTest.cpp
     LIBRARIES
-        boomerang-SPARCDecoder
+        boomerang-CapstoneSPARCDecoder
 )

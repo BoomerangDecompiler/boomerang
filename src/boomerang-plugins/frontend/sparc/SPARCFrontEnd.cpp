@@ -1271,7 +1271,7 @@ bool SPARCFrontEnd::helperFuncLong(Address dest, Address addr, RTLList &lrtl, QS
 SPARCFrontEnd::SPARCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    Plugin *plugin = project->getPluginManager()->getPluginByName("SPARC decoder plugin");
+    Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone SPARC decoder plugin");
     if (plugin) {
         m_decoder = plugin->getIfc<IDecoder>();
         m_decoder->initialize(project);

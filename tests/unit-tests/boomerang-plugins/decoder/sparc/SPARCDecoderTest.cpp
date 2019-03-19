@@ -30,7 +30,7 @@ void SPARCDecoderTest::initTestCase()
 {
     m_project.loadPlugins();
 
-    Plugin *plugin = m_project.getPluginManager()->getPluginByName("SPARC decoder plugin");
+    Plugin *plugin = m_project.getPluginManager()->getPluginByName("Capstone SPARC decoder plugin");
     QVERIFY(plugin != nullptr);
     m_decoder = plugin->getIfc<IDecoder>();
     QVERIFY(m_decoder != nullptr);
