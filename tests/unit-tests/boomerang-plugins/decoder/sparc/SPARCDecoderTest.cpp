@@ -305,6 +305,24 @@ void SPARCDecoderTest::testInstructions_data()
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n"
     );
+
+    // TODO CBcc
+
+    // TODO CPop
+
+    TEST_DECODE("fabss %f1, %f2", "\x85\xa0\x01\x21", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := (r33 < 0) ? -r33 : r33\n"
+    );
+
+    // TODO faddd
+
+    TEST_DECODE("fadds %f3, %f1, %f2", "\x85\xa0\xc8\x21", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := r35 +f r33\n"
+    );
+
+    // TODO faddx
+
+
 }
 
 
