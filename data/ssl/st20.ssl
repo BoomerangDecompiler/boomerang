@@ -6,7 +6,6 @@
 # WARRANTIES.
 #
 
-MAXSIGN32   := 0x7FFFFFFF;
 SIGN_32_NEG := 0x80000000;
 INF         := 0x7F800000;
 
@@ -19,6 +18,10 @@ INTEGER %pc[32] -> -1;
 INTEGER %ZF[1]  -> -1;
 INTEGER %CF[1]  -> -1;
 
+
+#
+# instructions (sorted alphabetically)
+#
 
 adc     val                     # add constant
     *32* %Areg := %Areg + val;
