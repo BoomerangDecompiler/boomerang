@@ -322,7 +322,219 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO faddx
 
+    // TODO fbfcc
 
+    // TODO fcmpd
+
+    // TODO fcmped
+
+    // TODO fcmpes
+
+    // TODO fcmpexx
+
+    // TODO fcmps
+
+    // TODO fcmpx
+
+    // TODO fdivd
+
+    // TODO fdivs
+
+    // TODO fdivx
+
+    // TODO fdtoi
+
+    // TODO fdtos
+
+    // TODO fdtox
+
+    // TODO fitod
+
+    // TODO fitos
+
+    // TODO fitox
+
+    // TODO fmovs
+
+    // TODO fmuld
+
+    // TODO fmuls
+
+    // TODO fmulx
+
+    // TODO fnegs
+
+    // TODO fsqrtd
+
+    // TODO fsqrts
+
+    // TODO fsqrtx
+
+    // TODO fstod
+
+    // TODO fstoi
+
+    // TODO fstox
+
+    // TODO fsubd
+
+    // TODO fsubs
+
+    // TODO fsubx
+
+    // TODO fxtod
+
+    // TODO fxtoi
+
+    // TODO fxtos
+
+    // TODO iflush
+
+    // TODO jmpl
+
+    // TODO ld
+
+    // TODO lda
+
+    // TODO ldc
+
+    // TODO ldcsr
+
+    // TODO ldd
+
+    // TODO ldda
+
+    // TODO lddc
+
+    // TODO lddf
+
+    // TODO ldf
+
+    // TODO ldfsr
+
+    // TODO ldsb
+
+    // TODO ldsba
+
+    // TODO ldsh
+
+    // TODO ldsha
+
+    // TODO ldstub
+
+    // TODO ldstuba
+
+    // TODO ldub
+
+    // TODO lduba
+
+    // TODO lduh
+
+    // TODO lduha
+
+    // TODO mulscc
+
+    // TODO or
+
+    // TODO orcc
+
+    // TODO orn
+
+    // TODO orncc
+
+    // TODO rdpsr
+
+    // TODO rdtbr
+
+    // TODO rdwim
+
+    // TODO rdy
+
+    // TODO restore
+
+    // TODO rett
+
+    // TODO save
+
+    // TODO sethi
+
+    // TODO sll
+
+    // TODO sra
+
+    // TODO srl
+
+    // TODO st
+
+    // TODO sta
+
+    // TODO stb
+
+    // TODO stba
+
+    // TODO stc
+
+    // TODO stcsr
+
+    // TODO std
+
+    // TODO stda
+
+    // TODO stdc
+
+    // TODO stdcq
+
+    // TODO stdf
+
+    // TODO stdfq
+
+    // TODO stf
+
+    // TODO stfsr
+
+    // TODO sth
+
+    // TODO stha
+
+    // TODO sub
+
+    // TODO subcc
+
+    // TODO subx
+
+    // TODO subxcc
+
+    // TODO swap
+
+    // TODO swapa
+
+    // TODO taddcc
+
+    // TODO taddcctv
+
+    // TODO ticc
+
+    // TODO tsubcc
+
+    // TODO tsubcctv
+
+    // TODO unimp
+
+    // TODO wrpsr
+
+    // TODO wrtbr
+
+    // TODO wrwim
+
+    // TODO wry
+
+    // TODO xnor
+
+    // TODO xnorcc
+
+    // TODO xor
+
+    // TODO xorcc
 }
 
 
