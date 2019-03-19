@@ -142,6 +142,163 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* r2 := r3 & -2\n"
                 "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
     );
+
+    TEST_DECODE("ba 0x2000", "\x10\x80\x04\x00", ICLASS::SD,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("ba,a 0x2000", "\x30\x80\x04\x00", ICLASS::SU,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("bn 0x2000", "\x00\x80\x04\x00", ICLASS::NCT,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("bn,a 0x2000", "\x20\x80\x04\x00", ICLASS::SKIP,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("bne 0x2000", "\x12\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bne,a 0x2000", "\x32\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("be 0x2000", "\x02\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("be,a 0x2000", "\x22\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bg 0x2000", "\x14\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bg,a 0x2000", "\x34\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("ble 0x2000", "\x04\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("ble,a 0x2000", "\x24\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bge 0x2000", "\x16\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bge,a 0x2000", "\x36\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bl 0x2000", "\x06\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bl,a 0x2000", "\x26\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bgu 0x2000", "\x18\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bgu,a 0x2000", "\x38\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned greater\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bleu 0x2000", "\x08\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bleu,a 0x2000", "\x28\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned less or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bcc 0x2000", "\x1a\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bcc,a 0x2000", "\x3a\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned greater or equals\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bcs 0x2000", "\x0a\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bcs,a 0x2000", "\x2a\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition unsigned less\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bpos 0x2000", "\x1c\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition plus\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bpos,a 0x2000", "\x3c\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition plus\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bneg 0x2000", "\x0c\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition minus\n"
+                "High level: %flags\n"
+    );
+
+    TEST_DECODE("bneg,a 0x2000", "\x2c\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition minus\n"
+                "High level: %flags\n"
+    );
+
+    // TODO
+//     TEST_DECODE("bvc 0x2000", "\x1e\x80\x04\x00", ICLASS::SCD,
+//                 "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+//                 "High level: %flags\n"
+//     );
+//
+//     TEST_DECODE("bvc,a 0x2000", "\x3e\x80\x04\x00", ICLASS::SCDAN,
+//                 "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+//                 "High level: %flags\n"
+//     );
+//
+//     TEST_DECODE("bvs 0x2000", "\x0e\x80\x04\x00", ICLASS::SCD,
+//                 "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+//                 "High level: %flags\n"
+//     );
+//
+//     TEST_DECODE("bvs,a 0x2000", "\x2e\x80\x04\x00", ICLASS::SCDAN,
+//                 "0x00001000    0 BRANCH 0x00002000, condition equals\n"
+//                 "High level: %flags\n"
+//     );
 }
 
 
