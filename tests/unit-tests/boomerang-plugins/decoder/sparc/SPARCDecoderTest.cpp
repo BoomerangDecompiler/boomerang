@@ -299,6 +299,12 @@ void SPARCDecoderTest::testInstructions_data()
 //                 "0x00001000    0 BRANCH 0x00002000, condition equals\n"
 //                 "High level: %flags\n"
 //     );
+
+    TEST_DECODE("call 0x2000", "\x40\x00\x10\x00", ICLASS::SD,
+                "0x00001000    0 <all> := CALL 0x5000(<all>)\n"
+                "              Reaching definitions: <None>\n"
+                "              Live variables: <None>\n"
+    );
 }
 
 
