@@ -323,7 +323,6 @@ void ST20Decoder::processUnconditionalJump(const char *name, int size, HostAddre
     GotoStatement *jump = new GotoStatement();
     jump->setDest(Address((relocd - delta).value()));
     result.rtl->append(jump);
-    SHOW_ASM(name << " " << relocd - delta)
 }
 
 
