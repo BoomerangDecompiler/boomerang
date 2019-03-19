@@ -42,8 +42,7 @@ static const char *functionNames[] = {
 
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
-    HostAddress hostPC = HostAddress(delta) + pc;
-    int total          = 0; // Total value from all prefixes
+    int total = 0; // Total value from all prefixes
 
     result.reset();
     result.rtl = std::make_unique<RTL>(pc);
@@ -52,14 +51,18 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
         result.numBytes++;
 
         const Byte instructionData = Util::readByte(
-            (const void *)(hostPC + result.numBytes).value());
+            (const void *)(pc.value() + delta + result.numBytes));
         const Byte functionCode = (instructionData >> 4) & 0xF;
         const Byte oper         = instructionData & 0xF;
 
         switch (functionCode) {
-        case 0: { // "j"
-            const HostAddress jumpDest = hostPC + result.numBytes + total + oper;
-            processUnconditionalJump("j", result.numBytes, jumpDest, delta, pc, result);
+        case 0: { // unconditional jump
+            total += oper;
+            const Address jumpDest = pc + result.numBytes + total;
+
+            GotoStatement *jump = new GotoStatement();
+            jump->setDest(jumpDest);
+            result.rtl->append(jump);
         } break;
 
         case 1:
@@ -72,7 +75,8 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
         case 12:
         case 13:
         case 14: {
-            result.rtl = instantiate(pc, functionNames[functionCode], { Const::get(total + oper) });
+            total += oper;
+            result.rtl = instantiate(pc, functionNames[functionCode], { Const::get(total) });
         } break;
 
         case 2: { // prefix
@@ -96,15 +100,16 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
         } break;
 
         case 10: { // cond jump
+            total += oper;
             BranchStatement *br = new BranchStatement();
-            br->setDest(pc + result.numBytes + total + oper);
+            br->setDest(pc + result.numBytes + total);
             br->setCondExpr(Binary::get(opEquals, Location::regOf(REG_ST20_A), Const::get(0)));
 
             result.rtl->append(br);
         } break;
 
         case 15: { // operate
-            total |= oper;
+            total += oper;
             const char *insnName = getInstructionName(total);
             if (!insnName) {
                 // invalid or unknown instruction
@@ -313,16 +318,6 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
 ST20Decoder::ST20Decoder(Project *project)
     : NJMCDecoder(project, "ssl/st20.ssl")
 {
-}
-
-
-void ST20Decoder::processUnconditionalJump(const char *name, int size, HostAddress relocd,
-                                           ptrdiff_t delta, Address pc, DecodeResult &result)
-{
-    result.numBytes     = size;
-    GotoStatement *jump = new GotoStatement();
-    jump->setDest(Address((relocd - delta).value()));
-    result.rtl->append(jump);
 }
 
 

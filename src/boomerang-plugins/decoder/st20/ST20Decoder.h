@@ -43,9 +43,6 @@ public:
      */
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
-    void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
-                                  Address pc, DecodeResult &result);
-
 private:
     /// \param prefixTotal The sum of all prefixes
     /// \returns the name of an instruction determined by its prefixes (e.g. 0x53 -> mul)
