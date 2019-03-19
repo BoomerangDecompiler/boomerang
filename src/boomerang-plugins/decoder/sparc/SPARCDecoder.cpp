@@ -27,6 +27,15 @@
 #include <cstring>
 
 
+#define SHOW_ASM(output)                                                                           \
+    if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
+        QString asmStr;                                                                            \
+        OStream ost(&asmStr);                                                                      \
+        ost << output;                                                                             \
+        LOG_MSG("%1: %2", pc, asmStr);                                                             \
+    }
+
+
 #define DIS_ROI (dis_RegImm(roi))
 #define DIS_ADDR (dis_Eaddr(addr))
 #define DIS_RD (dis_RegLhs(rd))

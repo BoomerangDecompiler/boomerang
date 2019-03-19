@@ -80,12 +80,3 @@ protected:
     Prog *m_prog         = nullptr;
     BinaryImage *m_image = nullptr;
 };
-
-
-#define SHOW_ASM(output)                                                                           \
-    if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
-        QString asmStr;                                                                            \
-        OStream ost(&asmStr);                                                                      \
-        ost << output;                                                                             \
-        LOG_MSG("%1: %2", pc, asmStr);                                                             \
-    }
