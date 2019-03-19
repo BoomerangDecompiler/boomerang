@@ -75,16 +75,16 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             result.rtl = instantiate(pc, functionNames[functionCode], { Const::get(total + oper) });
         } break;
 
-        case 2: {
+        case 2: { // prefix
             total = (total + oper) << 4;
             continue;
         }
-        case 6: {
+        case 6: { // negative prefix
             total = (total + ~oper) << 4;
             continue;
         }
 
-        case 9: {
+        case 9: { // call
             total += oper;
             result.rtl = instantiate(pc, "call", { Const::get(total) });
 
@@ -95,7 +95,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             result.rtl->append(newCall);
         } break;
 
-        case 10: {
+        case 10: { // cond jump
             BranchStatement *br = new BranchStatement();
             br->setDest(pc + result.numBytes + total + oper);
             br->setCondExpr(Binary::get(opEquals, Location::regOf(REG_ST20_A), Const::get(0)));
@@ -103,7 +103,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             result.rtl->append(br);
         } break;
 
-        case 15: {
+        case 15: { // operate
             total |= oper;
             const char *insnName = getInstructionName(total);
             if (!insnName) {
@@ -132,10 +132,10 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 }
 
 
-const char *ST20Decoder::getInstructionName(int total) const
+const char *ST20Decoder::getInstructionName(int prefixTotal) const
 {
-    if (total >= 0) {
-        switch (total) {
+    if (prefixTotal >= 0) {
+        switch (prefixTotal) {
         case 0x00: return "rev";
         case 0x01: return "lb";
         case 0x02: return "bsub";
@@ -278,9 +278,9 @@ const char *ST20Decoder::getInstructionName(int total) const
     }
     else {
         // Total is negative, as a result of nfixes
-        total = (~total & ~0xF) | (total & 0xF); // 1's complement the upper nibbles
+        prefixTotal = (~prefixTotal & ~0xF) | (prefixTotal & 0xF);
 
-        switch (total) {
+        switch (prefixTotal) {
         case 0x00: return "swapqueue";
         case 0x01: return "swaptimer";
         case 0x02: return "insertqueue";

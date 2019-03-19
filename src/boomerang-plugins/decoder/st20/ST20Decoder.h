@@ -47,5 +47,7 @@ public:
                                   Address pc, DecodeResult &result);
 
 private:
-    const char *getInstructionName(int totalPrefixes) const;
+    /// \param prefixTotal The sum of all prefixes
+    /// \returns the name of an instruction determined by its prefixes (e.g. 0x53 -> mul)
+    const char *getInstructionName(int prefixTotal) const;
 };
