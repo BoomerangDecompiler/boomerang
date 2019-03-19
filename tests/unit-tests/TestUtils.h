@@ -102,3 +102,4 @@ void compareLongStrings(const QString& actual, const QString& expected);
 char *toString(const Exp& exp);
 char *toString(const SharedConstExp& exp);
 char *toString(const LocationSet& locSet);
+char *toString(ICLASS type);

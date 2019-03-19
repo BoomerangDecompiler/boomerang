@@ -75,3 +75,20 @@ char *toString(const LocationSet& locSet)
 
     return QTest::toString(tgt);
 }
+
+
+char *toString(ICLASS type)
+{
+    switch (type) {
+    case ICLASS::NCT:   return QTest::toString("NCT");
+    case ICLASS::SD:    return QTest::toString("SD");
+    case ICLASS::DD:    return QTest::toString("DD");
+    case ICLASS::SCD:   return QTest::toString("SCD");
+    case ICLASS::SCDAN: return QTest::toString("SCDAN");
+    case ICLASS::SCDAT: return QTest::toString("SCDAT");
+    case ICLASS::SU:    return QTest::toString("SU");
+    case ICLASS::SKIP:  return QTest::toString("SKIP");
+    case ICLASS::NOP:   return QTest::toString("NOP");
+    }
+}
+
