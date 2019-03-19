@@ -434,13 +434,41 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO mulscc
 
-    // TODO or
+    TEST_DECODE("or %g3, %g1, %g2", "\x84\x10\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | r1\n"
+    );
 
-    // TODO orcc
+    TEST_DECODE("or %g3, 1, %g2", "\x84\x10\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | 1\n"
+    );
 
-    // TODO orn
+    TEST_DECODE("orcc %g3, %g1, %g2", "\x84\x90\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
 
-    // TODO orncc
+    TEST_DECODE("orcc %g3, 1, %g2", "\x84\x90\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | 1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("orn %g3, %g1, %g2", "\x84\x30\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | ~r1\n"
+    );
+
+    TEST_DECODE("orn %g3, 1, %g2", "\x84\x30\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | -2\n"
+    );
+
+    TEST_DECODE("orncc %g3, %g1, %g2", "\x84\xb0\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | ~r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("orncc %g3, 1, %g2", "\x84\xb0\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 | -2\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
 
     // TODO rdpsr
 
