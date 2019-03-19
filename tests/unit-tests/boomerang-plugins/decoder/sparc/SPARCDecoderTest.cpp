@@ -106,6 +106,42 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *32* r2 := (r3 + zfill(1, 32, %CF)) + 1\n"
                 "              0 *v* %flags := ADDFLAGS( tmp, 1, r2 )\n"
     );
+
+    TEST_DECODE("and %g3, %g1, %g2", "\x84\x08\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & r1\n"
+    );
+
+    TEST_DECODE("and %g3, 1, %g2", "\x84\x08\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & 1\n"
+    );
+
+    TEST_DECODE("andcc %g3, %g1, %g2", "\x84\x88\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("andcc %g3, 1, %g2", "\x84\x88\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & 1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("andn %g3, %g1, %g2", "\x84\x28\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & ~r1\n"
+    );
+
+    TEST_DECODE("andn %g3, 1, %g2", "\x84\x28\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & -2\n"
+    );
+
+    TEST_DECODE("andncc %g3, %g1, %g2", "\x84\xa8\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & ~r1\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
+
+    TEST_DECODE("andncc %g3, 1, %g2", "\x84\xa8\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 & -2\n"
+                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+    );
 }
 
 
