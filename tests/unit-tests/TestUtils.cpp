@@ -90,5 +90,7 @@ char *toString(ICLASS type)
     case ICLASS::SKIP:  return QTest::toString("SKIP");
     case ICLASS::NOP:   return QTest::toString("NOP");
     }
+
+    return QTest::toString("<unknown>");
 }
 
