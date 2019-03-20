@@ -561,13 +561,21 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
     );
 
-    // TODO rdpsr
+    TEST_DECODE("rd %psr, %g1", "\x83\x48\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := machine(\"%PSR\")\n"
+    );
 
-    // TODO rdtbr
+    TEST_DECODE("rd %tbr, %g1", "\x83\x58\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := machine(\"%TBR\")\n"
+    );
 
-    // TODO rdwim
+    TEST_DECODE("rd %wim, %g1", "\x83\x50\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := machine(\"%WIM\")\n"
+    );
 
-    // TODO rdy
+    TEST_DECODE("rd %Y, %g1", "\x83\x40\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := machine(\"%Y\")\n"
+    );
 
     // TODO restore
 
