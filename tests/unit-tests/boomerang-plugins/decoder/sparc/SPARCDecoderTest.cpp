@@ -591,12 +591,29 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* r1 := 0x400\n"
     );
 
+    TEST_DECODE("sll %g3, %g1, %g2", "\x85\x28\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 << r1\n"
+    );
 
-    // TODO sll
+    TEST_DECODE("sll %g3, 1, %g2", "\x85\x28\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 * 2\n"
+    );
 
-    // TODO sra
+    TEST_DECODE("sra %g3, %g1, %g2", "\x85\x38\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 >>A r1\n"
+    );
 
-    // TODO srl
+    TEST_DECODE("sra %g3, 1, %g2", "\x85\x38\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 >>A 1\n"
+    );
+
+    TEST_DECODE("srl %g3, %g1, %g2", "\x85\x30\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 >> r1\n"
+    );
+
+    TEST_DECODE("srl %g3, 1, %g2", "\x85\x30\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3 >> 1\n"
+    );
 
     // TODO st
 
