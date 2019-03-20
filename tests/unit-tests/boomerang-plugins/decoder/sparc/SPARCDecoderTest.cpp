@@ -459,7 +459,15 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO iflush
 
-    // TODO jmpl
+    // FIXME: The semantics are wrong. The return address should be saved to %g4;
+    // sometimes this instruction might also represent an indirect call or a return.
+    TEST_DECODE("jmpl %g1+%g2, %g4", "\x89\xc0\x40\x02", ICLASS::DD,
+                "0x00001000    0 CASE [r1 + r2]\n"
+    );
+
+    TEST_DECODE("jmpl %g1+0x0800, %g4", "\x89\xc0\x68\x00", ICLASS::DD,
+                "0x00001000    0 CASE [r1 + 0x800]\n"
+    );
 
     // TODO ld
 
