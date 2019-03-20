@@ -324,69 +324,138 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO fbfcc
 
-    // TODO fcmpd
+    TEST_DECODE("fcmpd %f1, %f2", "\x81\xa8\x4a\x42", ICLASS::NCT,
+                "0x00001000    0 *64* tmpd := r64 -f r65\n"
+                "              0 *v* %fflags := SETFFLAGS( r64, r65 )\n"
+    );
 
-    // TODO fcmped
+    TEST_DECODE("fcmped %f1, %f2", "\x81\xa8\x4a\xc2", ICLASS::NCT,
+                "0x00001000    0 *64* tmpd := r64 -f r65\n"
+                "              0 *v* %fflags := SETFFLAGS( r64, r65 )\n"
+    );
 
-    // TODO fcmpes
+    TEST_DECODE("fcmpes %f1, %f2", "\x81\xa8\x4a\xa2", ICLASS::NCT,
+                "0x00001000    0 *32* tmpf := r33 -f r34\n"
+                "              0 *v* %fflags := SETFFLAGS( r33, r34 )\n"
+    );
 
-    // TODO fcmpexx
+//     TEST_DECODE("fcmpex %f1, %f2", "\x81\xa8\x4e\xe2", ICLASS::NCT,
+//                 ""
+//     );
 
-    // TODO fcmps
+    TEST_DECODE("fcmps %f1, %f2", "\x81\xa8\x4a\x22", ICLASS::NCT,
+                "0x00001000    0 *32* tmpf := r33 -f r34\n"
+                "              0 *v* %fflags := SETFFLAGS( r33, r34 )\n"
+    );
 
-    // TODO fcmpx
+    TEST_DECODE("fcmpx %f4, %f0", "\x81\xa9\x0a\x60", ICLASS::NCT,
+                "0x00001000    0 *128* tmpD := r81 -f r80\n"
+                "              0 *v* %fflags := SETFFLAGS( r81, r80 )\n"
+    );
 
-    // TODO fdivd
+    TEST_DECODE("fdivd %f4, %f0, %f2", "\x85\xa1\x09\xc0", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := r66 /f r64\n"
+    );
 
-    // TODO fdivs
+    TEST_DECODE("fdivs %f3, %f1, %f2", "\x85\xa0\xc9\xa1", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := r35 /f r33\n"
+    );
 
-    // TODO fdivx
+    TEST_DECODE("fdivx %f8, %f0, %f4", "\x89\xa2\x09\xe0", ICLASS::NCT,
+                "0x00001000    0 *128* r81 := r82 /f r80\n"
+    );
 
-    // TODO fdtoi
+    TEST_DECODE("fdtoi %f2, %f0", "\x81\xa0\x1a\x42", ICLASS::NCT,
+                "0x00001000    0 *32* r32 := ftoi(64, 32, r65)\n"
+    );
 
-    // TODO fdtos
+    TEST_DECODE("fdtos %f2, %f0", "\x81\xa0\x18\xc2", ICLASS::NCT,
+                "0x00001000    0 *32* r32 := fsize(64, 32, r65)\n"
+    );
 
-    // TODO fdtox
+    TEST_DECODE("fdtox %f2, %f0", "\x81\xa0\x19\xc2", ICLASS::NCT,
+                "0x00001000    0 *128* r80 := fsize(64, 128, r65)\n"
+    );
 
-    // TODO fitod
+    TEST_DECODE("fitod %f1, %f2", "\x85\xa0\x19\x01", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := itof(32, 64, r33)\n"
+    );
 
-    // TODO fitos
+    TEST_DECODE("fitos %f2, %f1", "\x83\xa0\x18\x82", ICLASS::NCT,
+                "0x00001000    0 *32* r33 := itof(32, 32, r34)\n"
+    );
 
-    // TODO fitox
+    TEST_DECODE("fitox %f1, %f4", "\x89\xa0\x19\x81", ICLASS::NCT,
+                "0x00001000    0 *128* r81 := itof(32, 128, r33)\n"
+    );
 
-    // TODO fmovs
+    TEST_DECODE("fmovs %f1, %f2", "\x85\xa0\x00\x21", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := r33\n"
+    );
 
-    // TODO fmuld
+    TEST_DECODE("fmuld %f2, %f4, %f6", "\x8d\xa0\x89\x44", ICLASS::NCT,
+                "0x00001000    0 *64* r67 := r65 *f r66\n"
+    );
 
-    // TODO fmuls
+    TEST_DECODE("fmuls %f3, %f1, %f2", "\x85\xa0\xc9\x21", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := r35 *f r33\n"
+    );
 
-    // TODO fmulx
+    TEST_DECODE("fmulx %f4, %f8, %f0", "\x81\xa1\x09\x68", ICLASS::NCT,
+                "0x00001000    0 *128* r80 := r81 *f r82\n"
+    );
 
-    // TODO fnegs
+    TEST_DECODE("fnegs %f1, %f2", "\x85\xa0\x00\xa1", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := -r33\n"
+    );
 
-    // TODO fsqrtd
+    TEST_DECODE("fsqrtd %f4, %f2", "\x85\xa0\x05\x44", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := sqrt(r66)\n"
+    );
 
-    // TODO fsqrts
+    TEST_DECODE("fsqrts %f2, %f1", "\x83\xa0\x05\x22", ICLASS::NCT,
+                "0x00001000    0 *32* r33 := sqrt(r34)\n"
+    );
 
-    // TODO fsqrtx
+    TEST_DECODE("fsqrtx %f4, %f0", "\x81\xa0\x05\x64", ICLASS::NCT,
+                "0x00001000    0 *128* r80 := sqrt(r81)\n"
+    );
 
-    // TODO fstod
+    TEST_DECODE("fstod %f1, %f2", "\x85\xa0\x19\x21", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := fsize(32, 64, r33)\n"
+    );
 
-    // TODO fstoi
+    TEST_DECODE("fstoi %f1, %f2", "\x85\xa0\x1a\x21", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := ftoi(32, 32, r33)\n"
+    );
 
-    // TODO fstox
+    TEST_DECODE("fstox %f1, %f4", "\x89\xa0\x19\xa1", ICLASS::NCT,
+                "0x00001000    0 *128* r81 := fsize(32, 128, r33)\n"
+    );
 
-    // TODO fsubd
+    TEST_DECODE("fsubd %f4, %f2, %f0", "\x81\xa1\x08\xc2", ICLASS::NCT,
+                "0x00001000    0 *64* r64 := r66 -f r65\n"
+    );
 
-    // TODO fsubs
+    TEST_DECODE("fsubs %f3, %f1, %f2", "\x85\xa0\xc8\xa1", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := r35 -f r33\n"
+    );
 
-    // TODO fsubx
+    TEST_DECODE("fsubx %f0, %f4, %f8", "\x91\xa0\x08\xe4", ICLASS::NCT,
+                "0x00001000    0 *128* r82 := r80 -f r81\n"
+    );
 
-    // TODO fxtod
+    TEST_DECODE("fxtod %f4, %f2", "\x85\xa0\x19\x64", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := fsize(128, 64, r81)\n"
+    );
 
-    // TODO fxtoi
+    TEST_DECODE("fxtoi %f4, %f1", "\x83\xa0\x1a\x64", ICLASS::NCT,
+                "0x00001000    0 *32* r33 := ftoi(128, 32, r81)\n"
+    );
 
-    // TODO fxtos
+    TEST_DECODE("fxtos %f4, %f1", "\x83\xa0\x18\xe4", ICLASS::NCT,
+                "0x00001000    0 *32* r33 := fsize(128, 32, r81)\n"
+    );
 
     // TODO iflush
 
