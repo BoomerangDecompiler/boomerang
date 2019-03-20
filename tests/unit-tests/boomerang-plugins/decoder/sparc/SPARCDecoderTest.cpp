@@ -509,7 +509,21 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO lduha
 
-    // TODO mulscc
+    TEST_DECODE("mulscc %g3, %g1, %g2", "\x85\x20\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := (r3 >> 1) | (((%NF ^ %OF) = 1) ? 0xffffffff80000000 : 0)\n"
+                "              0 *32* tmp2 := ((machine(\"%Y\")@[0:0]) = 1) ? r1 : 0\n"
+                "              0 *32* machine(\"%Y\") := (machine(\"%Y\") >> 1) | (r3 << 31)\n"
+                "              0 *32* r2 := tmp + tmp2\n"
+                "              0 *v* %flags := ADDFLAGS( tmp, tmp2, r2 )\n"
+    );
+
+    TEST_DECODE("mulscc %g3, 3, %g2", "\x85\x20\xe0\x03", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := (r3 >> 1) | (((%NF ^ %OF) = 1) ? 0xffffffff80000000 : 0)\n"
+                "              0 *32* tmp2 := ((machine(\"%Y\")@[0:0]) = 1) ? 3 : 0\n"
+                "              0 *32* machine(\"%Y\") := (machine(\"%Y\") >> 1) | (r3 << 31)\n"
+                "              0 *32* r2 := tmp + tmp2\n"
+                "              0 *v* %flags := ADDFLAGS( tmp, tmp2, r2 )\n"
+    );
 
     TEST_DECODE("or %g3, %g1, %g2", "\x84\x10\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | r1\n"

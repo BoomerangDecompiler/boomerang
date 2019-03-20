@@ -327,7 +327,7 @@ MULSCC rs1, reg_or_imm, rd
     *32* tmp2 := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
     *32* %Y := %Y >> 1 | (rs1 << 31)
     *32* rd := tmp + tmp2
-    ADDFLAGS( tmp, tmp2, rd)
+    ADDFLAGS( tmp, tmp2, rd )
 ;
 
 
