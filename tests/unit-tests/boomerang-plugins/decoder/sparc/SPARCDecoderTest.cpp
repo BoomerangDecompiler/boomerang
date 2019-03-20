@@ -583,7 +583,14 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO save
 
-    // TODO sethi
+    TEST_DECODE("sethi 0, %0", "\x01\x00\x00\x00", ICLASS::NOP,
+                "0x00001000\n"
+    );
+
+    TEST_DECODE("sethi 1, %g1", "\x03\x00\x00\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := 0x400\n"
+    );
+
 
     // TODO sll
 
