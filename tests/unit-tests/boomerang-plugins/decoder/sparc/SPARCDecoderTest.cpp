@@ -50,7 +50,7 @@ void SPARCDecoderTest::testInstructions()
     QCOMPARE(result.type, expectedClass);
 
     result.rtl->simplify();
-    compareLongStrings(result.rtl->toString(), expectedResult);
+    QCOMPARE(result.rtl->toString(), expectedResult);
 }
 
 
@@ -566,7 +566,6 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* machine(\"%FSR\") := m[r3 + r1]\n"
     );
 
-
     TEST_DECODE("ldsb [0], %g1", "\xc2\x48\x20\x00", ICLASS::NCT,
                 "0x00001000    0 *32* r1 := sgnex(8, 32, m[0])\n"  //< TODO shouldn't this read m[%g0] ?
     );
@@ -1079,11 +1078,47 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 *32* r2 := r3 >> 1\n"
     );
 
-    // TODO st
+    TEST_DECODE("st %g1, [0]", "\xc2\x20\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[0] := r1\n"  //< TODO shouldn't this modify m[%g0] ?
+    );
+
+    TEST_DECODE("st %g1, [0xFFFFFFFF]", "\xc2\x20\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* m[-1] := r1\n"
+    );
+
+    TEST_DECODE("st %g1, [%g3]", "\xc2\x20\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3] := r1\n"
+    );
+
+    TEST_DECODE("st %g1, [%g3 + 0x10]", "\xc2\x20\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + 16] := r1\n"
+    );
+
+    TEST_DECODE("st %g2, [%g3 + %g1]", "\xc4\x20\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + r1] := r2\n"
+    );
 
     // TODO sta
 
-    // TODO stb
+    TEST_DECODE("stb %g1, [0]", "\xc2\x28\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *8* m[0] := truncs(32, 8, r1)\n"  //< TODO shouldn't this modify m[%g0] ?
+    );
+
+    TEST_DECODE("stb %g1, [0xFFFFFFFF]", "\xc2\x28\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *8* m[-1] := truncs(32, 8, r1)\n"
+    );
+
+    TEST_DECODE("stb %g1, [%g3]", "\xc2\x28\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *8* m[r3] := truncs(32, 8, r1)\n"
+    );
+
+    TEST_DECODE("stb %g1, [%g3 + 0x10]", "\xc2\x28\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *8* m[r3 + 16] := truncs(32, 8, r1)\n"
+    );
+
+    TEST_DECODE("stb %g2, [%g3 + %g1]", "\xc4\x28\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *8* m[r3 + r1] := truncs(32, 8, r2)\n"
+    );
 
     // TODO stba
 
@@ -1091,7 +1126,30 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO stcsr
 
-    // TODO std
+    TEST_DECODE("std %g2, [0]", "\xc4\x38\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[0] := r2\n"
+                "              0 *32* m[4] := r3\n" //< TODO shouldn't this modify m[%g0] ?
+    );
+
+    TEST_DECODE("std %g2, [0xFFFFFFFF]", "\xc4\x38\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* m[-1] := r2\n"
+                "              0 *32* m[3] := r3\n"
+    );
+
+    TEST_DECODE("std %g2, [%g4]", "\xc4\x39\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[r4] := r2\n"
+                "              0 *32* m[r4 + 4] := r3\n"
+    );
+
+    TEST_DECODE("std %g2, [%g4 + 0x10]", "\xc4\x39\x20\x10", ICLASS::NCT,
+                "0x00001000    0 *32* m[r4 + 16] := r2\n"
+                "              0 *32* m[r4 + 20] := r3\n"
+    );
+
+    TEST_DECODE("std %g2, [%g4 + %g2]", "\xc4\x39\x00\x02", ICLASS::NCT,
+                "0x00001000    0 *32* m[r4 + r2] := r2\n"
+                "              0 *32* m[(r4 + r2) + 4] := r3\n"
+    );
 
     // TODO stda
 
@@ -1099,15 +1157,87 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO stdcq
 
-    // TODO stdf
+    TEST_DECODE("stdf %g2, [0]", "\xc5\x38\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *64* m[0] := r65\n"
+    );
+
+    TEST_DECODE("stdf %g2, [0xFFFFFFFF]", "\xc5\x38\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *64* m[-1] := r65\n"
+    );
+
+    TEST_DECODE("stdf %g2, [%g4]", "\xc5\x39\x00\x00", ICLASS::NCT,
+                "0x00001000    0 *64* m[r4] := r65\n"
+    );
+
+    TEST_DECODE("stdf %g2, [%g4 + 0x10]", "\xc5\x39\x20\x10", ICLASS::NCT,
+                "0x00001000    0 *64* m[r4 + 16] := r65\n"
+    );
+
+    TEST_DECODE("stdf %g2, [%g4 + %g2]", "\xc5\x39\x00\x02", ICLASS::NCT,
+                "0x00001000    0 *64* m[r4 + r2] := r65\n"
+    );
 
     // TODO stdfq
 
-    // TODO stf
+    TEST_DECODE("stf %g1, [0]", "\xc5\x20\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[0] := r34\n"  //< TODO shouldn't this modify m[%g0] ?
+    );
 
-    // TODO stfsr
+    TEST_DECODE("stf %g1, [0xFFFFFFFF]", "\xc5\x20\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* m[-1] := r34\n"
+    );
 
-    // TODO sth
+    TEST_DECODE("stf %g1, [%g3]", "\xc5\x20\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3] := r34\n"
+    );
+
+    TEST_DECODE("stf %g1, [%g3 + 0x10]", "\xc5\x20\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + 16] := r34\n"
+    );
+
+    TEST_DECODE("stf %g2, [%g3 + %g1]", "\xc5\x20\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + r1] := r34\n"
+    );
+
+    TEST_DECODE("st %fsr, [0]", "\xc1\x28\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[0] := machine(\"%FSR\")\n"
+    );
+
+    TEST_DECODE("st %fsr, [0xFFFFFFFF]", "\xc1\x28\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* m[-1] := machine(\"%FSR\")\n"
+    );
+
+    TEST_DECODE("st %fsr, [%g3]", "\xc1\x28\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3] := machine(\"%FSR\")\n"
+    );
+
+    TEST_DECODE("st %fsr, [%g3 + 0x10]", "\xc1\x28\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + 16] := machine(\"%FSR\")\n"
+    );
+
+    TEST_DECODE("st %fsr, [%g3 + %g1]", "\xc1\x28\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* m[r3 + r1] := machine(\"%FSR\")\n"
+    );
+
+    TEST_DECODE("sth %g1, [0]", "\xc2\x30\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *16* m[0] := truncs(32, 16, r1)\n"
+    );
+
+    TEST_DECODE("sth %g1, [0xFFFFFFFF]", "\xc2\x30\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *16* m[-1] := truncs(32, 16, r1)\n"
+    );
+
+    TEST_DECODE("sth %g1, [%g3]", "\xc2\x30\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *16* m[r3] := truncs(32, 16, r1)\n"
+    );
+
+    TEST_DECODE("sth %g1, [%g3 + 0x10]", "\xc2\x30\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *16* m[r3 + 16] := truncs(32, 16, r1)\n"
+    );
+
+    TEST_DECODE("sth %g2, [%g3 + %g1]", "\xc2\x30\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *16* m[r3 + r1] := truncs(32, 16, r1)\n"
+    );
 
     // TODO stha
 
