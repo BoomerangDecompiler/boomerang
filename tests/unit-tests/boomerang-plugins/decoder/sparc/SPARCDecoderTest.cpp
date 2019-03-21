@@ -469,7 +469,25 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 CASE [r1 + 0x800]\n"
     );
 
-    // TODO ld
+    TEST_DECODE("ld [0], %g1", "\xc2\x00\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := m[0]\n"  //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("ld [0xFFFFFFFF], %g1", "\xc2\x00\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := m[-1]\n"
+    );
+
+    TEST_DECODE("ld [%g3], %g1", "\xc2\x00\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := m[r3]\n"
+    );
+
+    TEST_DECODE("ld [%g3 + 0x10], %g1", "\xc2\x00\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := m[r3 + 16]\n"
+    );
+
+    TEST_DECODE("ld [%g3 + %g1], %g2", "\xc4\x00\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3 + r1]\n"
+    );
 
     // TODO lda
 
@@ -477,7 +495,30 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO ldcsr
 
-    // TODO ldd
+    TEST_DECODE("ldd [0], %g2", "\xc4\x18\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[0]\n"
+                "              0 *32* r3 := m[4]\n"
+    );
+
+    TEST_DECODE("ldd [0xFFFFFFFF], %g2", "\xc4\x18\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[-1]\n"
+                "              0 *32* r3 := m[3]\n"
+    );
+
+    TEST_DECODE("ldd [%g3], %g2", "\xc4\x18\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3]\n"
+                "              0 *32* r3 := m[r3 + 4]\n"
+    );
+
+    TEST_DECODE("ldd [%g3 + 0x10], %g2", "\xc4\x18\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3 + 16]\n"
+                "              0 *32* r3 := m[r3 + 20]\n"
+    );
+
+    TEST_DECODE("ldd [%g3 + %g1], %g2", "\xc4\x18\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3 + r1]\n"
+                "              0 *32* r3 := m[(r3 + r1) + 4]\n"
+    );
 
     // TODO ldda
 
@@ -485,27 +526,159 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO lddf
 
-    // TODO ldf
+    TEST_DECODE("ldf [0], %f2", "\xc5\x00\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := m[0]\n"
+    );
 
-    // TODO ldfsr
+    TEST_DECODE("ldf [0xFFFFFFFF], %f2", "\xc5\x00\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := m[-1]\n"
+    );
 
-    // TODO ldsb
+    TEST_DECODE("ldf [%g3], %f2", "\xc5\x00\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := m[r3]\n"
+    );
+
+    TEST_DECODE("ldf [%g3 + 0x10], %f2", "\xc5\x00\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := m[r3 + 16]\n"
+    );
+
+    TEST_DECODE("ldf [%g3 + %g1], %f2", "\xc5\x00\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r34 := m[r3 + r1]\n"
+    );
+
+    TEST_DECODE("ld [0], %fsr", "\xc5\x08\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%FSR\") := m[0]\n"
+    );
+
+    TEST_DECODE("ld [0xFFFFFFFF], %fsr", "\xc5\x08\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%FSR\") := m[-1]\n"
+    );
+
+    TEST_DECODE("ld [%g3], %fsr", "\xc5\x08\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%FSR\") := m[r3]\n"
+    );
+
+    TEST_DECODE("ld [%g3 + 0x10], %fsr", "\xc5\x08\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%FSR\") := m[r3 + 16]\n"
+    );
+
+    TEST_DECODE("ld [%g3 + %g1], %fsr", "\xc5\x08\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%FSR\") := m[r3 + r1]\n"
+    );
+
+
+    TEST_DECODE("ldsb [0], %g1", "\xc2\x48\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(8, 32, m[0])\n"  //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("ldsb [0xFFFFFFFF], %g1", "\xc2\x48\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(8, 32, m[-1])\n"
+    );
+
+    TEST_DECODE("ldsb [%g3], %g1", "\xc2\x48\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(8, 32, m[r3])\n"
+    );
+
+    TEST_DECODE("ldsb [%g3 + 0x10], %g1", "\xc2\x48\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(8, 32, m[r3 + 16])\n"
+    );
+
+    TEST_DECODE("ldsb [%g3 + %g1], %g1", "\xc2\x48\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(8, 32, m[r3 + r1])\n"
+    );
 
     // TODO ldsba
 
-    // TODO ldsh
+    TEST_DECODE("ldsh [0], %g1", "\xc2\x50\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(16, 32, m[0])\n"  //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("ldsh [0xFFFFFFFF], %g1", "\xc2\x50\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(16, 32, m[-1])\n"
+    );
+
+    TEST_DECODE("ldsh [%g3], %g1", "\xc2\x50\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(16, 32, m[r3])\n"
+    );
+
+    TEST_DECODE("ldsh [%g3 + 0x10], %g1", "\xc2\x50\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(16, 32, m[r3 + 16])\n"
+    );
+
+    TEST_DECODE("ldsh [%g3 + %g1], %g1", "\xc2\x50\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := sgnex(16, 32, m[r3 + r1])\n"
+    );
 
     // TODO ldsha
 
-    // TODO ldstub
+    TEST_DECODE("ldstub [0], %g1", "\xc2\x68\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[0])\n"
+                "              0 *8* m[0] := m[0] | 255\n"  //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("ldstub [0xFFFFFFFF], %g1", "\xc2\x68\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[-1])\n"
+                "              0 *8* m[-1] := m[-1] | 255\n"
+    );
+
+    TEST_DECODE("ldstub [%g3], %g1", "\xc2\x68\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3])\n"
+                "              0 *8* m[r3] := m[r3] | 255\n"
+    );
+
+    TEST_DECODE("ldstub [%g3 + 0x10], %g1", "\xc2\x68\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3 + 16])\n"
+                "              0 *8* m[r3 + 16] := m[r3 + 16] | 255\n"
+    );
+
+    TEST_DECODE("ldstub [%g3 + %g1], %g1", "\xc2\x68\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3 + r1])\n"
+                "              0 *8* m[r3 + r1] := m[r3 + r1] | 255\n"
+    );
 
     // TODO ldstuba
 
-    // TODO ldub
+    TEST_DECODE("ldub [0], %g1", "\xc2\x08\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[0])\n" //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("ldub [0xFFFFFFFF], %g1", "\xc2\x08\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[-1])\n"
+    );
+
+    TEST_DECODE("ldub [%g3], %g1", "\xc2\x08\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3])\n"
+    );
+
+    TEST_DECODE("ldub [%g3 + 0x10], %g1", "\xc2\x08\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3 + 16])\n"
+    );
+
+    TEST_DECODE("ldub [%g3 + %g1], %g1", "\xc2\x08\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(8, 32, m[r3 + r1])\n"
+    );
 
     // TODO lduba
 
-    // TODO lduh
+    TEST_DECODE("lduh [0], %g1", "\xc2\x10\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(16, 32, m[0])\n" //< TODO shouldn't this read m[%g0] ?
+    );
+
+    TEST_DECODE("lduh [0xFFFFFFFF], %g1", "\xc2\x10\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(16, 32, m[-1])\n"
+    );
+
+    TEST_DECODE("lduh [%g3], %g1", "\xc2\x10\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(16, 32, m[r3])\n"
+    );
+
+    TEST_DECODE("lduh [%g3 + 0x10], %g1", "\xc2\x10\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(16, 32, m[r3 + 16])\n"
+    );
+
+    TEST_DECODE("lduh [%g3 + %g1], %g1", "\xc2\x10\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r1 := zfill(16, 32, m[r3 + r1])\n"
+    );
 
     // TODO lduha
 
