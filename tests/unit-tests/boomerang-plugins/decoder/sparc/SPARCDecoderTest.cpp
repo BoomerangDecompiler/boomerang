@@ -1241,13 +1241,71 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO stha
 
-    // TODO sub
+    TEST_DECODE("sub %g3, %g1, %g2", "\x84\x20\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - r1\n"
+    );
 
-    // TODO subcc
+    TEST_DECODE("sub %g3, 1, %g2", "\x84\x20\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - 1\n"
+    );
 
-    // TODO subx
+    TEST_DECODE("sub %g3, -1, %g2", "\x84\x20\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 + 1\n"
+    );
 
-    // TODO subxcc
+    TEST_DECODE("subcc %g3, %g1, %g2", "\x84\xa0\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - r1\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("subcc %g3, 1, %g2", "\x84\xa0\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - 1\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, 1, r2 )\n"
+    );
+
+    TEST_DECODE("subcc %g3, -1, %g2", "\x84\xa0\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 + 1\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, -1, r2 )\n"
+    );
+
+    TEST_DECODE("subx %g3, %g1, %g2", "\x84\x60\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - (r1 + zfill(1, 32, %CF))\n"
+    );
+
+    TEST_DECODE("subx %g3, 1, %g2", "\x84\x60\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := (r3 - zfill(1, 32, %CF)) - 1\n"
+    );
+
+    TEST_DECODE("subx %g3, -1, %g2", "\x84\x60\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := (r3 - zfill(1, 32, %CF)) + 1\n"
+    );
+
+    TEST_DECODE("subxcc %g3, %g1, %g2", "\x84\xe0\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - (r1 + zfill(1, 32, %CF))\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("subxcc %g3, 1, %g2", "\x84\xe0\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := (r3 - zfill(1, 32, %CF)) - 1\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, 1, r2 )\n"
+    );
+
+    TEST_DECODE("subxcc %g3, -1, %g2", "\x84\xe0\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := (r3 - zfill(1, 32, %CF)) + 1\n"
+                "              0 *v* %flags := SUBFLAGS( tmp, -1, r2 )\n"
+    );
 
     // TODO swap
 
