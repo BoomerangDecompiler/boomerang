@@ -1403,13 +1403,53 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO unimp
 
-    // TODO wrpsr
+    TEST_DECODE("wr %g1, %g2, %psr", "\x81\x88\x40\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%PSR\") := r1 ^ r2\n"
+    );
 
-    // TODO wrtbr
+    TEST_DECODE("wr %g1, 2, %psr", "\x81\x88\x60\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%PSR\") := r1 ^ 2\n"
+    );
 
-    // TODO wrwim
+    TEST_DECODE("wr %g1, ~1, %psr", "\x81\x88\x7f\xfe", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%PSR\") := r1 ^ -2\n"
+    );
 
-    // TODO wry
+    TEST_DECODE("wr %g1, %g2, %tbr", "\x81\x98\x40\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%TBR\") := machine(\"%TBR\") | ((r1 ^ r2) << 12)\n"
+    );
+
+    TEST_DECODE("wr %g1, 2, %tbr", "\x81\x98\x60\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%TBR\") := machine(\"%TBR\") | ((r1 ^ 2) << 12)\n"
+    );
+
+    TEST_DECODE("wr %g1, ~1, %tbr", "\x81\x98\x7f\xfe", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%TBR\") := machine(\"%TBR\") | ((r1 ^ -2) << 12)\n"
+    );
+
+    TEST_DECODE("wr %g1, %g2, %wim", "\x81\x90\x40\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%WIM\") := r1 ^ r2\n"
+    );
+
+    TEST_DECODE("wr %g1, 2, %wim", "\x81\x90\x60\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%WIM\") := r1 ^ 2\n"
+    );
+
+    TEST_DECODE("wr %g1, ~1, %wim", "\x81\x90\x7f\xfe", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%WIM\") := r1 ^ -2\n"
+    );
+
+    TEST_DECODE("wr %g1, %g2, %y", "\x81\x80\x40\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%Y\") := r1 ^ r2\n"
+    );
+
+    TEST_DECODE("wr %g1, 2, %y", "\x81\x80\x60\x02", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%Y\") := r1 ^ 2\n"
+    );
+
+    TEST_DECODE("wr %g1, ~1, %y", "\x81\x80\x7f\xfe", ICLASS::NCT,
+                "0x00001000    0 *32* machine(\"%Y\") := r1 ^ -2\n"
+    );
 
     TEST_DECODE("xnor %g3, %g1, %g2", "\x84\x38\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 ^ ~r1\n"
