@@ -322,7 +322,157 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO faddx
 
-    // TODO fbfcc
+    TEST_DECODE("fba 0x2000", "\x01\x80\x04\x00", ICLASS::NCT,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("fba,a 0x2000", "\x21\x80\x04\x00", ICLASS::SKIP,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("fbn 0x2000", "\x11\x80\x04\x00", ICLASS::SD,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+    TEST_DECODE("fbn,a 0x2000", "\x31\x80\x04\x00", ICLASS::SU,
+                "0x00001000    0 GOTO 0x00002000\n"
+    );
+
+//     TEST_DECODE("fbu 0x2000", "\x0f\x80\x04\x00", ICLASS::SCD,
+//                 ""
+//     );
+//
+//     TEST_DECODE("fbu,a 0x2000", "\x2f\x80\x04\x00", ICLASS::SCDAN,
+//                 ""
+//     );
+
+    TEST_DECODE("fbg 0x2000", "\x0d\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbg,a 0x2000", "\x2d\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbug 0x2000", "\x0b\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbug,a 0x2000", "\x2b\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbl 0x2000", "\x09\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbl,a 0x2000", "\x29\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbul 0x2000", "\x07\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbul,a 0x2000", "\x27\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fblg 0x2000", "\x05\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fblg,a 0x2000", "\x25\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbne 0x2000", "\x03\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbne,a 0x2000", "\x23\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition not equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbe 0x2000", "\x13\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbe,a 0x2000", "\x33\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbue 0x2000", "\x15\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbue,a 0x2000", "\x35\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbge 0x2000", "\x17\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbge,a 0x2000", "\x37\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbuge 0x2000", "\x19\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbuge,a 0x2000", "\x39\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed greater or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fble 0x2000", "\x1b\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fble,a 0x2000", "\x3b\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbule 0x2000", "\x1d\x80\x04\x00", ICLASS::SCD,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals float\n"
+                "High level: %fflags\n"
+    );
+
+    TEST_DECODE("fbule,a 0x2000", "\x3d\x80\x04\x00", ICLASS::SCDAN,
+                "0x00001000    0 BRANCH 0x00002000, condition signed less or equals float\n"
+                "High level: %fflags\n"
+    );
+
+//     TEST_DECODE("fbo 0x2000", "\x1f\x80\x04\x00", ICLASS::SCD,
+//                 ""
+//     );
+//
+//     TEST_DECODE("fbo,a 0x2000", "\x3f\x80\x04\x00", ICLASS::SCDAN,
+//                 ""
+//     );
 
     TEST_DECODE("fcmpd %f1, %f2", "\x81\xa8\x4a\x42", ICLASS::NCT,
                 "0x00001000    0 *64* tmpd := r64 -f r65\n"
