@@ -1419,6 +1419,58 @@ void SPARCDecoderTest::testInstructions_data()
 //                 ""
 //     );
 
+    TEST_DECODE("udiv %g3, %g1, %g2", "\x84\x70\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncu(64, 32, tmpl / zfill(32, 64, r1))\n"
+    );
+
+    TEST_DECODE("udiv %g3, 2, %g1", "\x82\x70\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r1 := truncu(64, 32, tmpl / 2)\n"
+    );
+
+    TEST_DECODE("udivcc %g3, %g1, %g2", "\x84\xf0\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncu(64, 32, tmpl / zfill(32, 64, r1))\n"
+                "              0 *v* %flags := DIVFLAGS( tmpl, r1, r2 )\n"
+    );
+
+    TEST_DECODE("udivcc %g3, 2, %g1", "\x82\xf0\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r1 := truncu(64, 32, tmpl / 2)\n"
+                "              0 *v* %flags := DIVFLAGS( tmpl, 2, r1 )\n"
+    );
+
+    TEST_DECODE("umul %g3, %g1, %g2", "\x84\x50\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := zfill(32, 64, r3) * zfill(32, 64, r1)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+    );
+
+    TEST_DECODE("umul %g3, 2, %g1", "\x82\x50\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := zfill(32, 64, r3) * 2\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+    );
+
+    TEST_DECODE("umulcc %g3, %g1, %g2", "\x84\xd0\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := zfill(32, 64, r3) * zfill(32, 64, r1)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+                "              0 *v* %flags := MULTFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("umulcc %g3, 2, %g1", "\x82\xd0\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := zfill(32, 64, r3) * 2\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+                "              0 *v* %flags := MULTFLAGS( tmp, 2, r1 )\n"
+    );
+
     // TODO unimp
 
     TEST_DECODE("wr %g1, %g2, %psr", "\x81\x88\x40\x02", ICLASS::NCT,
