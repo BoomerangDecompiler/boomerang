@@ -365,7 +365,7 @@ UDIVS[idx]  rs1, reg_or_imm, rd
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncu(64, 32, tmpl / zfill(32, 64, reg_or_imm))
 ;
-
+UDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(tmpl, reg_or_imm, rd);
 
 #
 # Unsigned division: 32 / 32 bits -> 32 bits
