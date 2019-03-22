@@ -1,6 +1,7 @@
 v0.5.0 (in development)
 -----------------------
 - Fixed: Crashes when reading malformed SSL specification files.
+- Fixed: Crashes when decoding unrecognized floating poing branches on SPARC.
 - Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
