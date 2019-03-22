@@ -1603,17 +1603,23 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *v* %flags := TADDFLAGS( tmp, -1, r2 )\n"
     );
 
-//     TEST_DECODE("taddcctv %g3, %g1, %g2", "\x85\x10\xc0\x01", ICLASS::NCT,
-//                 ""
-//     );
-//
-//     TEST_DECODE("taddcctv %g3, 1, %g2", "\x85\x10\xe0\x01", ICLASS::NCT,
-//                 ""
-//     );
-//
-//     TEST_DECODE("taddcctv %g3, -1, %g2", "\x85\x10\xff\xff", ICLASS::NCT,
-//                 ""
-//     );
+    TEST_DECODE("taddcctv %g3, %g1, %g2", "\x85\x00\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 + r1\n"
+                "              0 *v* %flags := TADDFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("taddcctv %g3, 1, %g2", "\x85\x00\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 + 1\n"
+                "              0 *v* %flags := TADDFLAGS( tmp, 1, r2 )\n"
+    );
+
+    TEST_DECODE("taddcctv %g3, -1, %g2", "\x85\x00\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - 1\n"
+                "              0 *v* %flags := TADDFLAGS( tmp, -1, r2 )\n"
+    );
 
     // TODO ticc
 
@@ -1635,17 +1641,23 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *v* %flags := TSUBFLAGS( tmp, -1, r2 )\n"
     );
 
-//     TEST_DECODE("tsubcctv %g3, %g1, %g2", "\x85\x18\xc0\x01", ICLASS::NCT,
-//                 ""
-//     );
-//
-//     TEST_DECODE("tsubcctv %g3, 1, %g2", "\x85\x18\xe0\x01", ICLASS::NCT,
-//                 ""
-//     );
-//
-//     TEST_DECODE("tsubcctv %g3, -1, %g2", "\x85\x18\xff\xff", ICLASS::NCT,
-//                 ""
-//     );
+    TEST_DECODE("tsubcctv %g3, %g1, %g2", "\x85\x08\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - r1\n"
+                "              0 *v* %flags := TSUBFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("tsubcctv %g3, 1, %g2", "\x85\x08\xe0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 - 1\n"
+                "              0 *v* %flags := TSUBFLAGS( tmp, 1, r2 )\n"
+    );
+
+    TEST_DECODE("tsubcctv %g3, -1, %g2", "\x85\x08\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *32* r2 := r3 + 1\n"
+                "              0 *v* %flags := TSUBFLAGS( tmp, -1, r2 )\n"
+    );
 
     TEST_DECODE("udiv %g3, %g1, %g2", "\x84\x70\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
