@@ -1307,7 +1307,35 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *v* %flags := SUBFLAGS( tmp, -1, r2 )\n"
     );
 
-    // TODO swap
+    TEST_DECODE("swap [0], %g1", "\xc2\x78\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* tmp1 := r1\n"
+                "              0 *32* r1 := m[0]\n"
+                "              0 *32* m[0] := tmp1\n"
+    );
+
+    TEST_DECODE("swap [0xFFFFFFFF], %g1", "\xc2\x78\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp1 := r1\n"
+                "              0 *32* r1 := m[-1]\n"
+                "              0 *32* m[-1] := tmp1\n"
+    );
+
+    TEST_DECODE("swap [%g3], %g1", "\xc2\x78\xc0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* tmp1 := r1\n"
+                "              0 *32* r1 := m[r3]\n"
+                "              0 *32* m[r3] := tmp1\n"
+    );
+
+    TEST_DECODE("swap [%g3 + 0x10], %g1", "\xc2\x78\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* tmp1 := r1\n"
+                "              0 *32* r1 := m[r3 + 16]\n"
+                "              0 *32* m[r3 + 16] := tmp1\n"
+    );
+
+    TEST_DECODE("swap [%g3 + %g1], %g2", "\xc2\x78\xc0\x02", ICLASS::NCT,
+                "0x00001000    0 *32* tmp1 := r1\n"
+                "              0 *32* r1 := m[r3 + r2]\n"
+                "              0 *32* m[r3 + r2] := tmp1\n"
+    );
 
     // TODO swapa
 
