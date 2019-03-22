@@ -1819,7 +1819,7 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
                 inst.rtl = createBranchRTL(name, pc, std::move(inst.rtl));
 
                 if (!inst.rtl->empty() && inst.rtl->back()->isBranch()) {
-                    jump     = static_cast<BranchStatement *>(inst.rtl->back());
+                    jump = static_cast<BranchStatement *>(inst.rtl->back());
                 }
             }
 
@@ -1835,7 +1835,7 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
                 inst.type = SD;
             }
             else if ((strcmp(name, "BN") == 0) || (strcmp(name, "BVS") == 0) ||
-                (strcmp(name, "FBN") == 0)) {
+                     (strcmp(name, "FBN") == 0)) {
                 inst.type = NCT;
             }
 
