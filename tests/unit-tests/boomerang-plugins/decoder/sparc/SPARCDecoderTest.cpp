@@ -1064,6 +1064,39 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *32* r1 := tmp\n"
     );
 
+    TEST_DECODE("sdiv %g3, %g1, %g2", "\x84\x78\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl /! sgnex(32, 64, r1))\n"
+    );
+
+    TEST_DECODE("sdiv %g3, 2, %g1", "\x82\x78\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl /! 2)\n"
+    );
+
+    TEST_DECODE("sdiv %g3, -1, %g2", "\x84\x78\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl /! 18446744073709551615LL)\n" // FIXME
+    );
+
+    TEST_DECODE("sdivcc %g3, %g1, %g2", "\x84\xf8\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl /! sgnex(32, 64, r1))\n"
+                "              0 *v* %flags := DIVFLAGS( r3, r1, r2 )\n"
+    );
+
+    TEST_DECODE("sdivcc %g3, 2, %g1", "\x82\xf8\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl /! 2)\n"
+                "              0 *v* %flags := DIVFLAGS( r3, 2, r1 )\n"
+    );
+
+    TEST_DECODE("sdivcc %g3, -1, %g2", "\x84\xf8\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *64* tmpl := (zfill(32, 64, machine(\"%Y\")) << 32) | zfill(32, 64, r3)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl /! 18446744073709551615LL)\n" // FIXME
+                "              0 *v* %flags := DIVFLAGS( r3, -1, r2 )\n"
+    );
+
     TEST_DECODE("sethi 0, %0", "\x01\x00\x00\x00", ICLASS::NOP,
                 "0x00001000\n"
     );
@@ -1078,6 +1111,51 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("sll %g3, 1, %g2", "\x85\x28\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 * 2\n"
+    );
+
+    TEST_DECODE("smul %g3, %g1, %g2", "\x84\x58\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! sgnex(32, 64, r1)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+    );
+
+    TEST_DECODE("smul %g3, 2, %g1", "\x82\x58\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! 2\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+    );
+
+    TEST_DECODE("smul %g3, -1, %g2", "\x84\x58\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! 18446744073709551615LL\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+    );
+
+    TEST_DECODE("smulcc %g3, %g1, %g2", "\x84\xd8\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! sgnex(32, 64, r1)\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+                "              0 *v* %flags := MULTFLAGS( tmp, r1, r2 )\n"
+    );
+
+    TEST_DECODE("smulcc %g3, 2, %g1", "\x82\xd8\xe0\x02", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! 2\n"
+                "              0 *32* r1 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+                "              0 *v* %flags := MULTFLAGS( tmp, 2, r1 )\n"
+    );
+
+    TEST_DECODE("smulcc %g3, -1, %g2", "\x84\xd8\xff\xff", ICLASS::NCT,
+                "0x00001000    0 *32* tmp := r3\n"
+                "              0 *64* tmpl := sgnex(32, 64, r3) *! 18446744073709551615LL\n"
+                "              0 *32* r2 := truncs(64, 32, tmpl)\n"
+                "              0 *32* machine(\"%Y\") := tmpl@[32:63]\n"
+                "              0 *v* %flags := MULTFLAGS( tmp, -1, r2 )\n"
     );
 
     TEST_DECODE("sra %g3, %g1, %g2", "\x85\x38\xc0\x01", ICLASS::NCT,

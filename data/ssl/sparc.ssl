@@ -386,6 +386,8 @@ SDIVS[idx]  rs1, reg_or_imm, rd
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm))
 ;
+SDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
 SDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 /! reg_or_imm;
