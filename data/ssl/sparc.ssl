@@ -320,7 +320,7 @@ UMULT[idx]  rs1, reg_or_imm, rd
     *32* %Y := tmpl@[32:63]
 ;
 
-UMULTCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
+UMULCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
 
 MULSCC rs1, reg_or_imm, rd
     *32* tmp := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
