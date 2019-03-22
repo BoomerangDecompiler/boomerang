@@ -524,7 +524,25 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO lddc
 
-    // TODO lddf
+    TEST_DECODE("lddf [0], %f2", "\xc5\x18\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := m[0]\n"
+    );
+
+    TEST_DECODE("lddf [0xFFFFFFFF], %f2", "\xc5\x18\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := m[-1]\n"
+    );
+
+    TEST_DECODE("lddf [%g3], %f2", "\xc5\x18\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := m[r3]\n"
+    );
+
+    TEST_DECODE("lddf [%g3 + 0x10], %f2", "\xc5\x18\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := m[r3 + 16]\n"
+    );
+
+    TEST_DECODE("lddf [%g3 + %g1], %f2", "\xc5\x18\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *64* r65 := m[r3 + r1]\n"
+    );
 
     TEST_DECODE("ldf [0], %f2", "\xc5\x00\x20\x00", ICLASS::NCT,
                 "0x00001000    0 *32* r34 := m[0]\n"
