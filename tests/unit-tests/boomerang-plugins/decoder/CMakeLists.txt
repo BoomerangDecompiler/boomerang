@@ -16,3 +16,12 @@ BOOMERANG_ADD_TEST(
     LIBRARIES
         boomerang-CapstonePPCDecoder
 )
+
+BOOMERANG_ADD_TEST(
+    NAME SPARCDecoderTest
+    SOURCES
+        sparc/SPARCDecoderTest.h
+        sparc/SPARCDecoderTest.cpp
+    LIBRARIES
+        boomerang-SPARCDecoder
+)

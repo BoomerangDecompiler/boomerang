@@ -28,7 +28,7 @@
 
 
 #define SHOW_ASM(output)                                                                           \
-    if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
+    if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {                             \
         QString asmStr;                                                                            \
         OStream ost(&asmStr);                                                                      \
         ost << output;                                                                             \
@@ -71,7 +71,8 @@ void _DEBUG_STMTS(DecodeResult &result, bool debugDecoder)
     }
 }
 
-#define DEBUG_STMTS(result) _DEBUG_STMTS(result, m_prog->getProject()->getSettings()->debugDecoder)
+#define DEBUG_STMTS(result)                                                                        \
+    _DEBUG_STMTS(result, m_prog && m_prog->getProject()->getSettings()->debugDecoder)
 
 
 std::unique_ptr<RTL> SPARCDecoder::createBranchRTL(const char *insnName, Address pc,
@@ -124,7 +125,10 @@ std::unique_ptr<RTL> SPARCDecoder::createBranchRTL(const char *insnName, Address
             // Else it's FBN!
             break;
 
-        default: LOG_WARN("Unknown float branch '%1'", insnName); stmts.reset();
+        default:
+            LOG_ERROR("Unknown float branch '%1'", insnName);
+            stmts->clear();
+            break;
         }
 
         return stmts;
@@ -573,13 +577,17 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
 
                 Address nativeDest = Address(addr.value() - delta);
                 newCall->setDest(nativeDest);
-                Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
-                if (destProc == reinterpret_cast<Function *>(-1)) {
-                    destProc = nullptr;
+                if (m_prog) {
+                    Function *destProc = m_prog->getOrCreateFunction(nativeDest);
+
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
+                        destProc = nullptr;
+                    }
+
+                    newCall->setDestProc(destProc);
                 }
 
-                newCall->setDestProc(destProc);
                 inst.rtl->append(newCall);
                 inst.type = SD;
                 SHOW_ASM("call__ " << (nativeDest))
@@ -1798,7 +1806,8 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
 
             GotoStatement *jump = nullptr;
 
-            if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0)) {
+            if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0) ||
+                (strcmp(name, "FBA") == 0) || (strcmp(name, "FBN") == 0)) {
                 jump = new GotoStatement;
                 inst.rtl->append(jump);
             }
@@ -1808,7 +1817,10 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
             }
             else {
                 inst.rtl = createBranchRTL(name, pc, std::move(inst.rtl));
-                jump     = static_cast<BranchStatement *>(inst.rtl->back());
+
+                if (!inst.rtl->empty() && inst.rtl->back()->isBranch()) {
+                    jump = static_cast<BranchStatement *>(inst.rtl->back());
+                }
             }
 
             // The class of this instruction depends on whether or not it is one of the
@@ -1818,15 +1830,19 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
 
             inst.type = SCD;
 
-            if ((strcmp(name, "BA") == 0) || (strcmp(name, "BVC") == 0)) {
+            if ((strcmp(name, "BA") == 0) || (strcmp(name, "BVC") == 0) ||
+                (strcmp(name, "FBA") == 0)) {
                 inst.type = SD;
             }
-
-            if ((strcmp(name, "BN") == 0) || (strcmp(name, "BVS") == 0)) {
+            else if ((strcmp(name, "BN") == 0) || (strcmp(name, "BVS") == 0) ||
+                     (strcmp(name, "FBN") == 0)) {
                 inst.type = NCT;
             }
 
-            jump->setDest(Address((tgt - delta).value()));
+            if (jump) {
+                jump->setDest(Address((tgt - delta).value()));
+            }
+
             SHOW_ASM(name << " " << tgt - delta)
 
             DEBUG_STMTS(inst);
@@ -1864,10 +1880,10 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
             // 'unconditional' conditional branches
 
             // "BA,A" or "BN,A"
-            if (strcmp(name, "BA,a") == 0) {
+            if (strcmp(name, "BA,a") == 0 || strcmp(name, "FBA,a") == 0) {
                 inst.type = SU;
             }
-            else if (strcmp(name, "BN,a") == 0) {
+            else if (strcmp(name, "BN,a") == 0 || strcmp(name, "FBN,a") == 0) {
                 inst.type = SKIP;
             }
             else {
@@ -1887,9 +1903,11 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
                 jump     = static_cast<GotoStatement *>(inst.rtl->back());
             }
 
-            jump->setDest(Address((tgt - delta).value()));
-            SHOW_ASM(name << " " << tgt - delta)
+            if (jump) {
+                jump->setDest(Address((tgt - delta).value()));
+            }
 
+            SHOW_ASM(name << " " << tgt - delta)
             DEBUG_STMTS(inst);
         }
         goto MATCH_finished_d;

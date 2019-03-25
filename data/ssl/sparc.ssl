@@ -305,8 +305,8 @@ TSUBCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm 
 
 ADDX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
 ADDXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   ADDFLAGS(tmp, reg_or_imm, rd);
-SUBX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
-SUBXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd);
+SUBX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF);
+SUBXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd);
 
 
 # Unsigned Multiplication - uses the Y register to store top 32 bits
@@ -320,14 +320,14 @@ UMULT[idx]  rs1, reg_or_imm, rd
     *32* %Y := tmpl@[32:63]
 ;
 
-UMULTCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
+UMULCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
 
 MULSCC rs1, reg_or_imm, rd
     *32* tmp := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
     *32* tmp2 := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
     *32* %Y := %Y >> 1 | (rs1 << 31)
     *32* rd := tmp + tmp2
-    ADDFLAGS( tmp, tmp2, rd)
+    ADDFLAGS( tmp, tmp2, rd )
 ;
 
 
@@ -365,7 +365,7 @@ UDIVS[idx]  rs1, reg_or_imm, rd
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncu(64, 32, tmpl / zfill(32, 64, reg_or_imm))
 ;
-
+UDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(tmpl, reg_or_imm, rd);
 
 #
 # Unsigned division: 32 / 32 bits -> 32 bits
@@ -386,6 +386,8 @@ SDIVS[idx]  rs1, reg_or_imm, rd
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm))
 ;
+SDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
 SDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 /! reg_or_imm;
