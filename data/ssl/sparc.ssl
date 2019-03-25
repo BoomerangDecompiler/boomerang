@@ -234,11 +234,11 @@ LDD eaddr, rd
     *32*    succ(rd) := m[eaddr + WORD]
 ;
 
-LD      eaddr, rd       *32* rd := m[eaddr];
-LDUH    eaddr, rd       *32* rd := zfill(16, 32, m[eaddr]);
-LDUB    eaddr, rd       *32* rd := zfill(8, 32, m[eaddr]);
-LDSH    eaddr, rd       *32* rd := sgnex(16, 32, m[eaddr]);
-LDSB    eaddr, rd       *32* rd := sgnex(8, 32, m[eaddr]);
+LD      src, dest       *32* dest := src;
+LDUH    src, dest       *32* dest := zfill(16, 32, src);
+LDUB    src, dest       *32* dest := zfill( 8, 32, src);
+LDSH    src, dest       *32* dest := sgnex(16, 32, src);
+LDSB    src, dest       *32* dest := sgnex( 8, 32, src);
 
 
 # Store double instruction- the 1st reg. of double op. must be even
