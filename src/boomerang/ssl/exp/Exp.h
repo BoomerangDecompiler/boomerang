@@ -611,7 +611,6 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_SPARC_I6 RegNum(30)
 #define REG_SPARC_I7 RegNum(31)
 
-
 #define REG_SPARC_SP RegNum(14) // stack pointer
 #define REG_SPARC_FP RegNum(30) // frame pointer
 
@@ -620,6 +619,14 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_SPARC_F0TO1 RegNum(64)
 #define REG_SPARC_F28TO31 RegNum(87)
 #define REG_SPARC_F0TO3 RegNum(80)
+
+#define REG_SPARC_Y  RegNum(100)
+#define REG_SPARC_CWP RegNum(101)
+#define REG_SPARC_TBR RegNum(102)
+#define REG_SPARC_WIM RegNum(103)
+#define REG_SPARC_PSR RegNum(104)
+#define REG_SPARC_FSR RegNum(105)
+
 
 // PPC
 #define REG_PPC_SP RegNum(1)

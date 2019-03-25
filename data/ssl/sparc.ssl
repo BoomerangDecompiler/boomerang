@@ -122,12 +122,13 @@ FLOAT %f28to31[128]-> 87 COVERS %f28..%f31;
 # control regs
 INTEGER %pc[32]  -> -1;
 INTEGER %npc[32] -> -1;
-INTEGER %Y[32]   -> -1;
-INTEGER %CWP[32] -> -1;
-INTEGER %TBR[32] -> -1;
-INTEGER %WIM[32] -> -1;
-INTEGER %PSR[32] -> -1;
-INTEGER %FSR[32] -> -1;
+
+INTEGER %Y[32]   -> 100;
+INTEGER %CWP[32] -> 101;
+INTEGER %TBR[32] -> 102;
+INTEGER %WIM[32] -> 103;
+INTEGER %PSR[32] -> 104;
+INTEGER %FSR[32] -> 105;
 
 # Standard flags
 INTEGER %CF[1] -> -1;
@@ -247,9 +248,9 @@ STD     rd, eaddr       *32* m[eaddr] := rd
                         *32* m[eaddr + WORD] := succ(rd)
 ;
 
-ST      rd, eaddr       *32* m[eaddr] := rd;
-STH     rd, eaddr       *16* m[eaddr] := truncs(32, 16, rd);
-STB     rd, eaddr       *8*  m[eaddr] := truncs(32, 8, rd);
+ST      src, dest       *32* dest := src;
+STH     src, dest       *16* dest := truncs(32, 16, src);
+STB     src, dest       *8*  dest := truncs(32, 8, src);
 
 
 # LOad STore Unsigned Byte
@@ -260,9 +261,9 @@ LDSTUB  eaddr, rd       *32*  rd       := zfill(8, 32, m[eaddr])
                         *8*   m[eaddr] := m[eaddr] | MAX_BYTE;
 
 # Swap using temp register
-SWAP    eaddr, rd       *32* tmp1 := rd
-                        *32* rd := m[eaddr]
-                        *32* m[eaddr] := tmp1
+SWAP    lhs, rhs        *32* tmp1 := rhs
+                        *32* rhs := lhs
+                        *32* lhs := tmp1
 ;
 
 
@@ -546,15 +547,8 @@ JMPL  eaddr, rd
 
 
 # Read and Write State Register Instructions
-RDY  rd                 *32* rd := %Y;
-RDPSR   rd              *32* rd := %PSR;
-RDWIM   rd              *32* rd := %WIM;
-RDTBR   rd              *32* rd := %TBR;
-
-WRY  rs1, reg_or_imm    *32* %Y := rs1 ^ reg_or_imm;
-WRPSR  rs1, reg_or_imm  *32* %PSR := rs1 ^ reg_or_imm;
-WRWIM  rs1, reg_or_imm  *32* %WIM := rs1 ^ reg_or_imm;
-WRTBR  rs1, reg_or_imm  *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
+RD src, dest            *32* dest := src;
+WR rs1, rs2, rd         *32* rd := rs1 ^ rs2;
 
 
 ## Float Instructions
@@ -682,11 +676,11 @@ FBOA    reloc   *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %np
 # Loading and storing Floating point registers.
 LDFSR      eaddr       *32* %FSR := m[eaddr];
 
-LDF  eaddr, fds        *32* fds := m[eaddr];
-LDDF eaddr, fdd        *64* fdd := m[eaddr];
+LDF  src, fds        *32* fds := src;
+LDDF src, fdd        *64* fdd := src;
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-STFSR      eaddr       *32* m[eaddr] := %FSR;
-STF   fds, eaddr       *32* m[eaddr] := fds;
-STDF  fdd, eaddr       *64* m[eaddr] := fdd;
+STFSR      dest        *32* dest := %FSR;
+STF   fds, dest        *32* dest := fds;
+STDF  fdd, dest        *64* dest := fdd;
