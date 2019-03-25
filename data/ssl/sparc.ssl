@@ -527,7 +527,7 @@ BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]    *32* %np
 
 # Call instruction- always executes delay instruction
 # PC relative transfer of control
-CALL__ reloc
+CALL reloc
     *32* %o7 := %pc
     *32* %pc := %npc
     *32* %npc := reloc

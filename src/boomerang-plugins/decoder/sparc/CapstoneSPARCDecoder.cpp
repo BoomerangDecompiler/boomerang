@@ -12,6 +12,11 @@
 #include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/util/log/Log.h"
 
+#include "boomerang/ssl/statements/GotoStatement.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
+
 
 #define SPARC_INSTRUCTION_LENGTH (4)
 
@@ -33,6 +38,9 @@ RegNum fixRegNum(int csRegID)
 {
     if (csRegID >= cs::SPARC_REG_F0 && csRegID <= cs::SPARC_REG_F31) {
         return REG_SPARC_F0 + (csRegID - cs::SPARC_REG_F0);
+    }
+    else if (csRegID >= cs::SPARC_REG_F32 && csRegID <= cs::SPARC_REG_F62) {
+        return REG_SPARC_F0TO1 + (csRegID - cs::SPARC_REG_F32);
     }
     else if (csRegID >= cs::SPARC_REG_G0 && csRegID <= cs::SPARC_REG_G7) {
         return REG_SPARC_G0 + (csRegID - cs::SPARC_REG_G0);
@@ -116,10 +124,18 @@ SharedExp operandToExp(const cs::cs_sparc_op &operand)
         return Const::get(Address(operand.imm));
     }
     case cs::SPARC_OP_REG: {
-        return Location::regOf(fixRegNum(operand.reg));
+        if (operand.reg == cs::SPARC_REG_G0) {
+            return Const::get(0);
+        }
+        else {
+            return Location::regOf(fixRegNum(operand.reg));
+        }
     }
     case cs::SPARC_OP_MEM: {
-        return Location::memOf(Binary::get(opPlus, Location::regOf(fixRegNum(operand.mem.base)),
+        return Location::memOf(Binary::get(opPlus,
+                                           Binary::get(opPlus,
+                                                       Location::regOf(fixRegNum(operand.mem.base)),
+                                                       Location::regOf(fixRegNum(operand.mem.index))),
                                            Const::get(operand.mem.disp)))
             ->simplifyArith();
     }
@@ -137,9 +153,87 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     cs::cs_sparc_op *operands = instruction->detail->sparc.operands;
 
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
-    insnID         = insnID.toUpper();
+    insnID         = insnID.remove(',').toUpper();
 
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
+
+    if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
+        rtl->clear();
+        rtl->append(new GotoStatement(Address(operands[0].imm)));
+    }
+    else if (insnID == "FBA" || insnID == "FBAA" || insnID == "FBN" || insnID == "FBNA") {
+        rtl->clear();
+        rtl->append(new GotoStatement(Address(operands[0].imm)));
+    }
+    else if (instruction->id == cs::SPARC_INS_B) {
+        rtl->clear();
+        BranchStatement *branch = new BranchStatement;
+        branch->setDest(Address(operands[0].imm));
+        branch->setIsComputed(false);
+
+        BranchType bt = BranchType::INVALID;
+
+        switch (instruction->detail->sparc.cc) {
+            case cs::SPARC_CC_ICC_NE: bt = BranchType::JNE; break;
+            case cs::SPARC_CC_ICC_E:  bt = BranchType::JE;  break;
+            case cs::SPARC_CC_ICC_G:  bt = BranchType::JSG; break;
+            case cs::SPARC_CC_ICC_LE: bt = BranchType::JSLE; break;
+            case cs::SPARC_CC_ICC_GE: bt = BranchType::JSGE; break;
+            case cs::SPARC_CC_ICC_L:  bt = BranchType::JSL;  break;
+            case cs::SPARC_CC_ICC_GU: bt = BranchType::JUG; break;
+            case cs::SPARC_CC_ICC_LEU: bt = BranchType::JULE; break;
+            case cs::SPARC_CC_ICC_CC:  bt = BranchType::JUGE; break;
+            case cs::SPARC_CC_ICC_CS:  bt = BranchType::JUL; break;
+            case cs::SPARC_CC_ICC_POS: bt = BranchType::JPOS; break;
+            case cs::SPARC_CC_ICC_NEG: bt = BranchType::JMI;  break;
+            default: break;
+        }
+
+        branch->setCondType(bt);
+        rtl->append(branch);
+    }
+    else if (instruction->id == cs::SPARC_INS_FB) {
+        rtl->clear();
+        BranchStatement *branch = new BranchStatement;
+        branch->setDest(Address(operands[0].imm));
+        branch->setIsComputed(false);
+
+        BranchType bt = BranchType::INVALID;
+
+        switch (instruction->detail->sparc.cc) {
+            case cs::SPARC_CC_FCC_NE: bt = BranchType::JNE;  break;
+            case cs::SPARC_CC_FCC_E:  bt = BranchType::JE;   break;
+            case cs::SPARC_CC_FCC_G:  bt = BranchType::JSG;  break;
+            case cs::SPARC_CC_FCC_LE: bt = BranchType::JSLE; break;
+            case cs::SPARC_CC_FCC_GE: bt = BranchType::JSGE; break;
+            case cs::SPARC_CC_FCC_L:  bt = BranchType::JSL;  break;
+            case cs::SPARC_CC_FCC_UG: bt = BranchType::JSG;  break;
+            case cs::SPARC_CC_FCC_UL: bt = BranchType::JSL;  break;
+            case cs::SPARC_CC_FCC_LG: bt = BranchType::JNE;  break;
+            case cs::SPARC_CC_FCC_UE: bt = BranchType::JE;   break;
+            case cs::SPARC_CC_FCC_UGE: bt = BranchType::JSGE; break;
+            case cs::SPARC_CC_FCC_ULE: bt = BranchType::JSLE; break;
+            default: break;
+        }
+
+        branch->setCondType(bt, true);
+        rtl->append(branch);
+    }
+    else if (instruction->id == cs::SPARC_INS_CALL) {
+        rtl->clear();
+        CallStatement *call = new CallStatement;
+        call->setIsComputed(false);
+        call->setDest(Address(operands[0].imm));
+        rtl->append(call);
+    }
+    else if (instruction->id == cs::SPARC_INS_JMPL) {
+        rtl->clear();
+        CaseStatement *caseStmt = new CaseStatement;
+        caseStmt->setIsComputed(true);
+        caseStmt->setDest(operandToExp(operands[0]));
+        rtl->append(caseStmt);
+    }
+
 
     if (rtl == nullptr) {
         LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
@@ -233,12 +327,14 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
     { "fbue,a", ICLASS::SCDAN   },
     { "fbge",   ICLASS::SCD     },
     { "fbge,a", ICLASS::SCDAN   },
-    { "fbuge",   ICLASS::SCD     },
-    { "fbuge,a", ICLASS::SCDAN   },
+    { "fbuge",  ICLASS::SCD     },
+    { "fbuge,a",ICLASS::SCDAN   },
     { "fble",   ICLASS::SCD     },
     { "fble,a", ICLASS::SCDAN   },
-    { "fbule",   ICLASS::SCD     },
-    { "fbule,a", ICLASS::SCDAN   }
+    { "fbule",  ICLASS::SCD     },
+    { "fbule,a",ICLASS::SCDAN   },
+
+    { "jmpl",   ICLASS::DD      },
 };
 // clang-format on
 

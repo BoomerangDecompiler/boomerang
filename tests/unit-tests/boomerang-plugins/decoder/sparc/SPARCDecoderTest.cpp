@@ -474,7 +474,7 @@ void SPARCDecoderTest::testInstructions_data()
 //                 ""
 //     );
 
-    TEST_DECODE("fcmpd %f1, %f2", "\x81\xa8\x4a\x42", ICLASS::NCT,
+    TEST_DECODE("fcmpd %f2, %f4", "\x81\xa8\x8a\x44", ICLASS::NCT,
                 "0x00001000    0 *64* tmpd := r64 -f r65\n"
                 "              0 *v* %fflags := SETFFLAGS( r64, r65 )\n"
     );
