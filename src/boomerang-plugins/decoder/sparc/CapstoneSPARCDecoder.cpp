@@ -239,7 +239,10 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         rtl->clear();
         CaseStatement *caseStmt = new CaseStatement;
         caseStmt->setIsComputed(true);
-        caseStmt->setDest(operandToExp(operands[0]));
+
+        // Capstone returns the operand as SPARC_OP_MEM, so we have to "undo" the outermost memof
+        // returned by operandToExp by an addrof
+        caseStmt->setDest(Unary::get(opAddrOf, operandToExp(operands[0])));
         rtl->append(caseStmt);
     }
 
