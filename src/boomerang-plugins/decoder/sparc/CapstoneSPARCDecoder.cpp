@@ -132,11 +132,13 @@ SharedExp operandToExp(const cs::cs_sparc_op &operand)
         }
     }
     case cs::SPARC_OP_MEM: {
-        return Location::memOf(Binary::get(opPlus,
-                                           Binary::get(opPlus,
-                                                       Location::regOf(fixRegNum(operand.mem.base)),
-                                                       Location::regOf(fixRegNum(operand.mem.index))),
-                                           Const::get(operand.mem.disp)))
+        SharedExp memExp = Location::regOf(fixRegNum(operand.mem.base));
+
+        if (operand.mem.index != cs::SPARC_REG_INVALID) {
+            memExp = Binary::get(opPlus, memExp, Location::regOf(fixRegNum(operand.mem.index)));
+        }
+
+        return Location::memOf(Binary::get(opPlus, memExp, Const::get(operand.mem.disp)))
             ->simplifyArith();
     }
     default: LOG_ERROR("Unknown sparc instruction operand type %1", operand.type); break;
