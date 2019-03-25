@@ -58,6 +58,17 @@ RegNum fixRegNum(int csRegID)
 }
 
 
+SharedExp getRegExp(int csRegID)
+{
+    if (csRegID == cs::SPARC_REG_G0) {
+        return Const::get(0);
+    }
+    else {
+        return Location::regOf(fixRegNum(csRegID));
+    }
+}
+
+
 CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
     : CapstoneDecoder(project, cs::CS_ARCH_SPARC,
                       (cs::cs_mode)(cs::CS_MODE_BIG_ENDIAN), "ssl/sparc.ssl")
@@ -125,18 +136,13 @@ SharedExp operandToExp(const cs::cs_sparc_op &operand)
         return Const::get(Address(operand.imm));
     }
     case cs::SPARC_OP_REG: {
-        if (operand.reg == cs::SPARC_REG_G0) {
-            return Const::get(0);
-        }
-        else {
-            return Location::regOf(fixRegNum(operand.reg));
-        }
+        return getRegExp(operand.reg);
     }
     case cs::SPARC_OP_MEM: {
-        SharedExp memExp = Location::regOf(fixRegNum(operand.mem.base));
+        SharedExp memExp = getRegExp(operand.mem.base);
 
         if (operand.mem.index != cs::SPARC_REG_INVALID) {
-            memExp = Binary::get(opPlus, memExp, Location::regOf(fixRegNum(operand.mem.index)));
+            memExp = Binary::get(opPlus, memExp, getRegExp(operand.mem.index));
         }
 
         return Location::memOf(Binary::get(opPlus, memExp, Const::get(operand.mem.disp)))
