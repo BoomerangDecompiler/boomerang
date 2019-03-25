@@ -503,25 +503,6 @@ BNEG    reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc 
 BVC     reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
 BVS     reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
 
-
-# Predicted jumps - treat just the same as non predicted jumps
-BPA     reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPN     reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPNE    reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPG     reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPLE    reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPGE    reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPL     reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPGU    reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPLEU   reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPCC    reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPCS    reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPPOS   reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPNEG   reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPVC    reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPVS    reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-
 # unconditional branches
 BAA     reloc   *32* %pc := reloc       *32* %npc := reloc + 4          *1* %CTI := 1;
 BNA     reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8           *1* %CTI := 1;
