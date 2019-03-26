@@ -68,6 +68,9 @@ RegNum CapstoneSPARCDecoder::fixRegNum(int csRegID) const
     else if (csRegID >= cs::SPARC_REG_O0 && csRegID <= cs::SPARC_REG_O7) {
         return REG_SPARC_O0 + (csRegID - cs::SPARC_REG_O0);
     }
+    else if (csRegID >= cs::SPARC_REG_I0 && csRegID <= cs::SPARC_REG_I7) {
+        return REG_SPARC_I0 + (csRegID - cs::SPARC_REG_I0);
+    }
     else if (csRegID >= cs::SPARC_REG_L0 && csRegID <= cs::SPARC_REG_L7) {
         return REG_SPARC_L0 + (csRegID - cs::SPARC_REG_L0);
     }
