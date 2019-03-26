@@ -26,7 +26,8 @@
 // not all registers supported by capstone
 // clang-format off
 static std::map<cs::sparc_reg, RegNum> oldRegMap = {
-    { cs::SPARC_REG_Y, REG_SPARC_Y }
+    { cs::SPARC_REG_Y, REG_SPARC_Y },
+    { cs::SPARC_REG_SP, REG_SPARC_SP }
 };
 // clang-format on
 

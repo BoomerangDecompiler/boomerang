@@ -220,8 +220,7 @@ void SPARCFrontendTest::testBranch()
     // bg
     fe->decodeSingleInstruction(Address(0x00010af8), inst);
     inst.rtl->print(strm);
-    expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition "
-                       "signed greater\n"
+    expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition signed greater\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
