@@ -865,6 +865,10 @@ void SPARCDecoderTest::testInstructions_data()
 //                 "              0 *v* %flags := ADDFLAGS( tmp, tmp2, r2 )\n"
 //     );
 
+    TEST_DECODE("or %g0, %g3, %g2", "\x84\x10\x00\x03", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := r3\n"
+    );
+
     TEST_DECODE("or %g3, %g1, %g2", "\x84\x10\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | r1\n"
     );

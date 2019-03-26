@@ -227,6 +227,9 @@ TRAP(cond, op1) {
 };
 
 
+MOV src, dest           *32* dest := src;
+
+
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd.
 
