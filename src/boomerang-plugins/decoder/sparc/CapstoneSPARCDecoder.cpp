@@ -318,23 +318,31 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         rtl->append(branch);
     }
     else if (instruction->id == cs::SPARC_INS_CALL) {
-        const Address callDest = Address(operands[0].imm);
-
         rtl->clear();
         CallStatement *call = new CallStatement;
-        call->setIsComputed(false);
-        call->setDest(callDest);
-        rtl->append(call);
+        if (operands[0].type == cs::SPARC_OP_IMM) {
+            const Address callDest = Address(operands[0].imm);
 
-        if (m_prog) {
-            Function *destProc = m_prog->getOrCreateFunction(callDest);
+            call->setIsComputed(false);
+            call->setDest(callDest);
 
-            if (destProc == reinterpret_cast<Function *>(-1)) {
-                destProc = nullptr;
+            if (m_prog) {
+                Function *destProc = m_prog->getOrCreateFunction(callDest);
+
+                if (destProc == reinterpret_cast<Function *>(-1)) {
+                    destProc = nullptr;
+                }
+
+                call->setDestProc(destProc);
             }
-
-            call->setDestProc(destProc);
         }
+        else { // reg
+            SharedExp callDest = Location::regOf(fixRegNum(operands[0].reg));
+            call->setIsComputed(true);
+            call->setDest(callDest);
+        }
+
+        rtl->append(call);
     }
     else if (instruction->id == cs::SPARC_INS_JMPL) {
         rtl->clear();
@@ -463,6 +471,10 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
 {
     if (instruction->id == cs::SPARC_INS_NOP) {
         return ICLASS::NOP;
+    }
+    else if (instruction->id == cs::SPARC_INS_CALL &&
+            instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
+        return ICLASS::DD; // computed call
     }
 
     // FIXME: This code should check instruction->detail.sparc instead, however Casptone

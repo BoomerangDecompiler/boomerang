@@ -306,6 +306,12 @@ void SPARCDecoderTest::testInstructions_data()
                 "              Live variables: <None>\n"
     );
 
+    TEST_DECODE("call %g3", "\x9f\xc0\xc0\x00", ICLASS::DD,
+                "0x00001000    0 <all> := CALL r3(<all>)\n"
+                "              Reaching definitions: <None>\n"
+                "              Live variables: <None>\n"
+    );
+
     // TODO CBcc
 
     // TODO CPop
