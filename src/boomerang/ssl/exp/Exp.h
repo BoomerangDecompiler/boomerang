@@ -627,6 +627,7 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_SPARC_PSR RegNum(104)
 #define REG_SPARC_FSR RegNum(105)
 
+#define REG_SPARC_ICC RegNum(200)
 
 // PPC
 #define REG_PPC_SP RegNum(1)

@@ -29,7 +29,8 @@
 static std::map<cs::sparc_reg, RegNum> oldRegMap = {
     { cs::SPARC_REG_Y, REG_SPARC_Y },
     { cs::SPARC_REG_SP, REG_SPARC_SP },
-    { cs::SPARC_REG_FP, REG_SPARC_FP }
+    { cs::SPARC_REG_FP, REG_SPARC_FP },
+    { cs::SPARC_REG_ICC, REG_SPARC_ICC }
 };
 // clang-format on
 
@@ -137,8 +138,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         return false;
     }
 
-//     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-//            decodedInstruction->mnemonic, decodedInstruction->op_str);
+    printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+           decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type         = getInstructionType(decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
@@ -223,10 +224,17 @@ SharedExp CapstoneSPARCDecoder::operandToExp(const cs::cs_insn *instruction, int
 std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
                                                                     cs::cs_insn* instruction)
 {
+    const int numOperands = instruction->detail->sparc.op_count;
     cs::cs_sparc_op *operands = instruction->detail->sparc.operands;
 
-    QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
-    insnID         = insnID.remove(',').toUpper();
+    QString insnID = instruction->mnemonic;
+
+    // chop off branch prediction hints
+    if (insnID.endsWith(",pn") || insnID.endsWith(",pt")) {
+        insnID.chop(3);
+    }
+
+    insnID = insnID.remove(',').toUpper();
 
     if (instruction->id == cs::SPARC_INS_LDD) {
         const bool isFloatReg = instruction->detail->sparc.operands[1].reg >= cs::SPARC_REG_F0 &&
@@ -258,7 +266,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     else if (instruction->id == cs::SPARC_INS_B) {
         rtl->clear();
         BranchStatement *branch = new BranchStatement;
-        branch->setDest(Address(operands[0].imm));
+        branch->setDest(Address(operands[numOperands - 1].imm));
         branch->setIsComputed(false);
 
         BranchType bt = BranchType::INVALID;
@@ -338,7 +346,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
         rtl->append(caseStmt);
     }
-    else if (instruction->id == cs::SPARC_INS_RET) {
+    else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL) {
         rtl->clear();
         ReturnStatement *retStmt = new ReturnStatement;
         rtl->append(retStmt);
@@ -445,7 +453,8 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
     { "fbule,a",ICLASS::SCDAN   },
 
     { "jmpl",   ICLASS::DD      },
-    { "ret",    ICLASS::DD      }
+    { "ret",    ICLASS::DD      },
+    { "retl",   ICLASS::DD      }
 };
 // clang-format on
 
@@ -514,7 +523,6 @@ int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int 
     case cs::SPARC_INS_FSTOQ:
         return (opIdx == 0) ? 32 : 128;
     };
-
 
     return 32;
 }

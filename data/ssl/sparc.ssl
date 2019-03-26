@@ -131,11 +131,11 @@ INTEGER %PSR[32] -> 104;
 INTEGER %FSR[32] -> 105;
 
 # Standard flags
-INTEGER %CF[1] -> -1;
-INTEGER %ZF[1] -> -1;
-INTEGER %NF[1] -> -1;
-INTEGER %OF[1] -> -1;
-INTEGER %AF[1] -> -1;
+FLAGS %icc[4] -> 200 SHARES %PSR@[20..23];
+FLAGS %CF[1] -> 201 SHARES %icc@[0..0];
+FLAGS %OF[1] -> 202 SHARES %icc@[1..1];
+FLAGS %ZF[1] -> 203 SHARES %icc@[2..2];
+FLAGS %NF[1] -> 204 SHARES %icc@[3..3];
 
 # Floating point flags
 INTEGER %FZF[1] -> -1;
@@ -518,42 +518,75 @@ RETURN  addr
 ;
 
 RET     _;
+RETL    _;
 
 # Jump instructions - hard-coded semantics
-BA      reloc   _;
-BAA     reloc   _;
-BN      reloc   _;
-BNA     reloc   _;
+BA      reloc       _;
+BA      cc, reloc   _;
+BAA     reloc       _;
+BAA     cc, reloc   _;
+BN      cc, reloc   _;
+BN      reloc       _;
+BNA     reloc       _;
+BNA     cc, reloc   _;
 
 # Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
-BNE     reloc   _;
-BNEA    reloc   _;
-BE      reloc   _;
-BEA     reloc   _;
-BG      reloc   _;
-BGA     reloc   _;
-BLE     reloc   _;
-BLEA    reloc   _;
-BGE     reloc   _;
-BGEA    reloc   _;
-BL      reloc   _;
-BLA     reloc   _;
-BGU     reloc   _;
-BGUA    reloc   _;
-BLEU    reloc   _;
-BLEUA   reloc   _;
-BCC     reloc   _;
-BCCA    reloc   _;
-BCS     reloc   _;
-BCSA    reloc   _;
-BPOS    reloc   _;
-BPOSA   reloc   _;
-BNEG    reloc   _;
-BNEGA   reloc   _;
-BVC     reloc   _;
-BVCA    reloc   _;
-BVS     reloc   _;
-BVSA    reloc   _;
+BNE     reloc       _;
+BNE     cc, reloc   _;
+BNEA    reloc       _;
+BNEA    cc, reloc   _;
+BE      reloc       _;
+BE      cc, reloc   _;
+BEA     reloc       _;
+BEA     cc, reloc   _;
+BG      reloc       _;
+BG      cc, reloc   _;
+BGA     reloc       _;
+BGA     cc, reloc   _;
+BLE     reloc       _;
+BLE     cc, reloc   _;
+BLEA    reloc       _;
+BLEA    cc, reloc   _;
+BGE     reloc       _;
+BGE     cc, reloc   _;
+BGEA    reloc       _;
+BGEA    cc, reloc   _;
+BL      reloc       _;
+BL      cc, reloc   _;
+BLA     reloc       _;
+BLA     cc, reloc   _;
+BGU     reloc       _;
+BGU     cc, reloc   _;
+BGUA    reloc       _;
+BGUA    cc, reloc   _;
+BLEU    reloc       _;
+BLEU    cc, reloc   _;
+BLEUA   reloc       _;
+BLEUA   cc, reloc   _;
+BCC     reloc       _;
+BCC     cc, reloc   _;
+BCCA    reloc       _;
+BCCA    cc, reloc   _;
+BCS     reloc       _;
+BCS     cc, reloc   _;
+BCSA    reloc       _;
+BCSA    cc, reloc   _;
+BPOS    reloc       _;
+BPOS    cc, reloc   _;
+BPOSA   reloc       _;
+BPOSA   cc, reloc   _;
+BNEG    reloc       _;
+BNEG    cc, reloc   _;
+BNEGA   reloc       _;
+BNEGA   cc, reloc   _;
+BVC     reloc       _;
+BVC     cc, reloc   _;
+BVCA    reloc       _;
+BVCA    cc, reloc   _;
+BVS     reloc       _;
+BVS     cc, reloc   _;
+BVSA    reloc       _;
+BVSA    cc, reloc   _;
 
 
 # Call instruction - always executes delay instruction
