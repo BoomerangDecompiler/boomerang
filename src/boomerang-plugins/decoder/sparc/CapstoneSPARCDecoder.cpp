@@ -35,15 +35,33 @@ static std::map<cs::sparc_reg, RegNum> oldRegMap = {
  * Translates Capstone register IDs to Boomerang internal register IDs.
  * \returns RegNumSpecial if register not found.
  */
-RegNum fixRegNum(int csRegID)
+RegNum CapstoneSPARCDecoder::fixRegNum(const cs::cs_insn *insn, int opIdx) const
 {
+    assert(insn != nullptr);
+    assert(opIdx < insn->detail->sparc.op_count);
+    assert(insn->detail->sparc.operands[opIdx].type == cs::SPARC_OP_REG);
+
+    const int csRegID = insn->detail->sparc.operands[opIdx].reg;
+
     if (csRegID >= cs::SPARC_REG_F0 && csRegID <= cs::SPARC_REG_F31) {
-        return REG_SPARC_F0 + (csRegID - cs::SPARC_REG_F0);
+        if (getRegOperandSize(insn, opIdx) == 64) {
+            return REG_SPARC_F0TO1 + (csRegID - cs::SPARC_REG_F0) / 2;
+        }
+        else if (getRegOperandSize(insn, opIdx) == 128) {
+            return REG_SPARC_F0TO3 + (csRegID - cs::SPARC_REG_F0) / 4;
+        }
+        else { // single float
+            return REG_SPARC_F0 + (csRegID - cs::SPARC_REG_F0);
+        }
     }
-    else if (csRegID >= cs::SPARC_REG_F32 && csRegID <= cs::SPARC_REG_F62) {
-        return REG_SPARC_F0TO1 + (csRegID - cs::SPARC_REG_F32);
-    }
-    else if (csRegID >= cs::SPARC_REG_G0 && csRegID <= cs::SPARC_REG_G7) {
+
+    return fixRegNum(csRegID);
+}
+
+
+RegNum CapstoneSPARCDecoder::fixRegNum(int csRegID) const
+{
+    if (csRegID >= cs::SPARC_REG_G0 && csRegID <= cs::SPARC_REG_G7) {
         return REG_SPARC_G0 + (csRegID - cs::SPARC_REG_G0);
     }
     else if (csRegID >= cs::SPARC_REG_O0 && csRegID <= cs::SPARC_REG_O7) {
@@ -52,13 +70,36 @@ RegNum fixRegNum(int csRegID)
     else if (csRegID >= cs::SPARC_REG_L0 && csRegID <= cs::SPARC_REG_L7) {
         return REG_SPARC_L0 + (csRegID - cs::SPARC_REG_L0);
     }
+    else if (csRegID >= cs::SPARC_REG_F0 && csRegID <= cs::SPARC_REG_F31) {
+        return REG_SPARC_F0 + (csRegID - cs::SPARC_REG_F0);
+    }
+    else if (csRegID >= cs::SPARC_REG_F32 && csRegID <= cs::SPARC_REG_F62) {
+        return REG_SPARC_F0TO1 + (csRegID - cs::SPARC_REG_F32);
+    }
 
     auto it = oldRegMap.find((cs::sparc_reg)csRegID);
     return (it != oldRegMap.end()) ? it->second : RegNumSpecial;
 }
 
 
-SharedExp getRegExp(int csRegID)
+
+SharedExp CapstoneSPARCDecoder::getRegExp(const cs::cs_insn *insn, int opIdx) const
+{
+    assert(insn != nullptr);
+    assert(opIdx < insn->detail->sparc.op_count);
+    assert(insn->detail->sparc.operands[opIdx].type == cs::SPARC_OP_REG);
+    const int csRegID = insn->detail->sparc.operands[opIdx].reg;
+
+    if (csRegID == cs::SPARC_REG_G0) {
+        return Const::get(0);
+    }
+    else {
+        return Location::regOf(fixRegNum(insn, opIdx));
+    }
+}
+
+
+SharedExp CapstoneSPARCDecoder::getRegExp(int csRegID) const
 {
     if (csRegID == cs::SPARC_REG_G0) {
         return Const::get(0);
@@ -67,6 +108,7 @@ SharedExp getRegExp(int csRegID)
         return Location::regOf(fixRegNum(csRegID));
     }
 }
+
 
 
 CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
@@ -109,7 +151,7 @@ RegNum CapstoneSPARCDecoder::getRegNumByName(const QString &name) const
     // todo: slow
     for (size_t i = cs::SPARC_REG_F0; i < cs::SPARC_REG_ENDING; i++) {
         if (name == cs::cs_reg_name(m_handle, i)) {
-            return fixRegNum(i);
+            return fixRegNum(nullptr, i);
         }
     }
 
@@ -129,14 +171,15 @@ int CapstoneSPARCDecoder::getRegSizeByNum(RegNum regNum) const
 }
 
 
-SharedExp operandToExp(const cs::cs_sparc_op &operand)
+SharedExp CapstoneSPARCDecoder::operandToExp(const cs::cs_insn *instruction, int opIdx) const
 {
+    const cs::cs_sparc_op &operand = instruction->detail->sparc.operands[opIdx];
     switch (operand.type) {
     case cs::SPARC_OP_IMM: {
         return Const::get(Address(operand.imm));
     }
     case cs::SPARC_OP_REG: {
-        return getRegExp(operand.reg);
+        return getRegExp(instruction, opIdx);
     }
     case cs::SPARC_OP_MEM: {
         SharedExp memExp = getRegExp(operand.mem.base);
@@ -145,8 +188,8 @@ SharedExp operandToExp(const cs::cs_sparc_op &operand)
             memExp = Binary::get(opPlus, memExp, getRegExp(operand.mem.index));
         }
 
-        return Location::memOf(Binary::get(opPlus, memExp, Const::get(operand.mem.disp)))
-            ->simplifyArith();
+        memExp = Binary::get(opPlus, memExp, Const::get(operand.mem.disp));
+        return Location::memOf(memExp)->simplifyArith();
     }
     default: LOG_ERROR("Unknown sparc instruction operand type %1", operand.type); break;
     }
@@ -158,13 +201,29 @@ SharedExp operandToExp(const cs::cs_sparc_op &operand)
 std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
                                                                     cs::cs_insn* instruction)
 {
-    const int numOperands     = instruction->detail->sparc.op_count;
     cs::cs_sparc_op *operands = instruction->detail->sparc.operands;
 
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID         = insnID.remove(',').toUpper();
 
-    std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
+    if (instruction->id == cs::SPARC_INS_LDD) {
+        const bool isFloatReg = instruction->detail->sparc.operands[1].reg >= cs::SPARC_REG_F0 &&
+            instruction->detail->sparc.operands[1].reg <= cs::SPARC_REG_F62;
+
+        if (isFloatReg) {
+            insnID = "LDDF";
+        }
+    }
+    else if (instruction->id == cs::SPARC_INS_STD) {
+        const bool isFloatReg = instruction->detail->sparc.operands[0].reg >= cs::SPARC_REG_F0 &&
+        instruction->detail->sparc.operands[0].reg <= cs::SPARC_REG_F62;
+
+        if (isFloatReg) {
+            insnID = "STDF";
+        }
+    }
+
+    std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), instruction);
 
     if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
         rtl->clear();
@@ -242,7 +301,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
         // Capstone returns the operand as SPARC_OP_MEM, so we have to "undo" the outermost memof
         // returned by operandToExp by an addrof
-        caseStmt->setDest(Unary::get(opAddrOf, operandToExp(operands[0])));
+        caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
         rtl->append(caseStmt);
     }
 
@@ -258,12 +317,13 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
 
 std::unique_ptr<RTL> CapstoneSPARCDecoder::instantiateRTL(Address pc, const char *instructionID,
-                                                        int numOperands,
-                                                        const cs::cs_sparc_op *operands)
+                                                          const cs::cs_insn *instruction)
 {
+    const int numOperands = instruction->detail->sparc.op_count;
     std::vector<SharedExp> args(numOperands);
+
     for (int i = 0; i < numOperands; i++) {
-        args[i] = operandToExp(operands[i]);
+        args[i] = operandToExp(instruction, i);
     }
 
 //     if (m_debugMode) {
@@ -353,11 +413,71 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
 
 ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
 {
+    if (instruction->id == cs::SPARC_INS_NOP) {
+        return ICLASS::NOP;
+    }
+
     // FIXME: This code should check instruction->detail.sparc instead, however Casptone
     // still has some bugs wrt. condition codes of branches, e.g. ba has cc invalid instead of 'a'
     const QString insMnemonic = QString(instruction->mnemonic);
     const auto it = g_instructionTypes.find(insMnemonic);
     return it != g_instructionTypes.end() ? it->second : ICLASS::NCT;
+}
+
+
+int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int opIdx) const
+{
+    switch (instruction->id) {
+        // these always have 32 bit operands
+    case cs::SPARC_INS_FSTOI:
+    case cs::SPARC_INS_FITOS:
+    case cs::SPARC_INS_FSQRTS:
+        return 32;
+
+        // these always have 64 bit operands
+    case cs::SPARC_INS_FCMPD:
+    case cs::SPARC_INS_FCMPED:
+    case cs::SPARC_INS_FDIVD:
+    case cs::SPARC_INS_FMULD:
+    case cs::SPARC_INS_FSQRTD:
+    case cs::SPARC_INS_FSUBD:
+    case cs::SPARC_INS_LDD: // LDDF
+    case cs::SPARC_INS_STD: // STDF
+        return 64;
+
+        // these always have 128 bit operands
+    case cs::SPARC_INS_FCMPQ:
+    case cs::SPARC_INS_FDIVQ:
+    case cs::SPARC_INS_FMULQ:
+    case cs::SPARC_INS_FSQRTQ:
+    case cs::SPARC_INS_FSUBQ:
+        return 128;
+
+    case cs::SPARC_INS_FDTOI:
+    case cs::SPARC_INS_FDTOS:
+        return (opIdx == 0) ? 64 : 32;
+
+    case cs::SPARC_INS_FQTOS:
+    case cs::SPARC_INS_FQTOI:
+        return (opIdx == 0) ? 128 : 32;
+
+    case cs::SPARC_INS_FQTOD:
+        return (opIdx == 0) ? 128 : 64;
+
+    case cs::SPARC_INS_FDTOQ:
+        return (opIdx == 0) ? 64 : 128;
+
+    case cs::SPARC_INS_FITOD:
+    case cs::SPARC_INS_FSTOD:
+        return (opIdx == 0) ? 32 : 64;
+
+    case cs::SPARC_INS_FITOQ:
+    case cs::SPARC_INS_FSTOQ:
+        return (opIdx == 0) ? 32 : 128;
+    };
+
+
+    return 32;
 }
 
 

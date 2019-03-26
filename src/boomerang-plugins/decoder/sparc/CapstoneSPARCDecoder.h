@@ -36,8 +36,16 @@ public:
 private:
     std::unique_ptr<RTL> createRTLForInstruction(Address pc, cs::cs_insn *instruction);
 
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
-                                        const cs::cs_sparc_op *operands);
+    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, const cs::cs_insn *instruction);
 
     ICLASS getInstructionType(const cs::cs_insn *instruction);
+
+    RegNum fixRegNum(int csRegID) const;
+    RegNum fixRegNum(const cs::cs_insn *insn, int opIdx) const;
+    SharedExp getRegExp(int csRegID) const;
+    SharedExp getRegExp(const cs::cs_insn *instruction, int opIdx) const;
+    SharedExp operandToExp(const cs::cs_insn *instruction, int opIdx) const;
+
+    /// for register operands, returns the size of the register, in bits
+    int getRegOperandSize(const cs::cs_insn *instruction, int opIdx) const;
 };

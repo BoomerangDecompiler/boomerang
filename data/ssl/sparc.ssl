@@ -283,7 +283,7 @@ XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rd);
 
 
 # sethi instruction- puts the immediate into the top 22 bits
-SETHI val, rd           *32* rd := val;
+SETHI val, rd           *32* rd := val << 10;
 
 NOP                     _;
 
