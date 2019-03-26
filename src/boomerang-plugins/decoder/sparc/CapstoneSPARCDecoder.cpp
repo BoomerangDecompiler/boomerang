@@ -10,12 +10,12 @@
 #include "CapstoneSPARCDecoder.h"
 
 #include "boomerang/core/plugin/Plugin.h"
-#include "boomerang/util/log/Log.h"
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/util/log/Log.h"
 
 
 #define SPARC_INSTRUCTION_LENGTH (4)
@@ -289,11 +289,23 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         rtl->append(branch);
     }
     else if (instruction->id == cs::SPARC_INS_CALL) {
+        const Address callDest = Address(operands[0].imm);
+
         rtl->clear();
         CallStatement *call = new CallStatement;
         call->setIsComputed(false);
-        call->setDest(Address(operands[0].imm));
+        call->setDest(callDest);
         rtl->append(call);
+
+        if (m_prog) {
+            Function *destProc = m_prog->getOrCreateFunction(callDest);
+
+            if (destProc == reinterpret_cast<Function *>(-1)) {
+                destProc = nullptr;
+            }
+
+            call->setDestProc(destProc);
+        }
     }
     else if (instruction->id == cs::SPARC_INS_JMPL) {
         rtl->clear();
