@@ -166,8 +166,7 @@ void SPARCFrontendTest::test3()
 
     fe->decodeSingleInstruction(Address(0x000106a8), inst);
     inst.rtl->print(strm);
-    expected = QString("0x000106a8    0 *32* tmp := 0\n"
-                       "              0 *32* r8 := r24\n"
+    expected = QString("0x000106a8    0 *32* r8 := r24\n"
                        "              0 *32* r9 := r25\n"
                        "              0 *32* r10 := r26\n"
                        "              0 *32* r11 := r27\n"
@@ -175,7 +174,6 @@ void SPARCFrontendTest::test3()
                        "              0 *32* r13 := r29\n"
                        "              0 *32* r14 := r30\n"
                        "              0 *32* r15 := r31\n"
-                       "              0 *32* r0 := tmp\n"
                        "              0 *32* r16 := m[r14]\n"
                        "              0 *32* r17 := m[r14 + 4]\n"
                        "              0 *32* r18 := m[r14 + 8]\n"
@@ -191,8 +189,7 @@ void SPARCFrontendTest::test3()
                        "              0 *32* r28 := m[r14 + 48]\n"
                        "              0 *32* r29 := m[r14 + 52]\n"
                        "              0 *32* r30 := m[r14 + 56]\n"
-                       "              0 *32* r31 := m[r14 + 60]\n"
-                       "              0 *32* r0 := tmp\n");
+                       "              0 *32* r31 := m[r14 + 60]\n");
     QCOMPARE(actual, expected);
 }
 

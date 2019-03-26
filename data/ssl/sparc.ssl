@@ -461,6 +461,33 @@ RESTORE  rs1, reg_or_imm, rd
     *32* rd := tmp # repeat
 ;
 
+RESTORE
+    *32* %o0 := %i0
+    *32* %o1 := %i1
+    *32* %o2 := %i2
+    *32* %o3 := %i3
+    *32* %o4 := %i4
+    *32* %o5 := %i5
+    *32* %o6 := %i6
+    *32* %o7 := %i7
+    *32* %l0 := m[%sp+0]
+    *32* %l1 := m[%sp+4]
+    *32* %l2 := m[%sp+8]
+    *32* %l3 := m[%sp+12]
+    *32* %l4 := m[%sp+16]
+    *32* %l5 := m[%sp+20]
+    *32* %l6 := m[%sp+24]
+    *32* %l7 := m[%sp+28]
+    *32* %i0 := m[%sp+32]
+    *32* %i1 := m[%sp+36]
+    *32* %i2 := m[%sp+40]
+    *32* %i3 := m[%sp+44]
+    *32* %i4 := m[%sp+48]
+    *32* %i5 := m[%sp+52]
+    *32* %i6 := m[%sp+56]
+    *32* %i7 := m[%sp+60]
+;
+
 RETURN  addr
     *32* %o0 := %i0
     *32* %o1 := %i1
@@ -487,6 +514,8 @@ RETURN  addr
     *32* %i6 := m[%sp+56]
     *32* %i7 := m[%sp+60]
 ;
+
+RET     _;
 
 # Jump instructions- uses COND table for correct boolean expression.
 # Always executes delay instr. on branch

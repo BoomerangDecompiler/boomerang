@@ -15,6 +15,7 @@
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -320,7 +321,11 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
         rtl->append(caseStmt);
     }
-
+    else if (instruction->id == cs::SPARC_INS_RET) {
+        rtl->clear();
+        ReturnStatement *retStmt = new ReturnStatement;
+        rtl->append(retStmt);
+    }
 
     if (rtl == nullptr) {
         LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
