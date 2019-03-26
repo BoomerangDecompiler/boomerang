@@ -227,7 +227,9 @@ TRAP(cond, op1) {
 };
 
 
+#synthetic instructions
 MOV src, dest           *32* dest := src;
+CMP lhs, rhs            SUBFLAGS(lhs, rhs, %g0);
 
 
 # Load double instruction-  the 1st reg. of double load must be even
@@ -517,65 +519,50 @@ RETURN  addr
 
 RET     _;
 
-# Jump instructions- uses COND table for correct boolean expression.
-# Always executes delay instr. on branch
-BA      reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BN      reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BNE     reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BE      reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BG      reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
-BLE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BGE     reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BL      reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BGU     reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BLEU    reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BCC     reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BCS     reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPOS    reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BNEG    reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BVC     reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BVS     reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+# Jump instructions - hard-coded semantics
+BA      reloc   _;
+BAA     reloc   _;
+BN      reloc   _;
+BNA     reloc   _;
 
-# unconditional branches
-BAA     reloc   *32* %pc := reloc       *32* %npc := reloc + 4          *1* %CTI := 1;
-BNA     reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8           *1* %CTI := 1;
-
-
-# Conditional branches
-BNEA    reloc   *32* %pc := [ ~%ZF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%ZF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BEA     reloc   *32* %pc := [ %ZF                  ? %npc : %npc+4 ]    *32* %npc := [ %ZF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGA     reloc   *32* %pc := [ ~(%ZF | (%NF ^ %OF)) ? %npc : %npc+4 ]    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLEA    reloc   *32* %pc := [ %ZF | (%NF ^ %OF)    ? %npc : %npc+4 ]    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGEA    reloc   *32* %pc := [ ~(%NF ^ %OF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLA     reloc   *32* %pc := [ %NF ^ %OF            ? %npc : %npc+4 ]    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGUA    reloc   *32* %pc := [ ~(%CF | %ZF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLEUA   reloc   *32* %pc := [ %CF | %ZF            ? %npc : %npc+4 ]    *32* %npc := [ %CF | %ZF            ? reloc : %npc+8 ]      *1* %CTI := 1;
-BCCA    reloc   *32* %pc := [ ~%CF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%CF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BCSA    reloc   *32* %pc := [ %CF                  ? %npc : %npc+4 ]    *32* %npc := [ %CF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BPOSA   reloc   *32* %pc := [ ~%NF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%NF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BNEGA   reloc   *32* %pc := [ %NF                  ? %npc : %npc+4 ]    *32* %npc := [ %NF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BVCA    reloc   *32* %pc := [ ~%OF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%OF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]    *32* %npc := [ %OF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
+# Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
+BNE     reloc   _;
+BNEA    reloc   _;
+BE      reloc   _;
+BEA     reloc   _;
+BG      reloc   _;
+BGA     reloc   _;
+BLE     reloc   _;
+BLEA    reloc   _;
+BGE     reloc   _;
+BGEA    reloc   _;
+BL      reloc   _;
+BLA     reloc   _;
+BGU     reloc   _;
+BGUA    reloc   _;
+BLEU    reloc   _;
+BLEUA   reloc   _;
+BCC     reloc   _;
+BCCA    reloc   _;
+BCS     reloc   _;
+BCSA    reloc   _;
+BPOS    reloc   _;
+BPOSA   reloc   _;
+BNEG    reloc   _;
+BNEGA   reloc   _;
+BVC     reloc   _;
+BVCA    reloc   _;
+BVS     reloc   _;
+BVSA    reloc   _;
 
 
-# Call instruction- always executes delay instruction
-# PC relative transfer of control
-CALL reloc
-    *32* %o7 := %pc
-    *32* %pc := %npc
-    *32* %npc := reloc
-    *1* %CTI := 1;
+# Call instruction - always executes delay instruction
+CALL    dest    _;
 
-# Jump and Link instruction- always executes delay instruction
+# Jump and Link instruction - always executes delay instruction
 # Register indirect transfer of control
 # Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
-JMPL  eaddr, rd
-    *32* tmp := eaddr
-    *32* rd := %pc
-    *32* %pc := %npc
-    *32* %npc := tmp
-    *1* %CTI := 1
-;
+JMPL  eaddr, rd _;
 
 
 # Read and Write State Register Instructions

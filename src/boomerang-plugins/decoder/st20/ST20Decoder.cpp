@@ -40,6 +40,13 @@ static const char *functionNames[] = {
 };
 
 
+
+ST20Decoder::ST20Decoder(Project *project)
+    : NJMCDecoder(project, "ssl/st20.ssl")
+{
+}
+
+
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
     int total = 0; // Total value from all prefixes
@@ -315,9 +322,9 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
 }
 
 
-ST20Decoder::ST20Decoder(Project *project)
-    : NJMCDecoder(project, "ssl/st20.ssl")
+bool ST20Decoder::isSPARCRestore(Address, ptrdiff_t) const
 {
+    return false;
 }
 
 

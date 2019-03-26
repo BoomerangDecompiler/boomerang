@@ -28,7 +28,8 @@
 // clang-format off
 static std::map<cs::sparc_reg, RegNum> oldRegMap = {
     { cs::SPARC_REG_Y, REG_SPARC_Y },
-    { cs::SPARC_REG_SP, REG_SPARC_SP }
+    { cs::SPARC_REG_SP, REG_SPARC_SP },
+    { cs::SPARC_REG_FP, REG_SPARC_FP }
 };
 // clang-format on
 
@@ -136,8 +137,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         return false;
     }
 
-//     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-//            decodedInstruction->mnemonic, decodedInstruction->op_str);
+    printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+           decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type         = getInstructionType(decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
@@ -173,6 +174,22 @@ QString CapstoneSPARCDecoder::getRegNameByNum(RegNum regNum) const
 int CapstoneSPARCDecoder::getRegSizeByNum(RegNum regNum) const
 {
     return m_dict.getRegDB()->getRegSizeByNum(regNum);
+}
+
+
+bool CapstoneSPARCDecoder::isSPARCRestore(Address pc, ptrdiff_t delta) const
+{
+    const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
+
+    cs::cs_insn *decodedInstruction;
+    size_t numInstructions = cs_disasm(m_handle, instructionData, SPARC_INSTRUCTION_LENGTH,
+                                       pc.value(), 1, &decodedInstruction);
+
+    if (numInstructions < 1) {
+        return false;
+    }
+
+    return decodedInstruction->id == cs::SPARC_INS_RESTORE;
 }
 
 
@@ -500,6 +517,7 @@ int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int 
 
     return 32;
 }
+
 
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, CapstoneSPARCDecoder, "Capstone SPARC decoder plugin",

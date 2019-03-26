@@ -729,9 +729,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                    if (static_cast<NJMCDecoder *>(m_decoder)->isRestore(
-                            HostAddress(pc.value() + inst.numBytes +
-                                        m_program->getBinaryFile()->getImage()->getTextDelta()))) {
+                    const ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
+                    if (m_decoder->isSPARCRestore(pc + inst.numBytes, delta)) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
                         delayInst.rtl->setAddress(pc);
