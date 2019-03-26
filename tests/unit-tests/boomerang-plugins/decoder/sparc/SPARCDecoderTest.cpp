@@ -316,6 +316,14 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO CPop
 
+//     TEST_DECODE("divscc %g3, %g1, %g2", "\x84\xe8\xc0\x01", ICLASS::NCT,
+//                 ""
+//     );
+//
+//     TEST_DECODE("divscc %g3, 3, %g2", "\x84\xe8\xe0\x03", ICLASS::NCT,
+//                 ""
+//     );
+
     TEST_DECODE("fabss %f1, %f2", "\x85\xa0\x01\x21", ICLASS::NCT,
                 "0x00001000    0 *32* r34 := (r33 < 0) ? -r33 : r33\n"
     );
