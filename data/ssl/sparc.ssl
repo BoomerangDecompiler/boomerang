@@ -229,7 +229,7 @@ TRAP(cond, op1) {
 
 #synthetic instructions
 MOV src, dest           *32* dest := src;
-CMP lhs, rhs            SUBFLAGS(lhs, rhs, %g0);
+CMP rs1, reg_or_imm     *32* tmp := rs1     *32* %g0 := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, %g0);
 
 
 # Load double instruction-  the 1st reg. of double load must be even
@@ -464,6 +464,7 @@ RESTORE  rs1, reg_or_imm, rd
 ;
 
 RESTORE
+    *32* tmp := 0
     *32* %o0 := %i0
     *32* %o1 := %i1
     *32* %o2 := %i2
@@ -472,6 +473,7 @@ RESTORE
     *32* %o5 := %i5
     *32* %o6 := %i6
     *32* %o7 := %i7
+    *32* %g0 := tmp
     *32* %l0 := m[%sp+0]
     *32* %l1 := m[%sp+4]
     *32* %l2 := m[%sp+8]
@@ -488,6 +490,7 @@ RESTORE
     *32* %i5 := m[%sp+52]
     *32* %i6 := m[%sp+56]
     *32* %i7 := m[%sp+60]
+    *32* %g0 := tmp
 ;
 
 RETURN  addr
