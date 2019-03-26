@@ -1071,6 +1071,12 @@ void SPARCDecoderTest::testInstructions_data()
                 "              0 *32* r1 := tmp\n"
     );
 
+    TEST_DECODE("ret", "\x81\xc7\xe0\x08", ICLASS::DD,
+                "0x00001000    0 RET\n"
+                "              Modifieds: <None>\n"
+                "              Reaching definitions: <None>\n"
+    );
+
     // TODO rett
 
     TEST_DECODE("save %g0, 0, %g1", "\x83\xe0\x20\x00", ICLASS::NCT,

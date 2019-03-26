@@ -137,8 +137,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         return false;
     }
 
-    printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-           decodedInstruction->mnemonic, decodedInstruction->op_str);
+//     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+//            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type         = getInstructionType(decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
@@ -445,6 +445,7 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
     { "fbule,a",ICLASS::SCDAN   },
 
     { "jmpl",   ICLASS::DD      },
+    { "ret",    ICLASS::DD      }
 };
 // clang-format on
 
