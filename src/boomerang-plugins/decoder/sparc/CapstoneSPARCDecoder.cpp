@@ -129,11 +129,12 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
 
-    cs::cs_insn *decodedInstruction;
-    size_t numInstructions = cs_disasm(m_handle, instructionData, SPARC_INSTRUCTION_LENGTH,
-                                       pc.value(), 1, &decodedInstruction);
+    cs::cs_insn decodedInstruction;
+    size_t bufsize = SPARC_INSTRUCTION_LENGTH;
+    uint64_t addr = pc.value();
+    result.valid = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
+                                      &decodedInstruction);
 
-    result.valid = numInstructions > 0;
     if (!result.valid) {
         return false;
     }
@@ -141,14 +142,13 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
 //     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
 //            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
-    result.type         = getInstructionType(decodedInstruction);
+    result.type         = getInstructionType(&decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
     result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, decodedInstruction);
+    result.rtl          = createRTLForInstruction(pc, &decodedInstruction);
     result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
 
-    cs_free(decodedInstruction, numInstructions);
     return true;
 }
 
