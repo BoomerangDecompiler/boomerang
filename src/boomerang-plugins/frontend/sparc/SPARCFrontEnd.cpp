@@ -21,7 +21,6 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/NJMCDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Binary.h"

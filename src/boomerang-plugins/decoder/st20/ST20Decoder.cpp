@@ -42,8 +42,30 @@ static const char *functionNames[] = {
 
 
 ST20Decoder::ST20Decoder(Project *project)
-    : NJMCDecoder(project, "ssl/st20.ssl")
+    : IDecoder(project)
+    , m_rtlDict(project->getSettings()->debugDecoder)
 {
+    const Settings *settings = project->getSettings();
+    QString realSSLFileName;
+
+    if (!settings->sslFileName.isEmpty()) {
+        realSSLFileName = settings->getWorkingDirectory().absoluteFilePath(settings->sslFileName);
+    }
+    else {
+        realSSLFileName = settings->getDataDirectory().absoluteFilePath("ssl/st20.ssl");
+    }
+
+    if (!m_rtlDict.readSSLFile(realSSLFileName)) {
+        LOG_ERROR("Cannot read SSL file '%1'", realSSLFileName);
+        throw std::runtime_error("Cannot read SSL file");
+    }
+}
+
+
+bool ST20Decoder::initialize(Project *project)
+{
+    m_prog = project->getProg();
+    return true;
 }
 
 
@@ -325,6 +347,70 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
 bool ST20Decoder::isSPARCRestore(Address, ptrdiff_t) const
 {
     return false;
+}
+
+
+std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
+                                              const std::initializer_list<SharedExp> &args)
+{
+    // Take the argument, convert it to upper case and remove any .'s
+    const QString sanitizedName = QString(name).remove(".").toUpper();
+
+    // Put the operands into a vector
+    std::vector<SharedExp> actuals(args);
+
+    if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {
+        OStream q_cout(stdout);
+        // Display a disassembly of this instruction if requested
+        q_cout << pc << ": " << name << " ";
+
+        for (const SharedExp &itd : actuals) {
+            if (itd->isIntConst()) {
+                int val = itd->access<Const>()->getInt();
+
+                if ((val > 100) || (val < -100)) {
+                    q_cout << "0x" << QString::number(val, 16);
+                }
+                else {
+                    q_cout << val;
+                }
+            }
+            else {
+                itd->print(q_cout);
+            }
+
+            q_cout << " ";
+        }
+
+        q_cout << '\n';
+    }
+
+    std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, pc, actuals);
+    if (!rtl) {
+        LOG_ERROR("Could not find semantics for instruction '%1', treating instruction as NOP",
+                  name);
+        return m_rtlDict.instantiateRTL("NOP", pc, {});
+    }
+
+    return rtl;
+}
+
+
+QString ST20Decoder::getRegNameByNum(RegNum regNum) const
+{
+    return m_rtlDict.getRegDB()->getRegNameByNum(regNum);
+}
+
+
+int ST20Decoder::getRegSizeByNum(RegNum regNum) const
+{
+    return m_rtlDict.getRegDB()->getRegSizeByNum(regNum);
+}
+
+
+RegNum ST20Decoder::getRegNumByName(const QString &name) const
+{
+    return m_rtlDict.getRegDB()->getRegNumByName(name);
 }
 
 
