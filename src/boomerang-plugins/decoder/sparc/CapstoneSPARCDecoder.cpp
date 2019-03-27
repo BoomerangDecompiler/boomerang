@@ -138,8 +138,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         return false;
     }
 
-    printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-           decodedInstruction->mnemonic, decodedInstruction->op_str);
+//     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
+//            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
     result.type         = getInstructionType(decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
@@ -380,7 +380,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::instantiateRTL(Address pc, const char
         args[i] = operandToExp(instruction, i);
     }
 
-//     if (m_debugMode) {
+    if (m_debugMode) {
         QString argNames;
         for (int i = 0; i < numOperands; i++) {
             if (i != 0) {
@@ -390,7 +390,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::instantiateRTL(Address pc, const char
         }
 
         LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, argNames);
-//     }
+    }
 
     // Take the argument, convert it to upper case and remove any .'s
     const QString sanitizedName = QString(instructionID).remove(".").toUpper();
