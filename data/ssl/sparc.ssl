@@ -235,9 +235,9 @@ CMP rs1, reg_or_imm     *32* tmp := rs1     *32* %g0 := rs1 - reg_or_imm     SUB
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd.
 
-LDD eaddr, rd
-    *32*    rd       := m[eaddr]
-    *32*    succ(rd) := m[eaddr + WORD]
+LDD src, rd
+    *32*    rd       := src
+    *32*    succ(rd) := m[addr(src) + WORD]
 ;
 
 LD      src, dest       *32* dest := src;

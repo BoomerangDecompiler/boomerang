@@ -659,30 +659,30 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO ldcsr
 
-//     TEST_DECODE("ldd [0], %g2", "\xc4\x18\x20\x00", ICLASS::NCT,
-//                 "0x00001000    0 *32* r2 := m[0]\n"
-//                 "              0 *32* r3 := m[4]\n"
-//     );
-//
-//     TEST_DECODE("ldd [0xFFFFFFFF], %g2", "\xc4\x18\x3f\xff", ICLASS::NCT,
-//                 "0x00001000    0 *32* r2 := m[-1]\n"
-//                 "              0 *32* r3 := m[3]\n"
-//     );
-//
-//     TEST_DECODE("ldd [%g3], %g2", "\xc4\x18\xe0\x00", ICLASS::NCT,
-//                 "0x00001000    0 *32* r2 := m[r3]\n"
-//                 "              0 *32* r3 := m[r3 + 4]\n"
-//     );
-//
-//     TEST_DECODE("ldd [%g3 + 0x10], %g2", "\xc4\x18\xe0\x10", ICLASS::NCT,
-//                 "0x00001000    0 *32* r2 := m[r3 + 16]\n"
-//                 "              0 *32* r3 := m[r3 + 20]\n"
-//     );
-//
-//     TEST_DECODE("ldd [%g3 + %g1], %g2", "\xc4\x18\xc0\x01", ICLASS::NCT,
-//                 "0x00001000    0 *32* r2 := m[r3 + r1]\n"
-//                 "              0 *32* r3 := m[(r3 + r1) + 4]\n"
-//     );
+    TEST_DECODE("ldd [0], %g2", "\xc4\x18\x20\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[0]\n"
+                "              0 *32* r3 := m[4]\n"
+    );
+
+    TEST_DECODE("ldd [0xFFFFFFFF], %g2", "\xc4\x18\x3f\xff", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[-1]\n"
+                "              0 *32* r3 := m[3]\n"
+    );
+
+    TEST_DECODE("ldd [%g3], %g2", "\xc4\x18\xe0\x00", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3]\n"
+                "              0 *32* r3 := m[r3 + 4]\n"
+    );
+
+    TEST_DECODE("ldd [%g3 + 0x10], %g2", "\xc4\x18\xe0\x10", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3 + 16]\n"
+                "              0 *32* r3 := m[r3 + 20]\n"
+    );
+
+    TEST_DECODE("ldd [%g3 + %g1], %g2", "\xc4\x18\xc0\x01", ICLASS::NCT,
+                "0x00001000    0 *32* r2 := m[r3 + r1]\n"
+                "              0 *32* r3 := m[(r3 + r1) + 4]\n"
+    );
 
     // TODO ldda
 

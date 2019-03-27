@@ -18,6 +18,8 @@
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
 
+#include <cstring>
+
 
 #define SPARC_INSTRUCTION_LENGTH (4)
 
@@ -128,15 +130,29 @@ CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
 bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
+    const Byte *oldInstructionData = instructionData;
 
+    cs::cs_detail insnDetail;
     cs::cs_insn decodedInstruction;
+    decodedInstruction.detail = &insnDetail;
+
     size_t bufsize = SPARC_INSTRUCTION_LENGTH;
     uint64_t addr = pc.value();
     result.valid = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
                                       &decodedInstruction);
 
     if (!result.valid) {
-        return false;
+        // HACK: Capstone does not support ldd for gpr destinations,
+        // so we have to test for it manually.
+        const uint32_t insn = Util::readDWord(oldInstructionData, Endian::Big);
+
+        result.valid = decodeLDD(&decodedInstruction, insn);
+        if (!result.valid) {
+            return false;
+        }
+        else {
+            decodedInstruction.address = pc.value();
+        }
     }
 
 //     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
@@ -537,6 +553,78 @@ int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int 
     };
 
     return 32;
+}
+
+
+cs::sparc_reg fixSparcReg(uint8 code)
+{
+    if (code == 30) {
+        return cs::SPARC_REG_FP;
+    }
+    else if (code == 14) {
+        return cs::SPARC_REG_SP;
+    }
+    else if (code < 8) {
+        return (cs::sparc_reg)(cs::SPARC_REG_G0 + (code & 7));
+    }
+    else if (code < 16) {
+        return (cs::sparc_reg)(cs::SPARC_REG_O0 + (code & 7));
+    }
+    else if (code < 24) {
+        return (cs::sparc_reg)(cs::SPARC_REG_L0 + (code & 7));
+    }
+    else {
+        return (cs::sparc_reg)(cs::SPARC_REG_I0 + (code & 7));
+    }
+}
+
+
+bool CapstoneSPARCDecoder::decodeLDD(cs::cs_insn *decodedInstruction, uint32_t insn) const
+{
+    if (((insn >> 19) & 0b1100000111111) != 0b1100000000011) {
+        return false; // not ldd
+    }
+
+    const cs::sparc_reg rd  = fixSparcReg((insn >> 25) & 0x1F);
+    const cs::sparc_reg rs1 = fixSparcReg((insn >> 14) & 0x1F);
+    const bool hasImm = ((insn >> 13) & 1) != 0;
+
+    decodedInstruction->id = cs::SPARC_INS_LDD;
+    decodedInstruction->size = SPARC_INSTRUCTION_LENGTH;
+
+    decodedInstruction->detail->sparc.cc = cs::SPARC_CC_INVALID;
+    decodedInstruction->detail->sparc.hint = cs::SPARC_HINT_INVALID;
+    decodedInstruction->detail->sparc.op_count = 2;
+
+    decodedInstruction->detail->sparc.operands[0].type = cs::SPARC_OP_MEM;
+    decodedInstruction->detail->sparc.operands[0].mem.base = rs1;
+
+    if (hasImm) {
+        const int simm = Util::signExtend(insn & 0x1FFF, 13);
+        decodedInstruction->detail->sparc.operands[0].mem.index = cs::SPARC_REG_INVALID;
+        decodedInstruction->detail->sparc.operands[0].mem.disp = simm;
+        std::sprintf(decodedInstruction->op_str, "[%s + %d], %s",
+                     cs::cs_reg_name(m_handle, rs1),
+                     simm,
+                     cs::cs_reg_name(m_handle, rd));
+    }
+    else { // reg offset
+        const cs::sparc_reg rs2 = fixSparcReg(insn & 0x1F);
+        decodedInstruction->detail->sparc.operands[0].mem.index = rs2;
+        decodedInstruction->detail->sparc.operands[0].mem.disp = 0;
+        std::sprintf(decodedInstruction->op_str, "[%s + %s], %s",
+                     cs::cs_reg_name(m_handle, rs1),
+                     cs::cs_reg_name(m_handle, rs2),
+                     cs::cs_reg_name(m_handle, rd));
+    }
+
+    decodedInstruction->detail->sparc.operands[1].type = cs::SPARC_OP_REG;
+    decodedInstruction->detail->sparc.operands[1].reg = rd;
+
+    Util::writeDWord(&decodedInstruction->bytes, insn, Endian::Little);
+    decodedInstruction->bytes[4] = 0;
+    std::strcpy(decodedInstruction->mnemonic, "ldd");
+    return true;
 }
 
 
