@@ -132,10 +132,10 @@ INTEGER %FSR[32] -> 105;
 
 # Standard flags
 FLAGS %icc[4] -> 200 SHARES %PSR@[20..23];
-FLAGS %CF[1] -> 201 SHARES %icc@[0..0];
-FLAGS %OF[1] -> 202 SHARES %icc@[1..1];
-FLAGS %ZF[1] -> 203 SHARES %icc@[2..2];
-FLAGS %NF[1] -> 204 SHARES %icc@[3..3];
+FLAGS %CF[1] -> -1 SHARES %icc@[0..0];
+FLAGS %OF[1] -> -1 SHARES %icc@[1..1];
+FLAGS %ZF[1] -> -1 SHARES %icc@[2..2];
+FLAGS %NF[1] -> -1 SHARES %icc@[3..3];
 
 # Floating point flags
 INTEGER %FZF[1] -> -1;

@@ -759,7 +759,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     if (a && a->isAssign()) {
                         SharedExp lhs = static_cast<Assign *>(a)->getLeft();
 
-                        if (lhs->isRegN(15)) { // %o7 is r[15]
+                        if (lhs->isRegN(REG_SPARC_O7)) {
                             // If it's an add, this is special. Example:
                             //     call foo
                             //     add %o7, K, %o7
