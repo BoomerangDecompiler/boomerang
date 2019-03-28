@@ -530,7 +530,21 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
     }
     else if (instruction->id == cs::SPARC_INS_CALL &&
             instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
-        return ICLASS::DD; // computed call
+        if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
+            return ICLASS::SD; // call %g0+foo, %o3. This is a static call
+        }
+        else {
+            return ICLASS::DD; // computed call
+        }
+    }
+    else if ((instruction->id == cs::SPARC_INS_JMP || instruction->id == cs::SPARC_INS_JMPL) &&
+            instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
+        if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
+            return ICLASS::SD;
+        }
+        else {
+            return ICLASS::DD;
+        }
     }
 
     // FIXME: This code should check instruction->detail.sparc instead, however Casptone

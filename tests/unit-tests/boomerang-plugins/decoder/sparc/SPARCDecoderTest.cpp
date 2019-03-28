@@ -623,6 +623,10 @@ void SPARCDecoderTest::testInstructions_data()
 
     // TODO iflush
 
+    TEST_DECODE("jmp 0x800", "\x81\xc0\x28\x00", ICLASS::SD,
+                "0x00001000    0 GOTO 0x00000800\n"
+    );
+
     // FIXME: The semantics are wrong. The return address should be saved to %g4;
     // sometimes this instruction might also represent an indirect call or a return.
     TEST_DECODE("jmpl %g1+%g2, %g4", "\x89\xc0\x40\x02", ICLASS::DD,
@@ -633,7 +637,7 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 CASE [r1 + 0x800]\n"
     );
 
-    TEST_DECODE("jmpl 0x800, %o7", "\x9f\xc0\x28\x00", ICLASS::DD,
+    TEST_DECODE("jmpl 0x800, %o7", "\x9f\xc0\x28\x00", ICLASS::SD,
                 "0x00001000    0 <all> := CALL 0x800(<all>)\n"
                 "              Reaching definitions: <None>\n"
                 "              Live variables: <None>\n"
