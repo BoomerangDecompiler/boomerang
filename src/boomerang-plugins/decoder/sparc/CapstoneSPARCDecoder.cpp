@@ -504,6 +504,9 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
     if (instruction->id == cs::SPARC_INS_NOP) {
         return ICLASS::NOP;
     }
+    else if (instruction->id == cs::SPARC_INS_UNIMP) {
+        return ICLASS::NOP;
+    }
     else if (instruction->id == cs::SPARC_INS_CALL &&
             instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
         return ICLASS::DD; // computed call
@@ -642,7 +645,6 @@ bool CapstoneSPARCDecoder::decodeLDD(cs::cs_insn *decodedInstruction, uint32_t i
     std::strcpy(decodedInstruction->mnemonic, "ldd");
     return true;
 }
-
 
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, CapstoneSPARCDecoder, "Capstone SPARC decoder plugin",

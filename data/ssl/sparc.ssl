@@ -739,3 +739,5 @@ LDDF src, fdd        *64* fdd := src;
 STFSR      dest        *32* dest := %FSR;
 STF   fds, dest        *32* dest := fds;
 STDF  fdd, dest        *64* dest := fdd;
+
+UNIMP val   _;
