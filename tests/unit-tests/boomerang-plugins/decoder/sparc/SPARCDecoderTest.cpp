@@ -624,7 +624,7 @@ void SPARCDecoderTest::testInstructions_data()
     // TODO iflush
 
     TEST_DECODE("jmp 0x800", "\x81\xc0\x28\x00", ICLASS::SD,
-                "0x00001000    0 GOTO 0x00000800\n"
+                "0x00001000    0 CASE [0x800]\n"
     );
 
     // FIXME: The semantics are wrong. The return address should be saved to %g4;
