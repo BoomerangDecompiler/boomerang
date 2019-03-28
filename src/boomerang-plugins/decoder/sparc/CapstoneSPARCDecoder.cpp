@@ -142,17 +142,19 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
                                       &decodedInstruction);
 
     if (!result.valid) {
-        // HACK: Capstone does not support ldd for gpr destinations,
+        // HACK: Capstone does not support ldd and std for gpr destinations,
         // so we have to test for it manually.
         const uint32_t insn = Util::readDWord(oldInstructionData, Endian::Big);
 
         result.valid = decodeLDD(&decodedInstruction, insn);
         if (!result.valid) {
-            return false;
+            result.valid = decodeSTD(&decodedInstruction, insn);
+            if (!result.valid) {
+                return false;
+            }
         }
-        else {
-            decodedInstruction.address = pc.value();
-        }
+
+        decodedInstruction.address = pc.value();
     }
 
     printf("0x%lx %08x %s %s\n", decodedInstruction.address, *(uint32 *)instructionData,
@@ -385,7 +387,8 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
         rtl->append(gotoStmt);
     }
-    else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL) {
+    else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
+        instruction->id == cs::SPARC_INS_RETT) {
         rtl->clear();
         ReturnStatement *retStmt = new ReturnStatement;
         rtl->append(retStmt);
@@ -494,7 +497,8 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
     { "jmp",    ICLASS::DD      },
     { "jmpl",   ICLASS::DD      },
     { "ret",    ICLASS::DD      },
-    { "retl",   ICLASS::DD      }
+    { "retl",   ICLASS::DD      },
+    { "rett",   ICLASS::DD      }
 };
 // clang-format on
 
@@ -646,6 +650,54 @@ bool CapstoneSPARCDecoder::decodeLDD(cs::cs_insn *decodedInstruction, uint32_t i
     return true;
 }
 
+
+bool CapstoneSPARCDecoder::decodeSTD(cs::cs_insn *decodedInstruction, uint32_t insn) const
+{
+    if (((insn >> 19) & 0b1100000111111) != 0b1100000000111) {
+        return false; // not std
+    }
+
+    const cs::sparc_reg rd  = fixSparcReg((insn >> 25) & 0x1F);
+    const cs::sparc_reg rs1 = fixSparcReg((insn >> 14) & 0x1F);
+    const bool hasImm = ((insn >> 13) & 1) != 0;
+
+    decodedInstruction->id = cs::SPARC_INS_STD;
+    decodedInstruction->size = SPARC_INSTRUCTION_LENGTH;
+
+    decodedInstruction->detail->sparc.cc = cs::SPARC_CC_INVALID;
+    decodedInstruction->detail->sparc.hint = cs::SPARC_HINT_INVALID;
+    decodedInstruction->detail->sparc.op_count = 2;
+
+    decodedInstruction->detail->sparc.operands[1].type = cs::SPARC_OP_MEM;
+    decodedInstruction->detail->sparc.operands[1].mem.base = rs1;
+
+    if (hasImm) {
+        const int simm = Util::signExtend(insn & 0x1FFF, 1);
+        decodedInstruction->detail->sparc.operands[1].mem.index = cs::SPARC_REG_INVALID;
+        decodedInstruction->detail->sparc.operands[1].mem.disp = simm;
+        std::sprintf(decodedInstruction->op_str, "%s, [%s + %d]",
+                     cs::cs_reg_name(m_handle, rd),
+                     cs::cs_reg_name(m_handle, rs1),
+                     simm);
+    }
+    else { // reg offset
+        const cs::sparc_reg rs2 = fixSparcReg(insn & 0x1F);
+        decodedInstruction->detail->sparc.operands[1].mem.index = rs2;
+        decodedInstruction->detail->sparc.operands[1].mem.disp = 0;
+        std::sprintf(decodedInstruction->op_str, "%s, [%s + %s]",
+                     cs::cs_reg_name(m_handle, rd),
+                     cs::cs_reg_name(m_handle, rs1),
+                     cs::cs_reg_name(m_handle, rs2));
+    }
+
+    decodedInstruction->detail->sparc.operands[0].type = cs::SPARC_OP_REG;
+    decodedInstruction->detail->sparc.operands[0].reg = rd;
+
+    Util::writeDWord(&decodedInstruction->bytes, insn, Endian::Little);
+    decodedInstruction->bytes[4] = 0;
+    std::strcpy(decodedInstruction->mnemonic, "std");
+    return true;
+}
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, CapstoneSPARCDecoder, "Capstone SPARC decoder plugin",
                         BOOMERANG_VERSION, "Boomerang developers")

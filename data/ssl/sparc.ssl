@@ -521,6 +521,7 @@ RETURN  addr
 ;
 
 RET     _;
+RETT    _;
 RETL    _;
 
 # Jump instructions - hard-coded semantics

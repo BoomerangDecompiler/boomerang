@@ -53,4 +53,5 @@ private:
     int getRegOperandSize(const cs::cs_insn *instruction, int opIdx) const;
 
     bool decodeLDD(cs::cs_insn *instruction, uint32_t instructionData) const;
+    bool decodeSTD(cs::cs_insn *instruction, uint32_t instructionData) const;
 };
