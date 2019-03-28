@@ -620,7 +620,7 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_SPARC_F28TO31 RegNum(87)
 #define REG_SPARC_F0TO3 RegNum(80)
 
-#define REG_SPARC_Y  RegNum(100)
+#define REG_SPARC_Y RegNum(100)
 #define REG_SPARC_CWP RegNum(101)
 #define REG_SPARC_TBR RegNum(102)
 #define REG_SPARC_WIM RegNum(103)

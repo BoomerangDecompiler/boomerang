@@ -39,7 +39,8 @@ public:
 private:
     std::unique_ptr<RTL> createRTLForInstruction(Address pc, cs::cs_insn *instruction);
 
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, const cs::cs_insn *instruction);
+    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID,
+                                        const cs::cs_insn *instruction);
 
     ICLASS getInstructionType(const cs::cs_insn *instruction);
 

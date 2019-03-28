@@ -79,5 +79,5 @@ private:
     /// Dictionary of instruction patterns, and other information summarised from the SSL file
     /// (e.g. source machine's endianness)
     RTLInstDict m_rtlDict;
-    Prog *m_prog         = nullptr;
+    Prog *m_prog = nullptr;
 };

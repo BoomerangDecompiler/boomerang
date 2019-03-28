@@ -11,10 +11,10 @@
 
 #include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
 
@@ -69,7 +69,6 @@ RegNum CapstoneSPARCDecoder::fixRegNum(const cs::cs_insn *insn, int opIdx) const
 
 RegNum CapstoneSPARCDecoder::fixRegNum(int csRegID) const
 {
-
     if (csRegID >= cs::SPARC_REG_G0 && csRegID <= cs::SPARC_REG_G7) {
         return REG_SPARC_G0 + (csRegID - cs::SPARC_REG_G0);
     }
@@ -94,7 +93,6 @@ RegNum CapstoneSPARCDecoder::fixRegNum(int csRegID) const
     auto it = oldRegMap.find((cs::sparc_reg)csRegID);
     return (it != oldRegMap.end()) ? it->second : RegNumSpecial;
 }
-
 
 
 SharedExp CapstoneSPARCDecoder::getRegExp(const cs::cs_insn *insn, int opIdx) const
@@ -124,10 +122,9 @@ SharedExp CapstoneSPARCDecoder::getRegExp(int csRegID) const
 }
 
 
-
 CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
-    : CapstoneDecoder(project, cs::CS_ARCH_SPARC,
-                      (cs::cs_mode)(cs::CS_MODE_BIG_ENDIAN), "ssl/sparc.ssl")
+    : CapstoneDecoder(project, cs::CS_ARCH_SPARC, (cs::cs_mode)(cs::CS_MODE_BIG_ENDIAN),
+                      "ssl/sparc.ssl")
 {
 }
 
@@ -142,8 +139,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
     decodedInstruction.detail = &insnDetail;
 
     size_t bufsize = SPARC_INSTRUCTION_LENGTH;
-    uint64_t addr = pc.value();
-    result.valid = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
+    uint64_t addr  = pc.value();
+    result.valid   = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
                                       &decodedInstruction);
 
     if (!result.valid) {
@@ -162,7 +159,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         decodedInstruction.address = pc.value();
     }
 
-    printf("0x%lx %08x %s %s\n", decodedInstruction.address, Util::normEndian(*(uint32 *)oldInstructionData, Endian::Big),
+    printf("0x%lx %08x %s %s\n", decodedInstruction.address,
+           Util::normEndian(*(uint32 *)oldInstructionData, Endian::Big),
            decodedInstruction.mnemonic, decodedInstruction.op_str);
 
     result.type         = getInstructionType(&decodedInstruction);
@@ -250,9 +248,9 @@ SharedExp CapstoneSPARCDecoder::operandToExp(const cs::cs_insn *instruction, int
 
 
 std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
-                                                                    cs::cs_insn* instruction)
+                                                                   cs::cs_insn *instruction)
 {
-    const int numOperands = instruction->detail->sparc.op_count;
+    const int numOperands     = instruction->detail->sparc.op_count;
     cs::cs_sparc_op *operands = instruction->detail->sparc.operands;
 
     QString insnID = instruction->mnemonic;
@@ -266,7 +264,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
     if (instruction->id == cs::SPARC_INS_LDD) {
         const bool isFloatReg = instruction->detail->sparc.operands[1].reg >= cs::SPARC_REG_F0 &&
-            instruction->detail->sparc.operands[1].reg <= cs::SPARC_REG_F62;
+                                instruction->detail->sparc.operands[1].reg <= cs::SPARC_REG_F62;
 
         if (isFloatReg) {
             insnID = "LDDF";
@@ -274,7 +272,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
     else if (instruction->id == cs::SPARC_INS_STD) {
         const bool isFloatReg = instruction->detail->sparc.operands[0].reg >= cs::SPARC_REG_F0 &&
-        instruction->detail->sparc.operands[0].reg <= cs::SPARC_REG_F62;
+                                instruction->detail->sparc.operands[0].reg <= cs::SPARC_REG_F62;
 
         if (isFloatReg) {
             insnID = "STDF";
@@ -306,19 +304,19 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         BranchType bt = BranchType::INVALID;
 
         switch (instruction->detail->sparc.cc) {
-            case cs::SPARC_CC_ICC_NE: bt = BranchType::JNE; break;
-            case cs::SPARC_CC_ICC_E:  bt = BranchType::JE;  break;
-            case cs::SPARC_CC_ICC_G:  bt = BranchType::JSG; break;
-            case cs::SPARC_CC_ICC_LE: bt = BranchType::JSLE; break;
-            case cs::SPARC_CC_ICC_GE: bt = BranchType::JSGE; break;
-            case cs::SPARC_CC_ICC_L:  bt = BranchType::JSL;  break;
-            case cs::SPARC_CC_ICC_GU: bt = BranchType::JUG; break;
-            case cs::SPARC_CC_ICC_LEU: bt = BranchType::JULE; break;
-            case cs::SPARC_CC_ICC_CC:  bt = BranchType::JUGE; break;
-            case cs::SPARC_CC_ICC_CS:  bt = BranchType::JUL; break;
-            case cs::SPARC_CC_ICC_POS: bt = BranchType::JPOS; break;
-            case cs::SPARC_CC_ICC_NEG: bt = BranchType::JMI;  break;
-            default: break;
+        case cs::SPARC_CC_ICC_NE: bt = BranchType::JNE; break;
+        case cs::SPARC_CC_ICC_E: bt = BranchType::JE; break;
+        case cs::SPARC_CC_ICC_G: bt = BranchType::JSG; break;
+        case cs::SPARC_CC_ICC_LE: bt = BranchType::JSLE; break;
+        case cs::SPARC_CC_ICC_GE: bt = BranchType::JSGE; break;
+        case cs::SPARC_CC_ICC_L: bt = BranchType::JSL; break;
+        case cs::SPARC_CC_ICC_GU: bt = BranchType::JUG; break;
+        case cs::SPARC_CC_ICC_LEU: bt = BranchType::JULE; break;
+        case cs::SPARC_CC_ICC_CC: bt = BranchType::JUGE; break;
+        case cs::SPARC_CC_ICC_CS: bt = BranchType::JUL; break;
+        case cs::SPARC_CC_ICC_POS: bt = BranchType::JPOS; break;
+        case cs::SPARC_CC_ICC_NEG: bt = BranchType::JMI; break;
+        default: break;
         }
 
         branch->setCondType(bt);
@@ -333,19 +331,19 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         BranchType bt = BranchType::INVALID;
 
         switch (instruction->detail->sparc.cc) {
-            case cs::SPARC_CC_FCC_NE: bt = BranchType::JNE;  break;
-            case cs::SPARC_CC_FCC_E:  bt = BranchType::JE;   break;
-            case cs::SPARC_CC_FCC_G:  bt = BranchType::JSG;  break;
-            case cs::SPARC_CC_FCC_LE: bt = BranchType::JSLE; break;
-            case cs::SPARC_CC_FCC_GE: bt = BranchType::JSGE; break;
-            case cs::SPARC_CC_FCC_L:  bt = BranchType::JSL;  break;
-            case cs::SPARC_CC_FCC_UG: bt = BranchType::JSG;  break;
-            case cs::SPARC_CC_FCC_UL: bt = BranchType::JSL;  break;
-            case cs::SPARC_CC_FCC_LG: bt = BranchType::JNE;  break;
-            case cs::SPARC_CC_FCC_UE: bt = BranchType::JE;   break;
-            case cs::SPARC_CC_FCC_UGE: bt = BranchType::JSGE; break;
-            case cs::SPARC_CC_FCC_ULE: bt = BranchType::JSLE; break;
-            default: break;
+        case cs::SPARC_CC_FCC_NE: bt = BranchType::JNE; break;
+        case cs::SPARC_CC_FCC_E: bt = BranchType::JE; break;
+        case cs::SPARC_CC_FCC_G: bt = BranchType::JSG; break;
+        case cs::SPARC_CC_FCC_LE: bt = BranchType::JSLE; break;
+        case cs::SPARC_CC_FCC_GE: bt = BranchType::JSGE; break;
+        case cs::SPARC_CC_FCC_L: bt = BranchType::JSL; break;
+        case cs::SPARC_CC_FCC_UG: bt = BranchType::JSG; break;
+        case cs::SPARC_CC_FCC_UL: bt = BranchType::JSL; break;
+        case cs::SPARC_CC_FCC_LG: bt = BranchType::JNE; break;
+        case cs::SPARC_CC_FCC_UE: bt = BranchType::JE; break;
+        case cs::SPARC_CC_FCC_UGE: bt = BranchType::JSGE; break;
+        case cs::SPARC_CC_FCC_ULE: bt = BranchType::JSLE; break;
+        default: break;
         }
 
         branch->setCondType(bt, true);
@@ -377,7 +375,8 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
                 call->setDest(callDest->access<Const>()->getAddr());
 
                 if (m_prog) {
-                    Function *destProc = m_prog->getOrCreateFunction(callDest->access<Const>()->getAddr());
+                    Function *destProc = m_prog->getOrCreateFunction(
+                        callDest->access<Const>()->getAddr());
 
                     if (destProc == reinterpret_cast<Function *>(-1)) {
                         destProc = nullptr;
@@ -405,7 +404,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         rtl->append(caseStmt);
     }
     else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
-        instruction->id == cs::SPARC_INS_RETT) {
+             instruction->id == cs::SPARC_INS_RETT) {
         rtl->clear();
         ReturnStatement *retStmt = new ReturnStatement;
         rtl->append(retStmt);
@@ -523,7 +522,7 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
         return ICLASS::NOP;
     }
     else if (instruction->id == cs::SPARC_INS_CALL &&
-            instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
+             instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
         if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
             return ICLASS::SD; // call %g0+foo, %o3. This is a static call
         }
@@ -532,7 +531,7 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
         }
     }
     else if ((instruction->id == cs::SPARC_INS_JMP || instruction->id == cs::SPARC_INS_JMPL) &&
-            instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
+             instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
         if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
             return ICLASS::SD;
         }
@@ -553,7 +552,7 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
 }
 
 
-int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int opIdx) const
+int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn *instruction, int opIdx) const
 {
     switch (instruction->id) {
         // these always have 32 bit operands
@@ -578,30 +577,23 @@ int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn* instruction, int 
     case cs::SPARC_INS_FDIVQ:
     case cs::SPARC_INS_FMULQ:
     case cs::SPARC_INS_FSQRTQ:
-    case cs::SPARC_INS_FSUBQ:
-        return 128;
+    case cs::SPARC_INS_FSUBQ: return 128;
 
     case cs::SPARC_INS_FDTOI:
-    case cs::SPARC_INS_FDTOS:
-        return (opIdx == 0) ? 64 : 32;
+    case cs::SPARC_INS_FDTOS: return (opIdx == 0) ? 64 : 32;
 
     case cs::SPARC_INS_FQTOS:
-    case cs::SPARC_INS_FQTOI:
-        return (opIdx == 0) ? 128 : 32;
+    case cs::SPARC_INS_FQTOI: return (opIdx == 0) ? 128 : 32;
 
-    case cs::SPARC_INS_FQTOD:
-        return (opIdx == 0) ? 128 : 64;
+    case cs::SPARC_INS_FQTOD: return (opIdx == 0) ? 128 : 64;
 
-    case cs::SPARC_INS_FDTOQ:
-        return (opIdx == 0) ? 64 : 128;
+    case cs::SPARC_INS_FDTOQ: return (opIdx == 0) ? 64 : 128;
 
     case cs::SPARC_INS_FITOD:
-    case cs::SPARC_INS_FSTOD:
-        return (opIdx == 0) ? 32 : 64;
+    case cs::SPARC_INS_FSTOD: return (opIdx == 0) ? 32 : 64;
 
     case cs::SPARC_INS_FITOQ:
-    case cs::SPARC_INS_FSTOQ:
-        return (opIdx == 0) ? 32 : 128;
+    case cs::SPARC_INS_FSTOQ: return (opIdx == 0) ? 32 : 128;
     };
 
     return 32;
@@ -639,39 +631,35 @@ bool CapstoneSPARCDecoder::decodeLDD(cs::cs_insn *decodedInstruction, uint32_t i
 
     const cs::sparc_reg rd  = fixSparcReg((insn >> 25) & 0x1F);
     const cs::sparc_reg rs1 = fixSparcReg((insn >> 14) & 0x1F);
-    const bool hasImm = ((insn >> 13) & 1) != 0;
+    const bool hasImm       = ((insn >> 13) & 1) != 0;
 
-    decodedInstruction->id = cs::SPARC_INS_LDD;
+    decodedInstruction->id   = cs::SPARC_INS_LDD;
     decodedInstruction->size = SPARC_INSTRUCTION_LENGTH;
 
-    decodedInstruction->detail->sparc.cc = cs::SPARC_CC_INVALID;
-    decodedInstruction->detail->sparc.hint = cs::SPARC_HINT_INVALID;
+    decodedInstruction->detail->sparc.cc       = cs::SPARC_CC_INVALID;
+    decodedInstruction->detail->sparc.hint     = cs::SPARC_HINT_INVALID;
     decodedInstruction->detail->sparc.op_count = 2;
 
-    decodedInstruction->detail->sparc.operands[0].type = cs::SPARC_OP_MEM;
+    decodedInstruction->detail->sparc.operands[0].type     = cs::SPARC_OP_MEM;
     decodedInstruction->detail->sparc.operands[0].mem.base = rs1;
 
     if (hasImm) {
         const int simm = Util::signExtend(insn & 0x1FFF, 13);
         decodedInstruction->detail->sparc.operands[0].mem.index = cs::SPARC_REG_INVALID;
-        decodedInstruction->detail->sparc.operands[0].mem.disp = simm;
-        std::sprintf(decodedInstruction->op_str, "[%s + %d], %s",
-                     cs::cs_reg_name(m_handle, rs1),
-                     simm,
-                     cs::cs_reg_name(m_handle, rd));
+        decodedInstruction->detail->sparc.operands[0].mem.disp  = simm;
+        std::sprintf(decodedInstruction->op_str, "[%s + %d], %s", cs::cs_reg_name(m_handle, rs1),
+                     simm, cs::cs_reg_name(m_handle, rd));
     }
     else { // reg offset
-        const cs::sparc_reg rs2 = fixSparcReg(insn & 0x1F);
+        const cs::sparc_reg rs2                                 = fixSparcReg(insn & 0x1F);
         decodedInstruction->detail->sparc.operands[0].mem.index = rs2;
-        decodedInstruction->detail->sparc.operands[0].mem.disp = 0;
-        std::sprintf(decodedInstruction->op_str, "[%s + %s], %s",
-                     cs::cs_reg_name(m_handle, rs1),
-                     cs::cs_reg_name(m_handle, rs2),
-                     cs::cs_reg_name(m_handle, rd));
+        decodedInstruction->detail->sparc.operands[0].mem.disp  = 0;
+        std::sprintf(decodedInstruction->op_str, "[%s + %s], %s", cs::cs_reg_name(m_handle, rs1),
+                     cs::cs_reg_name(m_handle, rs2), cs::cs_reg_name(m_handle, rd));
     }
 
     decodedInstruction->detail->sparc.operands[1].type = cs::SPARC_OP_REG;
-    decodedInstruction->detail->sparc.operands[1].reg = rd;
+    decodedInstruction->detail->sparc.operands[1].reg  = rd;
 
     Util::writeDWord(&decodedInstruction->bytes, insn, Endian::Little);
     decodedInstruction->bytes[4] = 0;
@@ -688,39 +676,35 @@ bool CapstoneSPARCDecoder::decodeSTD(cs::cs_insn *decodedInstruction, uint32_t i
 
     const cs::sparc_reg rd  = fixSparcReg((insn >> 25) & 0x1F);
     const cs::sparc_reg rs1 = fixSparcReg((insn >> 14) & 0x1F);
-    const bool hasImm = ((insn >> 13) & 1) != 0;
+    const bool hasImm       = ((insn >> 13) & 1) != 0;
 
-    decodedInstruction->id = cs::SPARC_INS_STD;
+    decodedInstruction->id   = cs::SPARC_INS_STD;
     decodedInstruction->size = SPARC_INSTRUCTION_LENGTH;
 
-    decodedInstruction->detail->sparc.cc = cs::SPARC_CC_INVALID;
-    decodedInstruction->detail->sparc.hint = cs::SPARC_HINT_INVALID;
+    decodedInstruction->detail->sparc.cc       = cs::SPARC_CC_INVALID;
+    decodedInstruction->detail->sparc.hint     = cs::SPARC_HINT_INVALID;
     decodedInstruction->detail->sparc.op_count = 2;
 
-    decodedInstruction->detail->sparc.operands[1].type = cs::SPARC_OP_MEM;
+    decodedInstruction->detail->sparc.operands[1].type     = cs::SPARC_OP_MEM;
     decodedInstruction->detail->sparc.operands[1].mem.base = rs1;
 
     if (hasImm) {
         const int simm = Util::signExtend(insn & 0x1FFF, 1);
         decodedInstruction->detail->sparc.operands[1].mem.index = cs::SPARC_REG_INVALID;
-        decodedInstruction->detail->sparc.operands[1].mem.disp = simm;
-        std::sprintf(decodedInstruction->op_str, "%s, [%s + %d]",
-                     cs::cs_reg_name(m_handle, rd),
-                     cs::cs_reg_name(m_handle, rs1),
-                     simm);
+        decodedInstruction->detail->sparc.operands[1].mem.disp  = simm;
+        std::sprintf(decodedInstruction->op_str, "%s, [%s + %d]", cs::cs_reg_name(m_handle, rd),
+                     cs::cs_reg_name(m_handle, rs1), simm);
     }
     else { // reg offset
-        const cs::sparc_reg rs2 = fixSparcReg(insn & 0x1F);
+        const cs::sparc_reg rs2                                 = fixSparcReg(insn & 0x1F);
         decodedInstruction->detail->sparc.operands[1].mem.index = rs2;
-        decodedInstruction->detail->sparc.operands[1].mem.disp = 0;
-        std::sprintf(decodedInstruction->op_str, "%s, [%s + %s]",
-                     cs::cs_reg_name(m_handle, rd),
-                     cs::cs_reg_name(m_handle, rs1),
-                     cs::cs_reg_name(m_handle, rs2));
+        decodedInstruction->detail->sparc.operands[1].mem.disp  = 0;
+        std::sprintf(decodedInstruction->op_str, "%s, [%s + %s]", cs::cs_reg_name(m_handle, rd),
+                     cs::cs_reg_name(m_handle, rs1), cs::cs_reg_name(m_handle, rs2));
     }
 
     decodedInstruction->detail->sparc.operands[0].type = cs::SPARC_OP_REG;
-    decodedInstruction->detail->sparc.operands[0].reg = rd;
+    decodedInstruction->detail->sparc.operands[0].reg  = rd;
 
     Util::writeDWord(&decodedInstruction->bytes, insn, Endian::Little);
     decodedInstruction->bytes[4] = 0;

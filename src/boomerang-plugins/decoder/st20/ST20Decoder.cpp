@@ -40,7 +40,6 @@ static const char *functionNames[] = {
 };
 
 
-
 ST20Decoder::ST20Decoder(Project *project)
     : IDecoder(project)
     , m_rtlDict(project->getSettings()->debugDecoder)
