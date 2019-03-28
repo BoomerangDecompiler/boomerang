@@ -378,7 +378,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
         rtl->append(call);
     }
-    else if (instruction->id == cs::SPARC_INS_JMPL) {
+    else if (instruction->id == cs::SPARC_INS_JMPL || instruction->id == cs::SPARC_INS_JMP) {
         rtl->clear();
         CaseStatement *caseStmt = new CaseStatement;
         caseStmt->setIsComputed(true);
@@ -387,22 +387,6 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         // returned by operandToExp by an addrof
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
         rtl->append(caseStmt);
-    }
-    else if (instruction->id == cs::SPARC_INS_JMP) {
-        rtl->clear();
-        GotoStatement *gotoStmt = new GotoStatement;
-        const SharedExp dest = Unary::get(opAddrOf, operandToExp(instruction, 0))->simplify();
-
-        if (dest->isConst()) {
-            gotoStmt->setDest(dest->access<Const>()->getAddr());
-            gotoStmt->setIsComputed(false);
-        }
-        else {
-            gotoStmt->setDest(dest);
-            gotoStmt->setIsComputed(true);
-        }
-
-        rtl->append(gotoStmt);
     }
     else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
         instruction->id == cs::SPARC_INS_RETT) {
