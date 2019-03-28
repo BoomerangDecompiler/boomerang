@@ -354,11 +354,28 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
                 call->setDestProc(destProc);
             }
         }
-        else { // reg
-            SharedExp callDest = Location::regOf(fixRegNum(operands[0].reg));
-            call->setIsComputed(true);
-            call->setDest(callDest);
+        else { // mem / reg
+            SharedExp callDest = Unary::get(opAddrOf, operandToExp(instruction, 0))->simplify();
+            if (callDest->isConst()) {
+                call->setIsComputed(false);
+                call->setDest(callDest->access<Const>()->getAddr());
+
+                if (m_prog) {
+                    Function *destProc = m_prog->getOrCreateFunction(callDest->access<Const>()->getAddr());
+
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
+                        destProc = nullptr;
+                    }
+
+                    call->setDestProc(destProc);
+                }
+            }
+            else {
+                call->setIsComputed(true);
+                call->setDest(callDest);
+            }
         }
+
 
         rtl->append(call);
     }
