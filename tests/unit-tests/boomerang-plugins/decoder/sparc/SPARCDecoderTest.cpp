@@ -633,6 +633,12 @@ void SPARCDecoderTest::testInstructions_data()
                 "0x00001000    0 CASE [r1 + 0x800]\n"
     );
 
+    TEST_DECODE("jmpl 0x800, %o7", "\x9f\xc0\x28\x00", ICLASS::DD,
+                "0x00001000    0 <all> := CALL 0x800(<all>)\n"
+                "              Reaching definitions: <None>\n"
+                "              Live variables: <None>\n"
+    );
+
     TEST_DECODE("ld [%g0], %g1", "\xc2\x00\x20\x00", ICLASS::NCT,
                 "0x00001000    0 *32* r1 := m[0]\n"  //< TODO shouldn't this read m[%g0] ?
     );
