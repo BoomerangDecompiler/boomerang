@@ -155,8 +155,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         }
     }
 
-//     printf("0x%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
-//            decodedInstruction->mnemonic, decodedInstruction->op_str);
+    printf("0x%lx %08x %s %s\n", decodedInstruction.address, *(uint32 *)instructionData,
+           decodedInstruction.mnemonic, decodedInstruction.op_str);
 
     result.type         = getInstructionType(&decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
@@ -370,6 +370,21 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
         rtl->append(caseStmt);
     }
+    else if (instruction->id == cs::SPARC_INS_JMP) {
+        rtl->clear();
+        GotoStatement *gotoStmt = new GotoStatement;
+        SharedExp dest = operandToExp(instruction, 0);
+        if (dest->isConst()) {
+            gotoStmt->setDest(dest->access<Const>()->getAddr());
+            gotoStmt->setIsComputed(false);
+        }
+        else {
+            gotoStmt->setDest(dest);
+            gotoStmt->setIsComputed(true);
+        }
+
+        rtl->append(gotoStmt);
+    }
     else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL) {
         rtl->clear();
         ReturnStatement *retStmt = new ReturnStatement;
@@ -476,6 +491,7 @@ static const std::map<QString, ICLASS> g_instructionTypes = {
     { "fbule",  ICLASS::SCD     },
     { "fbule,a",ICLASS::SCDAN   },
 
+    { "jmp",    ICLASS::DD      },
     { "jmpl",   ICLASS::DD      },
     { "ret",    ICLASS::DD      },
     { "retl",   ICLASS::DD      }

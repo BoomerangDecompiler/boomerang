@@ -599,7 +599,7 @@ CALL    dest    _;
 # Register indirect transfer of control
 # Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
 JMPL  eaddr, rd _;
-
+JMP   dest      _;
 
 # Read and Write State Register Instructions
 RD src, dest            *32* dest := src;
