@@ -538,7 +538,11 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
 
     // FIXME: This code should check instruction->detail.sparc instead, however Casptone
     // still has some bugs wrt. condition codes of branches, e.g. ba has cc invalid instead of 'a'
-    const QString insMnemonic = QString(instruction->mnemonic);
+    QString insMnemonic = QString(instruction->mnemonic);
+    if (insMnemonic.endsWith(",pn") || insMnemonic.endsWith(",pt")) {
+        insMnemonic.chop(3);
+    }
+
     const auto it = g_instructionTypes.find(insMnemonic);
     return it != g_instructionTypes.end() ? it->second : ICLASS::NCT;
 }
