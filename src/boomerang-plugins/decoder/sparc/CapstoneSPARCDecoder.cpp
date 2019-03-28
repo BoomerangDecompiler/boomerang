@@ -390,7 +390,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
 
         // Capstone returns the operand as SPARC_OP_MEM, so we have to "undo" the outermost memof
         // returned by operandToExp by an addrof
-        caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0)));
+        caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0))->simplify());
         rtl->append(caseStmt);
     }
     else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
