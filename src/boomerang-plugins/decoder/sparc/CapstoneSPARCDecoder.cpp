@@ -159,10 +159,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         decodedInstruction.address = pc.value();
     }
 
-    printf("0x%lx %08x %s %s\n", decodedInstruction.address,
-           Util::normEndian(*(uint32 *)oldInstructionData, Endian::Big),
-           decodedInstruction.mnemonic, decodedInstruction.op_str);
-
     result.type         = getInstructionType(&decodedInstruction);
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
     result.reDecode     = false;
