@@ -172,6 +172,11 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
     result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
 
+    if (result.rtl->empty()) {
+        // Force empty unrecognized instructions to have NOP type instead of NCT
+        result.type = NOP;
+    }
+
     return true;
 }
 
@@ -277,6 +282,12 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
 
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), instruction);
+
+    if (rtl == nullptr) {
+        LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
+                  insnID, instruction->op_str);
+        return std::make_unique<RTL>(pc);
+    }
 
     if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
         rtl->clear();
@@ -398,12 +409,6 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         rtl->clear();
         ReturnStatement *retStmt = new ReturnStatement;
         rtl->append(retStmt);
-    }
-
-    if (rtl == nullptr) {
-        LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
-                  insnID, instruction->op_str);
-        return std::make_unique<RTL>(pc);
     }
 
     return rtl;
