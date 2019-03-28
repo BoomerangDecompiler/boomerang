@@ -32,7 +32,9 @@ static std::map<cs::sparc_reg, RegNum> oldRegMap = {
     { cs::SPARC_REG_Y, REG_SPARC_Y },
     { cs::SPARC_REG_SP, REG_SPARC_SP },
     { cs::SPARC_REG_FP, REG_SPARC_FP },
-    { cs::SPARC_REG_ICC, REG_SPARC_ICC }
+    { cs::SPARC_REG_ICC, REG_SPARC_ICC },
+    { cs::SPARC_REG_O6, REG_SPARC_O6 },
+    { cs::SPARC_REG_O7, REG_SPARC_O7 }
 };
 // clang-format on
 
@@ -67,10 +69,13 @@ RegNum CapstoneSPARCDecoder::fixRegNum(const cs::cs_insn *insn, int opIdx) const
 
 RegNum CapstoneSPARCDecoder::fixRegNum(int csRegID) const
 {
+
     if (csRegID >= cs::SPARC_REG_G0 && csRegID <= cs::SPARC_REG_G7) {
         return REG_SPARC_G0 + (csRegID - cs::SPARC_REG_G0);
     }
-    else if (csRegID >= cs::SPARC_REG_O0 && csRegID <= cs::SPARC_REG_O7) {
+    // Workaround for bug in Capstone (o0..o7 are not numbered sequentially).
+    // o6 and o7 are handled by oldRegMap
+    else if (csRegID >= cs::SPARC_REG_O0 && csRegID <= cs::SPARC_REG_O5) {
         return REG_SPARC_O0 + (csRegID - cs::SPARC_REG_O0);
     }
     else if (csRegID >= cs::SPARC_REG_I0 && csRegID <= cs::SPARC_REG_I7) {
