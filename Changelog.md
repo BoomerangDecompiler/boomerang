@@ -11,6 +11,7 @@ v0.5.0 (in development)
 - Fixed: Crash when removing an empty jump in a delay slot on SPARC.
 - Fixed: Crash when analyzing data-flow for functions consisting of a single Basic Block.
 - Fixed: Potential crash when decompiling non-constant register expressions.
+- Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
@@ -20,6 +21,7 @@ v0.5.0 (in development)
 - Fixed: Wrong decompilation of x86 binaries containing a `cmovCC`-type instruction.
 - Fixed: Wrong decompilation of x86 binaries using the `sahf` instruction in floating point comparisons.
 - Fixed: Wrong decompilation of ppc binaries using the LR or CTR register in calls or switch statements.
+- Fixed: Wrong decompilation of SPARC branches where the branch and the delay slot cannot be swapped.
 - Fixed: Unnecessary union types in high level code due to non-symmetric type meet operator.
 - Fixed: Missing rotation amount for left and right rotates in high level code.
 - Fixed: High level code output for bit extraction operator on right hand side of assignments.

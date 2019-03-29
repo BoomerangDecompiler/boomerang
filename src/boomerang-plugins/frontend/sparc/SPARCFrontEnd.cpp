@@ -476,21 +476,10 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
         tq.visit(cfg, jumpDest, newBB);
         std::unique_ptr<RTLList> orphanBBRTLs(new RTLList);
 
-        // Change the address to 0, since this code has no source address (else we may branch to
-        // here when we want to branch to the real BB with this instruction). Note that you can't
-        // use an address that is a fixed function of the destination addr, because there can be
-        // several jumps to the same destination that all require an orphan. The instruction in the
-        // orphan will often but not necessarily be the same, so we can't use the same orphan BB.
-        // newBB knows to consider BBs with address 0 as being in the map, so several BBs can exist
-        // with address 0
-        delay_inst.rtl->setAddress(Address::ZERO);
+        // Add a branch from the orphan instruction to the dest of the branch.
+        delay_inst.rtl->append(new GotoStatement(jumpDest));
         orphanBBRTLs->push_back(std::move(delay_inst.rtl));
 
-
-        // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even
-        // give the jumps a special address like 1, since then the BB would have this lowAddr.
-        std::unique_ptr<RTL> gl(new RTL(Address::ZERO, { new GotoStatement(jumpDest) }));
-        orphanBBRTLs->push_back(std::move(gl));
         BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanBBRTLs));
 
         // Add an out edge from the orphan as well
@@ -547,16 +536,13 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
         // Visit the target of the branch
         tq.visit(cfg, jumpDest, newBB);
 
-        std::unique_ptr<RTLList> orphanRTLs(new RTLList);
-        // Change the address to 0, since this code has no source address (else we may branch to
-        // here when we want to branch to the real BB with this instruction).
-        delayInst.rtl->setAddress(Address::ZERO);
-        orphanRTLs->push_back(std::move(delayInst.rtl));
+        std::unique_ptr<RTLList> orphanRTL(new RTLList);
 
-        // Add a branch from the orphan instruction to the dest of the branch
-        std::unique_ptr<RTL> gl(new RTL(Address::ZERO, { new GotoStatement(jumpDest) }));
-        orphanRTLs->push_back(std::move(gl));
-        BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanRTLs));
+        // Also add a branch from the orphan instruction to the dest of the branch
+        delayInst.rtl->append(new GotoStatement(jumpDest));
+        orphanRTL->push_back(std::move(delayInst.rtl));
+
+        BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanRTL));
 
         // Add an out edge from the orphan as well. Set a label there.
         cfg->addEdge(orphanBB, jumpDest);
