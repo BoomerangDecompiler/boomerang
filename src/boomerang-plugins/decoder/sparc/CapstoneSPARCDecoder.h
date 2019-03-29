@@ -15,7 +15,7 @@
 #include "boomerang/core/BoomerangAPI.h"
 
 
-class BOOMERANG_API CapstoneSPARCDecoder : public CapstoneDecoder
+class BOOMERANG_PLUGIN_API CapstoneSPARCDecoder : public CapstoneDecoder
 {
 public:
     CapstoneSPARCDecoder(Project *project);
