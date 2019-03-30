@@ -116,7 +116,10 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
             stmt->setBB(this);
         }
 
-        assert(firstRTL || rtl->getAddress() != Address::ZERO);
+        if (!firstRTL) {
+            assert(rtl->getAddress() != Address::ZERO);
+        }
+
         firstRTL = false;
     }
 }
