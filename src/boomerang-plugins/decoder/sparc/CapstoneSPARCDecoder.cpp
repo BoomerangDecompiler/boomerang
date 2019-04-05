@@ -29,12 +29,12 @@
 // not all registers supported by capstone
 // clang-format off
 static std::map<cs::sparc_reg, RegNum> oldRegMap = {
-    { cs::SPARC_REG_Y, REG_SPARC_Y },
-    { cs::SPARC_REG_SP, REG_SPARC_SP },
-    { cs::SPARC_REG_FP, REG_SPARC_FP },
+    { cs::SPARC_REG_Y,   REG_SPARC_Y   },
+    { cs::SPARC_REG_SP,  REG_SPARC_SP  },
+    { cs::SPARC_REG_FP,  REG_SPARC_FP  },
     { cs::SPARC_REG_ICC, REG_SPARC_ICC },
-    { cs::SPARC_REG_O6, REG_SPARC_O6 },
-    { cs::SPARC_REG_O7, REG_SPARC_O7 }
+    { cs::SPARC_REG_O6,  REG_SPARC_O6  },
+    { cs::SPARC_REG_O7,  REG_SPARC_O7  }
 };
 // clang-format on
 
@@ -596,6 +596,7 @@ int CapstoneSPARCDecoder::getRegOperandSize(const cs::cs_insn *instruction, int 
 }
 
 
+/// Manual translation of register code to Capstone register
 cs::sparc_reg fixSparcReg(uint8 code)
 {
     if (code == 30) {
