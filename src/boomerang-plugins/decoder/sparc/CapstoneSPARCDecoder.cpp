@@ -123,8 +123,7 @@ SharedExp CapstoneSPARCDecoder::getRegExp(int csRegID) const
 
 
 CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
-    : CapstoneDecoder(project, cs::CS_ARCH_SPARC, (cs::cs_mode)(cs::CS_MODE_BIG_ENDIAN),
-                      "ssl/sparc.ssl")
+    : CapstoneDecoder(project, cs::CS_ARCH_SPARC, cs::CS_MODE_BIG_ENDIAN, "ssl/sparc.ssl")
 {
 }
 
