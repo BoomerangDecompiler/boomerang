@@ -21,7 +21,6 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/NJMCDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Binary.h"
@@ -477,21 +476,10 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
         tq.visit(cfg, jumpDest, newBB);
         std::unique_ptr<RTLList> orphanBBRTLs(new RTLList);
 
-        // Change the address to 0, since this code has no source address (else we may branch to
-        // here when we want to branch to the real BB with this instruction). Note that you can't
-        // use an address that is a fixed function of the destination addr, because there can be
-        // several jumps to the same destination that all require an orphan. The instruction in the
-        // orphan will often but not necessarily be the same, so we can't use the same orphan BB.
-        // newBB knows to consider BBs with address 0 as being in the map, so several BBs can exist
-        // with address 0
-        delay_inst.rtl->setAddress(Address::ZERO);
+        // Add a branch from the orphan instruction to the dest of the branch.
+        delay_inst.rtl->append(new GotoStatement(jumpDest));
         orphanBBRTLs->push_back(std::move(delay_inst.rtl));
 
-
-        // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even
-        // give the jumps a special address like 1, since then the BB would have this lowAddr.
-        std::unique_ptr<RTL> gl(new RTL(Address::ZERO, { new GotoStatement(jumpDest) }));
-        orphanBBRTLs->push_back(std::move(gl));
         BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanBBRTLs));
 
         // Add an out edge from the orphan as well
@@ -548,16 +536,13 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
         // Visit the target of the branch
         tq.visit(cfg, jumpDest, newBB);
 
-        std::unique_ptr<RTLList> orphanRTLs(new RTLList);
-        // Change the address to 0, since this code has no source address (else we may branch to
-        // here when we want to branch to the real BB with this instruction).
-        delayInst.rtl->setAddress(Address::ZERO);
-        orphanRTLs->push_back(std::move(delayInst.rtl));
+        std::unique_ptr<RTLList> orphanRTL(new RTLList);
 
-        // Add a branch from the orphan instruction to the dest of the branch
-        std::unique_ptr<RTL> gl(new RTL(Address::ZERO, { new GotoStatement(jumpDest) }));
-        orphanRTLs->push_back(std::move(gl));
-        BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanRTLs));
+        // Also add a branch from the orphan instruction to the dest of the branch
+        delayInst.rtl->append(new GotoStatement(jumpDest));
+        orphanRTL->push_back(std::move(delayInst.rtl));
+
+        BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanRTL));
 
         // Add an out edge from the orphan as well. Set a label there.
         cfg->addEdge(orphanBB, jumpDest);
@@ -729,9 +714,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                    if (static_cast<NJMCDecoder *>(m_decoder)->isRestore(
-                            HostAddress(pc.value() + inst.numBytes +
-                                        m_program->getBinaryFile()->getImage()->getTextDelta()))) {
+                    const ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
+                    if (m_decoder->isSPARCRestore(pc + inst.numBytes, delta)) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
                         delayInst.rtl->setAddress(pc);
@@ -761,7 +745,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     if (a && a->isAssign()) {
                         SharedExp lhs = static_cast<Assign *>(a)->getLeft();
 
-                        if (lhs->isRegN(15)) { // %o7 is r[15]
+                        if (lhs->isRegN(REG_SPARC_O7)) {
                             // If it's an add, this is special. Example:
                             //     call foo
                             //     add %o7, K, %o7
@@ -1271,7 +1255,7 @@ bool SPARCFrontEnd::helperFuncLong(Address dest, Address addr, RTLList &lrtl, QS
 SPARCFrontEnd::SPARCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    Plugin *plugin = project->getPluginManager()->getPluginByName("SPARC decoder plugin");
+    Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone SPARC decoder plugin");
     if (plugin) {
         m_decoder = plugin->getIfc<IDecoder>();
         m_decoder->initialize(project);

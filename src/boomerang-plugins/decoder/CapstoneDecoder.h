@@ -43,6 +43,9 @@ public:
 public:
     const RTLInstDict *getDict() const override { return &m_dict; }
 
+    /// \copydoc IDecoder::isSPARCRestore
+    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
+
 protected:
     virtual bool initialize(Project *project) override;
 

@@ -122,19 +122,20 @@ FLOAT %f28to31[128]-> 87 COVERS %f28..%f31;
 # control regs
 INTEGER %pc[32]  -> -1;
 INTEGER %npc[32] -> -1;
-INTEGER %Y[32]   -> -1;
-INTEGER %CWP[32] -> -1;
-INTEGER %TBR[32] -> -1;
-INTEGER %WIM[32] -> -1;
-INTEGER %PSR[32] -> -1;
-INTEGER %FSR[32] -> -1;
+
+INTEGER %Y[32]   -> 100;
+INTEGER %CWP[32] -> 101;
+INTEGER %TBR[32] -> 102;
+INTEGER %WIM[32] -> 103;
+INTEGER %PSR[32] -> 104;
+INTEGER %FSR[32] -> 105;
 
 # Standard flags
-INTEGER %CF[1] -> -1;
-INTEGER %ZF[1] -> -1;
-INTEGER %NF[1] -> -1;
-INTEGER %OF[1] -> -1;
-INTEGER %AF[1] -> -1;
+FLAGS %icc[4] -> 200 SHARES %PSR@[20..23];
+FLAGS %CF[1] -> -1 SHARES %icc@[0..0];
+FLAGS %OF[1] -> -1 SHARES %icc@[1..1];
+FLAGS %ZF[1] -> -1 SHARES %icc@[2..2];
+FLAGS %NF[1] -> -1 SHARES %icc@[3..3];
 
 # Floating point flags
 INTEGER %FZF[1] -> -1;
@@ -226,19 +227,24 @@ TRAP(cond, op1) {
 };
 
 
+#synthetic instructions
+MOV src, dest           *32* dest := src;
+CMP rs1, reg_or_imm     *32* tmp := rs1     *32* %g0 := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, %g0);
+
+
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd.
 
-LDD eaddr, rd
-    *32*    rd       := m[eaddr]
-    *32*    succ(rd) := m[eaddr + WORD]
+LDD src, rd
+    *32*    rd       := src
+    *32*    succ(rd) := m[addr(src) + WORD]
 ;
 
-LD      eaddr, rd       *32* rd := m[eaddr];
-LDUH    eaddr, rd       *32* rd := zfill(16, 32, m[eaddr]);
-LDUB    eaddr, rd       *32* rd := zfill(8, 32, m[eaddr]);
-LDSH    eaddr, rd       *32* rd := sgnex(16, 32, m[eaddr]);
-LDSB    eaddr, rd       *32* rd := sgnex(8, 32, m[eaddr]);
+LD      src, dest       *32* dest := src;
+LDUH    src, dest       *32* dest := zfill(16, 32, src);
+LDUB    src, dest       *32* dest := zfill( 8, 32, src);
+LDSH    src, dest       *32* dest := sgnex(16, 32, src);
+LDSB    src, dest       *32* dest := sgnex( 8, 32, src);
 
 
 # Store double instruction- the 1st reg. of double op. must be even
@@ -247,9 +253,9 @@ STD     rd, eaddr       *32* m[eaddr] := rd
                         *32* m[eaddr + WORD] := succ(rd)
 ;
 
-ST      rd, eaddr       *32* m[eaddr] := rd;
-STH     rd, eaddr       *16* m[eaddr] := truncs(32, 16, rd);
-STB     rd, eaddr       *8*  m[eaddr] := truncs(32, 8, rd);
+ST      src, dest       *32* dest := src;
+STH     src, dest       *16* dest := truncs(32, 16, src);
+STB     src, dest       *8*  dest := truncs(32, 8, src);
 
 
 # LOad STore Unsigned Byte
@@ -260,9 +266,9 @@ LDSTUB  eaddr, rd       *32*  rd       := zfill(8, 32, m[eaddr])
                         *8*   m[eaddr] := m[eaddr] | MAX_BYTE;
 
 # Swap using temp register
-SWAP    eaddr, rd       *32* tmp1 := rd
-                        *32* rd := m[eaddr]
-                        *32* m[eaddr] := tmp1
+SWAP    lhs, rhs        *32* tmp1 := rhs
+                        *32* rhs := lhs
+                        *32* lhs := tmp1
 ;
 
 
@@ -282,7 +288,7 @@ XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rd);
 
 
 # sethi instruction- puts the immediate into the top 22 bits
-SETHI val, rd           *32* rd := val;
+SETHI val, rd           *32* rd := val << 10;
 
 NOP                     _;
 
@@ -457,6 +463,36 @@ RESTORE  rs1, reg_or_imm, rd
     *32* rd := tmp # repeat
 ;
 
+RESTORE
+    *32* tmp := 0
+    *32* %o0 := %i0
+    *32* %o1 := %i1
+    *32* %o2 := %i2
+    *32* %o3 := %i3
+    *32* %o4 := %i4
+    *32* %o5 := %i5
+    *32* %o6 := %i6
+    *32* %o7 := %i7
+    *32* %g0 := tmp
+    *32* %l0 := m[%sp+0]
+    *32* %l1 := m[%sp+4]
+    *32* %l2 := m[%sp+8]
+    *32* %l3 := m[%sp+12]
+    *32* %l4 := m[%sp+16]
+    *32* %l5 := m[%sp+20]
+    *32* %l6 := m[%sp+24]
+    *32* %l7 := m[%sp+28]
+    *32* %i0 := m[%sp+32]
+    *32* %i1 := m[%sp+36]
+    *32* %i2 := m[%sp+40]
+    *32* %i3 := m[%sp+44]
+    *32* %i4 := m[%sp+48]
+    *32* %i5 := m[%sp+52]
+    *32* %i6 := m[%sp+56]
+    *32* %i7 := m[%sp+60]
+    *32* %g0 := tmp
+;
+
 RETURN  addr
     *32* %o0 := %i0
     *32* %o1 := %i1
@@ -484,96 +520,91 @@ RETURN  addr
     *32* %i7 := m[%sp+60]
 ;
 
-# Jump instructions- uses COND table for correct boolean expression.
-# Always executes delay instr. on branch
-BA      reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BN      reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BNE     reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BE      reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BG      reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
-BLE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BGE     reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BL      reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BGU     reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BLEU    reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BCC     reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BCS     reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPOS    reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BNEG    reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BVC     reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BVS     reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+RET     _;
+RETT    _;
+RETL    _;
+
+# Jump instructions - hard-coded semantics
+BA      reloc       _;
+BA      cc, reloc   _;
+BAA     reloc       _;
+BAA     cc, reloc   _;
+BN      cc, reloc   _;
+BN      reloc       _;
+BNA     reloc       _;
+BNA     cc, reloc   _;
+
+# Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
+BNE     reloc       _;
+BNE     cc, reloc   _;
+BNEA    reloc       _;
+BNEA    cc, reloc   _;
+BE      reloc       _;
+BE      cc, reloc   _;
+BEA     reloc       _;
+BEA     cc, reloc   _;
+BG      reloc       _;
+BG      cc, reloc   _;
+BGA     reloc       _;
+BGA     cc, reloc   _;
+BLE     reloc       _;
+BLE     cc, reloc   _;
+BLEA    reloc       _;
+BLEA    cc, reloc   _;
+BGE     reloc       _;
+BGE     cc, reloc   _;
+BGEA    reloc       _;
+BGEA    cc, reloc   _;
+BL      reloc       _;
+BL      cc, reloc   _;
+BLA     reloc       _;
+BLA     cc, reloc   _;
+BGU     reloc       _;
+BGU     cc, reloc   _;
+BGUA    reloc       _;
+BGUA    cc, reloc   _;
+BLEU    reloc       _;
+BLEU    cc, reloc   _;
+BLEUA   reloc       _;
+BLEUA   cc, reloc   _;
+BCC     reloc       _;
+BCC     cc, reloc   _;
+BCCA    reloc       _;
+BCCA    cc, reloc   _;
+BCS     reloc       _;
+BCS     cc, reloc   _;
+BCSA    reloc       _;
+BCSA    cc, reloc   _;
+BPOS    reloc       _;
+BPOS    cc, reloc   _;
+BPOSA   reloc       _;
+BPOSA   cc, reloc   _;
+BNEG    reloc       _;
+BNEG    cc, reloc   _;
+BNEGA   reloc       _;
+BNEGA   cc, reloc   _;
+BVC     reloc       _;
+BVC     cc, reloc   _;
+BVCA    reloc       _;
+BVCA    cc, reloc   _;
+BVS     reloc       _;
+BVS     cc, reloc   _;
+BVSA    reloc       _;
+BVSA    cc, reloc   _;
 
 
-# Predicted jumps - treat just the same as non predicted jumps
-BPA     reloc   *32* %pc := %npc    *32* %npc := [ 1                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPN     reloc   *32* %pc := %npc    *32* %npc := [ 0                    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPNE    reloc   *32* %pc := %npc    *32* %npc := [ ~%ZF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPE     reloc   *32* %pc := %npc    *32* %npc := [ %ZF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPG     reloc   *32* %pc := %npc    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPLE    reloc   *32* %pc := %npc    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPGE    reloc   *32* %pc := %npc    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPL     reloc   *32* %pc := %npc    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPGU    reloc   *32* %pc := %npc    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPLEU   reloc   *32* %pc := %npc    *32* %npc := [ %CF | %ZF            ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPCC    reloc   *32* %pc := %npc    *32* %npc := [ ~%CF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPCS    reloc   *32* %pc := %npc    *32* %npc := [ %CF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPPOS   reloc   *32* %pc := %npc    *32* %npc := [ ~%NF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPNEG   reloc   *32* %pc := %npc    *32* %npc := [ %NF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPVC    reloc   *32* %pc := %npc    *32* %npc := [ ~%OF                 ? reloc : %npc+4 ]    *1* %CTI := 1;
-BPVS    reloc   *32* %pc := %npc    *32* %npc := [ %OF                  ? reloc : %npc+4 ]    *1* %CTI := 1;
+# Call instruction - always executes delay instruction
+CALL    dest    _;
 
-# unconditional branches
-BAA     reloc   *32* %pc := reloc       *32* %npc := reloc + 4          *1* %CTI := 1;
-BNA     reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8           *1* %CTI := 1;
-
-
-# Conditional branches
-BNEA    reloc   *32* %pc := [ ~%ZF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%ZF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BEA     reloc   *32* %pc := [ %ZF                  ? %npc : %npc+4 ]    *32* %npc := [ %ZF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGA     reloc   *32* %pc := [ ~(%ZF | (%NF ^ %OF)) ? %npc : %npc+4 ]    *32* %npc := [ ~(%ZF | (%NF ^ %OF)) ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLEA    reloc   *32* %pc := [ %ZF | (%NF ^ %OF)    ? %npc : %npc+4 ]    *32* %npc := [ %ZF | (%NF ^ %OF)    ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGEA    reloc   *32* %pc := [ ~(%NF ^ %OF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%NF ^ %OF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLA     reloc   *32* %pc := [ %NF ^ %OF            ? %npc : %npc+4 ]    *32* %npc := [ %NF ^ %OF            ? reloc : %npc+8 ]      *1* %CTI := 1;
-BGUA    reloc   *32* %pc := [ ~(%CF | %ZF)         ? %npc : %npc+4 ]    *32* %npc := [ ~(%CF | %ZF)         ? reloc : %npc+8 ]      *1* %CTI := 1;
-BLEUA   reloc   *32* %pc := [ %CF | %ZF            ? %npc : %npc+4 ]    *32* %npc := [ %CF | %ZF            ? reloc : %npc+8 ]      *1* %CTI := 1;
-BCCA    reloc   *32* %pc := [ ~%CF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%CF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BCSA    reloc   *32* %pc := [ %CF                  ? %npc : %npc+4 ]    *32* %npc := [ %CF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BPOSA   reloc   *32* %pc := [ ~%NF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%NF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BNEGA   reloc   *32* %pc := [ %NF                  ? %npc : %npc+4 ]    *32* %npc := [ %NF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-BVCA    reloc   *32* %pc := [ ~%OF                 ? %npc : %npc+4 ]    *32* %npc := [ ~%OF                 ? reloc : %npc+8 ]      *1* %CTI := 1;
-BVSA    reloc   *32* %pc := [ %OF                  ? %npc : %npc+4 ]    *32* %npc := [ %OF                  ? reloc : %npc+8 ]      *1* %CTI := 1;
-
-
-# Call instruction- always executes delay instruction
-# PC relative transfer of control
-CALL__ reloc
-    *32* %o7 := %pc
-    *32* %pc := %npc
-    *32* %npc := reloc
-    *1* %CTI := 1;
-
-# Jump and Link instruction- always executes delay instruction
+# Jump and Link instruction - always executes delay instruction
 # Register indirect transfer of control
 # Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
-JMPL  eaddr, rd
-    *32* tmp := eaddr
-    *32* rd := %pc
-    *32* %pc := %npc
-    *32* %npc := tmp
-    *1* %CTI := 1
-;
-
+JMPL  eaddr, rd _;
+JMP   dest      _;
 
 # Read and Write State Register Instructions
-RDY  rd                 *32* rd := %Y;
-RDPSR   rd              *32* rd := %PSR;
-RDWIM   rd              *32* rd := %WIM;
-RDTBR   rd              *32* rd := %TBR;
-
-WRY  rs1, reg_or_imm    *32* %Y := rs1 ^ reg_or_imm;
-WRPSR  rs1, reg_or_imm  *32* %PSR := rs1 ^ reg_or_imm;
-WRWIM  rs1, reg_or_imm  *32* %WIM := rs1 ^ reg_or_imm;
-WRTBR  rs1, reg_or_imm  *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
+RD src, dest            *32* dest := src;
+WR rs1, rs2, rd         *32* rd := rs1 ^ rs2;
 
 
 ## Float Instructions
@@ -701,11 +732,13 @@ FBOA    reloc   *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %np
 # Loading and storing Floating point registers.
 LDFSR      eaddr       *32* %FSR := m[eaddr];
 
-LDF  eaddr, fds        *32* fds := m[eaddr];
-LDDF eaddr, fdd        *64* fdd := m[eaddr];
+LDF  src, fds        *32* fds := src;
+LDDF src, fdd        *64* fdd := src;
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-STFSR      eaddr       *32* m[eaddr] := %FSR;
-STF   fds, eaddr       *32* m[eaddr] := fds;
-STDF  fdd, eaddr       *64* m[eaddr] := fdd;
+STFSR      dest        *32* dest := %FSR;
+STF   fds, dest        *32* dest := fds;
+STDF  fdd, dest        *64* dest := fdd;
+
+UNIMP val   _;

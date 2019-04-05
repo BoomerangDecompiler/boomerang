@@ -4,47 +4,67 @@ int main(int argc, char *argv[]);
 /** address: 0x00010bac */
 int main(int argc, char *argv[])
 {
-    *(__size32*)%o6 = %l0;
-    *(__size32*)(%o6 + 4) = %l1;
-    *(__size32*)(%o6 + 8) = %l2;
-    *(__size32*)(%o6 + 12) = %l3;
-    *(__size32*)(%o6 + 16) = %l4;
-    *(__size32*)(%o6 + 20) = %l5;
-    *(__size32*)(%o6 + 24) = %l6;
-    *(__size32*)(%o6 + 28) = %l7;
-    *(__size32*)(%o6 + 32) = %i0;
-    *(__size32*)(%o6 + 36) = %i1;
-    *(__size32*)(%o6 + 40) = %i2;
-    *(__size32*)(%o6 + 44) = %i3;
-    *(__size32*)(%o6 + 48) = %i4;
-    *(__size32*)(%o6 + 52) = %i5;
-    *(__size32*)(%o6 + 56) = %i6;
-    *(__size32*)(%o6 + 60) = %i7;
-    if (flags) {
+    __size32 i0; 		// r24
+    int o0; 		// r8
+    char *o0_1; 		// r8
+    int o1; 		// r9
+    int o2; 		// r10
+    int o3; 		// r11
+    int o4; 		// r12
+    int o5; 		// r13
+
+    if (argc > 1) {
+        o1 = 1;
     }
-    if (flags) {
+    else {
+        o1 = 0;
     }
-    if (flags) {
+    if (o1 == 0) {
+        o2 = 0x10d0c;
     }
-    if (flags) {
+    else {
+        o2 = 0x10d04;
     }
-    if (flags) {
+    if (o1 == 0) {
+        o3 = 0x10d1c;
     }
-    if (flags) {
-        if (!flags) {
-            if (flags) {
-            }
+    else {
+        o3 = 0x10d14;
+    }
+    if (o1 == 0) {
+        o4 = 0x10d2c;
+    }
+    else {
+        o4 = 0x10d24;
+    }
+    if (o1 == 0) {
+        o5 = 0x10d3c;
+    }
+    else {
+        o5 = 0x10d34;
+    }
+    if (o1 == 0) {
+        i0 = 0;
+        if (o2 == 0x10d0c && o3 == 0x10d1c && o4 == 0x10d2c) {
+            o0 = 0x10d3c;
+bb0x10cc4:
+            i0 = 1 - ((o5 ^ o0) != 0);
         }
     }
     else {
-        if (!flags) {
-            if (flags) {
-            }
+        i0 = 0;
+        if (o2 == 0x10d04 && o3 == 0x10d14 && o4 == 0x10d24) {
+            o0 = 0x10d34;
+            goto bb0x10cc4;
         }
     }
-    if (flags) {
+    if (i0 == 0) {
+        o0_1 = "Failed!\n";
     }
-    printf(%o0);
-    return;
+    else {
+        o0_1 = "Pass\n";
+    }
+    printf(o0_1);
+    return 1 - (i0 != 0);
 }
 

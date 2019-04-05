@@ -269,6 +269,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 image->readNative1(addr + 3));
                 LOG_WARN(message);
                 assert(!inst.valid);
+                break; // try next instruction in queue
             }
             else if (!inst.rtl || inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);

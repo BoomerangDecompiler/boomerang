@@ -3,13 +3,13 @@ __size32 proc_0x00000960(__size32 param1, __size32 param2);
 void proc_0x00012090();
 void proc_0x000120a8();
 void proc_0x00000980(__size32 param1, __size32 param2, __size32 param3, __size32 param4, __size32 param5, __size32 param6, __size32 param7);
-void proc_0x0001203c();
 void proc_0x00012060();
+void proc_0x0001203c();
 void proc_0x0001206c();
 void proc_0x00012078();
-void proc_0x0001209c();
 void proc_0x000120b4();
 void proc_0x00012030();
+void proc_0x0001209c();
 
 
 /** address: 0x000006e0 */
@@ -87,13 +87,13 @@ void proc_0x00000980(__size32 param1, __size32 param2, __size32 param3, __size32
     proc_0x0001206c(param1, 10, l7_1, param1, param2, param3, param4, param5, param6, o6, param7, param3, param4, param5, param6, param7, l0, l1, l2, l3, l4, l5, l6, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7);
 }
 
-/** address: 0x0001203c */
-void proc_0x0001203c()
+/** address: 0x00012060 */
+void proc_0x00012060()
 {
 }
 
-/** address: 0x00012060 */
-void proc_0x00012060()
+/** address: 0x0001203c */
+void proc_0x0001203c()
 {
 }
 
@@ -107,11 +107,6 @@ void proc_0x00012078()
 {
 }
 
-/** address: 0x0001209c */
-void proc_0x0001209c()
-{
-}
-
 /** address: 0x000120b4 */
 void proc_0x000120b4()
 {
@@ -119,6 +114,11 @@ void proc_0x000120b4()
 
 /** address: 0x00012030 */
 void proc_0x00012030()
+{
+}
+
+/** address: 0x0001209c */
+void proc_0x0001209c()
 {
 }
 

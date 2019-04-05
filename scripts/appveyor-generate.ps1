@@ -30,7 +30,7 @@ if (!(Test-Path winflexbison)) {
 }
 
 # install capstone via vcpkg
-vcpkg install capstone[core,x86,ppc]:x64-windows
+vcpkg install capstone[core,sparc,x86,ppc]:x64-windows
 
 
 # Build Visual Studio solution

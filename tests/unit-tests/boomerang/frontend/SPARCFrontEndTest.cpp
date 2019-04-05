@@ -193,7 +193,7 @@ void SPARCFrontendTest::test3()
                        "              0 *32* r30 := m[r14 + 56]\n"
                        "              0 *32* r31 := m[r14 + 60]\n"
                        "              0 *32* r0 := tmp\n");
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
 }
 
 
@@ -220,8 +220,7 @@ void SPARCFrontendTest::testBranch()
     // bg
     fe->decodeSingleInstruction(Address(0x00010af8), inst);
     inst.rtl->print(strm);
-    expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition "
-                       "signed greater\n"
+    expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition signed greater\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
@@ -303,7 +302,7 @@ void SPARCFrontendTest::testDelaySlot()
                      "              Reaching definitions: <None>\n"
                      "              Live variables: <None>\n");
 
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
     actual.clear();
 
     QVERIFY(it != cfg->end());
@@ -321,7 +320,7 @@ void SPARCFrontendTest::testDelaySlot()
                "              Reaching definitions: <None>\n"
                "              Live variables: <None>\n";
 
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
     actual.clear();
 
     QVERIFY(it != cfg->end());
@@ -339,7 +338,7 @@ void SPARCFrontendTest::testDelaySlot()
                "0x00010ab0    0 *32* r8 := 0x11400\n"
                "0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
                "High level: %flags\n";
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
     actual.clear();
 
     QVERIFY(it != cfg->end());
@@ -355,7 +354,7 @@ void SPARCFrontendTest::testDelaySlot()
                "              Reaching definitions: <None>\n"
                "              Live variables: <None>\n";
 
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
     actual.clear();
 
     QVERIFY(it != cfg->end());
@@ -369,7 +368,7 @@ void SPARCFrontendTest::testDelaySlot()
                "0x00010ac4    0 *32* tmp := r16\n"
                "              0 *32* r0 := r16 - r8\n"
                "              0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n";
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
     actual.clear();
 
 
@@ -383,7 +382,7 @@ void SPARCFrontendTest::testDelaySlot()
                "0x00010ac8    0 *32* r8 := 0x11400\n"
                "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
                "High level: %flags\n";
-    QCOMPARE(actual, expected);
+    compareLongStrings(actual, expected);
 }
 
 QTEST_GUILESS_MAIN(SPARCFrontendTest)

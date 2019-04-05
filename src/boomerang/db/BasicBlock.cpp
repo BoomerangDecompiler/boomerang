@@ -108,11 +108,19 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
         return;
     }
 
+    bool firstRTL = true;
+
     for (auto &rtl : *m_listOfRTLs) {
         for (Statement *stmt : *rtl) {
             assert(stmt != nullptr);
             stmt->setBB(this);
         }
+
+        if (!firstRTL) {
+            assert(rtl->getAddress() != Address::ZERO);
+        }
+
+        firstRTL = false;
     }
 }
 

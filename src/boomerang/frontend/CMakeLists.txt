@@ -10,7 +10,6 @@
 list(APPEND boomerang-frontend-sources
     frontend/DecodeResult
     frontend/DefaultFrontEnd
-    frontend/NJMCDecoder
     frontend/SigEnum
     frontend/TargetQueue
 )
