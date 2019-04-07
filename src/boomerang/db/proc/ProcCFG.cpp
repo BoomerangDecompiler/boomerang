@@ -552,7 +552,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(OStream &out)
+void ProcCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
 
@@ -562,6 +562,16 @@ void ProcCFG::print(OStream &out)
 
     out << '\n';
 }
+
+
+QString ProcCFG::toString() const
+{
+    QString result;
+    OStream os(&result);
+    print(os);
+    return result;
+}
+
 
 void ProcCFG::insertBB(BasicBlock *bb)
 {
