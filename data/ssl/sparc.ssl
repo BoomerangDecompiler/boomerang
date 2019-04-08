@@ -229,7 +229,7 @@ TRAP(cond, op1) {
 
 #synthetic instructions
 MOV src, dest           *32* dest := src;
-CMP rs1, reg_or_imm     *32* tmp := rs1     *32* %g0 := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, %g0);
+CMP rs1, reg_or_imm     SUBFLAGS(rs1, reg_or_imm, 0);
 
 
 # Load double instruction-  the 1st reg. of double load must be even
@@ -273,18 +273,18 @@ SWAP    lhs, rhs        *32* tmp1 := rhs
 
 
 AND     rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm;
-ANDCC   rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rd);
+ANDCC   rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rs1 & reg_or_imm);
 OR      rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm;
-ORCC    rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rd);
+ORCC    rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rs1 | reg_or_imm);
 XOR     rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm;
-XORCC   rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rd);
+XORCC   rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rs1 ^ reg_or_imm);
 
 ANDN    rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm);
-ANDNCC  rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rd);
+ANDNCC  rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rs1 & (~reg_or_imm));
 ORN     rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm);
-ORNCC   rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rd);
+ORNCC   rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rs1 | (~reg_or_imm));
 XNOR    rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm);
-XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rd);
+XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rs1 ^ (~reg_or_imm));
 
 
 # sethi instruction- puts the immediate into the top 22 bits
