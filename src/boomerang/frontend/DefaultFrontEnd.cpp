@@ -892,9 +892,11 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
-        newBB        = cfg->createBB(BBType::Ret, std::move(BB_rtls));
-        Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
+        if (newBB) {
+            Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
+            proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        }
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
