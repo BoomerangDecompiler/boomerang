@@ -22,6 +22,7 @@ v0.5.0 (in development)
 - Fixed: Wrong decompilation of "Pass by pointer/reference" values (e.g. `foo(&local0)` was emitted as `foo(esp-32)`).
 - Fixed: Wrong decompilation of parameter types in function signatures in some cases.
 - Fixed: Wrong decompilation of x86 binaries containing a `cmovCC`-type instruction.
+- Fixed: Wrong decompilation of x86 binaries containing jumps that do not depend on flag registers.
 - Fixed: Wrong decompilation of x86 binaries using the `sahf` instruction in floating point comparisons.
 - Fixed: Wrong decompilation of ppc binaries using the LR or CTR register in calls or switch statements.
 - Fixed: Wrong decompilation of SPARC branches where the branch and the delay slot cannot be swapped.

@@ -112,7 +112,10 @@ public:
     const BasicBlock *nodeToBB(BBIndex node) const { return m_BBs.at(node); }
     BasicBlock *nodeToBB(BBIndex node) { return m_BBs.at(node); }
 
-    BBIndex pbbToNode(const BasicBlock *bb) const { return m_indices.at(const_cast<BasicBlock *>(bb)); }
+    BBIndex pbbToNode(const BasicBlock *bb) const
+    {
+        return m_indices.at(const_cast<BasicBlock *>(bb));
+    }
 
     std::set<BBIndex> &getDF(int node) { return m_DF[node]; }
     BBIndex getIdom(BBIndex node) const { return m_idom[node]; }
@@ -164,9 +167,10 @@ private:
     /// if dfnum[a] < dfnum[b]. If BB a has not yet been visited, m_dfnum[a] will be -1.
     std::vector<int> m_dfnum;
 
-    std::vector<BBIndex> m_ancestor; /// Immediate (unique) ancestor of the depth first spanning tree
-    std::vector<BBIndex> m_semi;     /// Semi dominator of n
-    std::vector<BBIndex> m_idom;     /// Immediate dominator
+    std::vector<BBIndex>
+        m_ancestor;              /// Immediate (unique) ancestor of the depth first spanning tree
+    std::vector<BBIndex> m_semi; /// Semi dominator of n
+    std::vector<BBIndex> m_idom; /// Immediate dominator
 
     std::vector<BBIndex> m_samedom;          ///< ? To do with deferring
     std::vector<BBIndex> m_vertex;           ///< ?
