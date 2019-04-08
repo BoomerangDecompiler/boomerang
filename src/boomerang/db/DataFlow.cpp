@@ -74,11 +74,9 @@ bool DataFlow::calculateDominators()
     }
 
     allocateData();
-
-    // calculate spanning tree
     recalcSpanningTree();
 
-    assert(N == numBB);
+    assert(N == numBB); // every BB must be reachable from the entry BB.
     assert(N >= 1);
 
     // Process BBs in reverse pre-traversal order (i.e. return blocks first)
@@ -132,8 +130,8 @@ bool DataFlow::calculateDominators()
     }
 
     for (std::size_t i = 1; i < N - 1; i++) {
-        /* Now all the deferred dominator calculations, based on the second clause of the Dominator
-         * Theorem, are performed. */
+        // Now all the deferred dominator calculations, based on the second clause of the Dominator
+        // Theorem, are performed.
         BBIndex n = m_vertex[i];
 
         if (m_samedom[n] != BBINDEX_INVALID) {
@@ -191,6 +189,7 @@ bool DataFlow::doesDominate(BBIndex n, BBIndex w)
         }
 
         w = m_idom[w]; // Move up the dominator tree
+        assert(w != BBINDEX_INVALID);
     }
 
     return false;
