@@ -959,7 +959,7 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));
+    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { new ReturnStatement }));
     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
     assert(callBB->getNumSuccessors() == 0);
