@@ -6,15 +6,10 @@
 # WARRANTIES.
 #
 
-find_package(Qt5Core REQUIRED HINTS $ENV{QTDIR})
-if (Qt5Core_FOUND)
-    mark_as_advanced(Qt5Core_DIR)
-endif (Qt5Core_FOUND)
-
-find_package(Qt5Xml REQUIRED HINTS $ENV{QTDIR})
-if (Qt5Xml_FOUND)
-    mark_as_advanced(Qt5Xml_DIR)
-endif (Qt5Xml_FOUND)
+find_package(Qt5 COMPONENTS Core REQUIRED HINTS $ENV{QTDIR})
+if (Qt5_FOUND)
+    mark_as_advanced(Qt5_DIR Qt5Core_DIR)
+endif (Qt5_FOUND)
 
 find_package(Threads)
 find_package(Capstone 3.0 REQUIRED)
