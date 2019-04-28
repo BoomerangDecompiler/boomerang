@@ -9,11 +9,13 @@
 #
 # This module defines the following variables:
 #   Capstone_FOUND           - true if Capstone was found
+#   Capstone_VERSION         - Capstone library version
 #   Capstone_INCLUDE_DIRS    - Include directories needed for Capstone
 #   Capstone_LIBRARIES       - Libraries to link to when using Capstone
 #   Capstone_DLL             - Path to Capstone DLL, if applicable
 #   Capstone_PDB             - Path to Capstone PDB, if applicable
-
+#   Capstone_CSTOOL          - Path to `cstool` executable, if present
+#
 # Additionally, this module defines the IMPORTED target Capstone::Capstone,
 # if Capstone has been found.
 #
@@ -48,15 +50,41 @@ if (WIN32)
             PATHS /usr/local/bin /usr/bin/ $ENV{MINGDIR}/bin
         )
     endforeach ()
+endif (WIN32)
 
+
+# find cstool and extract version information, if available
+find_program(Capstone_CSTOOL
+    NAMES cstool.exe cstool
+    PATHS /usr/local/bin /usr/bin/ $ENV{MINGDIR}/bin
+)
+
+
+if (Capstone_CSTOOL)
+    execute_process(COMMAND ${Capstone_CSTOOL} -v
+        OUTPUT_VARIABLE CSTOOL_OUTPUT
+    )
+
+    if (CSTOOL_OUTPUT MATCHES "v([0-9]+).([0-9]+).([0-9]+)")
+        set(Capstone_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}")
+        set(Capstone_VERSION_MAJOR "${CMAKE_MATCH_1}")
+        set(Capstone_VERSION_MINOR "${CMAKE_MATCH_2}")
+        set(Capstone_VERSION_PATCH "${CMAKE_MATCH_3}")
+    endif ()
+endif (Capstone_CSTOOL)
+
+
+if (WIN32)
     # Allow dll to be built without debug symbol support
     find_package_handle_standard_args(Capstone
         FOUND_VAR Capstone_FOUND
+        VERSION_VAR Capstone_VERSION
         REQUIRED_VARS Capstone_LIBRARY Capstone_INCLUDE_DIR Capstone_DLL
     )
 else (WIN32)
     find_package_handle_standard_args(Capstone
         FOUND_VAR Capstone_FOUND
+        VERSION_VAR Capstone_VERSION
         REQUIRED_VARS Capstone_LIBRARY Capstone_INCLUDE_DIR
     )
 endif (WIN32)
@@ -73,6 +101,7 @@ if (Capstone_FOUND OR NOT Capstone_FIND_REQUIRED)
         Capstone_CONFIG
         Capstone_INCLUDE_DIR
         Capstone_LIBRARY
+        Capstone_CSTOOL
     )
 
     if (WIN32)

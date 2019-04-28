@@ -8,11 +8,11 @@
 
 
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5Widgets REQUIRED HINTS $ENV{QTDIR})
-if (Qt5Widgets_FOUND)
-    mark_as_advanced(Qt5Widgets_DIR Qt5Gui_DIR)
-endif(Qt5Widgets_FOUND)
 
+find_package(Qt5 COMPONENTS Widgets Gui Xml REQUIRED HINTS $ENV{QTDIR})
+if (Qt5_FOUND)
+    mark_as_advanced(Qt5_DIR Qt5Widgets_DIR Qt5Gui_DIR Qt5Xml_DIR)
+endif (Qt5_FOUND)
 
 set(gui_UI_FILES
     About.ui
