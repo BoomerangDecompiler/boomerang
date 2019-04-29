@@ -123,7 +123,7 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
     case cs::X86_OP_IMM: {
         return Const::get(Address(operand.imm));
     }
-    default: LOG_ERROR("Unknown x86 instruction operand type %1", operand.type); break;
+    default: LOG_ERROR("Unknown x86 instruction operand type %1", (int)operand.type); break;
     }
     return nullptr;
 }

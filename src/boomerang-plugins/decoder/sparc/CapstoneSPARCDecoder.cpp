@@ -235,7 +235,7 @@ SharedExp CapstoneSPARCDecoder::operandToExp(const cs::cs_insn *instruction, int
         memExp = Binary::get(opPlus, memExp, Const::get(operand.mem.disp));
         return Location::memOf(memExp)->simplifyArith();
     }
-    default: LOG_ERROR("Unknown sparc instruction operand type %1", operand.type); break;
+    default: LOG_ERROR("Unknown sparc instruction operand type %1", (int)operand.type); break;
     }
 
     return nullptr;

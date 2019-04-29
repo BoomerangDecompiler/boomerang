@@ -135,7 +135,7 @@ SharedExp operandToExp(const cs::cs_ppc_op &operand)
                                            Const::get(operand.mem.disp)))
             ->simplifyArith();
     }
-    default: LOG_ERROR("Unknown ppc instruction operand type %1", operand.type); break;
+    default: LOG_ERROR("Unknown ppc instruction operand type %1", (int)operand.type); break;
     }
 
     return nullptr;
