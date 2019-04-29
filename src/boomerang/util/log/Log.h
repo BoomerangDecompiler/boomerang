@@ -164,6 +164,8 @@ private:
     QString collectArg(const QString &msg, uint32 arg) { return msg.arg(arg); }
     QString collectArg(const QString &msg, uint64 arg) { return msg.arg(arg); }
 
+    QString collectArg(const QString &msg, unsigned long arg) { return msg.arg(arg); }
+
     QString collectArg(const QString &msg, float arg) { return msg.arg(arg); }
     QString collectArg(const QString &msg, double arg) { return msg.arg(arg); }
 
