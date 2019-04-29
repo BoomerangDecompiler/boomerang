@@ -253,7 +253,7 @@ void MicroX86DisTest::testMicroDis1()
 
         if (size >= 0x40) {
             deb_str << "Not handled instruction at offset "
-                    << HostAddress(p).value() - HostAddress(pent_hello_text).value() << '\n';
+                    << (uint64)(HostAddress(p).value() - HostAddress(pent_hello_text).value()) << '\n';
             qDebug() << deb;
             QVERIFY(size != 0x40);
             return;
@@ -262,7 +262,7 @@ void MicroX86DisTest::testMicroDis1()
         int expected = lengths[i++];
 
         if (expected != size) {
-            deb_str << "At offset " << HostAddress(p).value() - HostAddress(pent_hello_text).value() << " ("
+            deb_str << "At offset " << (uint64)(HostAddress(p).value() - HostAddress(pent_hello_text).value()) << " ("
                     << static_cast<int>(*(p + 0)) << " "
                     << static_cast<int>(*(p + 1)) << " "
                     << static_cast<int>(*(p + 2)) << " "
