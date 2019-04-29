@@ -14,6 +14,15 @@ install:
 
 matrix:
   include:
+    - os: osx
+      osx_image: xcode10
+      install:
+      before_script:
+        - HOMEBREW_NO_INSTALL_CLEANUP=1 brew install qt capstone bison flex
+        - mkdir build && cd build
+      script:
+        - cmake -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5/ -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..
+        - make -j$(sysctl -n hw.ncpu)
     - env:
         - TARGET="source-check"
       before_script:
@@ -43,7 +52,6 @@ matrix:
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
             lcov --list coverage.info"
         - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
-
 
 before_script:
   - docker exec -t build-env bash -c "cd boomerang &&
