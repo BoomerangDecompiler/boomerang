@@ -10,7 +10,7 @@
 #include "ArrayType.h"
 
 
-ArrayType::ArrayType(SharedType baseType, size_t length)
+ArrayType::ArrayType(SharedType baseType, uint64 length)
     : Type(TypeClass::Array)
     , m_baseType(baseType)
     , m_length(length)
@@ -18,7 +18,7 @@ ArrayType::ArrayType(SharedType baseType, size_t length)
 }
 
 
-std::shared_ptr<ArrayType> ArrayType::get(SharedType p, size_t length)
+std::shared_ptr<ArrayType> ArrayType::get(SharedType p, uint64 length)
 {
     return std::make_shared<ArrayType>(p, length);
 }
@@ -36,7 +36,7 @@ bool ArrayType::isUnbounded() const
 }
 
 
-size_t ArrayType::convertLength(SharedType b) const
+uint64 ArrayType::convertLength(SharedType b) const
 {
     // MVE: not sure if this is always the right thing to do
     if (m_length != ARRAY_UNBOUNDED) {
@@ -131,7 +131,7 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
         auto otherArr      = other->as<ArrayType>();
         SharedType newBase = m_baseType->clone()->meetWith(otherArr->m_baseType, changed,
                                                            useHighestPtr);
-        size_t newLength   = m_length;
+        uint64 newLength   = m_length;
 
         if (*newBase != *m_baseType) {
             changed   = true;
@@ -160,8 +160,8 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
      * based on new BaseType
      */
     if (isCompatible(*other, false)) { // compatible with all ?
-        size_t bitsize  = m_baseType->getSize();
-        size_t new_size = other->getSize();
+        Type::Size bitsize  = m_baseType->getSize();
+        Type::Size new_size = other->getSize();
 
         if (m_baseType->isComplete() && !other->isComplete()) {
             // complete types win
@@ -183,7 +183,7 @@ SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestP
             return std::const_pointer_cast<Type>(this->shared_from_this());
         }
 
-        size_t new_length = m_length;
+        uint64 new_length = m_length;
 
         if (m_length != ARRAY_UNBOUNDED) {
             new_length = (m_length * bitsize) / new_size;

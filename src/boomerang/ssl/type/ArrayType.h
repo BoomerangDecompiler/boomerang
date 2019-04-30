@@ -17,14 +17,14 @@
  * computing aliases.. as such, we give them a very large bound
  * and hope that no-one tries to alias beyond them
  */
-#define ARRAY_UNBOUNDED 9999999
+#define ARRAY_UNBOUNDED ((uint64)9999999)
 
 
 class BOOMERANG_API ArrayType : public Type
 {
 public:
     /// Create a new array type of fixed length
-    explicit ArrayType(SharedType baseType, size_t length = ARRAY_UNBOUNDED);
+    explicit ArrayType(SharedType baseType, uint64 length = ARRAY_UNBOUNDED);
 
     ArrayType(const ArrayType &other) = default;
     ArrayType(ArrayType &&other)      = default;
@@ -35,7 +35,7 @@ public:
     ArrayType &operator=(ArrayType &&other) = default;
 
 public:
-    static std::shared_ptr<ArrayType> get(SharedType p, size_t length = ARRAY_UNBOUNDED);
+    static std::shared_ptr<ArrayType> get(SharedType p, uint64 length = ARRAY_UNBOUNDED);
 
 public:
     /// \copydoc Type::operator==
@@ -68,7 +68,7 @@ public:
     void setBaseType(SharedType b);
 
     /// \returns the number of elements in this array.
-    size_t getLength() const { return m_length; }
+    uint64 getLength() const { return m_length; }
     void setLength(unsigned n) { m_length = n; }
 
     /// \returns true iff we do not know the length of the array (yet)
@@ -81,9 +81,9 @@ protected:
 private:
     /// \returns the new number of elements that fit in this array when converting
     /// the base type to \p newBaseType
-    size_t convertLength(SharedType newBaseType) const;
+    uint64 convertLength(SharedType newBaseType) const;
 
 private:
     SharedType m_baseType;
-    size_t m_length = 0; ///< number of elements in this array
+    uint64 m_length = 0; ///< number of elements in this array
 };

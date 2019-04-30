@@ -12,8 +12,8 @@ it is currently recommended to build the development version (`develop`) of the 
 
 ## Building
 
-| **Build status** | Linux | Windows | Test Coverage |
-|------------------|-------|---------|---------------|
+| **Build status** | Linux/macOS | Windows | Test Coverage |
+|------------------|-------------|---------|---------------|
 |    **develop**   | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=develop)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches) | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
 |    **master**    | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=master)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
 
@@ -22,13 +22,13 @@ it is currently recommended to build the development version (`develop`) of the 
 
  - A 64 bit operating system (32 bit might or might not work, but it is not supported.)
  - A C++17 compiler (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
- - [CMake 3.8+](https://cmake.org/download/)
+ - [CMake](https://cmake.org/download/) 3.8+
  - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.11+ is known to work, earlier versions should also work)
- - [Capstone 3.0.5+](http://www.capstone-engine.org/)
- - [GNU bison 3.0+](https://www.gnu.org/software/bison/) (3.0.5+ is recommended)
- - [GNU flex 2.6+](https://github.com/westes/flex)
- - [CCache 3.2+](https://ccache.samba.org/download.html) (optional, for recompilation speed)
- - [Doxygen 1.8+](http://www.doxygen.nl/) (optional, for documentation)
+ - [Capstone](http://www.capstone-engine.org/) 3.0.5+
+ - [GNU bison](https://www.gnu.org/software/bison/) 3.0+ (3.0.5+ is recommended)
+ - [GNU flex](https://github.com/westes/flex) 2.6+
+ - [CCache](https://ccache.samba.org/download.html) 3.2+ (optional, for recompilation speed)
+ - [Doxygen](http://www.doxygen.nl/) 1.8+ (optional, for documentation)
  - [Python 3](https://www.python.org/downloads/) (optional, for regression tests)
 
 
@@ -42,13 +42,28 @@ sudo apt-get install git build-essential cmake qt5-default libcapstone-dev flex 
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
 git clone https://github.com/BoomerangDecompiler/boomerang.git
 cd boomerang && mkdir build && cd build
-cmake .. && make && sudo make install
+cmake .. && make -j$(nproc) && sudo make install
 ```
 
+### Building on macOS
+
+To build Boomerang on macOS, you need at least macOS 10.13 or later, and XCode 10 or later.
+The recommended way of installing Boomerang and its dependencies outlined below is via [Homebrew](brew.sh), although other methods might also work (untested).
+After installing XCode, execute the following commands in a terminal window:
+
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # Install Homebrew
+brew install git cmake qt capstone flex bison # Install dependencies
+cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
+git clone https://github.com/BoomerangDecompiler/boomerang.git
+cd boomerang && mkdir build && cd build
+cmake -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5/ -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..
+make -j$(sysctl -n hw.ncpu) && make install
+```
 
 ### Building on Windows
 
-To compile on Windows using Visual Studio, you can follow the following guide. Note that the build procedure
+To compile on Windows using Visual Studio 2017, you can follow the following guide. Note that the build procedure
 for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
 
 - Install Visual Studio 2017 (e.g the free [Community Edition](https://visualstudio.microsoft.com/vs/community/)).
@@ -63,11 +78,6 @@ for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
 - "Generate" and "Open Project" in cmake-gui.
 - To build the command line tool, build the `boomerang-cli` target; to build the GUI, build the `boomerang-gui` target.
 - Done!
-
-
-### Building on macOS
-
-Building on macOS is currently not officially supported. However, pull requests on this matter are welcome. See also [Issue #39](https://github.com/BoomerangDecompiler/boomerang/issues/39).
 
 
 ## Testing

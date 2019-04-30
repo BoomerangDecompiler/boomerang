@@ -13,7 +13,18 @@ install:
   - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-env:$TARGET tail -f /dev/null
 
 matrix:
+  allow_failures:
+    - os: osx
   include:
+    - os: osx
+      osx_image: xcode10
+      install:
+      before_script:
+        - HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install qt capstone bison flex ccache
+        - mkdir build && cd build
+      script:
+        - cmake -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5/ -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison -DBOOMERANG_BUILD_UNIT_TESTS=ON ..
+        - make -j$(sysctl -n hw.ncpu) && make test
     - env:
         - TARGET="source-check"
       before_script:
@@ -43,7 +54,6 @@ matrix:
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
             lcov --list coverage.info"
         - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
-
 
 before_script:
   - docker exec -t build-env bash -c "cd boomerang &&
