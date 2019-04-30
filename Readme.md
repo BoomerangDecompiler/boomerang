@@ -42,21 +42,24 @@ sudo apt-get install git build-essential cmake qt5-default libcapstone-dev flex 
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
 git clone https://github.com/BoomerangDecompiler/boomerang.git
 cd boomerang && mkdir build && cd build
-cmake .. && make && sudo make install
+cmake .. && make -j$(nproc) && sudo make install
 ```
 
 ### Building on macOS
 
-To build Boomerang on macOS, you need at least macOS 10.13 or later and XCode 10 or later.
-The recommended way of installing the dependencies is via [Homebrew](brew.sh), although other methods might also work (untested).
+To build Boomerang on macOS, you need at least macOS 10.13 or later, and XCode 10 or later.
+The recommended way of installing Boomerang and its dependencies outlined below is via [Homebrew](brew.sh), although other methods might also work (untested).
+After installing XCode, execute the following commands in a terminal window:
 
-- Install XCode
-- Install Homebrew: `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-- Install Boomerang dependencies: `brew install git cmake qt capstone flex bison`
-- Clone Boomerang: `git clone https://github.com/BoomerangDecompiler/boomerang`
-- `cd boomerang && mkdir build && cd build`
-- Run CMake: `cmake -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5/ -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..`
-- Build and install Boomerang: `make -j$(sysctl -n hw.ncpu) && make install`
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" # Install Homebrew
+brew install git cmake qt capstone flex bison # Install dependencies
+cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
+git clone https://github.com/BoomerangDecompiler/boomerang.git
+cd boomerang && mkdir build && cd build
+cmake -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5/ -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..
+make -j$(sysctl -n hw.ncpu) && make install
+```
 
 ### Building on Windows
 
