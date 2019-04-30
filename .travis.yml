@@ -13,8 +13,6 @@ install:
   - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-env:$TARGET tail -f /dev/null
 
 matrix:
-  allow_failures:
-    - os: osx
   include:
     - os: osx
       osx_image: xcode10

@@ -422,31 +422,31 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
+std::unique_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
 {
     switch (machine) {
     case Machine::PENTIUM:
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention Pentium signatures will be Windows
-            return std::make_shared<CallingConvention::Win32Signature>(name);
+            return std::make_unique<CallingConvention::Win32Signature>(name);
         }
         else if (cc == CallConv::ThisCall) {
-            return std::make_shared<CallingConvention::Win32TcSignature>(name);
+            return std::make_unique<CallingConvention::Win32TcSignature>(name);
         }
         else {
-            return std::make_shared<CallingConvention::StdC::PentiumSignature>(name);
+            return std::make_unique<CallingConvention::StdC::PentiumSignature>(name);
         }
 
-    case Machine::SPARC: return std::make_shared<CallingConvention::StdC::SPARCSignature>(name);
+    case Machine::SPARC: return std::make_unique<CallingConvention::StdC::SPARCSignature>(name);
 
-    case Machine::PPC: return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
+    case Machine::PPC: return std::make_unique<CallingConvention::StdC::PPCSignature>(name);
 
-    case Machine::ST20: return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
+    case Machine::ST20: return std::make_unique<CallingConvention::StdC::ST20Signature>(name);
 
     // insert other conventions here
     default:
         LOG_WARN("Unknown signature: %1 (CallConv: %2)", name, Util::getCallConvName(cc));
-        return std::make_shared<Signature>(name);
+        return std::make_unique<Signature>(name);
     }
 }
 

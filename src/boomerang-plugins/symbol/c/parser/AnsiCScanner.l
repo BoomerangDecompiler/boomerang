@@ -173,4 +173,5 @@ bool AnsiCParserDriver::scanBegin()
 void AnsiCParserDriver::scanEnd()
 {
     fclose(AnsiCin);
+    yylex_destroy();
 }

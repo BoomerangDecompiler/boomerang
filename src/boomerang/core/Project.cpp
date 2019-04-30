@@ -28,6 +28,10 @@ Project::Project()
 
 Project::~Project()
 {
+    // Named types need to be unloaded before Symbol Provider plugins are unloaded.
+    // This ensures that no library function signatures held by FuncTypes remain
+    // in the main program when unloading Symbol Provider plugins.
+    Type::clearNamedTypes();
 }
 
 

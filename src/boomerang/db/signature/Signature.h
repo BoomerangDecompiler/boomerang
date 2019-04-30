@@ -50,7 +50,7 @@ public:
 
 public:
     /// Create a new signature for a function named \p name
-    static std::shared_ptr<Signature> instantiate(Machine machine, CallConv cc,
+    static std::unique_ptr<Signature> instantiate(Machine machine, CallConv cc,
                                                   const QString &name);
 
     /// Check if parameters, returns and name match

@@ -230,4 +230,5 @@ bool SSL2ParserDriver::scanBegin()
 void SSL2ParserDriver::scanEnd()
 {
     fclose(yyin);
+    yylex_destroy();
 }
