@@ -11,13 +11,13 @@
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/util/log/Log.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/binary/BinarySymbol.h"
-#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/util/log/Log.h"
 
 
 GlobalConstReplacePass::GlobalConstReplacePass()
@@ -48,7 +48,7 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             continue;
         }
 
-        const Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
+        const Address addr      = assgn->getRight()->access<Const, 1>()->getAddr();
         const BinarySymbol *sym = syms->findSymbolByAddress(addr);
         if (sym && sym->isImportedFunction()) {
             LibProc *libProc = proc->getProg()->getOrCreateLibraryProc(sym->getName());

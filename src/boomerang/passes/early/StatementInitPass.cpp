@@ -11,8 +11,8 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/decomp/CFGCompressor.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 
 
 StatementInitPass::StatementInitPass()
