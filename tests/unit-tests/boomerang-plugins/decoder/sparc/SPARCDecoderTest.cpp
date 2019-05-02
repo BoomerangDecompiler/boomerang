@@ -117,12 +117,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("andcc %g3, %g1, %g2", "\x84\x88\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 & r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 & r1 )\n"
     );
 
     TEST_DECODE("andcc %g3, 1, %g2", "\x84\x88\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 & 1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 & 1 )\n"
     );
 
     TEST_DECODE("andn %g3, %g1, %g2", "\x84\x28\xc0\x01", ICLASS::NCT,
@@ -135,12 +135,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("andncc %g3, %g1, %g2", "\x84\xa8\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 & ~r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 & ~r1 )\n"
     );
 
     TEST_DECODE("andncc %g3, 1, %g2", "\x84\xa8\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 & -2\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 & -2 )\n"
     );
 
     TEST_DECODE("ba 0x2000", "\x10\x80\x04\x00", ICLASS::SD,
@@ -903,12 +903,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("orcc %g3, %g1, %g2", "\x84\x90\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 | r1 )\n"
     );
 
     TEST_DECODE("orcc %g3, 1, %g2", "\x84\x90\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | 1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 | 1 )\n"
     );
 
     TEST_DECODE("orn %g3, %g1, %g2", "\x84\x30\xc0\x01", ICLASS::NCT,
@@ -921,12 +921,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("orncc %g3, %g1, %g2", "\x84\xb0\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | ~r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 | ~r1 )\n"
     );
 
     TEST_DECODE("orncc %g3, 1, %g2", "\x84\xb0\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 | -2\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 | -2 )\n"
     );
 
 //     TEST_DECODE("rd %psr, %g1", "\x83\x48\x00\x00", ICLASS::NCT,
@@ -1834,12 +1834,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("xnorcc %g3, %g1, %g2", "\x84\xb8\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 ^ ~r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 ^ ~r1 )\n"
     );
 
     TEST_DECODE("xnorcc %g3, 1, %g2", "\x84\xb8\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 ^ -2\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 ^ -2 )\n"
     );
 
     TEST_DECODE("xor %g3, %g1, %g2", "\x84\x18\xc0\x01", ICLASS::NCT,
@@ -1852,12 +1852,12 @@ void SPARCDecoderTest::testInstructions_data()
 
     TEST_DECODE("xorcc %g3, %g1, %g2", "\x84\x98\xc0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 ^ r1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 ^ r1 )\n"
     );
 
     TEST_DECODE("xorcc %g3, 1, %g2", "\x84\x98\xe0\x01", ICLASS::NCT,
                 "0x00001000    0 *32* r2 := r3 ^ 1\n"
-                "              0 *v* %flags := LOGICALFLAGS( r2 )\n"
+                "              0 *v* %flags := LOGICALFLAGS( r3 ^ 1 )\n"
     );
 }
 
