@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 void rux_encrypt(void *param1)
 {
     unsigned char bl; 		// r11
-    unsigned char bl_1; 		// r11{8}
-    unsigned char bl_4; 		// r11{11}
+    unsigned char bl_1; 		// r11{7}
+    unsigned char bl_4; 		// r11{10}
     unsigned char cl; 		// r9
     void *esp; 		// r28
     unsigned int local0; 		// m[esp - 6]

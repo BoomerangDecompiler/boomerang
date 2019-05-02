@@ -44,7 +44,7 @@ __size32 elf_hash(char *param1, int param2)
             local2 = o3_2;
             g1 = g1_1 + 1;
             o4_2 = (o4_1 << 4) + o3_1 & 0xf0000000;
-            if (o4_2 != 0) {
+            if (((o4_1 << 4) + o3_1 & 0xf0000000) != 0) {
                 o2 = (unsigned int)o4_2 >> 24;
                 local1 = o2;
                 o3 = (o4_1 << 4) + o3_1 ^ (unsigned int)o4_2 >> 24;
