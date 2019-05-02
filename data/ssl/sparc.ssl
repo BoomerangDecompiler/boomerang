@@ -229,7 +229,7 @@ TRAP(cond, op1) {
 
 #synthetic instructions
 MOV src, dest           *32* dest := src;
-CMP rs1, reg_or_imm     SUBFLAGS(rs1, reg_or_imm, 0);
+CMP rs1, reg_or_imm     SUBFLAGS(rs1, reg_or_imm, rs1 - reg_or_imm);
 
 
 # Load double instruction-  the 1st reg. of double load must be even
