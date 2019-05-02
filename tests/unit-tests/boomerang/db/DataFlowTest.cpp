@@ -212,7 +212,7 @@ void DataFlowTest::testPlacePhi2()
     std::set<BBIndex>& s = df->getA_phi(e);
 
     for (auto pp = s.begin(); pp != s.end(); ++pp) {
-        actual << *pp << " ";
+        actual << (uint64)*pp << " ";
     }
 
     QCOMPARE(actual_st, QString("4 "));

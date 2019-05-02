@@ -167,10 +167,9 @@ private:
     /// if dfnum[a] < dfnum[b]. If BB a has not yet been visited, m_dfnum[a] will be -1.
     std::vector<int> m_dfnum;
 
-    std::vector<BBIndex>
-        m_ancestor;              /// Immediate (unique) ancestor of the depth first spanning tree
-    std::vector<BBIndex> m_semi; /// Semi dominator of n
-    std::vector<BBIndex> m_idom; /// Immediate dominator
+    std::vector<BBIndex> m_ancestor; ///< Immediate unique ancestor in the depth first spanning tree
+    std::vector<BBIndex> m_semi;     ///< Semi-dominator of n
+    std::vector<BBIndex> m_idom;     ///< Immediate dominator
 
     std::vector<BBIndex> m_samedom;          ///< ? To do with deferring
     std::vector<BBIndex> m_vertex;           ///< ?
