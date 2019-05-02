@@ -196,8 +196,13 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 }
             }
 
-            SharedExp ref = RefExp::get(pa->getLeft()->clone(), def);
+            if (!def) {
+                // This is not defined anywhere, so it is an initial parameter.
+                def = cfg->findOrCreateImplicitAssign(pa->getLeft());
+            }
+
             assert(def);
+            SharedExp ref = RefExp::get(pa->getLeft()->clone(), def);
             liveout.insert(ref);
             phiLocs.insert(ref);
 

@@ -76,7 +76,6 @@ bool DataFlow::calculateDominators()
     allocateData();
     recalcSpanningTree();
 
-    assert(N == numBB); // every BB must be reachable from the entry BB.
     assert(N >= 1);
 
     // Process BBs in reverse pre-traversal order (i.e. return blocks first)
