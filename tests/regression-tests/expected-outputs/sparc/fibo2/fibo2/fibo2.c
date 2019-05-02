@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     __size32 l6; 		// r22
     __size32 l7; 		// r23
     int local0; 		// m[o6 - 20]
-    int o1; 		// r9
+    __size32 o1; 		// r9
     int o2; 		// r10
     int o2_1; 		// r10{10}
     int o3; 		// r11

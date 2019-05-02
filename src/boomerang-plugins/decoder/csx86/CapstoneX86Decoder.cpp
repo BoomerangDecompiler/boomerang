@@ -369,6 +369,54 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             branch->setCondType(bt, false);
             branch->setIsComputed(isComputedJump);
 
+            // Need to fix up the conditional expression here...
+            // setCondType() assigns the wrong expression for jumps that do not depend on flags
+            switch (instruction->id) {
+            case cs::X86_INS_JCXZ: {
+                branch->setCondExpr(
+                    Binary::get(opEquals, Location::regOf(REG_PENT_CX), Const::get(0)));
+                break;
+            }
+            case cs::X86_INS_JECXZ: {
+                branch->setCondExpr(
+                    Binary::get(opEquals, Location::regOf(REG_PENT_ECX), Const::get(0)));
+                break;
+            }
+            case cs::X86_INS_LOOP: {
+                // FIXME wrong for 16 bit programs
+                branch->setCondExpr(
+                    Binary::get(opNotEqual, Location::regOf(REG_PENT_ECX), Const::get(0)));
+                break;
+            }
+            case cs::X86_INS_LOOPE: {
+                // FIXME wrong for 16 bit programs
+                // clang-format off
+                branch->setCondExpr(Binary::get(opAnd,
+                                                Binary::get(opNotEqual,
+                                                            Location::regOf(REG_PENT_ECX),
+                                                            Const::get(0)),
+                                                Binary::get(opEquals,
+                                                            Terminal::get(opZF),
+                                                            Const::get(1))));
+                // clang-format on
+                break;
+            }
+            case cs::X86_INS_LOOPNE: {
+                // FIXME wrong for 16 bit programs
+                // clang-format off
+                branch->setCondExpr(Binary::get(opAnd,
+                                                Binary::get(opNotEqual,
+                                                            Location::regOf(REG_PENT_ECX),
+                                                            Const::get(0)),
+                                                Binary::get(opEquals,
+                                                            Terminal::get(opZF),
+                                                            Const::get(0))));
+                // clang-format on
+                break;
+            }
+            default: break;
+            }
+
             rtl->pop_back();
             rtl->append(branch);
         }

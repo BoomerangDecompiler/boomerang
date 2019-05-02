@@ -11,6 +11,7 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 
 
@@ -49,6 +50,12 @@ bool StatementInitPass::execute(UserProc *proc)
             }
         }
     }
+
+    // Removing out edges of noreturn calls might sever paths between
+    // the entry BB and other (now orphaned) BBs. We have to remove these BBs
+    // since all BBs must be reachable from the entry BB for data-flow analysis
+    // to work.
+    CFGCompressor().compressCFG(proc->getCFG());
 
     return true;
 }

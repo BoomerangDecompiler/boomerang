@@ -436,7 +436,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
             BB_rtls->push_back(std::move(delay_inst.rtl));
         }
 
-        // Now emit the branch
+        // Now emit the branch BB
         BB_rtls->push_back(std::move(inst.rtl));
         BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
 
@@ -444,10 +444,11 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
             return false;
         }
 
+        // "taken" branch
         createJumpToAddress(jumpDest, newBB, cfg, tq, textLimit);
-        // Add the "false" leg; skips the NCT
+
+        // Skip the NCT/NOP instruction (we already emitted it)
         cfg->addEdge(newBB, address + 8);
-        // Skip the NCT/NOP instruction
         address += 8;
     }
     else if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
@@ -494,8 +495,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
         address += 4;
     }
 
-    // Start a new list of RTLs for the next BB
-    BB_rtls = nullptr;
+    assert(BB_rtls == nullptr);
     return true;
 }
 

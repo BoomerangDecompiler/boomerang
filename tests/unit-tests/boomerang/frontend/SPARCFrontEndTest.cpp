@@ -332,9 +332,7 @@ void SPARCFrontendTest::testDelaySlot()
                "  out edges: 0x00010ac8 0x00010ab8 \n"
                "0x00010aa4    0 *32* r8 := m[r30 - 20]\n"
                "0x00010aa8    0 *32* r16 := 5\n"
-               "0x00010aac    0 *32* tmp := r16\n"
-               "              0 *32* r0 := r16 - r8\n"
-               "              0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n"
+               "0x00010aac    0 *v* %flags := SUBFLAGS( r16, r8, r16 - r8 )\n"
                "0x00010ab0    0 *32* r8 := 0x11400\n"
                "0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
                "High level: %flags\n";
@@ -365,9 +363,7 @@ void SPARCFrontendTest::testDelaySlot()
                "  in edges: 0x00010ab8(0x00010ab8) \n"
                "  out edges: 0x00010ac8 \n"
                "0x00010ac0    0 *32* r8 := m[r30 - 20]\n"
-               "0x00010ac4    0 *32* tmp := r16\n"
-               "              0 *32* r0 := r16 - r8\n"
-               "              0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n";
+               "0x00010ac4    0 *v* %flags := SUBFLAGS( r16, r8, r16 - r8 )\n";
     compareLongStrings(actual, expected);
     actual.clear();
 

@@ -11,8 +11,12 @@
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -27,8 +31,9 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    const BinaryImage *image = proc->getProg()->getBinaryFile()->getImage();
-    bool changed             = false;
+    const BinaryImage *image      = proc->getProg()->getBinaryFile()->getImage();
+    const BinarySymbolTable *syms = proc->getProg()->getBinaryFile()->getSymbols();
+    bool changed                  = false;
 
     for (Statement *st : stmts) {
         Assign *assgn = dynamic_cast<Assign *>(st);
@@ -43,8 +48,16 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             continue;
         }
 
-        const Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
-        if (proc->getProg()->isReadOnly(addr)) {
+        const Address addr      = assgn->getRight()->access<Const, 1>()->getAddr();
+        const BinarySymbol *sym = syms->findSymbolByAddress(addr);
+        if (sym && sym->isImportedFunction()) {
+            LibProc *libProc = proc->getProg()->getOrCreateLibraryProc(sym->getName());
+            libProc->setEntryAddress(addr);
+            assgn->setRight(Const::get(libProc));
+            assgn->setType(FuncType::get(libProc->getSignature()));
+            changed = true;
+        }
+        else if (proc->getProg()->isReadOnly(addr)) {
             switch (assgn->getType()->getSize()) {
             case 8: assgn->setRight(Const::get(image->readNative1(addr))); break;
             case 16: assgn->setRight(Const::get(image->readNative2(addr))); break;
@@ -54,7 +67,6 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             default: assert(false);
             }
 
-            LOG_VERBOSE("Replaced global constant in assign; now %1", assgn);
             changed = true;
         }
     }

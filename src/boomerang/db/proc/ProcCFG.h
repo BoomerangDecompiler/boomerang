@@ -235,7 +235,9 @@ public:
 
 public:
     /// print this CFG, mainly for debugging
-    void print(OStream &out);
+    void print(OStream &out) const;
+
+    QString toString() const;
 
 private:
     void insertBB(BasicBlock *bb);

@@ -104,11 +104,10 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             // Note: this can happen with forward jumps into the middle of a loop,
             // so not error
             if (!currentBB->isIncomplete()) {
-                // This list of RTLs is not needed now
-                bbRTLs.reset();
-
                 LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
                             currentBB->getLowAddr());
+
+                // we automatically destroy bbRTLs
                 return nullptr;
             }
             else {
@@ -552,7 +551,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(OStream &out)
+void ProcCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
 
@@ -562,6 +561,16 @@ void ProcCFG::print(OStream &out)
 
     out << '\n';
 }
+
+
+QString ProcCFG::toString() const
+{
+    QString result;
+    OStream os(&result);
+    print(os);
+    return result;
+}
+
 
 void ProcCFG::insertBB(BasicBlock *bb)
 {

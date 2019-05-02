@@ -177,10 +177,10 @@ void DataFlowTest::testPlacePhi()
     OStream actual(&actualStr);
 
     // r24 == eax
-    std::set<int>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
+    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
 
-    for (int bb : A_phi) {
-        actual << bb << " ";
+    for (BBIndex bb : A_phi) {
+        actual << (int)bb << " ";
     }
 
     QCOMPARE(actualStr, QString("8 10 15 20 21 "));
@@ -208,11 +208,11 @@ void DataFlowTest::testPlacePhi2()
 
     QString     actual_st;
     OStream actual(&actual_st);
-    SharedExp               e = Location::regOf(REG_PENT_EAX);
-    std::set<int>&          s = df->getA_phi(e);
+    SharedExp          e = Location::regOf(REG_PENT_EAX);
+    std::set<BBIndex>& s = df->getA_phi(e);
 
-    for (std::set<int>::iterator pp = s.begin(); pp != s.end(); ++pp) {
-        actual << *pp << " ";
+    for (auto pp = s.begin(); pp != s.end(); ++pp) {
+        actual << (uint64)*pp << " ";
     }
 
     QCOMPARE(actual_st, QString("4 "));

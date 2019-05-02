@@ -892,9 +892,11 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
-        newBB        = cfg->createBB(BBType::Ret, std::move(BB_rtls));
-        Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
+        if (newBB) {
+            Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
+            proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        }
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
@@ -959,7 +961,7 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));
+    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { new ReturnStatement }));
     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
     assert(callBB->getNumSuccessors() == 0);

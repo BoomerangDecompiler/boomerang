@@ -85,24 +85,24 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
         case BranchType::JUG: op = opGtrUns; break;
 
         case BranchType::JMI:
-
-            /*       condExp
+            /*
+             *       condExp
              *      /      \
-             *  Const       opList
-             * "SUBFLAGS"    /    \
-             * P1    opList
-             *     /     \
-             *   P2    opList
-             *          /     \
-             *        P3     opNil */
+             *  Const      opList
+             * "SUBFLAGS"  /    \
+             *            P1    opList
+             *                  /    \
+             *                 P2    opList
+             *                       /    \
+             *                      P3    opNil
+             */
             condExp = Binary::get(opLess, // P3 < 0
                                   condExp->access<const Exp, 2, 2, 2, 1>()->clone(), Const::get(0));
             break;
 
         case BranchType::JPOS:
             condExp = Binary::get(opGtrEq, // P3 >= 0
-                                  condExp->access<const Exp, 2, 2, 2, 1>()->getSubExp1()->clone(),
-                                  Const::get(0));
+                                  condExp->access<const Exp, 2, 2, 2, 1>()->clone(), Const::get(0));
             break;
 
         case BranchType::JOF:
@@ -165,19 +165,19 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             // This is Pentium specific too; see below for more notes.
 
             /*
-             *                                      condExp
-             *                                      /    \
-             *                                Const        opList
-             *                      "LOGICALFLAGS8"        /    \
-             *                                      opBitAnd    opNil
-             *                                        /     \
-             *                                 opFlagCall  opIntConst
-             *                                  /        \         mask
-             *                              Const        opList
-             *                          "SETFFLAGS"      /    \
-             *                                          P1    opList
-             *                                        /    \
-             *                                      P2    opNil
+             *              condExp
+             *              /     \
+             *          Const      opList
+             * "LOGICALFLAGS8"     /    \
+             *               opBitAnd    opNil
+             *               /      \
+             *        opFlagCall    opIntConst
+             *        /        \         mask
+             *    Const        opList
+             * "SETFFLAGS"     /    \
+             *                P1    opList
+             *                      /    \
+             *                     P2    opNil
              */
             SharedExp flagsParam = condExp->getSubExp2()->getSubExp1();
             SharedExp test       = flagsParam;
