@@ -532,14 +532,14 @@ INSTRUCTION "RETT" () { ret };
 INSTRUCTION "RETL" () { ret };
 
 # Jump instructions - hard-coded semantics
-INSTRUCTION "BA"      (reloc)      { _ };
-INSTRUCTION "BA"      (cc, reloc)  { _ };
-INSTRUCTION "BAA"     (reloc)      { _ };
-INSTRUCTION "BAA"     (cc, reloc)  { _ };
-INSTRUCTION "BN"      (cc, reloc)  { _ };
-INSTRUCTION "BN"      (reloc)      { _ };
-INSTRUCTION "BNA"     (reloc)      { _ };
-INSTRUCTION "BNA"     (cc, reloc)  { _ };
+INSTRUCTION "BA"      (reloc)      { goto reloc };
+INSTRUCTION "BA"      (cc, reloc)  { goto reloc };
+INSTRUCTION "BAA"     (reloc)      { goto reloc };
+INSTRUCTION "BAA"     (cc, reloc)  { goto reloc };
+INSTRUCTION "BN"      (cc, reloc)  { goto reloc };
+INSTRUCTION "BN"      (reloc)      { goto reloc };
+INSTRUCTION "BNA"     (reloc)      { goto reloc };
+INSTRUCTION "BNA"     (cc, reloc)  { goto reloc };
 
 # Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
 INSTRUCTION "BNE"     (reloc)      { _ };
@@ -706,8 +706,8 @@ INSTRUCTION FCOMPQ[idx] (fs1q, fs2q) {
 #  %FZF is 1 iff the fcc field of the FSR = 0
 # operators exist and have been setup correctly as at 14/12/1998
 
-INSTRUCTION "FBA"     (reloc) { *32*%pc := %npc     *32* %npc := [ 1                     ? reloc : %npc+4 ]      *1* %CTI := 1 };
-INSTRUCTION "FBN"     (reloc) { *32*%pc := %npc     *32* %npc := [ 0                     ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBA"     (reloc) { goto reloc };
+INSTRUCTION "FBN"     (reloc) { goto reloc };
 INSTRUCTION "FBNE"    (reloc) { *32*%pc := %npc     *32* %npc := [ ~%FZF                 ? reloc : %npc+4 ]      *1* %CTI := 1 };
 INSTRUCTION "FBE"     (reloc) { *32*%pc := %npc     *32* %npc := [ %FZF                  ? reloc : %npc+4 ]      *1* %CTI := 1 };
 INSTRUCTION "FBG"     (reloc) { *32*%pc := %npc     *32* %npc := [ %FGF                  ? reloc : %npc+4 ]      *1* %CTI := 1 };
@@ -725,8 +725,8 @@ INSTRUCTION "FBO"     (reloc) { *32*%pc := %npc     *32* %npc := [ (%FZF | %FGF 
 
 
 # Anullable FP branches
-INSTRUCTION "FBAA"    (reloc) { *32* %pc := reloc       *32* %npc := reloc + 4      *1* %CTI := 1 };
-INSTRUCTION "FBNA"    (reloc) { *32* %pc := %npc + 4    *32* %npc := %npc + 8       *1* %CTI := 1 };
+INSTRUCTION "FBAA"    (reloc) { goto reloc };
+INSTRUCTION "FBNA"    (reloc) { goto reloc };
 
 INSTRUCTION "FBNEA"   (reloc) { *32* %pc := [ ~%FZF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FZF                  ? reloc : %npc+8 ]    *1* %CTI := 1 };
 INSTRUCTION "FBEA"    (reloc) { *32* %pc := [ %FZF                  ? %npc : %npc+4 ]   *32* %npc := [ %FZF                   ? reloc : %npc+8 ]    *1* %CTI := 1 };

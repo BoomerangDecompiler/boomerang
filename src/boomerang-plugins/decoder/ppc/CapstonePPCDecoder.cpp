@@ -166,12 +166,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "B" || insnID == "BA") {
-        GotoStatement *jump = new GotoStatement(Address(operands[0].imm));
-        jump->setIsComputed(false);
-        rtl->append(jump);
-    }
-    else if (insnID == "BL" || insnID == "BLA") {
+    if (insnID == "BL" || insnID == "BLA") {
         Address callDest        = Address(operands[0].imm);
         CallStatement *callStmt = new CallStatement();
         callStmt->setDest(callDest);

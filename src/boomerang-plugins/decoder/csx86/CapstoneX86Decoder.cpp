@@ -293,30 +293,14 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         }
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
-        Assign *last = static_cast<Assign *>(rtl->back());
-        assert(last->getLeft()->isPC());
-        SharedExp guard = last->getGuard();
+        if (rtl->back()->isAssign()) {
+            Assign *last = static_cast<Assign *>(rtl->back());
+            SharedExp guard = last->getGuard();
 
-        const bool isComputedJump = !last->getRight()->isConst();
+            const bool isComputedJump = !last->getRight()->isConst();
 
-        if (guard == nullptr) {
-            if (isComputedJump) {
-                // unconditional computed jump (switch statement)
-                CaseStatement *cs = new CaseStatement();
-                cs->setDest(last->getRight());
-                cs->setIsComputed(true);
-                rtl->pop_back();
-                rtl->append(cs);
-            }
-            else {
-                // unconditional jump
-                GotoStatement *gs = new GotoStatement;
-                gs->setDest(last->getRight());
-                rtl->pop_back();
-                rtl->append(gs);
-            }
-        }
-        else {
+            assert(last->getLeft()->isPC());
+
             // conditional jump
             BranchStatement *branch = new BranchStatement();
             branch->setDest(last->getRight());

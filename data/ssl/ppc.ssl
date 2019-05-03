@@ -466,8 +466,8 @@ INSTRUCTION "MTCTR"       (rs)                  { *32* %CTR := rs };
 
 # Branches
 # Most of the semantics are hard-coded (see CapstonePPCDecoder.cpp)
-INSTRUCTION "B"           (dest)                { _ };
-INSTRUCTION "BA"          (dest)                { _ };
+INSTRUCTION "B"           (dest)                { goto dest };
+INSTRUCTION "BA"          (dest)                { goto dest };
 INSTRUCTION "BL"          (dest)                { _ };
 INSTRUCTION "BLA"         (dest)                { _ };
 INSTRUCTION "BLR"         ()                    { ret };

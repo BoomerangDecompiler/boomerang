@@ -270,12 +270,8 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
 
     if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
-        rtl->clear();
-        rtl->append(new GotoStatement(Address(operands[0].imm)));
     }
     else if (insnID == "FBA" || insnID == "FBAA" || insnID == "FBN" || insnID == "FBNA") {
-        rtl->clear();
-        rtl->append(new GotoStatement(Address(operands[0].imm)));
     }
     else if (instruction->id == cs::SPARC_INS_B) {
         rtl->clear();

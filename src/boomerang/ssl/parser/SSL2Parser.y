@@ -40,6 +40,7 @@ class SSL2ParserDriver;
 #include "boomerang/ssl/RTLInstDict.h"
 #include "SSL2ParserDriver.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -62,7 +63,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token KW_COVERS KW_SHARES
 %token KW_FPUSH KW_FPOP
 %token KW_FLOAT KW_INTEGER KW_FLAGS KW_INSTRUCTION
-%token KW_RET
+%token KW_RET KW_GOTO
 
 // identifiers
 %token <QString> IDENT REG_IDENT TEMP STR_LITERAL
@@ -107,7 +108,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %nonassoc AT
 
 %type <SharedExp>    exp location exp_term
-%type <Statement *>  statement ret_stmt
+%type <Statement *>  statement ret_stmt goto_stmt
 %type <Assign *>     assignment
 %type <SharedType>   assigntype
 %type <SharedRTL>    rtl nonempty_rtl rtl_part
@@ -450,6 +451,7 @@ rtl_part:
 statement:
     assignment { $$ = $1; }
   | ret_stmt   { $$ = $1; }
+  | goto_stmt  { $$ = $1; }
     // example: *use* of ADDFLAGS(...)
   | NAME_CALL LPAREN arglist RPAREN {
         if (drv.m_dict->m_flagFuncs.find($1) == drv.m_dict->m_flagFuncs.end()) {
@@ -504,6 +506,14 @@ assigntype:
 ret_stmt:
     KW_RET {
         $$ = new ReturnStatement;
+    }
+  ;
+
+goto_stmt:
+    KW_GOTO exp {
+        GotoStatement *jump = new GotoStatement;
+        jump->setDest($2);
+        $$ = jump;
     }
   ;
 
