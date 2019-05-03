@@ -88,7 +88,6 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     result.numBytes     = PPC_MAX_INSTRUCTION_LENGTH;
     result.reDecode     = false;
     result.rtl          = createRTLForInstruction(pc, decodedInstruction);
-    result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
 
     cs_free(decodedInstruction, numInstructions);

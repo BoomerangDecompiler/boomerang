@@ -162,7 +162,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
     result.numBytes     = SPARC_INSTRUCTION_LENGTH;
     result.reDecode     = false;
     result.rtl          = createRTLForInstruction(pc, &decodedInstruction);
-    result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
 
     if (result.rtl->empty()) {

@@ -24,7 +24,6 @@ DecodeResult::DecodeResult(DecodeResult &&other)
     , reDecode(std::move(other.reDecode))
     , numBytes(std::move(other.numBytes))
     , rtl(std::move(other.rtl))
-    , forceOutEdge(other.forceOutEdge)
 {
 }
 
@@ -41,7 +40,6 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
     reDecode     = std::move(other.reDecode);
     numBytes     = std::move(other.numBytes);
     rtl          = std::move(other.rtl);
-    forceOutEdge = std::move(other.forceOutEdge);
 
     return *this;
 }
@@ -54,5 +52,4 @@ void DecodeResult::reset()
     valid        = true;
     rtl          = nullptr;
     reDecode     = false;
-    forceOutEdge = Address::ZERO;
 }

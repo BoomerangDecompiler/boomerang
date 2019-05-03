@@ -83,10 +83,4 @@ public:
 
     /// The RTL constructed (if any).
     std::unique_ptr<RTL> rtl;
-
-    /**
-     * If non zero, this field represents a new native address to be used as the out-edge for this
-     * instruction's BB. At present, only used for the SPARC call/add caller prologue
-     */
-    Address forceOutEdge;
 };

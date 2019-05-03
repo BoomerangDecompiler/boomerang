@@ -181,7 +181,6 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     result.numBytes     = m_insn->size;
     result.reDecode     = false;
     result.rtl          = createRTLForInstruction(pc, m_insn);
-    result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
     return true;
 }

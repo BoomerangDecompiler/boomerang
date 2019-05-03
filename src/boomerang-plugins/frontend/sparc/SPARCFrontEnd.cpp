@@ -219,7 +219,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             // struct at decode time? If forceOutEdge is set, set offset to 0 and no out-edge will
             // be added yet
             // MVE: FIXME!
-            int offset = !inst.forceOutEdge.isZero() ? 0 : /*call_stmt->returnsStruct()?12:8*/ 8;
+            int offset = 8;
             bool ret   = true;
 
             // Check for _exit; probably should check for other "never return" functions
@@ -237,17 +237,8 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             // Handle the call (register the destination as a proc) and possibly set the outedge.
             createCallToAddress(dest, address, callBB, cfg, offset);
 
-            if (!inst.forceOutEdge.isZero()) {
-                // There is no need to force a goto to the new out-edge, since we will continue
-                // decoding from there. If other edges exist to the outedge, they will generate the
-                // required label
-                cfg->addEdge(callBB, inst.forceOutEdge);
-                address = inst.forceOutEdge;
-            }
-            else {
-                // Continue decoding from the lexical successor
-                address += offset;
-            }
+            // Continue decoding from the lexical successor
+            address += offset;
 
             return ret;
         }
