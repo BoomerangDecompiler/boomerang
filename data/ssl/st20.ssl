@@ -910,6 +910,7 @@ INSTRUCTION "iret" () {
     *32* %Areg := m[%sp+12]
     *32* %pc := m[%sp+8]
     *32* %sp := m[%sp+4]
+    ret
     # no status reg yet
 };
 
@@ -1174,6 +1175,7 @@ INSTRUCTION "restart" () {
 INSTRUCTION "ret" () {
     *32* %pc := m[%sp]
     *32* %sp := %sp + 16
+    ret
 };
 
 
@@ -1407,7 +1409,7 @@ INSTRUCTION "trapenb" () {
 
 # trap return
 INSTRUCTION "tret" () {
-    _
+    ret
 };
 
 

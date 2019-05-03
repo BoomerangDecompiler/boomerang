@@ -154,18 +154,6 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             }
 
             result.rtl = instantiate(pc, insnName);
-
-            const bool isRet = strcmp(insnName, "ret") == 0 || strcmp(insnName, "iret") == 0 ||
-                               strcmp(insnName, "tret") == 0;
-            if (isRet) {
-                result.rtl->append(new ReturnStatement);
-            }
-            else if (strcmp(insnName, "gcall") == 0) {
-                CallStatement *call = new CallStatement;
-                call->setDest(Location::tempOf(Const::get(QString("tmp"))));
-                call->setIsComputed(true);
-                result.rtl->append(call);
-            }
         } break;
 
         default: assert(false);
@@ -212,7 +200,7 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
         case 0x1D: return "xdble";
         case 0x1E: return "ldpri";
         case 0x1F: return "rem";
-        case 0x20: return "ret";
+        case 0x20: return "RET";
         case 0x21: return "lend";
         case 0x22: return "ldtimer";
         case 0x29: return "testerr";

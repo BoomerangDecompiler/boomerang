@@ -2376,13 +2376,13 @@ INSTRUCTION "INTO" () {
 
 # IRET
 INSTRUCTION "IRET" () {
-    _   # Semantics are hard-coded
+    ret
 };
 
 
 # IRETD
 INSTRUCTION "IRETD" () {
-    _   # Semantics are hard-coded
+    ret
 };
 
 
@@ -3276,16 +3276,21 @@ INSTRUCTION "RCR.rm32.imm32" (dest, src) {
 INSTRUCTION "RET" () {
     *32* %pc := m[%esp]
     *32* %esp := %esp + 4
+    ret
 };
+
 
 INSTRUCTION "RET.imm16" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
+    ret
 };
+
 
 INSTRUCTION "RET.imm32" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
+    ret
 };
 
 
@@ -3293,17 +3298,21 @@ INSTRUCTION "RET.imm32" (offset) {
 INSTRUCTION "RETF" () {
     *32* %pc := m[%esp]
     *32* %esp := %esp + 4
+    ret
 };
 
 INSTRUCTION "RETF.imm16" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
+    ret
 };
 
 INSTRUCTION "RETF.imm32" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
+    ret
 };
+
 
 # ROL
 INSTRUCTION "ROL.reg8.imm8" (dest, src) {

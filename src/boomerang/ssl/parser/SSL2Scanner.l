@@ -79,6 +79,7 @@ loc.step();
 "SHARES"        return SSL2::parser::make_KW_SHARES(loc);
 "FPUSH"         return SSL2::parser::make_KW_FPUSH(loc);
 "FPOP"          return SSL2::parser::make_KW_FPOP(loc);
+"ret"           return SSL2::parser::make_KW_RET(loc);
 
 "|"             return SSL2::parser::make_BIT_OR(loc);
 "&"             return SSL2::parser::make_BIT_AND(loc);

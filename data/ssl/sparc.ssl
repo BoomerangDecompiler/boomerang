@@ -527,9 +527,9 @@ INSTRUCTION "RETURN" (addr) {
     *32* %i7 := m[%sp+60]
 };
 
-INSTRUCTION "RET"  () { _ };
-INSTRUCTION "RETT" () { _ };
-INSTRUCTION "RETL" () { _ };
+INSTRUCTION "RET"  () { ret };
+INSTRUCTION "RETT" () { ret };
+INSTRUCTION "RETL" () { ret };
 
 # Jump instructions - hard-coded semantics
 INSTRUCTION "BA"      (reloc)      { _ };

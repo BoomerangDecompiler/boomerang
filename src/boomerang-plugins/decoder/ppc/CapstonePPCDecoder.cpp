@@ -203,9 +203,6 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         call->setIsComputed(true);
         rtl->append(call);
     }
-    else if (insnID == "BLR") {
-        rtl->append(new ReturnStatement());
-    }
     else if (insnID == "BGT") {
         BranchStatement *jump = new BranchStatement();
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {

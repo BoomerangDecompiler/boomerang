@@ -465,12 +465,12 @@ INSTRUCTION "MTXER"       (rs)                  { SETXER(rs) };
 INSTRUCTION "MTCTR"       (rs)                  { *32* %CTR := rs };
 
 # Branches
-# Semantics are hard-coded (see CapstonePPCDecoder.cpp)
+# Most of the semantics are hard-coded (see CapstonePPCDecoder.cpp)
 INSTRUCTION "B"           (dest)                { _ };
 INSTRUCTION "BA"          (dest)                { _ };
 INSTRUCTION "BL"          (dest)                { _ };
 INSTRUCTION "BLA"         (dest)                { _ };
-INSTRUCTION "BLR"         ()                    { _ };
+INSTRUCTION "BLR"         ()                    { ret };
 
 
 # Comparisons. Ignore XER[SO] for now.

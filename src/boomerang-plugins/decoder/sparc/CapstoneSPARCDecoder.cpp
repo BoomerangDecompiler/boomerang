@@ -385,12 +385,6 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0))->simplify());
         rtl->append(caseStmt);
     }
-    else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
-             instruction->id == cs::SPARC_INS_RETT) {
-        rtl->clear();
-        ReturnStatement *retStmt = new ReturnStatement;
-        rtl->append(retStmt);
-    }
 
     return rtl;
 }
