@@ -199,70 +199,64 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         rtl->append(call);
     }
     else if (insnID == "BGT") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSG);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSG);
-        rtl->append(jump);
     }
     else if (insnID == "BGE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSGE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSGE);
-        rtl->append(jump);
     }
     else if (insnID == "BLT") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSL);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSL);
-        rtl->append(jump);
     }
     else if (insnID == "BLE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSLE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSLE);
-        rtl->append(jump);
     }
     else if (insnID == "BNE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JNE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JNE);
-        rtl->append(jump);
     }
     else if (insnID == "BEQ") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JE);
-        rtl->append(jump);
     }
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = operandToExp(operands[numOperands - 1])->access<Const>()->getAddr();

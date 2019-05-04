@@ -588,39 +588,36 @@ INSTRUCTION "FSQRTSq"         (fd, fb)          { *64* fd := sqrt(fb) };
 
 
 # conditional branch
-# MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)
-#
-#CONDBR :=     { "%CR0@[3:3]",   "~%CR0@[2:2]",  "%CR0@[1:1]",   "~%CR0@[3:3]",
-#                "%CR0@[2:2]",   "~%CR0@[3:3]",  "~%CR0@[1:1]",  "~%CR0@[2:2]",
-#                "%CR0@[0:0]",   "~%CR0@[0:0]",  "%CR0@[0:0]",   "~%CR0@[0:0]"} };
-#
-# Note: The semantics for the instructions below are still hard-coded so they are not defined explicitly.
+# CR0:
+#  Bit 0 = LT
+#  Bit 1 = GT
+#  Bit 2 = EQ
+#  Bit 3 = SO
 
-# BRCONDS[IDX]    BIcr, reloc     *32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc] };
-INSTRUCTION "blt"     ()               { _ };
-INSTRUCTION "blt"     (dest)           { _ };
-INSTRUCTION "blt"     (cr, dest)       { _ };
-INSTRUCTION "ble"     ()               { _ };
-INSTRUCTION "ble"     (dest)           { _ };
-INSTRUCTION "ble"     (cr, dest)       { _ };
-INSTRUCTION "beq"     ()               { _ };
-INSTRUCTION "beq"     (dest)           { _ };
-INSTRUCTION "beq"     (cr, dest)       { _ };
-INSTRUCTION "bge"     ()               { _ };
-INSTRUCTION "bge"     (dest)           { _ };
-INSTRUCTION "bge"     (cr, dest)       { _ };
-INSTRUCTION "bgt"     ()               { _ };
-INSTRUCTION "bgt"     (dest)           { _ };
-INSTRUCTION "bgt"     (cr, dest)       { _ };
-INSTRUCTION "bnl"     ()               { _ };
-INSTRUCTION "bnl"     (dest)           { _ };
-INSTRUCTION "bnl"     (cr, dest)       { _ };
-INSTRUCTION "bne"     ()               { _ };
-INSTRUCTION "bne"     (dest)           { _ };
-INSTRUCTION "bne"     (cr, dest)       { _ };
-INSTRUCTION "bng"     ()               { _ };
-INSTRUCTION "bng"     (dest)           { _ };
-INSTRUCTION "bng"     (cr, dest)       { _ };
+INSTRUCTION "blt"     ()               { %CR0@[0:0]                => goto %pc  };
+INSTRUCTION "blt"     (dest)           { %CR0@[0:0]                => goto dest };
+INSTRUCTION "blt"     (cr, dest)       { cr@[0:0]                  => goto dest };
+INSTRUCTION "ble"     ()               { %CR0@[0:0] | %CR0@[2:2]   => goto %pc  };
+INSTRUCTION "ble"     (dest)           { %CR0@[0:0] | %CR0@[2:2]   => goto dest };
+INSTRUCTION "ble"     (cr, dest)       { cr@[0:0] | cr@[2:2]       => goto dest };
+INSTRUCTION "beq"     ()               { %CR0@[2:2]                => goto %pc  };
+INSTRUCTION "beq"     (dest)           { %CR0@[2:2]                => goto dest };
+INSTRUCTION "beq"     (cr, dest)       { cr@[2:2]                  => goto dest };
+INSTRUCTION "bge"     ()               { %CR0@[1:1] | %CR0@[2:2]   => goto %pc  };
+INSTRUCTION "bge"     (dest)           { %CR0@[1:1] | %CR0@[2:2]   => goto dest };
+INSTRUCTION "bge"     (cr, dest)       { cr@[1:1] | cr@[2:2]       => goto dest };
+INSTRUCTION "bgt"     ()               { %CR0@[1:1]                => goto %pc  };
+INSTRUCTION "bgt"     (dest)           { %CR0@[1:1]                => goto dest };
+INSTRUCTION "bgt"     (cr, dest)       { cr@[1:1]                  => goto dest };
+INSTRUCTION "bnl"     ()               { %CR0@[1:1] | %CR0@[2:2]   => goto %pc  };
+INSTRUCTION "bnl"     (dest)           { %CR0@[1:1] | %CR0@[2:2]   => goto dest };
+INSTRUCTION "bnl"     (cr, dest)       { cr@[1:1] | cr@[2:2]       => goto dest };
+INSTRUCTION "bne"     ()               { %CR0@[0:0] | %CR0@[1:1]   => goto %pc  };
+INSTRUCTION "bne"     (dest)           { %CR0@[0:0] | %CR0@[1:1]   => goto dest };
+INSTRUCTION "bne"     (cr, dest)       { cr@[0:0] | cr@[1:1]       => goto dest };
+INSTRUCTION "bng"     ()               { %CR0@[0:0] | %CR0@[2:2]   => goto %pc  };
+INSTRUCTION "bng"     (dest)           { %CR0@[0:0] | %CR0@[2:2]   => goto dest };
+INSTRUCTION "bng"     (cr, dest)       { cr@[0:0] | cr@[2:2]       => goto dest };
 
 
 # BRCONDSCTR[IDX] BIcr            *32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc] };

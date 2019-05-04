@@ -40,6 +40,7 @@ class SSL2ParserDriver;
 #include "boomerang/ssl/RTLInstDict.h"
 #include "SSL2ParserDriver.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/SizeType.h"
@@ -513,6 +514,12 @@ goto_stmt:
     KW_GOTO exp {
         GotoStatement *jump = new GotoStatement;
         jump->setDest($2);
+        $$ = jump;
+    }
+  | exp THEN KW_GOTO exp {
+        BranchStatement *jump = new BranchStatement;
+        jump->setDest($4);
+        jump->setCondExpr($1);
         $$ = jump;
     }
   ;

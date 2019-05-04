@@ -16,6 +16,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/parser/SSL2ParserDriver.h"
 #include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -169,6 +170,10 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
                 caseStmt->setIsComputed(true);
                 s = caseStmt;
             }
+        }
+        else if (s->isBranch()) {
+            BranchStatement *branch = static_cast<BranchStatement *>(s);
+            branch->setIsComputed(!branch->getDest()->isIntConst());
         }
     }
 
