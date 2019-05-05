@@ -284,6 +284,10 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     // clang-format on
                 }
 
+                // Do not throw away all the previously decoded instrucions before the invalid one
+                cfg->createBB(BBType::Fall, std::move(BB_rtls));
+
+
                 LOG_WARN(message);
                 assert(!inst.valid);
                 break; // try next instruction in queue
