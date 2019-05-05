@@ -79,8 +79,10 @@ public:
      * in a phi parameter, there will be no entry in usedByDomPhi, so we ignore it. Remember that
      * each location is defined only once, so that's the time to decide if it is dominated by a phi
      * use or not.
+     *
+     * \returns false on failure. If this happens, the state of the parameters is undefined.
      */
-    void findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+    bool findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi);
 
     // for testing
