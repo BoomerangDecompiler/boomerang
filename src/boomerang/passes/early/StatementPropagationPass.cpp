@@ -33,7 +33,9 @@ bool StatementPropagationPass::execute(UserProc *proc)
 
     // Find the locations that are used by a live, dominating phi-function
     LocationSet usedByDomPhi;
-    findLiveAtDomPhi(proc, usedByDomPhi);
+    if (!findLiveAtDomPhi(proc, usedByDomPhi)) {
+        return false;
+    }
 
     // Next pass: count the number of times each assignment LHS would be propagated somewhere
     std::map<SharedExp, int, lessExpStar> destCounts;
@@ -69,12 +71,14 @@ bool StatementPropagationPass::execute(UserProc *proc)
 }
 
 
-void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi)
+bool StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi)
 {
     LocationSet usedByDomPhi0;
     std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
 
-    proc->getDataFlow()->findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
+    if (!proc->getDataFlow()->findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi)) {
+        return false;
+    }
 
     // Note that the above is not the complete algorithm; it has found the dead phi-functions
     // in the defdAtPhi
@@ -86,10 +90,12 @@ void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &use
             usedByDomPhi.remove(wrappedParam);
         }
 
-        // Now remove the actual phi-function (a PhiAssign Statement)
-        // Ick - some problem with return statements not using their returns until more analysis is
-        // done removeStatement(it->second);
+        // Ick - some problem with return statements not using their returns
+        // until more analysis is done
+        // removeStatement(it->second);
     }
+
+    return true;
 }
 
 

@@ -428,14 +428,18 @@ void DataFlow::convertImplicits()
 }
 
 
-void DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+bool DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
                                 std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi)
 {
     const BasicBlock *entryBB = m_proc->getCFG()->getEntryBB();
-    assert(entryBB != nullptr);
+    if (!entryBB) {
+        return false;
+    }
+
     const BBIndex entryIndex = pbbToNode(entryBB);
     assert(entryIndex != BBINDEX_INVALID);
-    return findLiveAtDomPhi(entryIndex, usedByDomPhi, usedByDomPhi0, defdByPhi);
+    findLiveAtDomPhi(entryIndex, usedByDomPhi, usedByDomPhi0, defdByPhi);
+    return true;
 }
 
 
