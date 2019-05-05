@@ -59,10 +59,38 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
         }
         else if (proc->getProg()->isReadOnly(addr)) {
             switch (assgn->getType()->getSize()) {
-            case 8: assgn->setRight(Const::get(image->readNative1(addr))); break;
-            case 16: assgn->setRight(Const::get(image->readNative2(addr))); break;
-            case 32: assgn->setRight(Const::get(image->readNative4(addr))); break;
-            case 64: assgn->setRight(Const::get(image->readNative8(addr))); break;
+            case 8: {
+                Byte value = 0;
+                if (image->readNative1(addr, value)) {
+                    assgn->setRight(Const::get(value));
+                    changed = true;
+                }
+                break;
+            }
+            case 16: {
+                SWord value = 0;
+                if (image->readNative2(addr, value)) {
+                    assgn->setRight(Const::get(value));
+                    changed = true;
+                }
+                break;
+            }
+            case 32: {
+                DWord value = 0;
+                if (image->readNative4(addr, value)) {
+                    assgn->setRight(Const::get(value));
+                    changed = true;
+                }
+                break;
+            }
+            case 64: {
+                QWord value = 0;
+                if (image->readNative8(addr, value)) {
+                    assgn->setRight(Const::get(value));
+                    changed = true;
+                }
+                break;
+            }
             case 80: continue; // can't replace float constants just yet
             default: assert(false);
             }

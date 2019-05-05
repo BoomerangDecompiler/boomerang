@@ -56,8 +56,6 @@ private slots:
     void testIsDynamicallyLinkedProcPointer();
     void testGetOrInsertModuleForSymbol();
 
-    void testReadNative4();
-
     void testDecodeEntryPoint();
     void testDecodeFragment();
     void testReDecode();

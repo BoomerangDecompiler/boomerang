@@ -10,6 +10,7 @@
 #include "CallStatement.h"
 
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/ICodeGenerator.h"
@@ -674,9 +675,13 @@ bool CallStatement::tryConvertToDirect()
     QString calleeName;
 
     if (e->isGlobal()) {
+        BinaryImage *image = prog->getBinaryFile()->getImage();
+
         calleeName      = e->access<Const, 1>()->getStr();
         Address gloAddr = prog->getGlobalAddrByName(calleeName);
-        callDest        = Address(prog->readNative4(gloAddr));
+        if (!image->readNativeAddr4(gloAddr, callDest)) {
+            return false;
+        }
     }
 
     // Note: If gloAddr is in BSS, dest will be 0 (since we do not track

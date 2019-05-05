@@ -179,8 +179,6 @@ public:
     /// \returns the default module for a symbol with name \p name.
     Module *getOrInsertModuleForSymbol(const QString &symbolName);
 
-    int readNative4(Address a) const;
-
     void updateLibrarySignatures();
 
 

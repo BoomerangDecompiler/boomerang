@@ -70,21 +70,19 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToPointer()) {
-        Address init = Address(image->readNative4(uaddr));
-
-        if (init.isZero()) {
+        Address initAddr = Address::INVALID;
+        if (!image->readNativeAddr4(uaddr, initAddr) || initAddr.isZero()) {
             return Const::get(0);
         }
 
-        QString name = m_prog->getGlobalNameByAddr(init);
-
+        const QString name = m_prog->getGlobalNameByAddr(initAddr);
         if (!name.isEmpty()) {
             // TODO: typecast?
             return Location::global(name, nullptr);
         }
 
         if (type->as<PointerType>()->getPointsTo()->resolvesToChar()) {
-            const char *str = m_prog->getStringConstant(init);
+            const char *str = m_prog->getStringConstant(initAddr);
 
             if (str != nullptr) {
                 return Const::get(str);
@@ -169,10 +167,38 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 
         // Note: must respect endianness
         switch (size) {
-        case 8: return Const::get(image->readNative1(uaddr), IntegerType::get(size));
-        case 16: return Const::get(image->readNative2(uaddr), IntegerType::get(size));
-        case 32: return Const::get(image->readNative4(uaddr), IntegerType::get(size));
-        case 64: return Const::get(image->readNative8(uaddr), IntegerType::get(size));
+        case 8: {
+            Byte value = 0;
+            if (!image->readNative1(uaddr, value)) {
+                return nullptr;
+            }
+
+            return Const::get(value, IntegerType::get(size));
+        }
+        case 16: {
+            SWord value = 0;
+            if (!image->readNative2(uaddr, value)) {
+                return nullptr;
+            }
+
+            return Const::get(value, IntegerType::get(size));
+        }
+        case 32: {
+            DWord value = 0;
+            if (!image->readNative4(uaddr, value)) {
+                return nullptr;
+            }
+
+            return Const::get(value, IntegerType::get(size));
+        }
+        case 64: {
+            QWord value = 0;
+            if (!image->readNative8(uaddr, value)) {
+                return nullptr;
+            }
+
+            return Const::get(value, IntegerType::get(size));
+        }
         }
     }
 

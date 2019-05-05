@@ -243,8 +243,13 @@ Address Win32BinaryLoader::getMainEntryPoint()
                     Address mainInfo = Address(READ4_LE(*(m_image + rva - 4)));
 
                     // Address of main is at mainInfo+0x18
-                    Address main = Address(m_binaryImage->readNative4(mainInfo + 0x18));
-                    return main;
+                    Address main = Address::INVALID;
+                    if (m_binaryImage->readNativeAddr4(mainInfo + 0x18, main)) {
+                        return main;
+                    }
+                    else {
+                        return Address::INVALID;
+                    }
                 }
             }
             else {
@@ -1158,11 +1163,21 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address addr) const
 
 Address Win32BinaryLoader::getJumpTarget(Address addr) const
 {
-    if ((m_binaryImage->readNative1(addr) & 0xff) != 0xe9) {
+    Byte opcode = 0;
+    if (!m_binaryImage->readNative1(addr, opcode)) {
+        return Address::INVALID;
+    }
+    else if (opcode != 0xE9) {
         return Address::INVALID;
     }
 
-    return Address(m_binaryImage->readNative4(addr + 1)) + addr + 5;
+    DWord disp = 0;
+    if (!m_binaryImage->readNative4(addr + 1, disp)) {
+        return Address::INVALID;
+    }
+
+    // Note: for backwards jumps, this wraps around since we have unsigned integers
+    return Address(addr + 5 + disp);
 }
 
 

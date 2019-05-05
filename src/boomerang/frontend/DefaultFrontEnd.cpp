@@ -262,11 +262,28 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             if (!decodeSingleInstruction(addr, inst)) {
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
-                                "0x%02X 0x%02X 0x%02X 0x%02X",
-                                qPrintable(addr.toString()), image->readNative1(addr + 0),
-                                image->readNative1(addr + 1), image->readNative1(addr + 2),
-                                image->readNative1(addr + 3));
+
+                Byte insnData[4] = { 0 };
+                bool print       = true;
+                for (int i = 0; i < 4; i++) {
+                    if (!image->readNative1(addr + i, insnData[i])) {
+                        print = false;
+                        break;
+                    }
+                }
+
+                if (print) {
+                    // clang-format off
+                    message.sprintf("Encountered invalid instruction at address %s: "
+                                    "0x%02X 0x%02X 0x%02X 0x%02X",
+                                    qPrintable(addr.toString()),
+                                    insnData[0],
+                                    insnData[1],
+                                    insnData[2],
+                                    insnData[3]);
+                    // clang-format on
+                }
+
                 LOG_WARN(message);
                 assert(!inst.valid);
                 break; // try next instruction in queue
@@ -805,22 +822,30 @@ std::vector<Address> DefaultFrontEnd::findEntryPoints()
 
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
-                    Address setup, teardown;
+
 
                     BinaryImage *image = m_program->getBinaryFile()->getImage();
-                    /*uint32_t vers = */ image->readNative4(tmpaddr); // TODO: find use for vers ?
-                    setup    = Address(image->readNative4(tmpaddr + 4));
-                    teardown = Address(image->readNative4(tmpaddr + 8));
+                    DWord vers = 0, setup = 0, teardown = 0;
+                    bool ok = true;
+                    ok &= image->readNative4(tmpaddr, vers);
+                    ok &= image->readNative4(tmpaddr, setup);
+                    ok &= image->readNative4(tmpaddr, teardown);
 
-                    if (!setup.isZero()) {
-                        if (createFunctionForEntryPoint(setup, "ModuleSetupProc")) {
-                            entrypoints.push_back(setup);
+                    // TODO: find use for vers ?
+                    const Address setupAddr    = Address(setup);
+                    const Address teardownAddr = Address(teardown);
+
+                    if (ok) {
+                        if (!setupAddr.isZero()) {
+                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
+                                entrypoints.push_back(setupAddr);
+                            }
                         }
-                    }
 
-                    if (!teardown.isZero()) {
-                        if (createFunctionForEntryPoint(teardown, "ModuleTearDownProc")) {
-                            entrypoints.push_back(teardown);
+                        if (!teardownAddr.isZero()) {
+                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
+                                entrypoints.push_back(teardownAddr);
+                            }
                         }
                     }
                 }

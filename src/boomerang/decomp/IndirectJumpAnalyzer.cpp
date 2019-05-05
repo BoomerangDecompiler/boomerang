@@ -345,8 +345,9 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
     bb->setType(BBType::Nway);
 
-    Prog *prog   = proc->getProg();
-    ProcCFG *cfg = proc->getCFG();
+    Prog *prog               = proc->getProg();
+    ProcCFG *cfg             = proc->getCFG();
+    const BinaryImage *image = prog->getBinaryFile()->getImage();
 
     // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
     // switch (x) {
@@ -364,21 +365,21 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     for (int i = 0; i < numCases; i++) {
         // Get the destination address from the switch table.
         if (si->switchType == SwitchType::H) {
-            const int switchValue = prog->readNative4(si->tableAddr + i * 2);
-
-            if (switchValue == -1) {
+            DWord switchVal = 0;
+            if (!image->readNative4(si->tableAddr + 2 * i, switchVal)) {
                 continue;
             }
-
-            switchDestination = Address(prog->readNative4(si->tableAddr + i * 8 + 4));
+            else if (!image->readNativeAddr4(si->tableAddr + 8 * i + 4, switchDestination)) {
+                continue;
+            }
         }
         else if (si->switchType == SwitchType::F) {
             Address::value_type *entry = reinterpret_cast<Address::value_type *>(
                 si->tableAddr.value());
             switchDestination = Address(entry[i]);
         }
-        else {
-            switchDestination = Address(prog->readNative4(si->tableAddr + i * 4));
+        else if (!image->readNativeAddr4(si->tableAddr + 4 * i, switchDestination)) {
+            continue;
         }
 
         if ((si->switchType == SwitchType::O) || (si->switchType == SwitchType::R) ||
@@ -496,10 +497,11 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
                 const Prog *prog = proc->getProg();
 
                 for (int entryIdx = 0; entryIdx < swi->numTableEntries; ++entryIdx) {
-                    Address switchEntryAddr = Address(
-                        prog->readNative4(swi->tableAddr + entryIdx * 4));
+                    const BinaryImage *image = prog->getBinaryFile()->getImage();
+                    Address switchEntryAddr  = Address::INVALID;
 
-                    if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(),
+                    if (!image->readNativeAddr4(swi->tableAddr + entryIdx * 4, switchEntryAddr) ||
+                        !Util::inRange(switchEntryAddr, prog->getLimitTextLow(),
                                        prog->getLimitTextHigh())) {
                         if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
                             LOG_WARN("Truncating type A indirect jump array to %1 entries "
@@ -831,10 +833,12 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
     const bool decodeThru = prog->getProject()->getSettings()->decodeThruIndCall;
 
     if (decodeThru && vtExp && vtExp->isIntConst()) {
-        Address addr  = vtExp->access<Const>()->getAddr();
-        Address pfunc = Address(prog->readNative4(addr));
+        const BinaryImage *image = prog->getBinaryFile()->getImage();
+        const Address addr       = vtExp->access<Const>()->getAddr();
+        Address pfunc            = Address::INVALID;
 
-        if (Util::inRange(pfunc, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
+        if (image->readNativeAddr4(addr, pfunc) &&
+            Util::inRange(pfunc, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
             Function *callee = prog->getOrCreateFunction(pfunc);
             if (!prog->getProject()->getSettings()->decodeChildren) {
                 return false;

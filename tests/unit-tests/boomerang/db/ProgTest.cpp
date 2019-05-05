@@ -423,14 +423,6 @@ void ProgTest::testGetOrInsertModuleForSymbol()
 }
 
 
-void ProgTest::testReadNative4()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-
-    QCOMPARE(m_project.getProg()->readNative4(Address::INVALID), 0);
-    QCOMPARE(m_project.getProg()->readNative4(Address(0x80483FC)), 0x6c6c6548);
-}
-
 
 void ProgTest::testDecodeEntryPoint()
 {

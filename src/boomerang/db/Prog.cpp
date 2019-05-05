@@ -573,12 +573,6 @@ Module *Prog::getOrInsertModuleForSymbol(const QString &symbolName)
 }
 
 
-int Prog::readNative4(Address a) const
-{
-    return m_binaryFile->getImage()->readNative4(a);
-}
-
-
 void Prog::updateLibrarySignatures()
 {
     for (const auto &m : m_moduleList) {

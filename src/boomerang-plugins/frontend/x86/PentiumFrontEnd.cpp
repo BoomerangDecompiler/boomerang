@@ -461,21 +461,24 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList &BB_rt
                     ->as<PointerType>()
                     ->getPointsTo()
                     ->resolvesToFunc()) {
-                Address d = Address(m_program->getBinaryFile()->getImage()->readNative4(a));
-                LOG_VERBOSE(
-                    "Found a new procedure at address %1 from inspecting parameters of call to %2",
-                    d, call->getDestProc()->getName());
+                const BinaryImage *image = m_program->getBinaryFile()->getImage();
+                Address d                = Address::INVALID;
+                if (image->readNativeAddr4(a, d)) {
+                    LOG_VERBOSE("Found a new procedure at address %1 "
+                                "from inspecting parameters of call to %2",
+                                d, call->getDestProc()->getName());
 
-                Function *proc = m_program->getOrCreateFunction(d);
-                auto sig       = compound->getMemberTypeByIdx(n)
-                               ->as<PointerType>()
-                               ->getPointsTo()
-                               ->as<FuncType>()
-                               ->getSignature()
-                               ->clone();
-                sig->setName(proc->getName());
-                sig->setForced(true);
-                proc->setSignature(sig);
+                    Function *proc = m_program->getOrCreateFunction(d);
+                    auto sig       = compound->getMemberTypeByIdx(n)
+                                   ->as<PointerType>()
+                                   ->getPointsTo()
+                                   ->as<FuncType>()
+                                   ->getSignature()
+                                   ->clone();
+                    sig->setName(proc->getName());
+                    sig->setForced(true);
+                    proc->setSignature(sig);
+                }
             }
 
             a += compound->getMemberTypeByIdx(n)->getSize() / 8;

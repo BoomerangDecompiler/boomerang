@@ -1292,14 +1292,20 @@ void SPARCFrontEnd::warnInvalidInstruction(Address pc)
     QString message;
     BinaryImage *image = m_program->getBinaryFile()->getImage();
 
+    Byte insnBytes[4] = { 0 };
+
+    for (int i = 0; i < 4; i++) {
+        image->readNative1(pc + i, insnBytes[i]);
+    }
+
     // clang-format off
     message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
                     "0x%02X 0x%02X 0x%02X 0x%02X",
                     qPrintable(pc.toString()),
-                    image->readNative1(pc + 0),
-                    image->readNative1(pc + 1),
-                    image->readNative1(pc + 2),
-                    image->readNative1(pc + 3));
+                    insnBytes[0],
+                    insnBytes[1],
+                    insnBytes[2],
+                    insnBytes[3]);
     // clang-format on
 
     LOG_WARN(message);

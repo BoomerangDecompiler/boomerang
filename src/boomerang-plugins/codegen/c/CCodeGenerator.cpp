@@ -469,9 +469,12 @@ void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString s
     auto l = Terminal::get(opNil);
 
     for (unsigned int i = 0; i < size; i++) {
-        int n = image->readNative1(section_start + size - 1 - i);
+        Byte value = 0;
+        if (!image->readNative1(section_start + size - 1 - i, value)) {
+            break;
+        }
 
-        l = Binary::get(opList, Const::get(n & 0xFF), l);
+        l = Binary::get(opList, Const::get(value & 0xFF), l);
     }
 
     addGlobal(section_name, ArrayType::get(IntegerType::get(8, Sign::Unsigned), size), l);
