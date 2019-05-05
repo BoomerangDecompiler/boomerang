@@ -260,6 +260,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             if (!decodeSingleInstruction(addr, inst)) {
+                // Do not throw away previously decoded instrucions before the invalid one
+                if (!BB_rtls->empty()) {
+                    cfg->createBB(BBType::Fall, std::move(BB_rtls));
+                }
+
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
 
@@ -283,10 +288,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                     insnData[3]);
                     // clang-format on
                 }
-
-                // Do not throw away all the previously decoded instrucions before the invalid one
-                cfg->createBB(BBType::Fall, std::move(BB_rtls));
-
 
                 LOG_WARN(message);
                 assert(!inst.valid);
