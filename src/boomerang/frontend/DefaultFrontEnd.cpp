@@ -261,7 +261,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
             if (!decodeSingleInstruction(addr, inst)) {
                 // Do not throw away previously decoded instrucions before the invalid one
-                if (!BB_rtls->empty()) {
+                if (BB_rtls && !BB_rtls->empty()) {
                     cfg->createBB(BBType::Fall, std::move(BB_rtls));
                 }
 
