@@ -182,13 +182,12 @@ bool DataFlow::doesDominate(BBIndex n, BBIndex w)
     assert(n != BBINDEX_INVALID);
     assert(w != BBINDEX_INVALID);
 
-    while (m_idom[w] != w) {
+    while (w != BBINDEX_INVALID && m_idom[w] != w) {
         if (m_idom[w] == n) {
             return true;
         }
 
         w = m_idom[w]; // Move up the dominator tree
-        assert(w != BBINDEX_INVALID);
     }
 
     return false;

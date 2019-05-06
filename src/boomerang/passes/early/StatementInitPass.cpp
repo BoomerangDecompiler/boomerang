@@ -29,6 +29,7 @@ bool StatementInitPass::execute(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
              stmt            = bb->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);
             CallStatement *call = dynamic_cast<CallStatement *>(stmt);
