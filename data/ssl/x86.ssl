@@ -2119,6 +2119,13 @@ FUCOMI.reg80 reg
 ;
 
 
+# FUCOMIP
+FUCOMIP.reg80 reg
+    SUBFLAGSFL(%st, reg)
+    FPOP
+;
+
+
 # FUCOMP
 FUCOMP
     *f80* tmpD1 := %st
