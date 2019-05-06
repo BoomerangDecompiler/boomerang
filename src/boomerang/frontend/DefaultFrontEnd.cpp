@@ -507,7 +507,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             LOG_WARN("Branch instruction at address %1 branches beyond end of "
                                      "section, to %2",
                                      addr, jumpDest);
-                            cfg->addEdge(currentBB, Address::INVALID);
+                            currentBB->setType(BBType::Oneway);
                         }
 
                         // Add the fall-through outedge
