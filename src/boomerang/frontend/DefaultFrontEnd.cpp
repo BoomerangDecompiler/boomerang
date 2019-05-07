@@ -287,9 +287,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                     insnData[2],
                                     insnData[3]);
                     // clang-format on
+                    LOG_WARN(message);
                 }
 
-                LOG_WARN(message);
                 assert(!inst.valid);
                 break; // try next instruction in queue
             }
