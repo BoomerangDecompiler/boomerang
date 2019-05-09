@@ -385,9 +385,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
                         break;
 
-                    case 0:
-                        condExp = Terminal::get(opFalse);
-                        return false;
+                    case 0: condExp = Terminal::get(opFalse); return false;
 
                     default: LOG_FATAL("Mask is %1", QString::number(mask, 16));
                     }

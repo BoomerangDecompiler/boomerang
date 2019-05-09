@@ -254,7 +254,8 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
         if (!rtl) {
             LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                      "treating instruction as NOP", insnID, pc);
+                      "treating instruction as NOP",
+                      insnID, pc);
             return instantiateRTL(pc, "NOP", 0, nullptr);
         }
     }

@@ -300,7 +300,7 @@ bool Const::operator==(const Exp &other) const
     case opFltConst: return getFlt() == otherConst.getFlt();
     case opStrConst: return getStr() == otherConst.getStr();
     case opFuncConst: {
-        const Function *const *myData = std::get_if<Function *>(&m_value);
+        const Function *const *myData    = std::get_if<Function *>(&m_value);
         const Function *const *otherData = std::get_if<Function *>(&otherConst.m_value);
 
         return myData && otherData && *myData == *otherData;
