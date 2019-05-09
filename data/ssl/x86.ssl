@@ -2374,6 +2374,18 @@ INTO
 ;
 
 
+# IRET
+IRET
+    _   # Semantics are hard-coded
+;
+
+
+# IRETD
+IRETD
+    _   # Semantics are hard-coded
+;
+
+
 # Jcc
 JA.imm16 dest       *16* ~%CF & ~%ZF            => %pc := dest;
 JA.imm32 dest       *32* ~%CF & ~%ZF            => %pc := dest;

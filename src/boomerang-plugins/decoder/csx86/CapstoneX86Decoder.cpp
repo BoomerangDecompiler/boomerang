@@ -259,7 +259,8 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         }
     }
 
-    if (isInstructionInGroup(instruction, cs::CS_GRP_RET)) {
+    if (isInstructionInGroup(instruction, cs::CS_GRP_RET) ||
+        isInstructionInGroup(instruction, cs::CS_GRP_IRET)) {
         rtl->append(new ReturnStatement);
     }
     else if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
