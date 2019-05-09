@@ -76,12 +76,12 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
     result.rtl = std::make_unique<RTL>(pc);
 
     while (true) {
-        result.numBytes++;
-
         const Byte instructionData = Util::readByte(
             (const void *)(pc.value() + delta + result.numBytes));
         const Byte functionCode = (instructionData >> 4) & 0xF;
         const Byte oper         = instructionData & 0xF;
+
+        result.numBytes++;
 
         switch (functionCode) {
         case 0: { // unconditional jump
@@ -118,11 +118,19 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 
         case 9: { // call
             total += oper;
-            result.rtl = instantiate(pc, "call", { Const::get(total) });
+            const Address callDest = Address(pc + result.numBytes + total);
+            result.rtl             = instantiate(pc, "call", { Const::get(callDest) });
 
             CallStatement *newCall = new CallStatement;
             newCall->setIsComputed(false);
-            newCall->setDest(pc + result.numBytes + total);
+            newCall->setDest(callDest);
+
+            if (m_prog) {
+                Function *callee = m_prog->getOrCreateFunction(callDest);
+                if (callee && callee != reinterpret_cast<Function *>(-1)) {
+                    newCall->setDestProc(callee);
+                }
+            }
 
             result.rtl->append(newCall);
         } break;
@@ -149,9 +157,14 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 
             const bool isRet = strcmp(insnName, "ret") == 0 || strcmp(insnName, "iret") == 0 ||
                                strcmp(insnName, "tret") == 0;
-
             if (isRet) {
                 result.rtl->append(new ReturnStatement);
+            }
+            else if (strcmp(insnName, "gcall") == 0) {
+                CallStatement *call = new CallStatement;
+                call->setDest(Location::tempOf(Const::get(QString("tmp"))));
+                call->setIsComputed(true);
+                result.rtl->append(call);
             }
         } break;
 

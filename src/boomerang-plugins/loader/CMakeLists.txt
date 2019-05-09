@@ -37,6 +37,11 @@ BOOMERANG_ADD_LOADER(
     SOURCES ${IFC_SOURCES} machO/MachOBinaryLoader.cpp machO/MachOBinaryLoader.h machO/MachOBinaryLoader.cpp machO/macho-apple.h
 )
 
+BOOMERANG_ADD_LOADER(
+    NAME ST20
+    SOURCES ${IFC_SOURCES} st20/ST20BinaryLoader.cpp st20/ST20BinaryLoader.h
+)
+
 if (MSVC)
     BOOMERANG_ADD_LOADER(
         NAME Win32

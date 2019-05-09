@@ -2516,8 +2516,13 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
         const CallStatement *call = static_cast<const CallStatement *>(st);
         const Function *dest      = call->getDestProc();
 
-        if ((dest == nullptr) && call->isComputed()) {
-            addIndCallStatement(call->getDest(), call->getArguments(), *call->calcResults());
+        if (dest == nullptr) {
+            if (call->isComputed()) {
+                addIndCallStatement(call->getDest(), call->getArguments(), *call->calcResults());
+            }
+            else {
+                addLineComment(QString("call %1").arg(call->getDest()->toString()));
+            }
             return;
         }
 

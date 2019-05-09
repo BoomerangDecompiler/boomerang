@@ -40,6 +40,7 @@ v0.5.0 (in development)
 - Feature: Added support for Decoder plugins.
 - Feature: Added support for FrontEnd plugins.
 - Feature: Added support for compiling on macOS (10.13+).
+- Feature: Added experimental support for loading ST20 .bin executable images.
 - Improved: Performance of decoding x86 instructions.
 - Improved: General processing of overlapped registers (not just hard-coded ones).
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.

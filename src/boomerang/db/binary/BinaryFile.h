@@ -31,7 +31,8 @@ enum class LoadFmt : uint8_t
     PE,
     EXE,
     MACHO,
-    LX
+    LX,
+    ST20
 };
 
 /// determines which instruction set to use

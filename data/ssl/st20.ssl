@@ -36,7 +36,7 @@ addc                            # add with carry
 ajw        val                  # adjust work space
     *32* %sp := %sp + (4*val);
 
-andq                            # and
+AND                             # and
     *32* %Areg := %Breg & %Areg
     *32* %Breg := %Creg;
 
@@ -184,7 +184,7 @@ not                             # bitwise not
 opr        val                  # operate
     _ ;
 
-orq                             # or
+OR                              # or
     *32* %Areg := %Breg | %Areg
     *32* %Breg := %Creg;
 
@@ -334,23 +334,21 @@ bsub                            # byte subscript
     *32* %Areg := %Breg + %Areg
     *32* %Breg := %Creg;
 
-call    val                     # call
-    *32* %sp := %sp - 16
-    *32* m[%sp] := %pc
-    *32* m[%sp+4] := %Areg
-    *32* m[%sp+8] := %Breg
-    *32* m[%sp+12] := %Creg
-
-    *32* %pc := %pc + val;
-
-call1   val                     # call
+call    dest                    # call
     *32* %sp := %sp - 16
     *32* m[%sp] := %pc
     *32* m[%sp+4] := %Areg
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg;
 
-call2   val                     # call
+call1   dest                    # call
+    *32* %sp := %sp - 16
+    *32* m[%sp] := %pc
+    *32* m[%sp+4] := %Areg
+    *32* m[%sp+8] := %Breg
+    *32* m[%sp+12] := %Creg;
+
+call2   dest                    # call
     *32* %sp := %sp - 16
     *32* m[%sp] := %pc
     *32* m[%sp+4] := %Areg
@@ -484,9 +482,9 @@ fptesterr                       # test for FPU error
     _ ;
 
 gcall                           # general call
-    *32* tmp := %pc
-    *32* %pc := %Areg
-    *32* %Areg := tmp;
+    *32* tmp := %Areg
+    *32* %Areg := %pc
+    *32* %pc := tmp;
 
 gintdis                         # general interrupt disable
     _ ;
