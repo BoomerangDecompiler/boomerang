@@ -386,8 +386,9 @@ std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
 
     std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, pc, actuals);
     if (!rtl) {
-        LOG_ERROR("Could not find semantics for instruction '%1', treating instruction as NOP",
-                  name);
+        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+                  "treating instruction as NOP",
+                  name, pc);
         return m_rtlDict.instantiateRTL("NOP", pc, {});
     }
 

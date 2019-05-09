@@ -253,14 +253,15 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     else {
         rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
         if (!rtl) {
-            LOG_ERROR("Could not find semantics for instruction '%1', "
+            LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
                       "treating instruction as NOP",
-                      insnID);
+                      insnID, pc);
             return instantiateRTL(pc, "NOP", 0, nullptr);
         }
     }
 
-    if (isInstructionInGroup(instruction, cs::CS_GRP_RET)) {
+    if (isInstructionInGroup(instruction, cs::CS_GRP_RET) ||
+        isInstructionInGroup(instruction, cs::CS_GRP_IRET)) {
         rtl->append(new ReturnStatement);
     }
     else if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {

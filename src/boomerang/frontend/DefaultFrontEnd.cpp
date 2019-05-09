@@ -261,7 +261,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
             if (!decodeSingleInstruction(addr, inst)) {
                 // Do not throw away previously decoded instrucions before the invalid one
-                if (!BB_rtls->empty()) {
+                if (BB_rtls && !BB_rtls->empty()) {
                     cfg->createBB(BBType::Fall, std::move(BB_rtls));
                 }
 
@@ -287,9 +287,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                     insnData[2],
                                     insnData[3]);
                     // clang-format on
+                    LOG_WARN(message);
                 }
 
-                LOG_WARN(message);
                 assert(!inst.valid);
                 break; // try next instruction in queue
             }
@@ -507,7 +507,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             LOG_WARN("Branch instruction at address %1 branches beyond end of "
                                      "section, to %2",
                                      addr, jumpDest);
-                            cfg->addEdge(currentBB, Address::INVALID);
+                            currentBB->setType(BBType::Oneway);
                         }
 
                         // Add the fall-through outedge

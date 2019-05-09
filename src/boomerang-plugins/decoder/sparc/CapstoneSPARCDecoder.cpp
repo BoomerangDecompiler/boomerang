@@ -277,8 +277,9 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), instruction);
 
     if (rtl == nullptr) {
-        LOG_ERROR("Encountered invalid or unknown instruction '%1 %2', treating instruction as NOP",
-                  insnID, instruction->op_str);
+        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+                  "treating instruction as NOP",
+                  insnID, pc);
         return std::make_unique<RTL>(pc);
     }
 

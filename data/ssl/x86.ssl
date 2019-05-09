@@ -2119,6 +2119,13 @@ FUCOMI.reg80 reg
 ;
 
 
+# FUCOMIP
+FUCOMIP.reg80 reg
+    SUBFLAGSFL(%st, reg)
+    FPOP
+;
+
+
 # FUCOMP
 FUCOMP
     *f80* tmpD1 := %st
@@ -2364,6 +2371,18 @@ INT3
 # INTO
 INTO
     _
+;
+
+
+# IRET
+IRET
+    _   # Semantics are hard-coded
+;
+
+
+# IRETD
+IRETD
+    _   # Semantics are hard-coded
 ;
 
 
