@@ -153,6 +153,8 @@ private:
     void findLiveAtDomPhi(BBIndex n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi);
 
+    bool isAncestorOf(BBIndex n, BBIndex parent) const;
+
 private:
     UserProc *m_proc = nullptr;
 

@@ -92,14 +92,14 @@ bool DataFlow::calculateDominators()
                 return false;
             }
 
-            BBIndex v     = m_indices[pred];
-            BBIndex sdash = v;
+            const BBIndex v = m_indices[pred];
+            BBIndex sdash   = v;
 
-            if (m_dfnum[v] > m_dfnum[n]) {
+            if (isAncestorOf(v, n)) {
                 sdash = m_semi[getAncestorWithLowestSemi(v)];
             }
 
-            if (m_dfnum[sdash] < m_dfnum[s]) {
+            if (isAncestorOf(s, sdash)) {
                 s = sdash;
             }
         }
@@ -156,10 +156,10 @@ BBIndex DataFlow::getAncestorWithLowestSemi(BBIndex v)
 
     const BBIndex a = m_ancestor[v];
     if (m_ancestor[a] != BBINDEX_INVALID) {
-        BBIndex b     = getAncestorWithLowestSemi(a);
-        m_ancestor[v] = m_ancestor[a];
+        const BBIndex b = getAncestorWithLowestSemi(a);
+        m_ancestor[v]   = m_ancestor[a];
 
-        if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
+        if (isAncestorOf(m_semi[m_best[v]], m_semi[b])) {
             m_best[v] = b;
         }
     }
@@ -566,4 +566,10 @@ void DataFlow::recalcSpanningTree()
 
     N = 0;
     dfs(entryIndex, BBINDEX_INVALID);
+}
+
+
+bool DataFlow::isAncestorOf(BBIndex n, BBIndex parent) const
+{
+    return m_dfnum[parent] < m_dfnum[n];
 }
