@@ -15,6 +15,7 @@
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/ssl/RTL.h"
 
 
 BranchAnalysisPass::BranchAnalysisPass()
@@ -98,7 +99,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             // B:
             //
             if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
-                (secondBranch->getBB()->getNumPredecessors() == 1)) {
+                (secondBranch->getBB()->getNumPredecessors() == 1) &&
+                isOnlyBranch(secondBranch->getBB())) {
                 SharedExp cond = Binary::get(opAnd, Unary::get(opLNot, firstBranch->getCondExpr()),
                                              secondBranch->getCondExpr());
                 firstBranch->setCondExpr(cond->clone()->simplify());
@@ -109,7 +111,6 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
 
                 // remove second branch BB
                 BasicBlock *secondBranchBB = secondBranch->getBB();
-
                 assert(secondBranchBB->getNumPredecessors() == 0);
                 assert(secondBranchBB->getNumSuccessors() == 2);
                 BasicBlock *succ1 = secondBranch->getBB()->getSuccessor(BTHEN);
@@ -132,7 +133,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             // A: something
             // B:
             if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
-                (secondBranch->getBB()->getNumPredecessors() == 1)) {
+                (secondBranch->getBB()->getNumPredecessors() == 1) &&
+                isOnlyBranch(secondBranch->getBB())) {
                 const SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(),
                                                    secondBranch->getCondExpr());
 
@@ -202,4 +204,31 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
             }
         }
     }
+}
+
+
+bool BranchAnalysisPass::isOnlyBranch(BasicBlock* bb) const
+{
+    const RTLList *rtls = bb->getRTLs();
+    if (!rtls || rtls->empty()) {
+        return false;
+    }
+
+    StatementList::reverse_iterator sIt;
+    BasicBlock::RTLRIterator rIt;
+    bool last = true;
+
+    for (Statement *s = bb->getLastStmt(rIt, sIt); s != nullptr; s = bb->getPrevStmt(rIt, sIt)) {
+        if (!last) {
+            return false; // there are other statements beside the last branch
+        }
+        else if (!s->isBranch()) {
+            return false; // last stmt is not a branch, can't handle this
+        }
+        else {
+            last = false;
+        }
+    }
+
+    return true;
 }

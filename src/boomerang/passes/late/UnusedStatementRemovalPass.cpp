@@ -135,8 +135,8 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                 continue;
             }
 
-            if ((refCounts.find(s) == refCounts.end()) ||
-                (refCounts[s] == 0)) { // Care not to insert unnecessarily
+            // Care not to insert unnecessarily
+            if ((refCounts.find(s) == refCounts.end()) || (refCounts[s] == 0)) {
                 // First adjust the counts, due to statements only referenced by statements that are
                 // themselves unused. Need to be careful not to count two refs to the same def as
                 // two; refCounts is a count of the number of statements that use a definition, not
