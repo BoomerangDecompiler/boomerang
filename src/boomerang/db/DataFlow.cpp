@@ -462,9 +462,9 @@ void DataFlow::findLiveAtDomPhi(BBIndex n, LocationSet &usedByDomPhi, LocationSe
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign *pa = static_cast<PhiAssign *>(S);
 
-            for (RefExp &exp : *pa) {
-                if (exp.getSubExp1()) {
-                    auto re = RefExp::get(exp.getSubExp1(), exp.getDef());
+            for (const std::shared_ptr<RefExp> &exp : *pa) {
+                if (exp->getSubExp1()) {
+                    auto re = RefExp::get(exp->getSubExp1(), exp->getDef());
                     usedByDomPhi0.insert(re);
                 }
             }

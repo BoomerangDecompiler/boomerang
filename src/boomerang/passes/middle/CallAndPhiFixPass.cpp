@@ -132,13 +132,13 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         // Let first be a reference built from the first parameter
         PhiAssign::iterator phi_iter = phi->begin();
 
-        while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
+        while (phi_iter != phi->end() && (*phi_iter)->getSubExp1() == nullptr) {
             ++phi_iter; // Skip any null parameters
         }
 
         assert(phi_iter != phi->end()); // Should have been deleted
-        RefExp &phi_inf = *phi_iter;
-        SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
+        const std::shared_ptr<RefExp> &phi_inf = *phi_iter;
+        SharedExp first = RefExp::get(phi_inf->getSubExp1(), phi_inf->getDef());
 
         // bypass to first
         CallBypasser cb(phi);
@@ -154,15 +154,15 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             // if first is of the form lhs{x}
             if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
                 // replace first with x
-                phi_inf.setDef(first->access<RefExp>()->getDef());
+                phi_inf->setDef(first->access<RefExp>()->getDef());
             }
         }
 
         // For each parameter p of ps after the first
         for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-            assert(phi_iter->getSubExp1());
-            RefExp &phi_inf2  = *phi_iter;
-            SharedExp current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
+            assert((*phi_iter)->getSubExp1());
+            const std::shared_ptr<RefExp> &phi_inf2  = *phi_iter;
+            SharedExp current = RefExp::get(phi_inf2->getSubExp1(), phi_inf2->getDef());
             CallBypasser cb2(phi);
             current = current->acceptModifier(&cb2);
 
@@ -176,7 +176,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
                 // if current is of the form lhs{x}
                 if (current->isSubscript() && (*current->getSubExp1() == *lhs)) {
                     // replace current with x
-                    phi_inf2.setDef(current->access<RefExp>()->getDef());
+                    phi_inf2->setDef(current->access<RefExp>()->getDef());
                 }
             }
 
@@ -190,23 +190,23 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             // better than {call})
             phi_iter = phi->begin();
 
-            while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
+            while (phi_iter != phi->end() && (*phi_iter)->getSubExp1() == nullptr) {
                 ++phi_iter; // Skip any null parameters
             }
 
             assert(phi_iter != phi->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
+            auto best = RefExp::get((*phi_iter)->getSubExp1(), (*phi_iter)->getDef());
 
             for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-                assert(phi_iter->getSubExp1());
-                auto current = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
+                assert((*phi_iter)->getSubExp1());
+                auto current = RefExp::get((*phi_iter)->getSubExp1(), (*phi_iter)->getDef());
 
                 if (current->isImplicitDef()) {
                     best = current;
                     break;
                 }
 
-                if (phi_iter->getDef()->isAssign()) {
+                if ((*phi_iter)->getDef()->isAssign()) {
                     best = current;
                 }
 

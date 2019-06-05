@@ -42,14 +42,11 @@ Statement *PhiAssign::clone() const
 {
     PhiAssign *pa = new PhiAssign(m_type, m_lhs);
 
-    for (const PhiDefs::value_type &val : m_defs) {
-        BasicBlock *bb   = val.first;
-        const RefExp &pi = val.second;
-        assert(pi.getSubExp1());
+    for (const auto &[bb, ref] : m_defs) {
+        assert(ref->getSubExp1());
 
         // Clone the expression pointer, but not the statement pointer (never moves)
-        RefExp clone(pi.getSubExp1()->clone(), pi.getDef());
-        pa->m_defs.insert({ bb, RefExp(pi.getSubExp1()->clone(), pi.getDef()) });
+        pa->m_defs.insert({ bb, RefExp::get(ref->getSubExp1()->clone(), ref->getDef()) });
     }
 
     return pa;
@@ -71,16 +68,18 @@ void PhiAssign::printCompact(OStream &os) const
     }
 
     os << " := phi";
-    for (const auto &v : m_defs) {
-        Q_UNUSED(v);
-        assert(v.second.getSubExp1() != nullptr);
-        assert(*v.second.getSubExp1() == *m_lhs);
+    for (const auto &[bb, ref] : m_defs) {
+        Q_UNUSED(bb);
+        Q_UNUSED(ref);
+
+        assert(ref->getSubExp1() != nullptr);
+        assert(*ref->getSubExp1() == *m_lhs);
     }
     os << "{";
 
     for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-        if (it->second.getDef()) {
-            os << it->second.getDef()->getNumber();
+        if (it->second->getDef()) {
+            os << it->second->getDef()->getNumber();
         }
         else {
             os << "-";
@@ -101,13 +100,10 @@ bool PhiAssign::search(const Exp &pattern, SharedExp &result) const
         return true;
     }
 
-    for (RefExp exp : *this) {
-        assert(exp.getSubExp1() != nullptr);
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        assert(ref->getSubExp1() != nullptr);
         // Note: can't match foo{-} because of this
-        // \todo remove const_cast
-        RefExp re(exp.getSubExp1(), const_cast<Statement *>(exp.getDef()));
-
-        if (re.search(pattern, result)) {
+        if (ref->search(pattern, result)) {
             return true;
         }
     }
@@ -130,12 +126,13 @@ bool PhiAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*c
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 
-    for (auto &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
+    for (const std::shared_ptr<RefExp> &refExp : *this) {
+        assert(refExp->getSubExp1() != nullptr);
         bool ch;
+
         // Assume that the definitions will also be replaced
-        refExp.setSubExp1(refExp.getSubExp1()->searchReplaceAll(pattern, replace, ch));
-        assert(refExp.getSubExp1());
+        refExp->setSubExp1(refExp->getSubExp1()->searchReplaceAll(pattern, replace, ch));
+        assert(refExp->getSubExp1());
         change |= ch;
     }
 
@@ -156,9 +153,9 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
         return false;
     }
 
-    for (RefExp &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
-        if (!RefExp::get(refExp.getSubExp1(), refExp.getDef())->acceptVisitor(visitor->ev)) {
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        assert(ref->getSubExp1() != nullptr);
+        if (!ref->acceptVisitor(visitor->ev)) {
             return false;
         }
     }
@@ -236,10 +233,10 @@ void PhiAssign::simplify()
     }
 
     bool allSame        = true;
-    Statement *firstDef = begin()->getDef();
+    Statement *firstDef = (*begin())->getDef();
 
     for (auto &refExp : *this) {
-        if (refExp.getDef() != firstDef) {
+        if (refExp->getDef() != firstDef) {
             allSame = false;
             break;
         }
@@ -254,13 +251,13 @@ void PhiAssign::simplify()
     bool onlyOneNotThis = true;
     Statement *notthis  = STMT_WILD;
 
-    for (auto &refExp : *this) {
-        if (refExp.getDef() && !refExp.getDef()->isImplicit() && refExp.getDef()->isPhi() &&
-            refExp.getDef() == this) {
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        Statement *def = ref->getDef();
+        if (def == this) {
             continue; // ok
         }
         else if (notthis == STMT_WILD) {
-            notthis = refExp.getDef();
+            notthis = def;
         }
         else {
             onlyOneNotThis = false;
@@ -284,11 +281,11 @@ void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
     // Can't use operator[] here since PhiInfo is not default-constructible
     PhiDefs::iterator it = m_defs.find(bb);
     if (it == m_defs.end()) {
-        m_defs.insert({ bb, RefExp(e, def) });
+        m_defs.insert({ bb, RefExp::get(e, def) });
     }
     else {
-        it->second.setDef(def);
-        it->second.setSubExp1(e);
+        it->second->setDef(def);
+        it->second->setSubExp1(e);
     }
 }
 
@@ -296,30 +293,30 @@ void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
 const Statement *PhiAssign::getStmtAt(BasicBlock *idx) const
 {
     PhiDefs::const_iterator it = m_defs.find(idx);
-    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+    return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
 Statement *PhiAssign::getStmtAt(BasicBlock *idx)
 {
     PhiDefs::iterator it = m_defs.find(idx);
-    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+    return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
 void PhiAssign::removeAllReferences(const std::shared_ptr<RefExp> &refExp)
 {
     for (PhiDefs::iterator pi = m_defs.begin(); pi != m_defs.end();) {
-        RefExp &p = pi->second;
-        assert(p.getSubExp1());
+        std::shared_ptr<RefExp> &p = pi->second;
+        assert(p->getSubExp1());
 
-        if (p == *refExp) {        // Will we ever see this?
+        if (*p == *refExp) {        // Will we ever see this?
             pi = m_defs.erase(pi); // Erase this phi parameter
             continue;
         }
 
         // Chase the definition
-        Statement *def = p.getDef();
+        Statement *def = p->getDef();
         if (def && def->isAssign()) {
             SharedExp rhs = static_cast<Assign *>(def)->getRight();
 

@@ -34,7 +34,7 @@
 class BOOMERANG_API PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, RefExp, BasicBlock::BBComparator> PhiDefs;
+    typedef std::map<BasicBlock *, std::shared_ptr<RefExp>, BasicBlock::BBComparator> PhiDefs;
     typedef MapValueIterator<PhiDefs> iterator;
     typedef MapValueConstIterator<PhiDefs> const_iterator;
     typedef MapValueReverseIterator<PhiDefs> reverse_iterator;

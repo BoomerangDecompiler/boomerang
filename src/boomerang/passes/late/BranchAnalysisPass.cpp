@@ -188,11 +188,11 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
                 PhiAssign *p = static_cast<PhiAssign *>(n);
 
                 for (const auto &phi : *p) {
-                    if (!phi.getDef()->isAssign()) {
+                    if (!phi->getDef()->isAssign()) {
                         continue;
                     }
 
-                    Assign *a = static_cast<Assign *>(phi.getDef());
+                    Assign *a = static_cast<Assign *>(phi->getDef());
 
                     if (*a->getRight() == *hl->getSubExp1()) {
                         hl->setSubExp1(RefExp::get(a->getLeft(), a));

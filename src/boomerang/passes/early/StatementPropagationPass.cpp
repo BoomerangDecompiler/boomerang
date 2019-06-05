@@ -84,9 +84,9 @@ bool StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &use
     // in the defdAtPhi
     for (auto &def : defdByPhi) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (RefExp &v : *def.second) {
-            assert(v.getSubExp1());
-            auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
+        for (const std::shared_ptr<RefExp> &v : *def.second) {
+            assert(v->getSubExp1());
+            std::shared_ptr<RefExp> wrappedParam = RefExp::get(v->getSubExp1(), v->getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
