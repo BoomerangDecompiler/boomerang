@@ -155,7 +155,7 @@ BBIndex DataFlow::getAncestorWithLowestSemi(BBIndex v)
     assert(v != BBINDEX_INVALID);
 
     const BBIndex a = m_ancestor[v];
-    if (m_ancestor[a] != BBINDEX_INVALID) {
+    if (a != BBINDEX_INVALID && m_ancestor[a] != BBINDEX_INVALID) {
         const BBIndex b = getAncestorWithLowestSemi(a);
         m_ancestor[v]   = m_ancestor[a];
 
