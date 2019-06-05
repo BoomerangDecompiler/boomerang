@@ -131,9 +131,6 @@ public:
     /// objects do not change, so we need this slight hack to overwrite one object with another
     void convertToAssign(SharedExp rhs);
 
-    // Generate a list of references for the parameters
-    void enumerateParams(std::list<SharedExp> &le);
-
 private:
     union
     {

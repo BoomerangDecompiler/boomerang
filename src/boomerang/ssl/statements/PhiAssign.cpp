@@ -293,16 +293,6 @@ void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
 }
 
 
-void PhiAssign::enumerateParams(std::list<SharedExp> &le)
-{
-    for (RefExp &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
-        auto r = RefExp::get(refExp.getSubExp1(), refExp.getDef());
-        le.push_back(r);
-    }
-}
-
-
 const Statement *PhiAssign::getStmtAt(BasicBlock *idx) const
 {
     PhiDefs::const_iterator it = m_defs.find(idx);
