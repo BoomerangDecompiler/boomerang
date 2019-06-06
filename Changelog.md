@@ -9,6 +9,7 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain instructions accessing FS or GS segment registers.
 - Fixed: Crash when decompiling SPARC binaries containing calls to helper functions.
 - Fixed: Crash when decompiling tail-recursive functions.
+- Fixed: Crash when decompiling functions containing dangling phi arguments in some cases.
 - Fixed: Crash when decompiling branches that have the same destination for both branch edges.
 - Fixed: Crash when decompiling binaries containing noreturn calls in some cases.
 - Fixed: Crash when decompiling code that temporarily stores the address of an imported function before a call.

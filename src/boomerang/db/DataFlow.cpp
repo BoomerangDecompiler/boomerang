@@ -105,8 +105,9 @@ bool DataFlow::calculateDominators()
         }
 
         m_semi[n] = s;
-        /* Calculation of n's dominator is deferred until the path from s to n has been linked
-         * intothe forest */
+
+        // Calculation of n's dominator is deferred until the path from s to n
+        // has been linked into the forest
         m_bucket[s].insert(n);
         link(p, n);
 
@@ -301,6 +302,9 @@ bool DataFlow::placePhiFunctions()
     m_definedAt.clear(); // and A_orig,
     m_defStmts.clear();  // and the map from variable to defining Stmt
 
+    for (BasicBlock *bb : *m_proc->getCFG()) {
+        bb->clearPhis();
+    }
 
     // Set the sizes of needed vectors
     const std::size_t numIndices = m_indices.size();

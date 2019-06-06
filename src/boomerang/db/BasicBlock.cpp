@@ -686,6 +686,21 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
 }
 
 
+void BasicBlock::clearPhis()
+{
+    RTLIterator rit;
+    StatementList::iterator sit;
+    for (Statement *s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+        if (!s->isPhi()) {
+            continue;
+        }
+
+        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        phi->getDefs().clear();
+    }
+}
+
+
 void BasicBlock::updateBBAddresses()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {

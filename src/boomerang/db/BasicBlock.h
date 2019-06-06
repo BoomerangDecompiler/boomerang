@@ -223,6 +223,9 @@ public:
     /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
     PhiAssign *addPhi(const SharedExp &usedExp);
 
+    // Remove all refs from phis in this BB
+    void clearPhis();
+
     bool hasStatement(const Statement *stmt) const;
 
     /// \returns true iff the BB does not contain any statements.
