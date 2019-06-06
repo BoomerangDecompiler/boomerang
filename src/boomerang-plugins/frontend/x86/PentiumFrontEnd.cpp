@@ -290,7 +290,10 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
 void PentiumFrontEnd::processStringInst(UserProc *proc)
 {
-    StringInstructionProcessor(proc).processStringInstructions();
+    bool change;
+    do {
+        change = StringInstructionProcessor(proc).processStringInstructions();
+    } while (change);
 }
 
 
