@@ -120,7 +120,6 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             bbsToRemove.insert(b);
         }
 
-
         // A: branch to C if cond1
         // B: branch to D if cond2
         // C: something
@@ -129,7 +128,7 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
         // A: branch to D if !cond1 && cond2
         // C: something
         // D:
-        /*else */if (a->getSuccessor(BTHEN) == b->getSuccessor(BELSE) && b->getNumPredecessors() == 1) {
+        else if (a->getSuccessor(BTHEN) == b->getSuccessor(BELSE) && b->getNumPredecessors() == 1) {
             const SharedExp newCond = Binary::get(opAnd, Unary::get(opLNot, aBranch->getCondExpr()),
                                                   bBranch->getCondExpr());
 
