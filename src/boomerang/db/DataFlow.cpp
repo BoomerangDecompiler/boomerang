@@ -538,9 +538,9 @@ void DataFlow::allocateData()
     m_vertex.assign(numBBs, BBINDEX_INVALID);
     m_parent.assign(numBBs, BBINDEX_INVALID);
     m_best.assign(numBBs, BBINDEX_INVALID);
-    m_bucket.resize(numBBs);
-    m_definedAt.resize(numBBs);
-    m_DF.resize(numBBs);
+    m_bucket.assign(numBBs, {});
+    m_DF.assign(numBBs, {});
+    m_definedAt.assign(numBBs, {});
 
     m_A_phi.clear();
     m_defsites.clear();
