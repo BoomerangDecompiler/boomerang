@@ -287,6 +287,11 @@ void ProcCFG::removeBB(BasicBlock *bb)
 
     for (auto it = firstIt; it != lastIt; ++it) {
         if (it->second == bb) {
+            // We have to redo the data-flow now
+            for (BasicBlock *otherBB : *this) {
+                otherBB->clearPhis();
+            }
+
             m_bbStartMap.erase(it);
             delete bb;
             return;
