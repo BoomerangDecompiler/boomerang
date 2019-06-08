@@ -1387,7 +1387,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
                         }
 
                         for (const std::shared_ptr<RefExp> &pi : *pa) {
-                            SharedExp e  = query->clone();
+                            SharedExp e                = query->clone();
                             std::shared_ptr<RefExp> r1 = e->access<RefExp, 1>();
                             r1->setDef(pi->getDef());
 

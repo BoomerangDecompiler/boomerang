@@ -11,11 +11,11 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/RTL.h"
 
 
 BranchAnalysisPass::BranchAnalysisPass()
@@ -179,7 +179,7 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
 }
 
 
-bool BranchAnalysisPass::isOnlyBranch(BasicBlock* bb) const
+bool BranchAnalysisPass::isOnlyBranch(BasicBlock *bb) const
 {
     const RTLList *rtls = bb->getRTLs();
     if (!rtls || rtls->empty()) {

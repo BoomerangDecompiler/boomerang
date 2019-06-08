@@ -161,7 +161,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         // For each parameter p of ps after the first
         for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
             assert((*phi_iter)->getSubExp1());
-            const std::shared_ptr<RefExp> &phi_inf2  = *phi_iter;
+            const std::shared_ptr<RefExp> &phi_inf2 = *phi_iter;
             SharedExp current = RefExp::get(phi_inf2->getSubExp1(), phi_inf2->getDef());
             CallBypasser cb2(phi);
             current = current->acceptModifier(&cb2);

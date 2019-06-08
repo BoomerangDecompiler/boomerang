@@ -310,7 +310,7 @@ void PhiAssign::removeAllReferences(const std::shared_ptr<RefExp> &refExp)
         std::shared_ptr<RefExp> &p = pi->second;
         assert(p->getSubExp1());
 
-        if (*p == *refExp) {        // Will we ever see this?
+        if (*p == *refExp) {       // Will we ever see this?
             pi = m_defs.erase(pi); // Erase this phi parameter
             continue;
         }
