@@ -89,7 +89,7 @@ bool PointerType::operator==(const Type &other) const
         }
     }
 
-    LOG_WARN("PointerType operator== nesting depth exceeded!");
+    LOG_VERBOSE("PointerType operator== nesting depth exceeded!");
     return true;
 }
 
