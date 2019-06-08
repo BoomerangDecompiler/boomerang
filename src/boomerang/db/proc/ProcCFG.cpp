@@ -15,6 +15,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 
 #include <QtAlgorithms>
@@ -280,6 +281,19 @@ void ProcCFG::removeBB(BasicBlock *bb)
 {
     if (bb == nullptr) {
         return;
+    }
+
+    RTLList::iterator rit;
+    StatementList::iterator sit;
+
+    for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        if (s->isCall()) {
+            CallStatement *call = static_cast<CallStatement *>(s);
+            if (call->getDestProc() && !call->getDestProc()->isLib()) {
+                UserProc *callee = static_cast<UserProc *>(call->getDestProc());
+                callee->removeCaller(call);
+            }
+        }
     }
 
     BBStartMap::iterator firstIt, lastIt;
