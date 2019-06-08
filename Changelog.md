@@ -13,10 +13,12 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling branches that have the same destination for both branch edges.
 - Fixed: Crash when decompiling binaries containing noreturn calls in some cases.
 - Fixed: Crash when decompiling code that temporarily stores the address of an imported function before a call.
-- Fixed: Crash when generating code for empty jump BasicBock.
+- Fixed: Crash when generating code for Basic Bocks containing a single jump.
 - Fixed: Crash when removing an empty jump in a delay slot on SPARC.
 - Fixed: Crash when analyzing data-flow for functions consisting of a single Basic Block.
 - Fixed: Crash when analyzing data-flow for functions where the entry BB is not the BB with the lowest address.
+- Fixed: Crash when analyzing data-flow for recursive functions after removing Basic Blocks from the same function.
+- Fixed: Crash when accessing deleted call statement via callee function.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
