@@ -77,7 +77,7 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
     PhiAssign::PhiDefs &defs  = stmt->getDefs();
     PhiAssign::iterator defIt = defs.begin();
 
-    while (defIt != defs.end() && defIt->getSubExp1() == nullptr) {
+    while (defIt != defs.end() && (*defIt)->getSubExp1() == nullptr) {
         ++defIt;
     }
 
@@ -87,26 +87,26 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
         return;
     }
 
-    if (!defIt->getDef()) {
+    if (!(*defIt)->getDef()) {
         // Cannot infer type information of parameters or uninitialized variables.
         visitChildren = false;
         return;
     }
 
-    assert(defIt->getDef());
-    SharedType meetOfArgs = defIt->getDef()->getTypeForExp(stmt->getLeft());
+    assert((*defIt)->getDef());
+    SharedType meetOfArgs = (*defIt)->getDef()->getTypeForExp(stmt->getLeft());
 
     bool ch = false;
 
     for (++defIt; defIt != defs.end(); ++defIt) {
-        RefExp &phinf = *defIt;
+        const std::shared_ptr<RefExp> &phinf = *defIt;
 
-        if (!phinf.getDef() || !phinf.getSubExp1()) {
+        if (!phinf->getDef() || !phinf->getSubExp1()) {
             continue;
         }
 
-        assert(phinf.getDef() != nullptr);
-        SharedType typeOfDef = phinf.getDef()->getTypeForExp(phinf.getSubExp1());
+        assert(phinf->getDef() != nullptr);
+        SharedType typeOfDef = phinf->getDef()->getTypeForExp(phinf->getSubExp1());
         meetOfArgs           = meetOfArgs->meetWith(typeOfDef, ch);
     }
 
@@ -116,8 +116,8 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
     }
 
     for (defIt = defs.begin(); defIt != defs.end(); ++defIt) {
-        if (defIt->getSubExp1() && defIt->getDef()) {
-            defIt->getDef()->meetWithFor(stmt->getType(), defIt->getSubExp1(), ch);
+        if ((*defIt)->getSubExp1() && (*defIt)->getDef()) {
+            (*defIt)->getDef()->meetWithFor(stmt->getType(), (*defIt)->getSubExp1(), ch);
         }
     }
 

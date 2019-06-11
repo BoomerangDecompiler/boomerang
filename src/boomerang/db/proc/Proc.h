@@ -81,6 +81,7 @@ public:
 
     /// Add to the set of callers
     void addCaller(CallStatement *caller) { m_callers.insert(caller); }
+    void removeCaller(CallStatement *caller) { m_callers.erase(caller); }
 
     void removeParameterFromSignature(SharedExp e);
 

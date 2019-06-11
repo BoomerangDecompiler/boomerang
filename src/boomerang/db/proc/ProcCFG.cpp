@@ -14,6 +14,7 @@
 #include "boomerang/db/signature/Parameter.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/log/Log.h"
 
@@ -282,11 +283,29 @@ void ProcCFG::removeBB(BasicBlock *bb)
         return;
     }
 
+    RTLList::iterator rit;
+    StatementList::iterator sit;
+
+    for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        if (s->isCall()) {
+            CallStatement *call = static_cast<CallStatement *>(s);
+            if (call->getDestProc() && !call->getDestProc()->isLib()) {
+                UserProc *callee = static_cast<UserProc *>(call->getDestProc());
+                callee->removeCaller(call);
+            }
+        }
+    }
+
     BBStartMap::iterator firstIt, lastIt;
     std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getLowAddr());
 
     for (auto it = firstIt; it != lastIt; ++it) {
         if (it->second == bb) {
+            // We have to redo the data-flow now
+            for (BasicBlock *otherBB : *this) {
+                otherBB->clearPhis();
+            }
+
             m_bbStartMap.erase(it);
             delete bb;
             return;

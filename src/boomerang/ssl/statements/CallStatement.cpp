@@ -1029,8 +1029,8 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             // More likely. Example: switch_gcc. Only need ONE candidate format string
             PhiAssign *pa = static_cast<PhiAssign *>(def);
 
-            for (auto &v : *pa) {
-                def = v.getDef();
+            for (const std::shared_ptr<RefExp> &v : *pa) {
+                def = v->getDef();
 
                 if (!def || !def->isAssign()) {
                     continue;

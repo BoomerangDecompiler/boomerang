@@ -119,7 +119,7 @@ static void findConstantValues(const Statement *s, std::list<int> &dests)
     if (s->isPhi()) {
         // For each definition, recurse
         for (const auto &it : *static_cast<const PhiAssign *>(s)) {
-            findConstantValues(it.getDef(), dests);
+            findConstantValues(it->getDef(), dests);
         }
     }
     else if (s->isAssign()) {
