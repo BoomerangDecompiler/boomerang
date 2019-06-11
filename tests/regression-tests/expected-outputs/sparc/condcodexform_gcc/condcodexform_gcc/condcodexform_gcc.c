@@ -5,6 +5,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     __size32 i0; 		// r24
+    int local0; 		// argc{39}
     int o0; 		// r8
     char *o0_1; 		// r8
     int o1; 		// r9
@@ -13,6 +14,8 @@ int main(int argc, char *argv[])
     int o4; 		// r12
     int o5; 		// r13
 
+    local0 = argc;
+    local0 = argc;
     if (argc > 1) {
         o1 = 1;
     }
@@ -49,6 +52,7 @@ int main(int argc, char *argv[])
             o0 = 0x10d3c;
 bb0x10cc4:
             i0 = 1 - ((o5 ^ o0) != 0);
+            local0 = o0;
         }
     }
     else {
@@ -58,6 +62,7 @@ bb0x10cc4:
             goto bb0x10cc4;
         }
     }
+    argc = local0;
     if (i0 == 0) {
         o0_1 = "Failed!\n";
     }

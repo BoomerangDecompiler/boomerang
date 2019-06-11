@@ -192,8 +192,8 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 QString firstName;
                 PhiAssign *pa = static_cast<PhiAssign *>(def1);
 
-                for (RefExp &refExp : *pa) {
-                    auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
+                for (const std::shared_ptr<RefExp> &refExp : *pa) {
+                    auto re(RefExp::get(refExp->getSubExp1(), refExp->getDef()));
 
                     if (*re == *ref2) {
                         r2IsOperand = true;
@@ -275,17 +275,17 @@ bool FromSSAFormPass::execute(UserProc *proc)
         SharedExp first    = nullptr;
 
         if (phi->getNumDefs() > 1) {
-            for (RefExp &pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
+            for (const std::shared_ptr<RefExp> &pi : *phi) {
+                if (pi->getSubExp1() == nullptr) {
                     continue;
                 }
 
                 if (first == nullptr) {
-                    first = pi.getSubExp1();
+                    first = pi->getSubExp1();
                     continue;
                 }
 
-                if (!(*(pi.getSubExp1()) == *first)) {
+                if (!(*(pi->getSubExp1()) == *first)) {
                     phiParamsSame = false;
                     break;
                 }
@@ -324,12 +324,12 @@ bool FromSSAFormPass::execute(UserProc *proc)
             }
 
             // For each definition ref'd in the phi
-            for (RefExp &pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
+            for (const std::shared_ptr<RefExp> &pi : *phi) {
+                if (pi->getSubExp1() == nullptr) {
                     continue;
                 }
 
-                proc->insertAssignAfter(pi.getDef(), tempLoc, pi.getSubExp1());
+                proc->insertAssignAfter(pi->getDef(), tempLoc, pi->getSubExp1());
             }
 
             // Replace the RHS of the phi with tempLoc
@@ -364,9 +364,9 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
         QString firstName;     // The name for the first parameter found
         SharedType ty = pi->getType();
 
-        for (RefExp &v : *pi) {
-            if (v.getDef()->isImplicit()) {
-                QString name = proc->lookupSym(RefExp::get(v.getSubExp1(), v.getDef()), ty);
+        for (const std::shared_ptr<RefExp> &v : *pi) {
+            if (v->getDef()->isImplicit()) {
+                QString name = proc->lookupSym(RefExp::get(v->getSubExp1(), v->getDef()), ty);
 
                 if (!name.isEmpty()) {
                     if (!firstName.isEmpty() && (firstName != name)) {
@@ -469,9 +469,9 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
         SharedExp lhs = pa->getLeft();
         auto reLhs    = RefExp::get(lhs, pa);
 
-        for (RefExp &v : *pa) {
-            assert(v.getSubExp1());
-            auto re = RefExp::get(v.getSubExp1(), v.getDef());
+        for (const std::shared_ptr<RefExp> &v : *pa) {
+            assert(v->getSubExp1());
+            auto re = RefExp::get(v->getSubExp1(), v->getDef());
             pu.connect(reLhs, re);
         }
     }

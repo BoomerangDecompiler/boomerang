@@ -74,7 +74,7 @@ bool BlockVarRenamePass::renameBlockVars(
                 // A phi statement may use a location defined in a childless call,
                 // in which case its use collector needs updating
                 for (auto &pp : *pa) {
-                    Statement *def = pp.getDef();
+                    Statement *def = pp->getDef();
 
                     if (def && def->isCall()) {
                         static_cast<CallStatement *>(def)->useBeforeDefine(phiLeft->clone());

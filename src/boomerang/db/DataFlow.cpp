@@ -92,21 +92,22 @@ bool DataFlow::calculateDominators()
                 return false;
             }
 
-            BBIndex v     = m_indices[pred];
-            BBIndex sdash = v;
+            const BBIndex v = m_indices[pred];
+            BBIndex sdash   = v;
 
-            if (m_dfnum[v] > m_dfnum[n]) {
+            if (isAncestorOf(v, n)) {
                 sdash = m_semi[getAncestorWithLowestSemi(v)];
             }
 
-            if (m_dfnum[sdash] < m_dfnum[s]) {
+            if (isAncestorOf(s, sdash)) {
                 s = sdash;
             }
         }
 
         m_semi[n] = s;
-        /* Calculation of n's dominator is deferred until the path from s to n has been linked
-         * intothe forest */
+
+        // Calculation of n's dominator is deferred until the path from s to n
+        // has been linked into the forest
         m_bucket[s].insert(n);
         link(p, n);
 
@@ -155,11 +156,11 @@ BBIndex DataFlow::getAncestorWithLowestSemi(BBIndex v)
     assert(v != BBINDEX_INVALID);
 
     const BBIndex a = m_ancestor[v];
-    if (m_ancestor[a] != BBINDEX_INVALID) {
-        BBIndex b     = getAncestorWithLowestSemi(a);
-        m_ancestor[v] = m_ancestor[a];
+    if (a != BBINDEX_INVALID && m_ancestor[a] != BBINDEX_INVALID) {
+        const BBIndex b = getAncestorWithLowestSemi(a);
+        m_ancestor[v]   = m_ancestor[a];
 
-        if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
+        if (isAncestorOf(m_semi[m_best[v]], m_semi[b])) {
             m_best[v] = b;
         }
     }
@@ -301,6 +302,9 @@ bool DataFlow::placePhiFunctions()
     m_definedAt.clear(); // and A_orig,
     m_defStmts.clear();  // and the map from variable to defining Stmt
 
+    for (BasicBlock *bb : *m_proc->getCFG()) {
+        bb->clearPhis();
+    }
 
     // Set the sizes of needed vectors
     const std::size_t numIndices = m_indices.size();
@@ -462,9 +466,9 @@ void DataFlow::findLiveAtDomPhi(BBIndex n, LocationSet &usedByDomPhi, LocationSe
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign *pa = static_cast<PhiAssign *>(S);
 
-            for (RefExp &exp : *pa) {
-                if (exp.getSubExp1()) {
-                    auto re = RefExp::get(exp.getSubExp1(), exp.getDef());
+            for (const std::shared_ptr<RefExp> &exp : *pa) {
+                if (exp->getSubExp1()) {
+                    auto re = RefExp::get(exp->getSubExp1(), exp->getDef());
                     usedByDomPhi0.insert(re);
                 }
             }
@@ -534,9 +538,9 @@ void DataFlow::allocateData()
     m_vertex.assign(numBBs, BBINDEX_INVALID);
     m_parent.assign(numBBs, BBINDEX_INVALID);
     m_best.assign(numBBs, BBINDEX_INVALID);
-    m_bucket.resize(numBBs);
-    m_definedAt.resize(numBBs);
-    m_DF.resize(numBBs);
+    m_bucket.assign(numBBs, {});
+    m_DF.assign(numBBs, {});
+    m_definedAt.assign(numBBs, {});
 
     m_A_phi.clear();
     m_defsites.clear();
@@ -566,4 +570,10 @@ void DataFlow::recalcSpanningTree()
 
     N = 0;
     dfs(entryIndex, BBINDEX_INVALID);
+}
+
+
+bool DataFlow::isAncestorOf(BBIndex n, BBIndex parent) const
+{
+    return m_dfnum[parent] < m_dfnum[n];
 }

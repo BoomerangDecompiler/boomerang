@@ -34,7 +34,7 @@
 class BOOMERANG_API PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, RefExp, BasicBlock::BBComparator> PhiDefs;
+    typedef std::map<BasicBlock *, std::shared_ptr<RefExp>, BasicBlock::BBComparator> PhiDefs;
     typedef MapValueIterator<PhiDefs> iterator;
     typedef MapValueConstIterator<PhiDefs> const_iterator;
     typedef MapValueReverseIterator<PhiDefs> reverse_iterator;
@@ -130,9 +130,6 @@ public:
     /// one class to another.  All throughout the code, we assume that the addresses of Statement
     /// objects do not change, so we need this slight hack to overwrite one object with another
     void convertToAssign(SharedExp rhs);
-
-    // Generate a list of references for the parameters
-    void enumerateParams(std::list<SharedExp> &le);
 
 private:
     union

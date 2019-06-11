@@ -858,8 +858,8 @@ bool UserProc::allPhisHaveDefs() const
 
         const PhiAssign *pa = static_cast<const PhiAssign *>(stmt);
 
-        for (const auto &ref : *pa) {
-            if (!ref.getDef()) {
+        for (const std::shared_ptr<RefExp> &ref : *pa) {
+            if (!ref->getDef()) {
                 return false;
             }
         }
@@ -1386,10 +1386,10 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
                             LOG_MSG("Found %1 prove for each, ", s);
                         }
 
-                        for (RefExp &pi : *pa) {
-                            auto e  = query->clone();
-                            auto r1 = e->access<RefExp, 1>();
-                            r1->setDef(pi.getDef());
+                        for (const std::shared_ptr<RefExp> &pi : *pa) {
+                            SharedExp e                = query->clone();
+                            std::shared_ptr<RefExp> r1 = e->access<RefExp, 1>();
+                            r1->setDef(pi->getDef());
 
                             if (m_prog->getProject()->getSettings()->debugProof) {
                                 LOG_MSG("proving for %1", e);

@@ -44,7 +44,7 @@ Type::Size NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_WARN("Unknown size for named type '%1'", m_name);
+    LOG_VERBOSE("Unknown size for named type '%1'", m_name);
     return 0; // don't know
 }
 

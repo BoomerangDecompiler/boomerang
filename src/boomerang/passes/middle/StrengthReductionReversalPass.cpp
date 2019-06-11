@@ -47,8 +47,8 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
                 PhiAssign *p = static_cast<PhiAssign *>(r->getDef());
 
                 if (p->getNumDefs() == 2) {
-                    Statement *first  = p->begin()->getDef();
-                    Statement *second = p->rbegin()->getDef();
+                    Statement *first  = (*p->begin())->getDef();
+                    Statement *second = (*p->rbegin())->getDef();
 
                     if (first == as) {
                         // want the increment in second

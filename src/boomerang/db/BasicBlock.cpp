@@ -12,6 +12,7 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -514,9 +515,18 @@ SharedExp BasicBlock::getDest() const
 
     // It should contain a GotoStatement or derived class
     Statement *lastStmt = lastRTL->getHlStmt();
-    CaseStatement *cs   = dynamic_cast<CaseStatement *>(lastStmt);
+    if (!lastStmt) {
+        if (getNumSuccessors() > 0) {
+            return Const::get(getSuccessor(BTHEN)->getLowAddr());
+        }
+        else {
+            return nullptr;
+        }
+    }
 
-    if (cs) {
+
+    if (lastStmt->isCase()) {
+        CaseStatement *cs = static_cast<CaseStatement *>(lastStmt);
         // Get the expression from the switch info
         SwitchInfo *si = cs->getSwitchInfo();
 
@@ -683,6 +693,21 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
 
     m_listOfRTLs->front()->append(phi);
     return phi;
+}
+
+
+void BasicBlock::clearPhis()
+{
+    RTLIterator rit;
+    StatementList::iterator sit;
+    for (Statement *s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+        if (!s->isPhi()) {
+            continue;
+        }
+
+        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        phi->getDefs().clear();
+    }
 }
 
 
