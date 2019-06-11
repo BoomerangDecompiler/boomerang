@@ -167,10 +167,10 @@ void DataFlowTest::testPlacePhi()
     QCOMPARE(mainProc->getName(), QString("main"));
 
     DataFlow *df = mainProc->getDataFlow();
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
 
     // test!
-    QCOMPARE(df->placePhiFunctions(), true);
+    QVERIFY(df->placePhiFunctions());
 
     SharedExp e = Location::regOf(REG_PENT_EAX);
     QString     actualStr;
@@ -203,7 +203,7 @@ void DataFlowTest::testPlacePhi2()
     UserProc *proc = static_cast<UserProc *>(mainFunction);
 
     DataFlow *df = proc->getDataFlow();
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
     QVERIFY(df->placePhiFunctions());
 
     QString     actual_st;
