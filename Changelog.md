@@ -33,6 +33,7 @@ v0.5.0 (in development)
 - Fixed: Wrong decompilation of x86 binaries containing multiple string instructions in a single Basic Block.
 - Fixed: Wrong decompilation of ppc binaries using the LR or CTR register in calls or switch statements.
 - Fixed: Wrong decompilation of SPARC branches where the branch and the delay slot cannot be swapped.
+- Fixed: Wrong decompilation of loops containing break or return statements in some cases.
 - Fixed: Unnecessary union types in high level code due to non-symmetric type meet operator.
 - Fixed: Missing rotation amount for left and right rotates in high level code.
 - Fixed: High level code output for bit extraction operator on right hand side of assignments.
