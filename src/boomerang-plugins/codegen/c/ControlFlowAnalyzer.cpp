@@ -251,8 +251,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
             // the follow for an endless loop will have the following
             // properties:
             //   i) it will have a parent that is a conditional header inside the loop whose follow
-            //   is outside the
-            //        loop
+            //      is outside the loop
             //  ii) it will be outside the loop according to its loop stamp pair
             // iii) have the highest ordering of all suitable follows (i.e. highest in the graph)
 
@@ -305,13 +304,13 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
 
 void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *&loopNodes)
 {
-    // traverse the ordering structure from the header to the latch node tagging the nodes
+    // Traverse the ordering structure from the header to the latch node tagging the nodes
     // determined to be within the loop. These are nodes that satisfy the following:
-    //  i)   header.loopStamps encloses curNode.loopStamps and curNode.loopStamps encloses
-    //  latch.loopStamps
+    //    i)   header.loopStamps encloses curNode.loopStamps and curNode.loopStamps encloses
+    //         latch.loopStamps
     //    OR
-    //  ii)  latch.revLoopStamps encloses curNode.revLoopStamps and curNode.revLoopStamps encloses
-    //  header.revLoopStamps
+    //   ii)   latch.revLoopStamps encloses curNode.revLoopStamps and curNode.revLoopStamps encloses
+    //         header.revLoopStamps
     //    OR
     //  iii) curNode is the latch node
 
@@ -340,7 +339,7 @@ void ControlFlowAnalyzer::structLoops()
         // node. The proper latching node is defined to have the following properties:
         //     i) has a back edge to the current node
         //    ii) has the same case head as the current node
-        // iii) has the same loop head as the current node
+        //   iii) has the same loop head as the current node
         //    iv) is not an nway node
         //     v) is not the latch node of an enclosing loop
         //    vi) has a lower ordering than all other suitable candiates
@@ -413,17 +412,17 @@ void ControlFlowAnalyzer::checkConds()
             if (myLoopHead != follLoopHead) {
                 // we want to find the branch that the latch node is on for a jump out of a loop
                 if (myLoopHead) {
-                    const BasicBlock *myLoopLatch = getLatchNode(myLoopHead);
-
-                    // does the then branch goto the loop latch?
-                    if (isBackEdge(bbThen, myLoopLatch)) {
-                        setUnstructType(currNode, UnstructType::JumpInOutLoop);
-                        setCondType(currNode, CondType::IfThen);
-                    }
-                    // does the else branch goto the loop latch?
-                    else if (isBackEdge(bbElse, myLoopLatch)) {
+                    // this is a jump out of a loop (break or return)
+                    if (getLoopHead(bbThen) != nullptr) {
+                        // the "else" branch jumps out of the loop. (e.g. "if (!foo) break;")
                         setUnstructType(currNode, UnstructType::JumpInOutLoop);
                         setCondType(currNode, CondType::IfElse);
+                    }
+                    else {
+                        assert(getLoopHead(bbElse) != nullptr);
+                        // the "then" branch jumps out of the loop
+                        setUnstructType(currNode, UnstructType::JumpInOutLoop);
+                        setCondType(currNode, CondType::IfThen);
                     }
                 }
 

@@ -11,10 +11,11 @@ int main(int argc, char *argv[])
 
     for(;;) {
         eax = read(0, &local0, 4);
-        if (eax == 4) {
-            rux_encrypt(&local0);
-            write(1, &local0, 4);
+        if (eax != 4) {
+            break;
         }
+        rux_encrypt(&local0);
+        write(1, &local0, 4);
     }
     if (eax != 0) {
         memset(esp + eax - 8, 0, 4 - eax);
