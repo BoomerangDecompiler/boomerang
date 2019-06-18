@@ -55,6 +55,7 @@ v0.5.0 (in development)
 - Improved: Analysis of calls via function pointers.
 - Improved: Ordering of case labels in high level switch statements.
 - Improved: High level code output for increments of pointers to non-32 bit data.
+- Improved: Removal of unnecessary parameters for self-recursive functions.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
