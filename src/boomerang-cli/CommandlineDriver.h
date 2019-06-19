@@ -38,6 +38,8 @@ public:
      */
     int interactiveMain();
 
+    const Project *getProject() const { return m_project.get(); }
+
 private:
     /**
      * Loads the executable file and decodes it.
