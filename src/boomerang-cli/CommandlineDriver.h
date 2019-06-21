@@ -27,7 +27,19 @@ public:
     explicit CommandlineDriver(QObject *parent = nullptr);
 
 public:
+    /**
+     * Apply the list of command line arguments to the Settings.
+     * \returns Zero if the binary file can be decompiled, non-zero to exit the program.
+     */
     int applyCommandline(const QStringList &args);
+
+    /**
+     * Do the whole works - Load, decode, decompile and generate code for a binary file.
+     * \ref applyCommandline must be called first.
+     * \internal See also m_pathToBinary
+     *
+     * \returns Zero on success, non-zero on failure.
+     */
     int decompile();
 
     /**
@@ -37,6 +49,8 @@ public:
      * \retval 2 The user typed exit or quit.
      */
     int interactiveMain();
+
+    const Project *getProject() const { return m_project.get(); }
 
 private:
     /**
