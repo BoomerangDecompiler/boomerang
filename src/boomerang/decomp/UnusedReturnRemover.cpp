@@ -145,7 +145,13 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     }
     else {
         for (CallStatement *cc : proc->getCallers()) {
-            // TODO: prevent function from blocking its own removals
+            // Prevent function from blocking its own removals
+            // TODO This only handles self-recursion. More analysis and testing is necessary
+            // for mutual recursion. (-> cc->getProc()->doesRecurseTo(proc))
+            if (cc->getProc() == proc) {
+                continue;
+            }
+
             UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
         }

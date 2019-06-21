@@ -21,6 +21,7 @@ v0.5.0 (in development)
 - Fixed: Crash when accessing deleted call statement via callee function.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
+- Fixed: Potential crash when analyzing dataflow for functions where the entry Basic Block is not at index 0.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
@@ -55,6 +56,7 @@ v0.5.0 (in development)
 - Improved: Analysis of calls via function pointers.
 - Improved: Ordering of case labels in high level switch statements.
 - Improved: High level code output for increments of pointers to non-32 bit data.
+- Improved: Removal of unnecessary parameters for self-recursive functions.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.

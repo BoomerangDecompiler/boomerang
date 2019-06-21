@@ -43,7 +43,8 @@ init:
 
 install:
   - cd C:\Tools\vcpkg
-  - git pull
+  - git fetch
+  - git checkout 06d5d393b962604ae0a0f8fa6cfd1a89d0627e83
   - cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
