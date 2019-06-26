@@ -548,16 +548,7 @@ str_array:
   ;
 
 instr_def:
-    instr_name {
-        $1->getRefMap(drv.indexrefmap);
-    } paramlist {
-        drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
-    } rtl {
-        // This function expands the tables and saves the expanded RTLs to the dictionary
-        drv.expandTables($1, $3, $5, drv.m_dict);
-        drv.m_dict->m_definedParams.clear();
-    }
-  | KW_INSTRUCTION instr_name {
+    KW_INSTRUCTION instr_name {
         $2->getRefMap(drv.indexrefmap);
     } LPAREN paramlist RPAREN LBRACE {
         drv.m_dict->m_definedParams.insert($5->begin(), $5->end());
