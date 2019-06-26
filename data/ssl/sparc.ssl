@@ -385,7 +385,7 @@ INSTRUCTION "UDIVCC" (rs1, reg_or_imm, rd) { DIVFLAGS(tmpl, reg_or_imm, rd) };
 #
 UDIVSQ := { "UDIVQ", "UDIVCCQ" };
 INSTRUCTION UDIVSQ[idx] (rs1, reg_or_imm, rd) { *32* rd := rs1 / reg_or_imm };
-INSTRUCTION UDIVCCQ     (rs1, reg_or_imm, rd) { DIVFLAGS(rs1, reg_or_imm, rd) };
+INSTRUCTION "UDIVCCQ"   (rs1, reg_or_imm, rd) { DIVFLAGS(rs1, reg_or_imm, rd) };
 
 
 # Signed Division

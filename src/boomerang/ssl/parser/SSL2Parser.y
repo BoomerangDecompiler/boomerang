@@ -566,12 +566,8 @@ instr_name:
   ;
 
 instr_name_elem:
-    // example: foo
-    IDENT {
-        $$.reset(new InsNameElem($1));
-    }
     // example: "foo"
-  | STR_LITERAL {
+    STR_LITERAL {
         $$.reset(new InsNameElem($1));
     }
     // example: FOO[IDX] where FOO is some kind of pre-defined string table
