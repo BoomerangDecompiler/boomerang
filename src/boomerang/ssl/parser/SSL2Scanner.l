@@ -42,10 +42,10 @@ identifier      [a-zA-Z][a-zA-Z_0-9]*
 reg_id          %[a-zA-Z][a-zA-Z_0-9]*
 int_literal     [\+\-]?[0-9]+
 hex_literal     0x[0-9A-Fa-f]+
+str_literal     \"[^\"]*\"
 blank           [ \t]
 comment         \#.*
 asgntype        \*[ijufc]?[1-9][0-9]*\*
-
 %{
 #undef NULL
 #define NULL nullptr
@@ -136,7 +136,6 @@ loc.step();
 ";"             return SSL2::parser::make_SEMICOLON(loc);
 "$"             return SSL2::parser::make_DOLLAR(loc);
 "'"             return SSL2::parser::make_QUOTE(loc);
-"\""            return SSL2::parser::make_DQUOTE(loc);
 "addr"/"("      return SSL2::parser::make_ADDROF(loc);
 "succ"/"("      return SSL2::parser::make_SUCCESSOR(loc);
 "m"/"["         return SSL2::parser::make_MEMOF(loc);
@@ -183,6 +182,12 @@ loc.step();
 _?[A-Za-z][A-Za-z0-9_]* {
                 const char *result = yytext;
                 return SSL2::parser::make_IDENT(result, loc);
+}
+{str_literal} {
+                size_t len = strlen(yytext);
+                yytext[len-1] = 0;
+                const char *result = yytext + 1;
+                return SSL2::parser::make_STR_LITERAL(result, loc);
 }
 -?[0-9]+"."[0-9]+ {
                 return SSL2::parser::make_FLOAT_LITERAL(atof(yytext), loc);

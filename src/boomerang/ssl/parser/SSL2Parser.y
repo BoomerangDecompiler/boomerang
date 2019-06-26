@@ -63,7 +63,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token KW_FLOAT KW_INTEGER KW_FLAGS
 
 // identifiers
-%token <QString> IDENT REG_IDENT TEMP
+%token <QString> IDENT REG_IDENT TEMP STR_LITERAL
 %token <int>     INT_LITERAL
 %token <double>  FLOAT_LITERAL
 
@@ -84,7 +84,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 // other tokens
 %token MEMOF REGOF
 %token <int> REG_NUM
-%token THEN INDEX ASSIGN TO DOT COLON AT UNDERSCORE QUESTION COMMA SEMICOLON DOLLAR QUOTE DQUOTE
+%token THEN INDEX ASSIGN TO DOT COLON AT UNDERSCORE QUESTION COMMA SEMICOLON DOLLAR QUOTE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token <QString> ASSIGNTYPE
 
@@ -109,7 +109,6 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %type <Assign *>     assignment
 %type <SharedType>   assigntype
 %type <SharedRTL>    rtl nonempty_rtl rtl_part
-%type <QString>      str
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
 %type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
@@ -539,18 +538,13 @@ str_list:
   ;
 
 str_array:
-    str_array COMMA str {
+    str_array COMMA STR_LITERAL {
         $1->push_back($3);
         $$ = std::move($1);
     }
-  | str {
+  | STR_LITERAL {
         $$.reset(new std::deque<QString>({ $1 }));
     }
-  ;
-
-str:
-    DQUOTE DQUOTE       { $$ = QString(); }
-  | DQUOTE IDENT DQUOTE { $$ = std::move($2); }
   ;
 
 instr_def:
@@ -572,7 +566,12 @@ instr_name:
   ;
 
 instr_name_elem:
+    // example: foo
     IDENT {
+        $$.reset(new InsNameElem($1));
+    }
+    // example: "foo"
+  | STR_LITERAL {
         $$.reset(new InsNameElem($1));
     }
     // example: FOO[IDX] where FOO is some kind of pre-defined string table

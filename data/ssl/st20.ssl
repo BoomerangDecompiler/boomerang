@@ -298,9 +298,7 @@ wsub                            # word subscript
 xbword                          # sign extend byte to word
     *32* %Areg := sgnex(8, 32, %Areg@[0:7]);
 
-# Note: the weird instruction name specification is because "xor" is a reserved identifer
-# (Also x.or does not work either because "or" is reserved)
-xo . r                          # exclusive or
+"xor"                           # exclusive or
     *32* %Areg := %Breg ^ %Areg
     *32* %Breg := %Creg;
 
