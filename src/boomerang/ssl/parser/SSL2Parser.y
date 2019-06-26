@@ -7,13 +7,13 @@
  */
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.0"
+%require "3.3"
 %defines
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
 %define api.namespace {::SSL2}
-%name-prefix "SSL2"
+%define api.prefix {SSL2}
 
 %code requires {
 
@@ -60,7 +60,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token KW_ENDIANNESS KW_BIG KW_LITTLE
 %token KW_COVERS KW_SHARES
 %token KW_FPUSH KW_FPOP
-%token KW_FLOAT KW_INTEGER KW_FLAGS
+%token KW_FLOAT KW_INTEGER KW_FLAGS KW_INSTRUCTION
 
 // identifiers
 %token <QString> IDENT REG_IDENT TEMP STR_LITERAL
@@ -555,6 +555,15 @@ instr_def:
     } rtl {
         // This function expands the tables and saves the expanded RTLs to the dictionary
         drv.expandTables($1, $3, $5, drv.m_dict);
+        drv.m_dict->m_definedParams.clear();
+    }
+  | KW_INSTRUCTION instr_name {
+        $2->getRefMap(drv.indexrefmap);
+    } LPAREN paramlist RPAREN LBRACE {
+        drv.m_dict->m_definedParams.insert($5->begin(), $5->end());
+    } rtl RBRACE {
+        // This function expands the tables and saves the expanded RTLs to the dictionary
+        drv.expandTables($2, $5, $9, drv.m_dict);
         drv.m_dict->m_definedParams.clear();
     }
   ;

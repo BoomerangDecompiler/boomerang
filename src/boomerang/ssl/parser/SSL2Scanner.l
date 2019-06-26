@@ -71,6 +71,7 @@ loc.step();
 "INTEGER"       return SSL2::parser::make_KW_INTEGER(loc);
 "FLOAT"         return SSL2::parser::make_KW_FLOAT(loc);
 "FLAGS"         return SSL2::parser::make_KW_FLAGS(loc);
+"INSTRUCTION"   return SSL2::parser::make_KW_INSTRUCTION(loc);
 "ENDIANNESS"    return SSL2::parser::make_KW_ENDIANNESS(loc);
 "BIG"           return SSL2::parser::make_KW_BIG(loc);
 "LITTLE"        return SSL2::parser::make_KW_LITTLE(loc);
