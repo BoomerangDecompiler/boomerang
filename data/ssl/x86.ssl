@@ -455,102 +455,102 @@ SCAS_OR := OREPS . SCAS;      # Scan with optional repeat
 STOS_OR := OREPS . STOS;      # Store with optional repeat
 
 # All repeated string instructions
-STRS_R[X] . ALLSZ[Y] dest, src              *1* %SKIP := (%ecx = 0);
+INSTRUCTION STRS_R[X] . ALLSZ[Y] (dest, src)              { *1* %SKIP := (%ecx = 0) };
 
-CMPS_OR[X].B.reg8.rm8 dest, src             *8*  tmpb := dest  - src;
-CMPS_OR[X].B.rm8.reg8 dest, src             *8*  tmpb := dest  - src;
-CMPS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := dest  - src;
-CMPS_OR[X].W.reg16.rm16 dest, src           *16* tmph := dest - src;
-CMPS_OR[X].W.rm16.reg16 dest, src           *16* tmph := dest - src;
-CMPS_OR[X].W.rm16.rm16 dest, src            *16* tmph := dest - src;
-CMPS_OR[X].D.reg32.rm32 dest, src           *32* tmp1 := dest - src;
-CMPS_OR[X].D.rm32.reg32 dest, src           *32* tmp1 := dest - src;
-CMPS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := dest - src;
+INSTRUCTION CMPS_OR[X].B.reg8.rm8 (dest, src)             { *8*  tmpb := dest - src };
+INSTRUCTION CMPS_OR[X].B.rm8.reg8 (dest, src)             { *8*  tmpb := dest - src };
+INSTRUCTION CMPS_OR[X].B.rm8.rm8 (dest, src)              { *8*  tmpb := dest - src };
+INSTRUCTION CMPS_OR[X].W.reg16.rm16 (dest, src)           { *16* tmph := dest - src };
+INSTRUCTION CMPS_OR[X].W.rm16.reg16 (dest, src)           { *16* tmph := dest - src };
+INSTRUCTION CMPS_OR[X].W.rm16.rm16 (dest, src)            { *16* tmph := dest - src };
+INSTRUCTION CMPS_OR[X].D.reg32.rm32 (dest, src)           { *32* tmp1 := dest - src };
+INSTRUCTION CMPS_OR[X].D.rm32.reg32 (dest, src)           { *32* tmp1 := dest - src };
+INSTRUCTION CMPS_OR[X].D.rm32.rm32 (dest, src)            { *32* tmp1 := dest - src };
 
-LODS_OR[X].B.reg8.rm8 dest, src             *8*  dest := src;
-LODS_OR[X].B.rm8.reg8 dest, src             *8*  dest := src;
-LODS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src;
-LODS_OR[X].W.reg16.rm16 dest, src           *16* dest := src;
-LODS_OR[X].W.rm16.reg16 dest, src           *16* dest := src;
-LODS_OR[X].W.rm16.rm16 dest, src            *16* dest := src;
-LODS_OR[X].D.reg32.rm32 dest, src           *32* dest := src;
-LODS_OR[X].D.rm32.reg32 dest, src           *32* dest := src;
-LODS_OR[X].D.rm32.rm32 dest, src            *32* dest := src;
+INSTRUCTION LODS_OR[X].B.reg8.rm8 (dest, src)             { *8*  dest := src };
+INSTRUCTION LODS_OR[X].B.rm8.reg8 (dest, src)             { *8*  dest := src };
+INSTRUCTION LODS_OR[X].B.rm8.rm8 (dest, src)              { *8*  dest := src };
+INSTRUCTION LODS_OR[X].W.reg16.rm16 (dest, src)           { *16* dest := src };
+INSTRUCTION LODS_OR[X].W.rm16.reg16 (dest, src)           { *16* dest := src };
+INSTRUCTION LODS_OR[X].W.rm16.rm16 (dest, src)            { *16* dest := src };
+INSTRUCTION LODS_OR[X].D.reg32.rm32 (dest, src)           { *32* dest := src };
+INSTRUCTION LODS_OR[X].D.rm32.reg32 (dest, src)           { *32* dest := src };
+INSTRUCTION LODS_OR[X].D.rm32.rm32 (dest, src)            { *32* dest := src };
 
-MOVS_OR[X].B.reg8.rm8 dest, src             *8*  dest := src;
-MOVS_OR[X].B.rm8.reg8 dest, src             *8*  dest := src;
-MOVS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src;
-MOVS_OR[X].W.reg16.rm16 dest, src           *16* dest := src;
-MOVS_OR[X].W.rm16.reg16 dest, src           *16* dest := src;
-MOVS_OR[X].W.rm16.rm16 dest, src            *16* dest := src;
-MOVS_OR[X].D.reg32.rm32 dest, src           *32* dest := src;
-MOVS_OR[X].D.rm32.reg32 dest, src           *32* dest := src;
-MOVS_OR[X].D.rm32.rm32 dest, src            *32* dest := src;
+INSTRUCTION MOVS_OR[X].B.reg8.rm8 (dest, src)             { *8*  dest := src };
+INSTRUCTION MOVS_OR[X].B.rm8.reg8 (dest, src)             { *8*  dest := src };
+INSTRUCTION MOVS_OR[X].B.rm8.rm8 (dest, src)              { *8*  dest := src };
+INSTRUCTION MOVS_OR[X].W.reg16.rm16 (dest, src)           { *16* dest := src };
+INSTRUCTION MOVS_OR[X].W.rm16.reg16 (dest, src)           { *16* dest := src };
+INSTRUCTION MOVS_OR[X].W.rm16.rm16 (dest, src)            { *16* dest := src };
+INSTRUCTION MOVS_OR[X].D.reg32.rm32 (dest, src)           { *32* dest := src };
+INSTRUCTION MOVS_OR[X].D.rm32.reg32 (dest, src)           { *32* dest := src };
+INSTRUCTION MOVS_OR[X].D.rm32.rm32 (dest, src)            { *32* dest := src };
 
-SCAS_OR[X].B.reg8.rm8 dest, src             *8*  tmpb := dest  - src;
-SCAS_OR[X].B.rm8.reg8 dest, src             *8*  tmpb := dest  - src;
-SCAS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := dest  - src;
-SCAS_OR[X].W.reg16.rm16 dest, src           *16* tmph := dest - src;
-SCAS_OR[X].W.rm16.reg16 dest, src           *16* tmph := dest - src;
-SCAS_OR[X].W.rm16.rm16 dest, src            *16* tmph := dest - src;
-SCAS_OR[X].D.reg32.rm32 dest, src           *32* tmp1 := dest - src;
-SCAS_OR[X].D.rm32.reg32 dest, src           *32* tmp1 := dest - src;
-SCAS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := dest - src;
+INSTRUCTION SCAS_OR[X].B.reg8.rm8 (dest, src)             { *8*  tmpb := dest - src };
+INSTRUCTION SCAS_OR[X].B.rm8.reg8 (dest, src)             { *8*  tmpb := dest - src };
+INSTRUCTION SCAS_OR[X].B.rm8.rm8 (dest, src)              { *8*  tmpb := dest - src };
+INSTRUCTION SCAS_OR[X].W.reg16.rm16 (dest, src)           { *16* tmph := dest - src };
+INSTRUCTION SCAS_OR[X].W.rm16.reg16 (dest, src)           { *16* tmph := dest - src };
+INSTRUCTION SCAS_OR[X].W.rm16.rm16 (dest, src)            { *16* tmph := dest - src };
+INSTRUCTION SCAS_OR[X].D.reg32.rm32 (dest, src)           { *32* tmp1 := dest - src };
+INSTRUCTION SCAS_OR[X].D.rm32.reg32 (dest, src)           { *32* tmp1 := dest - src };
+INSTRUCTION SCAS_OR[X].D.rm32.rm32 (dest, src)            { *32* tmp1 := dest - src };
 
-STOS_OR[X].B.reg8.rm8 dest, src             *8*  dest := src;
-STOS_OR[X].B.rm8.reg8 dest, src             *8*  dest := src;
-STOS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src;
-STOS_OR[X].W.reg16.rm16 dest, src           *16* dest := src;
-STOS_OR[X].W.rm16.reg16 dest, src           *16* dest := src;
-STOS_OR[X].W.rm16.rm16 dest, src            *16* dest := src;
-STOS_OR[X].D.reg32.rm32 dest, src           *32* dest := src;
-STOS_OR[X].D.rm32.reg32 dest, src           *32* dest := src;
-STOS_OR[X].D.rm32.rm32 dest, src            *32* dest := src;
+INSTRUCTION STOS_OR[X].B.reg8.rm8 (dest, src)             { *8*  dest := src };
+INSTRUCTION STOS_OR[X].B.rm8.reg8 (dest, src)             { *8*  dest := src };
+INSTRUCTION STOS_OR[X].B.rm8.rm8 (dest, src)              { *8*  dest := src };
+INSTRUCTION STOS_OR[X].W.reg16.rm16 (dest, src)           { *16* dest := src };
+INSTRUCTION STOS_OR[X].W.rm16.reg16 (dest, src)           { *16* dest := src };
+INSTRUCTION STOS_OR[X].W.rm16.rm16 (dest, src)            { *16* dest := src };
+INSTRUCTION STOS_OR[X].D.reg32.rm32 (dest, src)           { *32* dest := src };
+INSTRUCTION STOS_OR[X].D.rm32.reg32 (dest, src)           { *32* dest := src };
+INSTRUCTION STOS_OR[X].D.rm32.rm32 (dest, src)            { *32* dest := src };
 
 # update flags
-STRFL_OR[X].B.reg8.rm8 dest, src            SUBFLAGS8(dest,   src,  tmpb);
-STRFL_OR[X].B.rm8.reg8 dest, src            SUBFLAGS8(dest,   src,  tmpb);
-STRFL_OR[X].B.rm8.rm8 dest, src             SUBFLAGS8(dest,   src,  tmpb);
-STRFL_OR[X].W.reg16.rm16 dest, src          SUBFLAGS16(dest, src, tmph);
-STRFL_OR[X].W.rm16.reg16 dest, src          SUBFLAGS16(dest, src, tmph);
-STRFL_OR[X].W.rm16.rm16 dest, src           SUBFLAGS16(dest, src, tmph);
-STRFL_OR[X].D.reg32.rm32 dest, src          SUBFLAGS32(dest, src, tmp1);
-STRFL_OR[X].D.rm32.reg32 dest, src          SUBFLAGS32(dest, src, tmp1);
-STRFL_OR[X].D.rm32.rm32 dest, src           SUBFLAGS32(dest, src, tmp1);
+INSTRUCTION STRFL_OR[X].B.reg8.rm8 (dest, src)            { SUBFLAGS8(dest,  src, tmpb) };
+INSTRUCTION STRFL_OR[X].B.rm8.reg8 (dest, src)            { SUBFLAGS8(dest,  src, tmpb) };
+INSTRUCTION STRFL_OR[X].B.rm8.rm8 (dest, src)             { SUBFLAGS8(dest,  src, tmpb) };
+INSTRUCTION STRFL_OR[X].W.reg16.rm16 (dest, src)          { SUBFLAGS16(dest, src, tmph) };
+INSTRUCTION STRFL_OR[X].W.rm16.reg16 (dest, src)          { SUBFLAGS16(dest, src, tmph) };
+INSTRUCTION STRFL_OR[X].W.rm16.rm16 (dest, src)           { SUBFLAGS16(dest, src, tmph) };
+INSTRUCTION STRFL_OR[X].D.reg32.rm32 (dest, src)          { SUBFLAGS32(dest, src, tmp1) };
+INSTRUCTION STRFL_OR[X].D.rm32.reg32 (dest, src)          { SUBFLAGS32(dest, src, tmp1) };
+INSTRUCTION STRFL_OR[X].D.rm32.rm32 (dest, src)           { SUBFLAGS32(dest, src, tmp1) };
 
 # update (e)si
-STRSI[IDX].B.reg8.rm8 dest, src             *32* %esi := %esi + [%DF = 0?1:-1];
-STRSI[IDX].B.rm8.reg8 dest, src             *32* %esi := %esi + [%DF = 0?1:-1];
-STRSI[IDX].B.rm8.rm8 dest, src              *32* %esi := %esi + [%DF = 0?1:-1];
-STRSI[IDX].W.reg16.rm16 dest, src           *32* %esi := %esi + [%DF = 0?2:-2];
-STRSI[IDX].W.rm16.reg16 dest, src           *32* %esi := %esi + [%DF = 0?2:-2];
-STRSI[IDX].W.rm16.rm16 dest, src            *32* %esi := %esi + [%DF = 0?2:-2];
-STRSI[IDX].D.reg32.rm32 dest, src           *32* %esi := %esi + [%DF = 0?4:-4];
-STRSI[IDX].D.rm32.reg32 dest, src           *32* %esi := %esi + [%DF = 0?4:-4];
-STRSI[IDX].D.rm32.rm32 dest, src            *32* %esi := %esi + [%DF = 0?4:-4];
+INSTRUCTION STRSI[IDX].B.reg8.rm8 (dest, src)             { *32* %esi := %esi + [%DF = 0?1:-1] };
+INSTRUCTION STRSI[IDX].B.rm8.reg8 (dest, src)             { *32* %esi := %esi + [%DF = 0?1:-1] };
+INSTRUCTION STRSI[IDX].B.rm8.rm8 (dest, src)              { *32* %esi := %esi + [%DF = 0?1:-1] };
+INSTRUCTION STRSI[IDX].W.reg16.rm16 (dest, src)           { *32* %esi := %esi + [%DF = 0?2:-2] };
+INSTRUCTION STRSI[IDX].W.rm16.reg16 (dest, src)           { *32* %esi := %esi + [%DF = 0?2:-2] };
+INSTRUCTION STRSI[IDX].W.rm16.rm16 (dest, src)            { *32* %esi := %esi + [%DF = 0?2:-2] };
+INSTRUCTION STRSI[IDX].D.reg32.rm32 (dest, src)           { *32* %esi := %esi + [%DF = 0?4:-4] };
+INSTRUCTION STRSI[IDX].D.rm32.reg32 (dest, src)           { *32* %esi := %esi + [%DF = 0?4:-4] };
+INSTRUCTION STRSI[IDX].D.rm32.rm32 (dest, src)            { *32* %esi := %esi + [%DF = 0?4:-4] };
 
 # update (e)di
-STRDI[IDX].B.reg8.rm8 dest, src             *32* %edi := %edi + [%DF = 0?1:-1];
-STRDI[IDX].B.rm8.reg8 dest, src             *32* %edi := %edi + [%DF = 0?1:-1];
-STRDI[IDX].B.rm8.rm8 dest, src              *32* %edi := %edi + [%DF = 0?1:-1];
-STRDI[IDX].W.reg16.rm16 dest, src           *32* %edi := %edi + [%DF = 0?2:-2];
-STRDI[IDX].W.rm16.reg16 dest, src           *32* %edi := %edi + [%DF = 0?2:-2];
-STRDI[IDX].W.rm16.rm16 dest, src            *32* %edi := %edi + [%DF = 0?2:-2];
-STRDI[IDX].D.reg32.rm32 dest, src           *32* %edi := %edi + [%DF = 0?4:-4];
-STRDI[IDX].D.rm32.reg32 dest, src           *32* %edi := %edi + [%DF = 0?4:-4];
-STRDI[IDX].D.rm32.rm32 dest, src            *32* %edi := %edi + [%DF = 0?4:-4];
+INSTRUCTION STRDI[IDX].B.reg8.rm8 (dest, src)             { *32* %edi := %edi + [%DF = 0?1:-1] };
+INSTRUCTION STRDI[IDX].B.rm8.reg8 (dest, src)             { *32* %edi := %edi + [%DF = 0?1:-1] };
+INSTRUCTION STRDI[IDX].B.rm8.rm8 (dest, src)              { *32* %edi := %edi + [%DF = 0?1:-1] };
+INSTRUCTION STRDI[IDX].W.reg16.rm16 (dest, src)           { *32* %edi := %edi + [%DF = 0?2:-2] };
+INSTRUCTION STRDI[IDX].W.rm16.reg16 (dest, src)           { *32* %edi := %edi + [%DF = 0?2:-2] };
+INSTRUCTION STRDI[IDX].W.rm16.rm16 (dest, src)            { *32* %edi := %edi + [%DF = 0?2:-2] };
+INSTRUCTION STRDI[IDX].D.reg32.rm32 (dest, src)           { *32* %edi := %edi + [%DF = 0?4:-4] };
+INSTRUCTION STRDI[IDX].D.rm32.reg32 (dest, src)           { *32* %edi := %edi + [%DF = 0?4:-4] };
+INSTRUCTION STRDI[IDX].D.rm32.rm32 (dest, src)            { *32* %edi := %edi + [%DF = 0?4:-4] };
 
 # All repeated instructions decrement %ecx
-STRS_R[X] . ALLSZ[Y] dest, src              *32* %ecx := %ecx - 1;
+INSTRUCTION STRS_R[X] . ALLSZ[Y] (dest, src)              { *32* %ecx := %ecx - 1 };
 
 # Do the repeat logic
 REPIFZ  := REP   . STRFL;
 REPIFNZ := REPNE . STRFL;
 REPALL  := REPS  . STRNF;
 
-REPIFZ[X]  . ALLSZ[Y] dest, src             *1* %RPT := %ZF;
-REPIFNZ[X] . ALLSZ[Y] dest, src             *1* %RPT := ~%ZF;
-REPALL[X]  . ALLSZ[Y] dest, src             *1* %RPT := 1;
+INSTRUCTION REPIFZ[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ZF };
+INSTRUCTION REPIFNZ[X] . ALLSZ[Y] (dest, src)             { *1* %RPT := ~%ZF };
+INSTRUCTION REPALL[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := 1 };
 
 
 #
@@ -558,1022 +558,1022 @@ REPALL[X]  . ALLSZ[Y] dest, src             *1* %RPT := 1;
 #
 
 # AAA
-AAA
+INSTRUCTION "AAA" () {
     *1* tmpadjust := ((%al & 0x0F) > 9) | %AF
     *16* %ax := %ax + 0x0106 * tmpadjust
     *1*  %AF := tmpadjust
     *1*  %CF := tmpadjust
     *8*  %al := %al & 0x0F
-;
+};
 
 
 # AAD
-AAD
+INSTRUCTION "AAD" () {
     *8* %al := (%al + (%ah * 0x0A)) & 0xFF
     *8* %ah := 0
-;
+};
 
-AAD.imm8 imm8
+INSTRUCTION "AAD.imm8" (imm8) {
     *8* %al := (%al + (%ah * imm8)) & 0xFF
     *8* %ah := 0
-;
+};
 
 
 # AAM
-AAM
+INSTRUCTION "AAM" () {
     *8* %ah := %al / 0x0A
     *8* %al := %al % 0x0A
-;
+};
 
-AAM.imm8 imm8
+INSTRUCTION "AAM.imm8" (imm8) {
     *8* %ah := %al / imm8
     *8* %al := %al % imm8
-;
+};
 
 
 # AAS
-AAS
+INSTRUCTION "AAS" () {
     *1* tmpadjust := %AF | ((%al & 0x0F) > 9)
     *16* %ax := %ax - 6 * tmpadjust
     *8*  %ah := %ah - tmpadjust
     *1*  %AF := tmpadjust
     *1*  %CF := tmpadjust
     *8*  %al := %al & 0x0F
-;
+};
 
 
 # ADC
-ADC.reg8.imm8 dest, src
+INSTRUCTION "ADC.reg8.imm8" (dest, src) {
     *8* tmpdest := dest
     *8* dest := dest + src + %CF
     ADDFLAGS8(tmpdest, src, dest)
-;
+};
 
-ADC.reg8.reg8 dest, src
+INSTRUCTION "ADC.reg8.reg8" (dest, src) {
     *8* tmpdest := dest
     *8* dest := dest + src + %CF
     ADDFLAGS8(tmpdest, src, dest)
-;
+};
 
-ADC.reg8.rm8 dest, src
+INSTRUCTION "ADC.reg8.rm8" (dest, src) {
     *8* tmpdest := dest
     *8* dest := dest + src + %CF
     ADDFLAGS8(tmpdest, src, dest)
-;
+};
 
-ADC.reg16.imm16 dest, src
+INSTRUCTION "ADC.reg16.imm16" (dest, src) {
     *16* tmpdest := dest
     *16* dest := dest + src + %CF
     ADDFLAGS16(tmpdest, src, dest)
-;
+};
 
-ADC.reg16.reg16 dest, src
+INSTRUCTION "ADC.reg16.reg16" (dest, src) {
     *16* tmpdest := dest
     *16* dest := dest + src + %CF
     ADDFLAGS16(tmpdest, src, dest)
-;
+};
 
-ADC.reg16.rm16 dest, src
+INSTRUCTION "ADC.reg16.rm16" (dest, src) {
     *16* tmpdest := dest
     *16* dest := dest + src + %CF
     ADDFLAGS16(tmpdest, src, dest)
-;
+};
 
-ADC.reg32.imm32 dest, src
+INSTRUCTION "ADC.reg32.imm32" (dest, src) {
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
     ADDFLAGS32(tmpdest, src, dest)
-;
+};
 
-ADC.reg32.reg32 dest, src
+INSTRUCTION "ADC.reg32.reg32" (dest, src) {
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
     ADDFLAGS32(tmpdest, src, dest)
-;
+};
 
-ADC.reg32.rm32 dest, src
+INSTRUCTION "ADC.reg32.rm32" (dest, src) {
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
     ADDFLAGS32(tmpdest, src, dest)
-;
+};
 
-ADC.reg64.rm64 dest, src
+INSTRUCTION "ADC.reg64.rm64" (dest, src) {
     *64* tmpdest := dest
     *64* dest := dest + src + %CF
     ADDFLAGS64(tmpdest, src, dest)
-;
+};
 
-ADC.rm8.imm8 dest, src
+INSTRUCTION "ADC.rm8.imm8" (dest, src) {
     *8* tmpdest := dest
     *8* dest := dest + src + %CF
     ADDFLAGS8(tmpdest, src, dest)
-;
+};
 
-ADC.rm8.reg8 dest, src
+INSTRUCTION "ADC.rm8.reg8" (dest, src) {
     *8* tmpdest := dest
     *8* dest := dest + src + %CF
     ADDFLAGS8(tmpdest, src, dest)
-;
+};
 
-ADC.rm16.imm8 dest, src
+INSTRUCTION "ADC.rm16.imm8" (dest, src) {
     *16* tmpdest := dest
     *16* tmpsrc := sgnex(8, 16, src)
     *16* dest := dest + tmpsrc + %CF
     ADDFLAGS16(tmpdest, tmpsrc, dest)
-;
+};
 
-ADC.rm16.imm16 dest, src
+INSTRUCTION "ADC.rm16.imm16" (dest, src) {
     *16* tmpdest := dest
     *16* dest := dest + src + %CF
     ADDFLAGS16(tmpdest, src, dest)
-;
+};
 
-ADC.rm16.reg16 dest, src
+INSTRUCTION "ADC.rm16.reg16" (dest, src) {
     *16* tmpdest := dest
     *16* dest := dest + src + %CF
     ADDFLAGS16(tmpdest, src, dest)
-;
+};
 
-ADC.rm32.imm8 dest, src
+INSTRUCTION "ADC.rm32.imm8" (dest, src) {
     *32* tmpdest := dest
     *32* tmpsrc := sgnex(8, 32, src)
     *32* dest := dest + tmpsrc + %CF
     ADDFLAGS32(tmpdest, tmpsrc, dest)
-;
+};
 
-ADC.rm32.imm32 dest, src
+INSTRUCTION "ADC.rm32.imm32" (dest, src) {
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
     ADDFLAGS32(tmpdest, src, dest)
-;
+};
 
-ADC.rm32.reg32 dest, src
+INSTRUCTION "ADC.rm32.reg32" (dest, src) {
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
     ADDFLAGS32(tmpdest, src, dest)
-;
+};
 
-ADC.rm64.imm8 dest, src
+INSTRUCTION "ADC.rm64.imm8" (dest, src) {
     *64* tmpdest := dest
     *64* tmpsrc := sgnex(8, 64, src)
     *64* dest := dest + tmpsrc + %CF
     ADDFLAGS64(tmpdest, tmpsrc, dest)
-;
+};
 
-ADC.rm64.imm32 dest, src
+INSTRUCTION "ADC.rm64.imm32" (dest, src) {
     *64* tmpdest := dest
     *64* tmpsrc := sgnex(32, 64, src)
     *64* dest := dest + tmpsrc + %CF
     ADDFLAGS64(tmpdest, tmpsrc, dest)
-;
+};
 
-ADC.rm64.imm64 dest, src
+INSTRUCTION "ADC.rm64.imm64" (dest, src) {
     *64* tmpdest := dest
     *64* dest := dest + src + %CF
     ADDFLAGS64(tmpdest, src, dest)
-;
+};
 
 
 # ADD
-ADD.reg8.imm8 dest, src
+INSTRUCTION "ADD.reg8.imm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest + src
     ADDFLAGS8(tmp1, src, dest)
-;
+};
 
-ADD.reg8.reg8 dest, src
+INSTRUCTION "ADD.reg8.reg8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest + src
     ADDFLAGS8(tmp1, src, dest)
-;
+};
 
-ADD.reg8.rm8 dest, src
+INSTRUCTION "ADD.reg8.rm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest + src
     ADDFLAGS8(tmp1, src, dest)
-;
+};
 
-ADD.reg16.imm16 dest, src
+INSTRUCTION "ADD.reg16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest + src
     ADDFLAGS16(tmp1, src, dest)
-;
+};
 
-ADD.reg16.reg16 dest, src
+INSTRUCTION "ADD.reg16.reg16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest + src
     ADDFLAGS16(tmp1, src, dest)
-;
+};
 
-ADD.reg16.rm16 dest, src
+INSTRUCTION "ADD.reg16.rm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest + src
     ADDFLAGS16(tmp1, src, dest)
-;
+};
 
-ADD.reg32.imm32 dest, src
+INSTRUCTION "ADD.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest + src
     ADDFLAGS32(tmp1, src, dest)
-;
+};
 
-ADD.reg32.reg32 dest, src
+INSTRUCTION "ADD.reg32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest + src
     ADDFLAGS32(tmp1, src, dest)
-;
+};
 
-ADD.reg32.rm32 dest, src
+INSTRUCTION "ADD.reg32.rm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest + src
     ADDFLAGS32(tmp1, src, dest)
-;
+};
 
-ADD.reg64.rm64 dest, src
+INSTRUCTION "ADD.reg64.rm64" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest + src
     ADDFLAGS64(tmp1, src, dest)
-;
+};
 
-ADD.rm8.imm8 dest, src
+INSTRUCTION "ADD.rm8.imm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest + src
     ADDFLAGS8(tmp1, src, dest)
-;
+};
 
-ADD.rm8.reg8 dest, src
+INSTRUCTION "ADD.rm8.reg8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest + src
     ADDFLAGS8(tmp1, src, dest)
-;
+};
 
-ADD.rm16.imm8 dest, src
+INSTRUCTION "ADD.rm16.imm8" (dest, src) {
     *16* tmp1 := dest
     *16* tmpsrc := sgnex(8, 16, src)
     *16* dest := dest + tmpsrc
     ADDFLAGS16(tmp1, tmpsrc, dest)
-;
+};
 
-ADD.rm16.imm16 dest, src
+INSTRUCTION "ADD.rm16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest + src
     ADDFLAGS16(tmp1, src, dest)
-;
+};
 
-ADD.rm16.reg16 dest, src
+INSTRUCTION "ADD.rm16.reg16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest + src
     ADDFLAGS16(tmp1, src, dest)
-;
+};
 
-ADD.rm32.imm8 dest, src
+INSTRUCTION "ADD.rm32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* tmpsrc := sgnex(8, 32, src)
     *32* dest := dest + tmpsrc
     ADDFLAGS32(tmp1, tmpsrc, dest)
-;
+};
 
-ADD.rm32.imm32 dest, src
+INSTRUCTION "ADD.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest + src
     ADDFLAGS32(tmp1, src, dest)
-;
+};
 
-ADD.rm32.reg32 dest, src
+INSTRUCTION "ADD.rm32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest + src
     ADDFLAGS32(tmp1, src, dest)
-;
+};
 
-ADD.rm64.imm8 dest, src
+INSTRUCTION "ADD.rm64.imm8" (dest, src) {
     *64* tmp1 := dest
     *64* tmpsrc := sgnex(8, 64, src)
     *64* dest := dest + tmpsrc
     ADDFLAGS64(tmp1, tmpsrc, dest)
-;
+};
 
-ADD.rm64.imm32 dest, src
+INSTRUCTION "ADD.rm64.imm32" (dest, src) {
     *64* tmp1 := dest
     *64* tmpsrc := sgnex(32, 64, src)
     *64* dest := dest + tmpsrc
     ADDFLAGS64(tmp1, tmpsrc, dest)
-;
+};
 
-ADD.rm64.imm64 dest, src
+INSTRUCTION "ADD.rm64.imm64" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest + src
     ADDFLAGS64(tmp1, src, dest)
-;
+};
 
 
 # AND
-AND.reg8.imm8 dest, src
+INSTRUCTION "AND.reg8.imm8" (dest, src) {
     *8* dest := dest & src
     LOGICALFLAGS8(dest)
-;
+};
 
-AND.reg8.reg8 dest, src
+INSTRUCTION "AND.reg8.reg8" (dest, src) {
     *8* dest := dest & src
     LOGICALFLAGS8(dest)
-;
+};
 
-AND.reg8.rm8 dest, src
+INSTRUCTION "AND.reg8.rm8" (dest, src) {
     *8* dest := dest & src
     LOGICALFLAGS8(dest)
-;
+};
 
-AND.reg16.imm16 dest, src
+INSTRUCTION "AND.reg16.imm16" (dest, src) {
     *16* dest := dest & src
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.reg16.reg16 dest, src
+INSTRUCTION "AND.reg16.reg16" (dest, src) {
     *16* dest := dest & src
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.reg16.rm16 dest, src
+INSTRUCTION "AND.reg16.rm16" (dest, src) {
     *16* dest := dest & src
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.reg32.imm32 dest, src
+INSTRUCTION "AND.reg32.imm32" (dest, src) {
     *32* dest := dest & src
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.reg32.reg32 dest, src
+INSTRUCTION "AND.reg32.reg32" (dest, src) {
     *32* dest := dest & src
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.reg32.rm32 dest, src
+INSTRUCTION "AND.reg32.rm32" (dest, src) {
     *32* dest := dest & src
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.reg64.rm64 dest, src
+INSTRUCTION "AND.reg64.rm64" (dest, src) {
     *64* dest := dest & src
     LOGICALFLAGS64(dest)
-;
+};
 
-AND.rm8.imm8 dest, src
+INSTRUCTION "AND.rm8.imm8" (dest, src) {
     *8* dest := dest & src
     LOGICALFLAGS8(dest)
-;
+};
 
-AND.rm8.reg8 dest, src
+INSTRUCTION "AND.rm8.reg8" (dest, src) {
     *8* dest := dest & src
     LOGICALFLAGS8(dest)
-;
+};
 
-AND.rm16.imm8 dest, src
+INSTRUCTION "AND.rm16.imm8" (dest, src) {
     *16* dest := dest & sgnex(8, 16, src)
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.rm16.imm16 dest, src
+INSTRUCTION "AND.rm16.imm16" (dest, src) {
     *16* dest := dest & src
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.rm16.reg16 dest, src
+INSTRUCTION "AND.rm16.reg16" (dest, src) {
     *16* dest := dest & src
     LOGICALFLAGS16(dest)
-;
+};
 
-AND.rm32.imm8 dest, src
+INSTRUCTION "AND.rm32.imm8" (dest, src) {
     *32* dest := dest & sgnex(8, 32, src)
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.rm32.imm32 dest, src
+INSTRUCTION "AND.rm32.imm32" (dest, src) {
     *32* dest := dest & src
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.rm32.reg32 dest, src
+INSTRUCTION "AND.rm32.reg32" (dest, src) {
     *32* dest := dest & src
     LOGICALFLAGS32(dest)
-;
+};
 
-AND.rm64.imm8 dest, src
+INSTRUCTION "AND.rm64.imm8" (dest, src) {
     *64* dest := dest & sgnex(8, 64, src)
     LOGICALFLAGS64(dest)
-;
+};
 
-AND.rm64.imm32 dest, src
+INSTRUCTION "AND.rm64.imm32" (dest, src) {
     *64* dest := dest & sgnex(32, 64, src)
     LOGICALFLAGS64(dest)
-;
+};
 
-AND.rm64.reg64 dest, src
+INSTRUCTION "AND.rm64.reg64" (dest, src) {
     *64* dest := dest & src
     LOGICALFLAGS64(dest)
-;
+};
 
 # BSF / BSR not handled here - the semantics are hard-coded
 
 # BSWAP
-BSWAP.reg16 dest
+INSTRUCTION "BSWAP.reg16" (dest) {
     *16* dest := ((dest & 0x00FF) << 8) |
                  ((dest & 0xFF00) > 8)
-;
+};
 
 
-BSWAP.reg32 dest
+INSTRUCTION "BSWAP.reg32" (dest) {
     *32* dest := ((dest & 0x000000FF) << 24) |
                  ((dest & 0x0000FF00) <<  8) |
                  ((dest & 0x00FF0000) >>  8) |
                  ((dest & 0xFF000000) >> 24)
-;
+};
 
 
 # BT
-BT.reg16.imm8 src, bit
+INSTRUCTION "BT.reg16.imm8" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.reg16.imm16 src, bit
+INSTRUCTION "BT.reg16.imm16" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.reg16.reg16 src, bit
+INSTRUCTION "BT.reg16.reg16" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.reg32.imm8 src, bit
+INSTRUCTION "BT.reg32.imm8" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.reg32.imm32 src, bit
+INSTRUCTION "BT.reg32.imm32" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.reg32.reg32 src, bit
+INSTRUCTION "BT.reg32.reg32" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.rm16.imm16 src, bit
+INSTRUCTION "BT.rm16.imm16" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.rm16.reg16 src, bit
+INSTRUCTION "BT.rm16.reg16" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.rm32.imm32 src, bit
+INSTRUCTION "BT.rm32.imm32" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.rm32.reg32 src, bit
+INSTRUCTION "BT.rm32.reg32" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
-BT.rm64.reg64 src, bit
+INSTRUCTION "BT.rm64.reg64" (src, bit) {
     *1* %CF := src@[bit:bit]
-;
+};
 
 
 # BTC
-BTC.reg16.imm8 dest, bit
+INSTRUCTION "BTC.reg16.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.reg16.imm16 dest, bit
+INSTRUCTION "BTC.reg16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.reg16.reg16 dest, bit
+INSTRUCTION "BTC.reg16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.reg32.imm8 dest, bit
+INSTRUCTION "BTC.reg32.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.reg32.imm32 dest, bit
+INSTRUCTION "BTC.reg32.imm32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.reg32.reg32 dest, bit
+INSTRUCTION "BTC.reg32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.rm16.imm16 dest, bit
+INSTRUCTION "BTC.rm16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
-;
+};
 
-BTC.rm16.reg16 dest, bit
+INSTRUCTION "BTC.rm16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
-;
+};
 
 
-BTC.rm32.reg32 dest, bit
+INSTRUCTION "BTC.rm32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest ^ (1 << bit)
-;
+};
 
 
 # BTR
-BTR.reg16.imm8 dest, bit
+INSTRUCTION "BTR.reg16.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.reg16.imm16 dest, bit
+INSTRUCTION "BTR.reg16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.reg16.reg16 dest, bit
+INSTRUCTION "BTR.reg16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.reg32.imm8 dest, bit
+INSTRUCTION "BTR.reg32.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.reg32.imm32 dest, bit
+INSTRUCTION "BTR.reg32.imm32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.reg32.reg32 dest, bit
+INSTRUCTION "BTR.reg32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.rm16.imm16 dest, bit
+INSTRUCTION "BTR.rm16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.rm16.reg16 dest, bit
+INSTRUCTION "BTR.rm16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.rm32.imm32 dest, bit
+INSTRUCTION "BTR.rm32.imm32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest & ~(1 << bit)
-;
+};
 
-BTR.rm32.reg32 dest, bit
+INSTRUCTION "BTR.rm32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest & ~(1 << bit)
-;
+};
 
 
 # BTS
-BTS.reg16.imm8 dest, bit
+INSTRUCTION "BTS.reg16.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
-;
+};
 
-BTS.reg16.imm16 dest, bit
+INSTRUCTION "BTS.reg16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
-;
+};
 
-BTS.reg16.reg16 dest, bit
+INSTRUCTION "BTS.reg16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
-;
+};
 
-BTS.reg32.imm8 dest, bit
+INSTRUCTION "BTS.reg32.imm8" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
-;
+};
 
-BTS.reg32.imm32 dest, bit
+INSTRUCTION "BTS.reg32.imm32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
-;
+};
 
-BTS.reg32.reg32 dest, bit
+INSTRUCTION "BTS.reg32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
-;
+};
 
-BTS.rm16.imm16 dest, bit
+INSTRUCTION "BTS.rm16.imm16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
-;
+};
 
-BTS.rm16.reg16 dest, bit
+INSTRUCTION "BTS.rm16.reg16" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
-;
+};
 
-BTS.rm32.imm32 dest, bit
+INSTRUCTION "BTS.rm32.imm32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
-;
+};
 
-BTS.rm32.reg32 dest, bit
+INSTRUCTION "BTS.rm32.reg32" (dest, bit) {
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
-;
+};
 
 
 # CALL
-CALL.imm16 dest
+INSTRUCTION "CALL.imm16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
     *16* %pc := dest
-;
+};
 
-CALL.imm32 dest
+INSTRUCTION "CALL.imm32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
     *32* %pc := dest
-;
+};
 
-CALL.reg16 dest
+INSTRUCTION "CALL.reg16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
     *16* %pc := dest
-;
+};
 
-CALL.reg32 dest
+INSTRUCTION "CALL.reg32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
     *32* %pc := dest
-;
+};
 
-CALL.rm16 dest
+INSTRUCTION "CALL.rm16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
     *16* %pc := dest
-;
+};
 
-CALL.rm32 dest
+INSTRUCTION "CALL.rm32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
     *32* %pc := dest
-;
+};
 
 
 # CBW
-CBW
+INSTRUCTION "CBW" () {
     *16* %ax := sgnex(8, 16, %al)
-;
+};
 
 
 # CDQ
-CDQ
+INSTRUCTION "CDQ" () {
     *32* %edx := [%eax@[31:31] = 0 ? 0:0xFFFFFFFF]
-;
+};
 
 
 # CLC
-CLC
+INSTRUCTION "CLC" () {
     *1* %CF := 0
-;
+};
 
 
 # CLD
-CLD
+INSTRUCTION "CLD" () {
     *1* %DF := 0
-;
+};
 
 
 # CLI
-CLI
+INSTRUCTION "CLI" () {
     *1* %IF := 0
-;
+};
 
 
 # CMC
-CMC
+INSTRUCTION "CMC" () {
     *1*%CF := ~%CF
-;
+};
 
 
 # CMOVcc
-CMOVA.reg32.reg32    dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
-CMOVA.reg32.rm32     dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
+INSTRUCTION "CMOVA.reg32.reg32"    (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
+INSTRUCTION "CMOVA.reg32.rm32"     (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
 
-CMOVAE.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
-CMOVAE.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+INSTRUCTION "CMOVAE.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVAE.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
 
-CMOVB.reg32.reg32    dest, src      *32* dest := [(%CF = 1)              ? src : dest];
-CMOVB.reg32.rm32     dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+INSTRUCTION "CMOVB.reg32.reg32"    (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVB.reg32.rm32"     (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
 
-CMOVBE.reg32.reg32   dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
-CMOVBE.reg32.rm32    dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
+INSTRUCTION "CMOVBE.reg32.reg32"   (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
+INSTRUCTION "CMOVBE.reg32.rm32"    (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
 
-CMOVC.reg32.reg32    dest, src      *32* dest := [(%CF = 1)              ? src : dest];
-CMOVC.reg32.rm32     dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+INSTRUCTION "CMOVC.reg32.reg32"    (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVC.reg32.rm32"     (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
 
-CMOVE.reg32.reg32    dest, src      *32* dest := [(%ZF = 1)              ? src : dest];
-CMOVE.reg32.rm32     dest, src      *32* dest := [(%ZF = 1)              ? src : dest];
+INSTRUCTION "CMOVE.reg32.reg32"    (dest, src) {      *32* dest := [(%ZF = 1)              ? src : dest]};
+INSTRUCTION "CMOVE.reg32.rm32"     (dest, src) {      *32* dest := [(%ZF = 1)              ? src : dest]};
 
-CMOVG.reg32.reg32    dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
-CMOVG.reg32.rm32     dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+INSTRUCTION "CMOVG.reg32.reg32"    (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVG.reg32.rm32"     (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
 
-CMOVGE.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
-CMOVGE.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
+INSTRUCTION "CMOVGE.reg32.reg32"   (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
+INSTRUCTION "CMOVGE.reg32.rm32"    (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
 
-CMOVL.reg32.reg32    dest, src      *32* dest := [(%SF ^ %OF)            ? src : dest];
-CMOVL.reg32.rm32     dest, src      *32* dest := [(%SF ^ %OF)            ? src : dest];
+INSTRUCTION "CMOVL.reg32.reg32"    (dest, src) {      *32* dest := [(%SF ^ %OF)            ? src : dest]};
+INSTRUCTION "CMOVL.reg32.rm32"     (dest, src) {      *32* dest := [(%SF ^ %OF)            ? src : dest]};
 
-CMOVLE.reg32.reg32   dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
-CMOVLE.reg32.rm32    dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
+INSTRUCTION "CMOVLE.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
+INSTRUCTION "CMOVLE.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
 
-CMOVNA.reg32.reg32   dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
-CMOVNA.reg32.rm32    dest, src      *32* dest := [(%CF || %ZF)           ? src : dest];
+INSTRUCTION "CMOVNA.reg32.reg32"   (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
+INSTRUCTION "CMOVNA.reg32.rm32"    (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
 
-CMOVNAE.reg32.reg32  dest, src      *32* dest := [(%CF = 1)              ? src : dest];
-CMOVNAE.reg32.rm32   dest, src      *32* dest := [(%CF = 1)              ? src : dest];
+INSTRUCTION "CMOVNAE.reg32.reg32"  (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVNAE.reg32.rm32"   (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
 
-CMOVNB.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
-CMOVNB.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+INSTRUCTION "CMOVNB.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNB.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
 
-CMOVNBE.reg32.reg32  dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
-CMOVNBE.reg32.rm32   dest, src      *32* dest := [(~%CF && ~%ZF)         ? src : dest];
+INSTRUCTION "CMOVNBE.reg32.reg32"  (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
+INSTRUCTION "CMOVNBE.reg32.rm32"   (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
 
-CMOVNC.reg32.reg32   dest, src      *32* dest := [(%CF = 0)              ? src : dest];
-CMOVNC.reg32.rm32    dest, src      *32* dest := [(%CF = 0)              ? src : dest];
+INSTRUCTION "CMOVNC.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNC.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
 
-CMOVNE.reg32.reg32   dest, src      *32* dest := [(%ZF = 0)              ? src : dest];
-CMOVNE.reg32.rm32    dest, src      *32* dest := [(%ZF = 0)              ? src : dest];
+INSTRUCTION "CMOVNE.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNE.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF = 0)              ? src : dest]};
 
-CMOVNG.reg32.reg32   dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
-CMOVNG.reg32.rm32    dest, src      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest];
+INSTRUCTION "CMOVNG.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
+INSTRUCTION "CMOVNG.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
 
-CMOVNGE.reg32.reg32  dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
-CMOVNGE.reg32.rm32   dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+INSTRUCTION "CMOVNGE.reg32.reg32"  (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVNGE.reg32.rm32"   (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
 
-CMOVNL.reg32.reg32   dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
-CMOVNL.reg32.rm32    dest, src      *32* dest := [(~(%SF ^ %OF))         ? src : dest];
+INSTRUCTION "CMOVNL.reg32.reg32"   (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
+INSTRUCTION "CMOVNL.reg32.rm32"    (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
 
-CMOVNLE.reg32.reg32  dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
-CMOVNLE.reg32.rm32   dest, src      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest];
+INSTRUCTION "CMOVNLE.reg32.reg32"  (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVNLE.reg32.rm32"   (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
 
-CMOVNO.reg32.reg32   dest, src      *32* dest := [(~%OF)                 ? src : dest];
-CMOVNO.reg32.rm32    dest, src      *32* dest := [(~%OF)                 ? src : dest];
+INSTRUCTION "CMOVNO.reg32.reg32"   (dest, src) {      *32* dest := [(~%OF)                 ? src : dest]};
+INSTRUCTION "CMOVNO.reg32.rm32"    (dest, src) {      *32* dest := [(~%OF)                 ? src : dest]};
 
-CMOVNP.reg32.reg32   dest, src      *32* dest := [(~%PF)                 ? src : dest];
-CMOVNP.reg32.rm32    dest, src      *32* dest := [(~%PF)                 ? src : dest];
+INSTRUCTION "CMOVNP.reg32.reg32"   (dest, src) {      *32* dest := [(~%PF)                 ? src : dest]};
+INSTRUCTION "CMOVNP.reg32.rm32"    (dest, src) {      *32* dest := [(~%PF)                 ? src : dest]};
 
-CMOVNS.reg32.reg32   dest, src      *32* dest := [(~%SF)                 ? src : dest];
-CMOVNS.reg32.rm32    dest, src      *32* dest := [(~%SF)                 ? src : dest];
+INSTRUCTION "CMOVNS.reg32.reg32"   (dest, src) {      *32* dest := [(~%SF)                 ? src : dest]};
+INSTRUCTION "CMOVNS.reg32.rm32"    (dest, src) {      *32* dest := [(~%SF)                 ? src : dest]};
 
-CMOVNZ.reg32.reg32   dest, src      *32* dest := [(~%ZF)                 ? src : dest];
-CMOVNZ.reg32.rm32    dest, src      *32* dest := [(~%ZF)                 ? src : dest];
+INSTRUCTION "CMOVNZ.reg32.reg32"   (dest, src) {      *32* dest := [(~%ZF)                 ? src : dest]};
+INSTRUCTION "CMOVNZ.reg32.rm32"    (dest, src) {      *32* dest := [(~%ZF)                 ? src : dest]};
 
-CMOVO.reg32.reg32    dest, src      *32* dest := [(%OF)                  ? src : dest];
-CMOVO.reg32.rm32     dest, src      *32* dest := [(%OF)                  ? src : dest];
+INSTRUCTION "CMOVO.reg32.reg32"    (dest, src) {      *32* dest := [(%OF)                  ? src : dest]};
+INSTRUCTION "CMOVO.reg32.rm32"     (dest, src) {      *32* dest := [(%OF)                  ? src : dest]};
 
-CMOVP.reg32.reg32    dest, src      *32* dest := [(%PF)                  ? src : dest];
-CMOVP.reg32.rm32     dest, src      *32* dest := [(%PF)                  ? src : dest];
+INSTRUCTION "CMOVP.reg32.reg32"    (dest, src) {      *32* dest := [(%PF)                  ? src : dest]};
+INSTRUCTION "CMOVP.reg32.rm32"     (dest, src) {      *32* dest := [(%PF)                  ? src : dest]};
 
-CMOVS.reg32.reg32    dest, src      *32* dest := [(%SF)                  ? src : dest];
-CMOVS.reg32.rm32     dest, src      *32* dest := [(%SF)                  ? src : dest];
+INSTRUCTION "CMOVS.reg32.reg32"    (dest, src) {      *32* dest := [(%SF)                  ? src : dest]};
+INSTRUCTION "CMOVS.reg32.rm32"     (dest, src) {      *32* dest := [(%SF)                  ? src : dest]};
 
-CMOVZ.reg32.reg32    dest, src      *32* dest := [(%ZF)                  ? src : dest];
-CMOVZ.reg32.rm32     dest, src      *32* dest := [(%ZF)                  ? src : dest];
+INSTRUCTION "CMOVZ.reg32.reg32"    (dest, src) {      *32* dest := [(%ZF)                  ? src : dest]};
+INSTRUCTION "CMOVZ.reg32.rm32"     (dest, src) {      *32* dest := [(%ZF)                  ? src : dest]};
 
 
 # CMP
-CMP.reg8.imm8 lhs, rhs
+INSTRUCTION "CMP.reg8.imm8" (lhs, rhs) {
     *8* tmpb := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmpb)
-;
+};
 
-CMP.reg8.reg8 lhs, rhs
+INSTRUCTION "CMP.reg8.reg8" (lhs, rhs) {
     *8* tmpb := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmpb)
-;
+};
 
-CMP.reg8.rm8 lhs, rhs
+INSTRUCTION "CMP.reg8.rm8" (lhs, rhs) {
     *8* tmpb := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmpb)
-;
+};
 
-CMP.reg16.imm16 lhs, rhs
+INSTRUCTION "CMP.reg16.imm16" (lhs, rhs) {
     *16* tmph := lhs - rhs
     SUBFLAGS16(lhs, rhs, tmph)
-;
+};
 
-CMP.reg16.reg16 lhs, rhs
+INSTRUCTION "CMP.reg16.reg16" (lhs, rhs) {
     *16* tmph := lhs - rhs
     SUBFLAGS16(lhs, rhs, tmph)
-;
+};
 
-CMP.reg16.rm16 lhs, rhs
+INSTRUCTION "CMP.reg16.rm16" (lhs, rhs) {
     *16* tmph := lhs - rhs
     SUBFLAGS16(lhs, rhs, tmph)
-;
+};
 
-CMP.reg32.imm8 lhs, rhs
+INSTRUCTION "CMP.reg32.imm8" (lhs, rhs) {
     *32* tmprhs  := sgnex(8, 32, rhs)
     *32* tmp1 := lhs - tmprhs
     SUBFLAGS32(lhs, tmprhs, tmp1)
-;
+};
 
-CMP.reg32.imm32 lhs, rhs
+INSTRUCTION "CMP.reg32.imm32" (lhs, rhs) {
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
-;
+};
 
-CMP.reg32.reg32 lhs, rhs
+INSTRUCTION "CMP.reg32.reg32" (lhs, rhs) {
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
-;
+};
 
-CMP.reg32.rm32 lhs, rhs
+INSTRUCTION "CMP.reg32.rm32" (lhs, rhs) {
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
-;
+};
 
-CMP.reg64.rm64 lhs, rhs
+INSTRUCTION "CMP.reg64.rm64" (lhs, rhs) {
     *64* tmp1 := lhs - rhs
     SUBFLAGS64(lhs, rhs, tmp1)
-;
+};
 
-CMP.rm8.imm8 lhs, rhs
+INSTRUCTION "CMP.rm8.imm8" (lhs, rhs) {
     *8* tmpb := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmpb)
-;
+};
 
-CMP.rm8.reg8 lhs, rhs
+INSTRUCTION "CMP.rm8.reg8" (lhs, rhs) {
     *8* tmpb := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmpb)
-;
+};
 
-CMP.rm16.imm8 lhs, rhs
+INSTRUCTION "CMP.rm16.imm8" (lhs, rhs) {
     *16* tmprhs := sgnex(8, 16, rhs)
     *16* tmph := lhs - tmprhs
     SUBFLAGS16(lhs, tmprhs, tmph)
-;
+};
 
-CMP.rm16.imm16 lhs, rhs
+INSTRUCTION "CMP.rm16.imm16" (lhs, rhs) {
     *16* tmph := lhs - rhs
     SUBFLAGS16(lhs, rhs, tmph)
-;
+};
 
-CMP.rm16.reg16 lhs, rhs
+INSTRUCTION "CMP.rm16.reg16" (lhs, rhs) {
     *16* tmph := lhs - rhs
     SUBFLAGS16(lhs, rhs, tmph)
-;
+};
 
-CMP.rm32.imm8 lhs, rhs
+INSTRUCTION "CMP.rm32.imm8" (lhs, rhs) {
     *32* tmprhs := sgnex(8, 32, rhs)
     *32* tmp1 := lhs - tmprhs
     SUBFLAGS32(lhs, tmprhs, tmp1)
-;
+};
 
-CMP.rm32.imm32 lhs, rhs
+INSTRUCTION "CMP.rm32.imm32" (lhs, rhs) {
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
-;
+};
 
-CMP.rm32.reg32 lhs, rhs
+INSTRUCTION "CMP.rm32.reg32" (lhs, rhs) {
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
-;
+};
 
-CMP.rm64.imm8 lhs, rhs
+INSTRUCTION "CMP.rm64.imm8" (lhs, rhs) {
     *64* tmprhs := sgnex(8, 64, rhs)
     *64* tmp1 := lhs - tmprhs
     SUBFLAGS64(lhs, tmprhs, tmp1)
-;
+};
 
-CMP.rm64.imm32 lhs, rhs
+INSTRUCTION "CMP.rm64.imm32" (lhs, rhs) {
     *64* tmprhs := sgnex(32, 64, rhs)
     *64* tmp1 := lhs - tmprhs
     SUBFLAGS64(lhs, tmprhs, tmp1)
-;
+};
 
-CMP.rm64.reg64 lhs, rhs
+INSTRUCTION "CMP.rm64.reg64" (lhs, rhs) {
     *64* tmp1 := lhs - rhs
     SUBFLAGS64(lhs, rhs, tmp1)
-;
+};
 
 
 # CMPXCHG
-CMPXCHG.rm32.reg32 dest, src
+INSTRUCTION "CMPXCHG.rm32.reg32" (dest, src) {
     *1* %ZF := %eax = dest
     *32* %ZF = 1 => dest := src
     *32* %ZF = 0 => %eax := dest
-;
+};
 
 
 # CWD
-CWD
+INSTRUCTION "CWD" () {
     *16* %dx := [%ax@[15:15] = 0 ? 0:0xFFFF]
-;
+};
 
 
 # CWDE
-CWDE
+INSTRUCTION "CWDE" () {
     *32* %eax := sgnex(16, 32, %ax)
-;
+};
 
 
 # DEC
-DEC.reg8 val
+INSTRUCTION "DEC.reg8" (val) {
     *8* tmpb := val
     *8* val := val - 1
     INCDECFLAGS8(val)
-;
+};
 
-DEC.reg16 val
+INSTRUCTION "DEC.reg16" (val) {
     *16* tmph := val
     *16* val := val - 1
     INCDECFLAGS16(val)
-;
+};
 
-DEC.reg32 val
+INSTRUCTION "DEC.reg32" (val) {
     *32* tmp1 := val
     *32* val := val - 1
     INCDECFLAGS32(val)
-;
+};
 
-DEC.rm8 val
+INSTRUCTION "DEC.rm8" (val) {
     *8* tmpb := val
     *8* val := val - 1
     INCDECFLAGS8(val)
-;
+};
 
-DEC.rm16 val
+INSTRUCTION "DEC.rm16" (val) {
     *16* tmph := val
     *16* val := val - 1
     INCDECFLAGS16(val)
-;
+};
 
-DEC.rm32 val
+INSTRUCTION "DEC.rm32" (val) {
     *32* tmp1 := val
     *32* val := val - 1
     INCDECFLAGS32(val)
-;
+};
 
-DEC.rm64 val
+INSTRUCTION "DEC.rm64" (val) {
     *64* tmp1 := val
     *64* val := val - 1
     INCDECFLAGS64(val)
-;
+};
 
 
 # DIV (unsigned divide)
-DIV.reg8 divisor
+INSTRUCTION "DIV.reg8" (divisor) {
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-;
+};
 
-DIV.rm8 divisor
+INSTRUCTION "DIV.rm8" (divisor) {
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-;
+};
 
-DIV.reg16 divisor
+INSTRUCTION "DIV.reg16" (divisor) {
     *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
     *16*  %ax := tmp1 / divisor
     *16*  %dx := tmp1 % divisor
-;
+};
 
-DIV.reg32 divisor
+INSTRUCTION "DIV.reg32" (divisor) {
     *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
     *32* %eax := tmp1 / divisor
     *32* %edx := tmp1 % divisor
-;
+};
 
-DIV.rm8 divisor
+INSTRUCTION "DIV.rm8" (divisor) {
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-;
+};
 
-DIV.rm16 divisor
+INSTRUCTION "DIV.rm16" (divisor) {
     *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
     *16*  %ax := tmp1 / divisor
     *16*  %dx := tmp1 % divisor
-;
+};
 
-DIV.rm32 divisor
+INSTRUCTION "DIV.rm32" (divisor) {
     *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
     *32* %eax := tmp1 / divisor
     *32* %edx := tmp1 % divisor
-;
+};
 
 
 # ENTER
-ENTER.imm32.imm32 allocSz, nstLevel
+INSTRUCTION "ENTER.imm32.imm32" (allocSz, nstLevel) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %ebp
     *32* tmpframe := %esp
@@ -1585,1422 +1585,1422 @@ ENTER.imm32.imm32 allocSz, nstLevel
 
     *32* %ebp := tmpframe
     *32* %esp := %esp - allocSz
-;
+};
 
 
 # FABS
-FABS
+INSTRUCTION "FABS" () {
     *1* %C1 := 0
     *f80* %st := fabs(%st)
-;
+};
 
 
 # FADD
-FADD
+INSTRUCTION "FADD" () {
     *f80* %st1 := %st1 +f %st
     FPOP
-;
+};
 
-FADD.reg80 val
+INSTRUCTION "FADD.reg80" (val) {
     *f80* %st := %st +f val
-;
+};
 
-FADD.rm32 val
+INSTRUCTION "FADD.rm32" (val) {
     *f80* %st := %st +f fsize(32, 80, val)
-;
+};
 
-FADD.rm64 val
+INSTRUCTION "FADD.rm64" (val) {
     *f80* %st := %st +f fsize(64, 80, val)
-;
+};
 
-FADD.reg80.reg80 dest, src
+INSTRUCTION "FADD.reg80.reg80" (dest, src) {
     *f80* dest := dest +f src
-;
+};
 
 
 # FADDP
-FADDP
+INSTRUCTION "FADDP" () {
     *f80* %st1 := %st1 +f %st
     FPOP
-;
+};
 
-FADDP.reg80 val
+INSTRUCTION "FADDP.reg80" (val) {
     *f80* val := val +f %st
     FPOP
-;
+};
 
 
 # FCHS
-FCHS
+INSTRUCTION "FCHS" () {
     *f80* %st := 0 -f %st
     *1* %C1 := 0
-;
+};
 
 
 # FCMOVcc
 # Note the flags (C[0-3]) are modified, but we don't model this yet.
-FCMOVB.reg80.reg80   dest, src  *f80*   %CF = 1      =>  dest := src;
-FCMOVBE.reg80.reg80  dest, src  *f80*   %CF | %ZF    =>  dest := src;
-FCMOVE.reg80.reg80   dest, src  *f80*   %ZF = 1      =>  dest := src;
-FCMOVU.reg80.reg80   dest, src  *f80*   %PF = 1      =>  dest := src;
-FCMOVNB.reg80.reg80  dest, src  *f80*   %CF = 0      =>  dest := src;
-FCMOVNBE.reg80.reg80 dest, src  *f80*   ~(%CF & %ZF) =>  dest := src;
-FCMOVNE.reg80.reg80  dest, src  *f80*   %ZF = 0      =>  dest := src;
-FCMOVNU.reg80.reg80  dest, src  *f80*   %PF = 0      =>  dest := src;
+INSTRUCTION "FCMOVB.reg80.reg80"   (dest, src) {  *f80*   %CF = 1      =>  dest := src };
+INSTRUCTION "FCMOVBE.reg80.reg80"  (dest, src) {  *f80*   %CF | %ZF    =>  dest := src };
+INSTRUCTION "FCMOVE.reg80.reg80"   (dest, src) {  *f80*   %ZF = 1      =>  dest := src };
+INSTRUCTION "FCMOVU.reg80.reg80"   (dest, src) {  *f80*   %PF = 1      =>  dest := src };
+INSTRUCTION "FCMOVNB.reg80.reg80"  (dest, src) {  *f80*   %CF = 0      =>  dest := src };
+INSTRUCTION "FCMOVNBE.reg80.reg80" (dest, src) {  *f80*   ~(%CF & %ZF) =>  dest := src };
+INSTRUCTION "FCMOVNE.reg80.reg80"  (dest, src) {  *f80*   %ZF = 0      =>  dest := src };
+INSTRUCTION "FCMOVNU.reg80.reg80"  (dest, src) {  *f80*   %PF = 0      =>  dest := src };
 
 # FCOM
-FCOM
+INSTRUCTION "FCOM" () {
     *f80* tmpD1 := %st
     *f80* tmpD2 := %st1
     *f80* tmpD := %st -f %st1
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
-FCOM.rm32 val
+INSTRUCTION "FCOM.rm32" (val) {
     *f80* tmpD1 := %st
     *f80* tmpD2 := fsize(32, 80, val)
     *f80* tmpD  := %st -f fsize(32, 80, val)
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
-FCOM.rm64 val
+INSTRUCTION "FCOM.rm64" (val) {
     *f80* tmpD1 := %st
     *f80* tmpD2 := fsize(64, 80, val)
     *f80* tmpD  := %st -f fsize(64, 80, val)
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
 
 # FCOMP
-FCOMP
+INSTRUCTION "FCOMP" () {
     *f80* tmpD1 := %st
     *f80* tmpD2 := %st1
     *f80* tmpD := %st -f %st1
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
-FCOMP.rm32 val
+INSTRUCTION "FCOMP.rm32" (val) {
     *f80* tmpD1 := %st
     *f80* tmpD2 := fsize(32, 80, val)
     *f80* tmpD  := %st -f fsize(32, 80, val)
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
-FCOMP.rm64 val
+INSTRUCTION "FCOMP.rm64" (val) {
     *f80* tmpD1 := %st
     *f80* tmpD2 := fsize(64, 80, val)
     *f80* tmpD  := %st -f fsize(64, 80, val)
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
 
 # FCOMPP
-FCOMPP
+INSTRUCTION "FCOMPP" () {
     *f80* tmpD1 := %st
     *f80* tmpD2 := %st1
     *f80* tmpD := %st -f %st1
     FPOP
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
 
 # FCOS
-FCOS
+INSTRUCTION "FCOS" () {
     *f80* %st := cos(%st)
-;
+};
 
 
 # FDECSTP
-FDECSTP
+INSTRUCTION "FDECSTP" () {
     FPOP
     *1* %C1 := 0
-;
+};
 
 
 # FDIV
-FDIV.reg80 val
+INSTRUCTION "FDIV.reg80" (val) {
     *f80* %st := %st /f val
-;
+};
 
-FDIV.reg80.reg80 dest, src
+INSTRUCTION "FDIV.reg80.reg80" (dest, src) {
     *f80* dest := dest /f src
-;
+};
 
-FDIV.rm32 val
+INSTRUCTION "FDIV.rm32" (val) {
     *f80* %st := %st /f fsize(32, 80, val)
-;
+};
 
-FDIV.rm64 val
+INSTRUCTION "FDIV.rm64" (val) {
     *f80* %st := %st /f fsize(64, 80, val)
-;
+};
 
 
 # FDIVP
-FDIVP.reg80 val
+INSTRUCTION "FDIVP.reg80" (val) {
     *f80* val := val /f %st
     FPOP
-;
+};
 
-FDIVP.reg80.reg80 dest, src
+INSTRUCTION "FDIVP.reg80.reg80" (dest, src) {
     *f80* dest := dest /f src
     FPOP
-;
+};
 
 
 # FDIVR
-FDIVR.reg80 val
+INSTRUCTION "FDIVR.reg80" (val) {
     *f80* %st := val /f %st
-;
+};
 
-FDIVR.reg80.reg80 dest, src
+INSTRUCTION "FDIVR.reg80.reg80" (dest, src) {
     *f80* dest := src /f dest
-;
+};
 
-FDIVR.rm32 val
+INSTRUCTION "FDIVR.rm32" (val) {
     *f80* %st := fsize(32, 80, val) /f %st
-;
+};
 
-FDIVR.rm64 val
+INSTRUCTION "FDIVR.rm64" (val) {
     *f80* %st := fsize(64, 80, val) /f %st
-;
+};
 
 
 # FDIVRP
-FDIVRP.reg80 val
+INSTRUCTION "FDIVRP.reg80" (val) {
     *f80* val := %st /f val
     FPOP
-;
+};
 
 
 # FILD
-FILD.rm16 val
+INSTRUCTION "FILD.rm16" (val) {
     FPUSH
     *f80* %st := itof(16, 80, val)
-;
+};
 
-FILD.rm32 val
+INSTRUCTION "FILD.rm32" (val) {
     FPUSH
     *f80* %st := itof(32, 80, val)
-;
+};
 
-FILD.rm64 val
+INSTRUCTION "FILD.rm64" (val) {
     FPUSH
     *f80* %st := itof(64, 80, val)
-;
+};
 
 
 # FIMUL
-FIMUL.rm16 val
+INSTRUCTION "FIMUL.rm16" (val) {
     *f80* %st := %st *f itof(16, 80, val)
-;
+};
 
-FIMUL.rm32 val
+INSTRUCTION "FIMUL.rm32" (val) {
     *f80* %st := %st *f itof(32, 80, val)
-;
+};
 
 
 # FINT
-FINIT
+INSTRUCTION "FINIT" () {
     *16* %fcw := 0x037F
     *16* %fsw := 0
     *1*  %C0 := 0
     *1*  %C1 := 0
     *1*  %C2 := 0
     *1*  %C3 := 0
-;
+};
 
 
 # FIST
-FIST.rm16 dest
+INSTRUCTION "FIST.rm16" (dest) {
     *16* dest := ftoi(80, 16, %st)
-;
+};
 
-FIST.rm32 dest
+INSTRUCTION "FIST.rm32" (dest) {
     *32* dest := ftoi(80, 32, %st)
-;
+};
 
 
 # FISTP
-FISTP.rm16 dest
+INSTRUCTION "FISTP.rm16" (dest) {
     *16* dest := ftoi(80, 16, %st)
     FPOP
-;
+};
 
-FISTP.rm32 dest
+INSTRUCTION "FISTP.rm32" (dest) {
     *32* dest := ftoi(80, 32, %st)
     FPOP
-;
+};
 
-FISTP.rm64 dest
+INSTRUCTION "FISTP.rm64" (dest) {
     *64* dest := ftoi(80, 64, %st)
     FPOP
-;
+};
 
 
 # FISUB
-FISUB.rm16 val
+INSTRUCTION "FISUB.rm16" (val) {
     *f80* %st := %st - itof(16, 80, val)
-;
+};
 
 
 # FISUBR
-FISUBR.rm16 val
+INSTRUCTION "FISUBR.rm16" (val) {
     *f80* %st := itof(16, 80, val) - %st
-;
+};
 
 
 # FLD
-FLD.reg80 val
+INSTRUCTION "FLD.reg80" (val) {
     *f80* tmpD1 := val
     FPUSH
     *f80* %st := tmpD1
-;
+};
 
-FLD.rm32 val
+INSTRUCTION "FLD.rm32" (val) {
     FPUSH
     *f80* %st := fsize(32, 80, val)
-;
+};
 
-FLD.rm64 val
+INSTRUCTION "FLD.rm64" (val) {
     FPUSH
     *f80* %st := fsize(64, 80, val)
-;
+};
 
-FLD.rm80 val
+INSTRUCTION "FLD.rm80" (val) {
     FPUSH
     *f80* %st := val
-;
+};
 
 
 # FLD1
-FLD1
+INSTRUCTION "FLD1" () {
     FPUSH
     *f80* %st := 1.0
-;
+};
 
 
 # FLDCW
-FLDCW.rm16 val
+INSTRUCTION "FLDCW.rm16" (val) {
     *16* %fcw := val
-;
+};
 
 
 # FLDPI
-FLDPI
+INSTRUCTION "FLDPI" () {
     FPUSH
     *f80* %st := 3.141592653589793
-;
+};
 
 
 # FLDZ
-FLDZ
+INSTRUCTION "FLDZ" () {
     FPUSH
     *f80* %st := 0.0
-;
+};
 
 
 # FMUL
-FMUL.reg80 val
+INSTRUCTION "FMUL.reg80" (val) {
     *f80* %st := %st *f val
-;
+};
 
-FMUL.reg80.reg80 dest, src
+INSTRUCTION "FMUL.reg80.reg80" (dest, src) {
     *f80* dest := dest *f src
-;
+};
 
-FMUL.rm32 val
+INSTRUCTION "FMUL.rm32" (val) {
     *f80* %st := %st *f fsize(32, 80, val)
-;
+};
 
-FMUL.rm64 val
+INSTRUCTION "FMUL.rm64" (val) {
     *f80* %st := %st *f fsize(64, 80, val)
-;
+};
 
 
 # FMULP
-FMULP.reg80 val
+INSTRUCTION "FMULP.reg80" (val) {
     *f80* val := val *f %st
     FPOP
-;
+};
 
 
 # FNCLEX
-FNCLEX
+INSTRUCTION "FNCLEX" () {
     *8* %fsw@[0:7] := 0
     *1* %fsw@[15:15] := 0
-;
+};
 
 
 # FNINIT
-FNINIT
+INSTRUCTION "FNINIT" () {
     *16* %fcw := 0x037F
     *16* %fsw := 0
     *1*  %C0 := 0
     *1*  %C1 := 0
     *1*  %C2 := 0
     *1*  %C3 := 0
-;
+};
 
 
 # FNOP
-FNOP
+INSTRUCTION "FNOP" () {
     _
-;
+};
 
 
 # FNSTCW
-FNSTCW.rm16 dest
+INSTRUCTION "FNSTCW.rm16" (dest) {
     *16* dest := %fcw
-;
+};
 
 
 # FNSTSW
-FNSTSW.reg16 dest # fnstsw.ax
+INSTRUCTION "FNSTSW.reg16" (dest) { # fnstsw.ax
     *8* %ah := %fflags
     *8* %al := 0     # Just so we know it's changed
-;
+};
 
 
-FNSTSW.rm16 dest
+INSTRUCTION "FNSTSW.rm16" (dest) {
     *16* dest := 0
     *1* dest@[14:14] := %C3
     *1* dest@[10:10] := %C2
     *1* dest@[ 9: 9] := %C1
     *1* dest@[ 8: 8] := %C0
-;
+};
 
 
 # FRNDINT
-FRNDINT
+INSTRUCTION "FRNDINT" () {
     *f80* %st := fround(80, 80, %st)
-;
+};
 
 
 # FSIN
-FSIN
+INSTRUCTION "FSIN" () {
     *f80* %st := sin(%st)
-;
+};
 
 
 # FSINCOS
-FSINCOS
+INSTRUCTION "FSINCOS" () {
     FPUSH
     *f80* %st  := cos(%st1)
     *f80* %st1 := sin(%st1)
-;
+};
 
 
 # FSQRT
-FSQRT
+INSTRUCTION "FSQRT" () {
     *f80* %st := sqrt(%st)
-;
+};
 
 
 # FST
-FST.rm32 dest
+INSTRUCTION "FST.rm32" (dest) {
     *32* dest := fsize(80, 32, %st)
-;
+};
 
-FST.rm64 dest
+INSTRUCTION "FST.rm64" (dest) {
     *64* dest := fsize(80, 64, %st)
-;
+};
 
 
 # FSTP
-FSTP.reg80 dest
+INSTRUCTION "FSTP.reg80" (dest) {
     *f80* dest := %st
     FPOP
-;
+};
 
-FSTP.rm32 dest
+INSTRUCTION "FSTP.rm32" (dest) {
     *32* dest := fsize(80,32,%st)
     FPOP
-;
+};
 
-FSTP.rm64 dest
+INSTRUCTION "FSTP.rm64" (dest) {
     *64* dest := fsize(80,64,%st)
     FPOP
-;
+};
 
-FSTP.rm80 dest
+INSTRUCTION "FSTP.rm80" (dest) {
     *f80* dest := %st
     FPOP
-;
+};
 
 
 # FSTSW
-FSTSW.reg16 dest
+INSTRUCTION "FSTSW.reg16" (dest) {
     *16* dest := 0
     *1* dest@[14:14] := %C3
     *1* dest@[10:10] := %C2
     *1* dest@[ 9: 9] := %C1
     *1* dest@[ 8: 8] := %C0
-;
+};
 
-FSTSW.rm16 dest
+INSTRUCTION "FSTSW.rm16" (dest) {
     *16* dest := 0
     *1* dest@[14:14] := %C3
     *1* dest@[10:10] := %C2
     *1* dest@[ 9: 9] := %C1
     *1* dest@[ 8: 8] := %C0
-;
+};
 
 
 # FSUB
-FSUB.reg80 val
+INSTRUCTION "FSUB.reg80" (val) {
     *f80* %st := %st -f val
-;
+};
 
 
-FSUB.reg80.reg80 dest, src
+INSTRUCTION "FSUB.reg80.reg80" (dest, src) {
     *f80* dest := dest -f src
-;
+};
 
-FSUB.rm32 val
+INSTRUCTION "FSUB.rm32" (val) {
     *f80* %st := %st -f fsize(32, 80, val)
-;
+};
 
-FSUB.rm64 val
+INSTRUCTION "FSUB.rm64" (val) {
     *f80* %st := %st -f fsize(64, 80, val)
-;
+};
 
 
 # FSUBP
-FSUBP.reg80 val
+INSTRUCTION "FSUBP.reg80" (val) {
     *f80* val := %st -f val
     FPOP
-;
+};
 
 
 # FSUBR
-FSUBR.reg80 val
+INSTRUCTION "FSUBR.reg80" (val) {
     *f80* %st := val -f %st
-;
+};
 
-FSUBR.reg80.reg80 dest, src
+INSTRUCTION "FSUBR.reg80.reg80" (dest, src) {
     *f80* dest := src -f dest
-;
+};
 
-FSUBR.rm32 val
+INSTRUCTION "FSUBR.rm32" (val) {
     *f80* %st := fsize(32, 80, val) -f %st
-;
+};
 
-FSUBR.rm64 val
+INSTRUCTION "FSUBR.rm64" (val) {
     *f80* %st := fsize(64, 80, val) -f %st
-;
+};
 
 
 # FSUBRP
-FSUBRP.reg80 val
+INSTRUCTION "FSUBRP.reg80" (val) {
     *f80* val := val -f %st
     FPOP
-;
+};
 
 
 # FUCOM
-FUCOM
+INSTRUCTION "FUCOM" () {
     *f80* tmpD := %st -f %st1
     SETFFLAGS(%st, %st1)
-;
+};
 
-FUCOM.reg80 val
+INSTRUCTION "FUCOM.reg80" (val) {
     *f80* tmpD := %st -f val
     SETFFLAGS(%st, val)
-;
+};
 
 
 # FUCOMI
-FUCOMI.reg80 reg
+INSTRUCTION "FUCOMI.reg80" (reg) {
     SUBFLAGSFL(%st, reg)
-;
+};
 
 
 # FUCOMIP
-FUCOMIP.reg80 reg
+INSTRUCTION "FUCOMIP.reg80" (reg) {
     SUBFLAGSFL(%st, reg)
     FPOP
-;
+};
 
 
 # FUCOMP
-FUCOMP
+INSTRUCTION "FUCOMP" () {
     *f80* tmpD1 := %st
     *f80* tmpD2 := %st1
     *f80* tmpD  := %st -f %st1
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
-FUCOMP.reg80 val
+INSTRUCTION "FUCOMP.reg80" (val) {
     *f80* tmpD1 := %st
     *f80* tmpD2 := val
     *f80* tmpD  := %st -f val
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
 
 # FUCOMPP
-FUCOMPP
+INSTRUCTION "FUCOMPP" () {
     *f80* tmpD1 := %st
     *f80* tmpD2 := %st1
     *f80* tmpD  := %st -f %st1
     FPOP
     FPOP
     SETFFLAGS(tmpD1, tmpD2)
-;
+};
 
 
 # FXCH
-FXCH.reg80 i
+INSTRUCTION "FXCH.reg80" (i) {
     *f80* tmpD := %st
     *f80* %st := i
     *f80* i := tmpD
-;
+};
 
-FXCH.reg80.reg80 i, j
+INSTRUCTION "FXCH.reg80.reg80" (i, j) {
     *f80* tmpD := j
     *f80* j := i
     *f80* i := tmpD
-;
+};
 
 
 # IDIV
-IDIV.reg8 divisor
+INSTRUCTION "IDIV.reg8" (divisor) {
     *16* tmph := %ax
     *8* %al := tmph /! divisor
     *8* %ah := tmph %! divisor
-;
+};
 
-IDIV.reg16 divisor
+INSTRUCTION "IDIV.reg16" (divisor) {
     *32* tmpd := (%dx << 16) | %ax
     *16* %ax := tmpd /! divisor
     *16* %dx := tmpd %! divisor
-;
+};
 
-IDIV.reg32 divisor
+INSTRUCTION "IDIV.reg32" (divisor) {
     *64* tmp1 := (%edx << 32) | %eax
     *32* %eax := tmp1 /! divisor
     *32* %edx := tmp1 %! divisor
-;
+};
 
-IDIV.rm8 divisor
+INSTRUCTION "IDIV.rm8" (divisor) {
     *16* tmph := %ax
     *8* %al := tmph /! divisor
     *8* %ah := tmph %! divisor
-;
+};
 
-IDIV.rm16 divisor
+INSTRUCTION "IDIV.rm16" (divisor) {
     *32* tmpd := (%dx << 16) | %ax
     *16* %ax := tmpd /! divisor
     *16* %dx := tmpd %! divisor
-;
+};
 
-IDIV.rm32 divisor
+INSTRUCTION "IDIV.rm32" (divisor) {
     *64* tmp1 := (%edx << 32) | %eax
     *32* %eax := tmp1 /! divisor
     *32* %edx := tmp1 %! divisor
-;
+};
 
 
 # IMUL
-IMUL.reg8 val
+INSTRUCTION "IMUL.reg8" (val) {
     *16* tmph := %al *! val
     *16* %ax := tmph
     IMULTFLAGS8(tmph)
-;
+};
 
-IMUL.reg16 val
+INSTRUCTION "IMUL.reg16" (val) {
     *32* tmp1 := %al *! val
     *16* %ax := tmp1@[0:15]
     *16* %dx := tmp1@[16:31]
     IMULTFLAGS16(tmp1)
-;
+};
 
-IMUL.reg16.reg16 dest, src
+INSTRUCTION "IMUL.reg16.reg16" (dest, src) {
     *16* dest := dest *! src
     IMULTFLAGS16(dest)
-;
+};
 
-IMUL.reg16.reg16.imm16 dest, src1, src2
+INSTRUCTION "IMUL.reg16.reg16.imm16" (dest, src1, src2) {
     *16* dest := src1 *! src2
     IMULTFLAGS16(dest)
-;
+};
 
-IMUL.reg16.rm16 dest, src
+INSTRUCTION "IMUL.reg16.rm16" (dest, src) {
     *16* dest := dest *! src
     IMULTFLAGS16(dest)
-;
+};
 
-IMUL.reg16.rm16.imm8 dest, src1, src2
+INSTRUCTION "IMUL.reg16.rm16.imm8" (dest, src1, src2) {
     *16* dest := src1 *! sgnex(8, 16, src2)
     IMULTFLAGS16(dest)
-;
+};
 
-IMUL.reg16.rm16.imm16 dest, src1, src2
+INSTRUCTION "IMUL.reg16.rm16.imm16" (dest, src1, src2) {
     *16* dest := src1 *! src2
     IMULTFLAGS16(dest)
-;
+};
 
-IMUL.reg32 val
+INSTRUCTION "IMUL.reg32" (val) {
     *64* tmpresult := %eax *! val
     *32* %edx := truncu(64, 32, tmpresult) >> 32
     *32* %eax := truncu(64, 32, tmpresult)
     IMULTFLAGS32(tmpresult)
-;
+};
 
-IMUL.reg32.reg32 dest, src
+INSTRUCTION "IMUL.reg32.reg32" (dest, src) {
     *32* dest := dest *! src
     IMULTFLAGS32(dest)
-;
+};
 
-IMUL.reg32.reg32.imm32 dest, src1, src2
+INSTRUCTION "IMUL.reg32.reg32.imm32" (dest, src1, src2) {
     *32* dest := src1 *! src2
     IMULTFLAGS32(dest)
-;
+};
 
-IMUL.reg32.rm32 dest, src
+INSTRUCTION "IMUL.reg32.rm32" (dest, src) {
     *32* dest := dest *! src
     IMULTFLAGS32(dest)
-;
+};
 
-IMUL.reg32.rm32.imm8 dest, src1, src2
+INSTRUCTION "IMUL.reg32.rm32.imm8" (dest, src1, src2) {
     *32* dest := src1 *! sgnex(8, 32, src2)
     IMULTFLAGS32(dest)
-;
+};
 
-IMUL.reg32.rm32.imm32 dest, src1, src2
+INSTRUCTION "IMUL.reg32.rm32.imm32" (dest, src1, src2) {
     *32* dest := src1 *! src2
     IMULTFLAGS32(dest)
-;
+};
 
-IMUL.rm8 val
+INSTRUCTION "IMUL.rm8" (val) {
     *16* tmpresult := %al *! val
     *16* %ax := tmpresult
     IMULTFLAGS8(tmpresult)
-;
+};
 
-IMUL.rm16 val
+INSTRUCTION "IMUL.rm16" (val) {
     *32* tmpresult := %ax *! val
     *16* %dx := truncu(32, 16, tmpresult) >> 16
     *16* %ax := truncu(32, 16, tmpresult)
     IMULTFLAGS16(tmpresult)
-;
+};
 
-IMUL.rm32 val
+INSTRUCTION "IMUL.rm32" (val) {
     *64* tmpresult := %eax *! val
     *32* %edx := truncu(64, 32, tmpresult) >> 32
     *32* %eax := truncu(64, 32, tmpresult)
     IMULTFLAGS32(tmpresult)
-;
+};
 
 
 # INC
-INC.reg8 val
+INSTRUCTION "INC.reg8" (val) {
     *8* tmpb := val
     *8* val := val + 1
     INCDECFLAGS8(val)
-;
+};
 
-INC.reg16 val
+INSTRUCTION "INC.reg16" (val) {
     *16* tmph := val
     *16* val := val + 1
     INCDECFLAGS16(val)
-;
+};
 
-INC.reg32 val
+INSTRUCTION "INC.reg32" (val) {
     *32* tmp1 := val
     *32* val := val + 1
     INCDECFLAGS32(val)
-;
+};
 
-INC.rm8 val
+INSTRUCTION "INC.rm8" (val) {
     *8* tmpb := val
     *8* val := val + 1
     INCDECFLAGS8(val)
-;
+};
 
-INC.rm16 val
+INSTRUCTION "INC.rm16" (val) {
     *16* tmph := val
     *16* val := val + 1
     INCDECFLAGS16(val)
-;
+};
 
-INC.rm32 val
+INSTRUCTION "INC.rm32" (val) {
     *32* tmp1 := val
     *32* val := val + 1
     INCDECFLAGS32(val)
-;
+};
 
-INC.rm64 val
+INSTRUCTION "INC.rm64" (val) {
     *64* tmp1 := val
     *64* val := val + 1
     INCDECFLAGS64(val)
-;
+};
 
 
 # INT
-INT.imm8 n
+INSTRUCTION "INT.imm8" (n) {
     _
-;
+};
 
-INT.imm16 n
+INSTRUCTION "INT.imm16" (n) {
     _
-;
+};
 
-INT.imm32 n
+INSTRUCTION "INT.imm32" (n) {
     _
-;
+};
 
 
 # INT1
-INT1
+INSTRUCTION "INT1" () {
     _
-;
+};
 
 
 # INT3
-INT3
+INSTRUCTION "INT3" () {
     _
-;
+};
 
 # INTO
-INTO
+INSTRUCTION "INTO" () {
     _
-;
+};
 
 
 # IRET
-IRET
+INSTRUCTION "IRET" () {
     _   # Semantics are hard-coded
-;
+};
 
 
 # IRETD
-IRETD
+INSTRUCTION "IRETD" () {
     _   # Semantics are hard-coded
-;
+};
 
 
 # Jcc
-JA.imm16 dest       *16* ~%CF & ~%ZF            => %pc := dest;
-JA.imm32 dest       *32* ~%CF & ~%ZF            => %pc := dest;
-JAE.imm16 dest      *16* %CF = 0                => %pc := dest;
-JAE.imm32 dest      *32* %CF = 0                => %pc := dest;
-JB.imm16 dest       *16* %CF = 1                => %pc := dest;
-JB.imm32 dest       *32* %CF = 1                => %pc := dest;
-JBE.imm16 dest      *16* %CF | %ZF              => %pc := dest;
-JBE.imm32 dest      *32* %CF | %ZF              => %pc := dest;
-JC.imm16 dest       *16* %CF = 1                => %pc := dest;
-JC.imm32 dest       *32* %CF = 1                => %pc := dest;
-JCXZ.imm16 dest     *16* %cx = 0                => %pc := dest;
-JCXZ.imm32 dest     *32* %cx = 0                => %pc := dest;
-JE.imm16 dest       *16* %ZF = 1                => %pc := dest;
-JE.imm32 dest       *32* %ZF = 1                => %pc := dest;
-JECXZ.imm16 dest    *16* %ecx = 0               => %pc := dest;
-JECXZ.imm32 dest    *32* %ecx = 0               => %pc := dest;
-JG.imm16 dest       *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JG.imm32 dest       *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JGE.imm16 dest      *16* ~(%SF ^ %OF)           => %pc := dest;
-JGE.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
-JL.imm16 dest       *16* %SF ^ %OF              => %pc := dest;
-JL.imm32 dest       *32* %SF ^ %OF              => %pc := dest;
-JLE.imm16 dest      *16* %ZF | (%SF ^ %OF)      => %pc := dest;
-JLE.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
-JMP.imm16 dest      *16*                           %pc := dest;
-JMP.imm32 dest      *32*                           %pc := dest;
-JMP.reg16 dest      *16*                           %pc := dest;
-JMP.reg32 dest      *32*                           %pc := dest;
-JMP.rm16 dest       *16*                           %pc := dest;
-JMP.rm32 dest       *32*                           %pc := dest;
-JNA.imm16 dest      *16* %CF | %ZF              => %pc := dest;
-JNA.imm32 dest      *32* %CF | %ZF              => %pc := dest;
-JNAE.imm16 dest     *16* %CF                    => %pc := dest;
-JNAE.imm32 dest     *32* %CF                    => %pc := dest;
-JNB.imm16 dest      *16* ~%CF                   => %pc := dest;
-JNB.imm32 dest      *32* ~%CF                   => %pc := dest;
-JNBE.imm16 dest     *16* (~%CF & ~%ZF)          => %pc := dest;
-JNBE.imm32 dest     *32* (~%CF & ~%ZF)          => %pc := dest;
-JNC.imm16 dest      *16* ~%CF                   => %pc := dest;
-JNC.imm32 dest      *32* ~%CF                   => %pc := dest;
-JNE.imm16 dest      *16* ~%ZF                   => %pc := dest;
-JNE.imm32 dest      *32* ~%ZF                   => %pc := dest;
-JNG.imm16 dest      *16* %ZF | (%SF ^ %OF)      => %pc := dest;
-JNG.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
-JNGE.imm16 dest     *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JNGE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JNL.imm16 dest      *16* ~(%SF ^ %OF)           => %pc := dest;
-JNL.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
-JNLE.imm16 dest     *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JNLE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
-JNO.imm16 dest      *16* ~%OF                   => %pc := dest;
-JNO.imm32 dest      *32* ~%OF                   => %pc := dest;
-JNP.imm16 dest      *16* ~%PF                   => %pc := dest;
-JNP.imm32 dest      *32* ~%PF                   => %pc := dest;
-JNS.imm16 dest      *16* ~%SF                   => %pc := dest;
-JNS.imm32 dest      *32* ~%SF                   => %pc := dest;
-JNZ.imm16 dest      *16* ~%ZF                   => %pc := dest;
-JNZ.imm32 dest      *32* ~%ZF                   => %pc := dest;
-JO.imm16 dest       *16* %OF                    => %pc := dest;
-JO.imm32 dest       *32* %OF                    => %pc := dest;
-JP.imm16 dest       *16* %PF                    => %pc := dest;
-JP.imm32 dest       *32* %PF                    => %pc := dest;
-JS.imm16 dest       *16* %SF                    => %pc := dest;
-JS.imm32 dest       *32* %SF                    => %pc := dest;
-JZ.imm16 dest       *16* %ZF                    => %pc := dest;
-JZ.imm32 dest       *32* %ZF                    => %pc := dest;
+INSTRUCTION "JA.imm16"    (dest) { *16* ~%CF & ~%ZF            => %pc := dest };
+INSTRUCTION "JA.imm32"    (dest) { *32* ~%CF & ~%ZF            => %pc := dest };
+INSTRUCTION "JAE.imm16"   (dest) { *16* %CF = 0                => %pc := dest };
+INSTRUCTION "JAE.imm32"   (dest) { *32* %CF = 0                => %pc := dest };
+INSTRUCTION "JB.imm16"    (dest) { *16* %CF = 1                => %pc := dest };
+INSTRUCTION "JB.imm32"    (dest) { *32* %CF = 1                => %pc := dest };
+INSTRUCTION "JBE.imm16"   (dest) { *16* %CF | %ZF              => %pc := dest };
+INSTRUCTION "JBE.imm32"   (dest) { *32* %CF | %ZF              => %pc := dest };
+INSTRUCTION "JC.imm16"    (dest) { *16* %CF = 1                => %pc := dest };
+INSTRUCTION "JC.imm32"    (dest) { *32* %CF = 1                => %pc := dest };
+INSTRUCTION "JCXZ.imm16"  (dest) { *16* %cx = 0                => %pc := dest };
+INSTRUCTION "JCXZ.imm32"  (dest) { *32* %cx = 0                => %pc := dest };
+INSTRUCTION "JE.imm16"    (dest) { *16* %ZF = 1                => %pc := dest };
+INSTRUCTION "JE.imm32"    (dest) { *32* %ZF = 1                => %pc := dest };
+INSTRUCTION "JECXZ.imm16" (dest) { *16* %ecx = 0               => %pc := dest };
+INSTRUCTION "JECXZ.imm32" (dest) { *32* %ecx = 0               => %pc := dest };
+INSTRUCTION "JG.imm16"    (dest) { *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JG.imm32"    (dest) { *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JGE.imm16"   (dest) { *16* ~(%SF ^ %OF)           => %pc := dest };
+INSTRUCTION "JGE.imm32"   (dest) { *32* ~(%SF ^ %OF)           => %pc := dest };
+INSTRUCTION "JL.imm16"    (dest) { *16* %SF ^ %OF              => %pc := dest };
+INSTRUCTION "JL.imm32"    (dest) { *32* %SF ^ %OF              => %pc := dest };
+INSTRUCTION "JLE.imm16"   (dest) { *16* %ZF | (%SF ^ %OF)      => %pc := dest };
+INSTRUCTION "JLE.imm32"   (dest) { *32* %ZF | (%SF ^ %OF)      => %pc := dest };
+INSTRUCTION "JMP.imm16"   (dest) { *16*                           %pc := dest };
+INSTRUCTION "JMP.imm32"   (dest) { *32*                           %pc := dest };
+INSTRUCTION "JMP.reg16"   (dest) { *16*                           %pc := dest };
+INSTRUCTION "JMP.reg32"   (dest) { *32*                           %pc := dest };
+INSTRUCTION "JMP.rm16"    (dest) { *16*                           %pc := dest };
+INSTRUCTION "JMP.rm32"    (dest) { *32*                           %pc := dest };
+INSTRUCTION "JNA.imm16"   (dest) { *16* %CF | %ZF              => %pc := dest };
+INSTRUCTION "JNA.imm32"   (dest) { *32* %CF | %ZF              => %pc := dest };
+INSTRUCTION "JNAE.imm16"  (dest) { *16* %CF                    => %pc := dest };
+INSTRUCTION "JNAE.imm32"  (dest) { *32* %CF                    => %pc := dest };
+INSTRUCTION "JNB.imm16"   (dest) { *16* ~%CF                   => %pc := dest };
+INSTRUCTION "JNB.imm32"   (dest) { *32* ~%CF                   => %pc := dest };
+INSTRUCTION "JNBE.imm16"  (dest) { *16* (~%CF & ~%ZF)          => %pc := dest };
+INSTRUCTION "JNBE.imm32"  (dest) { *32* (~%CF & ~%ZF)          => %pc := dest };
+INSTRUCTION "JNC.imm16"   (dest) { *16* ~%CF                   => %pc := dest };
+INSTRUCTION "JNC.imm32"   (dest) { *32* ~%CF                   => %pc := dest };
+INSTRUCTION "JNE.imm16"   (dest) { *16* ~%ZF                   => %pc := dest };
+INSTRUCTION "JNE.imm32"   (dest) { *32* ~%ZF                   => %pc := dest };
+INSTRUCTION "JNG.imm16"   (dest) { *16* %ZF | (%SF ^ %OF)      => %pc := dest };
+INSTRUCTION "JNG.imm32"   (dest) { *32* %ZF | (%SF ^ %OF)      => %pc := dest };
+INSTRUCTION "JNGE.imm16"  (dest) { *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JNGE.imm32"  (dest) { *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JNL.imm16"   (dest) { *16* ~(%SF ^ %OF)           => %pc := dest };
+INSTRUCTION "JNL.imm32"   (dest) { *32* ~(%SF ^ %OF)           => %pc := dest };
+INSTRUCTION "JNLE.imm16"  (dest) { *16* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JNLE.imm32"  (dest) { *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest };
+INSTRUCTION "JNO.imm16"   (dest) { *16* ~%OF                   => %pc := dest };
+INSTRUCTION "JNO.imm32"   (dest) { *32* ~%OF                   => %pc := dest };
+INSTRUCTION "JNP.imm16"   (dest) { *16* ~%PF                   => %pc := dest };
+INSTRUCTION "JNP.imm32"   (dest) { *32* ~%PF                   => %pc := dest };
+INSTRUCTION "JNS.imm16"   (dest) { *16* ~%SF                   => %pc := dest };
+INSTRUCTION "JNS.imm32"   (dest) { *32* ~%SF                   => %pc := dest };
+INSTRUCTION "JNZ.imm16"   (dest) { *16* ~%ZF                   => %pc := dest };
+INSTRUCTION "JNZ.imm32"   (dest) { *32* ~%ZF                   => %pc := dest };
+INSTRUCTION "JO.imm16"    (dest) { *16* %OF                    => %pc := dest };
+INSTRUCTION "JO.imm32"    (dest) { *32* %OF                    => %pc := dest };
+INSTRUCTION "JP.imm16"    (dest) { *16* %PF                    => %pc := dest };
+INSTRUCTION "JP.imm32"    (dest) { *32* %PF                    => %pc := dest };
+INSTRUCTION "JS.imm16"    (dest) { *16* %SF                    => %pc := dest };
+INSTRUCTION "JS.imm32"    (dest) { *32* %SF                    => %pc := dest };
+INSTRUCTION "JZ.imm16"    (dest) { *16* %ZF                    => %pc := dest };
+INSTRUCTION "JZ.imm32"    (dest) { *32* %ZF                    => %pc := dest };
 
 
 # LAHF
-LAHF
+INSTRUCTION "LAHF" () {
     *8* %ah := (%SF << 7) | (%ZF << 6) | (0 << 5) | (%AF << 4) | (0 << 3) | (%PF << 2) | (1 << 1) | (%CF << 0)
-;
+};
 
 
 # LDS
-LDS.reg16.rm32 dest, src
+INSTRUCTION "LDS.reg16.rm32" (dest, src) {
     *16* %ds  := src@[16:31]
     *16* dest := src@[0:15]
-;
+};
 
-LDS.reg32.rm32 dest, src
+INSTRUCTION "LDS.reg32.rm32" (dest, src) {
     *16* %ds  := src@[32:47]
     *32* dest := src@[0:31]
-;
+};
 
 
 # LEA
-LEA.reg16.rm16 dest, src
+INSTRUCTION "LEA.reg16.rm16" (dest, src) {
     *32* tmpaddr := addr(dest)
     *16* dest := truncu(32, 16, tmpaddr)
-;
+};
 
-LEA.reg32.rm32 dest, src
+INSTRUCTION "LEA.reg32.rm32" (dest, src) {
     *32* dest := addr(src)
-;
+};
 
-LEA.reg64.rm64 dest, src
+INSTRUCTION "LEA.reg64.rm64" (dest, src) {
     *64* dest := addr(src)
-;
+};
 
 
 # LEAVE
-LEAVE
+INSTRUCTION "LEAVE" () {
     *32* %esp := %ebp
     *32* %ebp := m[%esp]
     *32* %esp := %esp + 4
-;
+};
 
 
 # LES
-LES.reg16.rm32 dest, src
+INSTRUCTION "LES.reg16.rm32" (dest, src) {
     *16* %es  := src@[16:31]
     *16* dest := src@[0:15]
-;
+};
 
-LES.reg32.rm32 dest, src
+INSTRUCTION "LES.reg32.rm32" (dest, src) {
     *16* %es  := src@[32:47]
     *32* dest := src@[0:31]
-;
+};
 
 
 # LFS
-LFS.reg16.rm32 dest, src
+INSTRUCTION "LFS.reg16.rm32" (dest, src) {
     *16* %fs  := src@[16:31]
     *16* dest := src@[0:15]
-;
+};
 
-LFS.reg32.rm32 dest, src
+INSTRUCTION "LFS.reg32.rm32" (dest, src) {
     *16* %fs  := src@[32:47]
     *32* dest := src@[0:31]
-;
+};
 
 
 # LGS
-LGS.reg16.rm32 dest, src
+INSTRUCTION "LGS.reg16.rm32" (dest, src) {
     *16* %gs  := src@[16:31]
     *16* dest := src@[0:15]
-;
+};
 
-LGS.reg32.rm32 dest, src
+INSTRUCTION "LGS.reg32.rm32" (dest, src) {
     *16* %gs  := src@[32:47]
     *32* dest := src@[0:31]
-;
+};
 
 
 # LOOP
-LOOP.imm16 dest
+INSTRUCTION "LOOP.imm16" (dest) {
     *16* %cx := %cx - 1
     *16* %cx ~= 0 => %pc := dest
-;
+};
 
-LOOP.imm32 dest
+INSTRUCTION "LOOP.imm32" (dest) {
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 => %pc := dest
-;
+};
 
 
 # LOOPE
-LOOPE.imm16 dest
+INSTRUCTION "LOOPE.imm16" (dest) {
     *16* %cx := %cx - 1
     *16* %cx ~= 0 && %ZF = 1 => %pc := dest
-;
+};
 
-LOOPE.imm32 dest
+INSTRUCTION "LOOPE.imm32" (dest) {
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 && %ZF = 1 => %pc := dest
-;
+};
 
 
 # LOOPNE
-LOOPNE.imm16 dest
+INSTRUCTION "LOOPNE.imm16" (dest) {
     *16* %cx := %cx - 1
     *16* %cx ~= 0 && %ZF = 0 => %pc := dest
-;
+};
 
-LOOPNE.imm32 dest
+INSTRUCTION "LOOPNE.imm32" (dest) {
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 && %ZF = 0 => %pc := dest
-;
+};
 
 
 # LSS
-LSS.reg16.rm32 dest, src
+INSTRUCTION "LSS.reg16.rm32" (dest, src) {
     *16* %ss  := src@[16:31]
     *16* dest := src@[0:15]
-;
+};
 
-LSS.reg32.rm32 dest, src
+INSTRUCTION "LSS.reg32.rm32" (dest, src) {
     *16* %ss  := src@[32:47]
     *32* dest := src@[0:31]
-;
+};
 
 
 # MOV
-MOV.reg8.imm8 dest, src
+INSTRUCTION "MOV.reg8.imm8" (dest, src) {
     *8* dest := src
-;
+};
 
-MOV.reg8.reg8 dest, src
+INSTRUCTION "MOV.reg8.reg8" (dest, src) {
     *8* dest := src
-;
+};
 
-MOV.reg8.rm8 dest, src
+INSTRUCTION "MOV.reg8.rm8" (dest, src) {
     *8* dest := src
-;
+};
 
-MOV.reg16.imm16 dest, src
+INSTRUCTION "MOV.reg16.imm16" (dest, src) {
     *16* dest := src
-;
+};
 
-MOV.reg16.reg16 dest, src
+INSTRUCTION "MOV.reg16.reg16" (dest, src) {
     *16* dest := src
-;
+};
 
-MOV.reg16.rm16 dest, src
+INSTRUCTION "MOV.reg16.rm16" (dest, src) {
     *16* dest := src
-;
+};
 
-MOV.reg32.imm32 dest, src
+INSTRUCTION "MOV.reg32.imm32" (dest, src) {
     *32* dest := src
-;
+};
 
-MOV.reg32.reg32 dest, src
+INSTRUCTION "MOV.reg32.reg32" (dest, src) {
     *32* dest := src
-;
+};
 
-MOV.reg32.rm32 dest, src
+INSTRUCTION "MOV.reg32.rm32" (dest, src) {
     *32* dest := src
-;
+};
 
-MOV.reg64.imm64 dest, src
+INSTRUCTION "MOV.reg64.imm64" (dest, src) {
     *64* dest := src
-;
+};
 
-MOV.reg64.reg64 dest, src
+INSTRUCTION "MOV.reg64.reg64" (dest, src) {
     *64* dest := src
-;
+};
 
-MOV.reg64.rm64 dest, src
+INSTRUCTION "MOV.reg64.rm64" (dest, src) {
     *64* dest := src
-;
+};
 
-MOV.rm8.imm8 dest, src
+INSTRUCTION "MOV.rm8.imm8" (dest, src) {
     *8* dest := src
-;
+};
 
-MOV.rm8.reg8 dest, src
+INSTRUCTION "MOV.rm8.reg8" (dest, src) {
     *8* dest := src
-;
+};
 
-MOV.rm16.imm16 dest, src
+INSTRUCTION "MOV.rm16.imm16" (dest, src) {
     *16* dest := src
-;
+};
 
-MOV.rm16.reg16 dest, src
+INSTRUCTION "MOV.rm16.reg16" (dest, src) {
     *16* dest := src
-;
+};
 
-MOV.rm32.imm32 dest, src
+INSTRUCTION "MOV.rm32.imm32" (dest, src) {
     *32* dest := src
-;
+};
 
-MOV.rm32.reg32 dest, src
+INSTRUCTION "MOV.rm32.reg32" (dest, src) {
     *32* dest := src
-;
+};
 
-MOV.rm64.imm32 dest, src
+INSTRUCTION "MOV.rm64.imm32" (dest, src) {
     *64* dest := sgnex(32, 64, src)
-;
+};
 
-MOV.rm64.reg64 dest, src
+INSTRUCTION "MOV.rm64.reg64" (dest, src) {
     *64* dest := src
-;
+};
 
 
 # MOVSX
-MOVSX.reg16.reg8 dest, src
+INSTRUCTION "MOVSX.reg16.reg8" (dest, src) {
     *16* dest := sgnex(8, 16, src)
-;
+};
 
-MOVSX.reg16.rm8 dest, src
+INSTRUCTION "MOVSX.reg16.rm8" (dest, src) {
     *16* dest := sgnex(8, 16, src)
-;
+};
 
-MOVSX.reg32.reg8 dest, src
+INSTRUCTION "MOVSX.reg32.reg8" (dest, src) {
     *32* dest := sgnex(8, 32, src)
-;
+};
 
-MOVSX.reg32.reg16 dest, src
+INSTRUCTION "MOVSX.reg32.reg16" (dest, src) {
     *32* dest := sgnex(16, 32, src)
-;
+};
 
-MOVSX.reg32.rm8 dest, src
+INSTRUCTION "MOVSX.reg32.rm8" (dest, src) {
     *32* dest := sgnex(8, 32, src)
-;
+};
 
-MOVSX.reg32.rm16 dest, src
+INSTRUCTION "MOVSX.reg32.rm16" (dest, src) {
     *32* dest := sgnex(16, 32, src)
-;
+};
 
-MOVSX.reg64.rm8 dest, src
+INSTRUCTION "MOVSX.reg64.rm8" (dest, src) {
     *64* dest := sgnex(8, 64, src)
-;
+};
 
-MOVSX.reg64.rm16 dest, src
+INSTRUCTION "MOVSX.reg64.rm16" (dest, src) {
     *64* dest := sgnex(16, 64, src)
-;
+};
 
 
 # MOVSXD
-MOVSXD.reg16.rm16 dest, src
+INSTRUCTION "MOVSXD.reg16.rm16" (dest, src) {
     *16* dest := sgnex(16, 16, src)
-;
+};
 
-MOVSXD.reg32.rm32 dest, src
+INSTRUCTION "MOVSXD.reg32.rm32" (dest, src) {
     *32* dest := sgnex(32, 32, src)
-;
+};
 
-MOVSXD.reg64.rm32 dest, src
+INSTRUCTION "MOVSXD.reg64.rm32" (dest, src) {
     *64* dest := sgnex(32, 64, src)
-;
+};
 
 
 # MOVZX
-MOVZX.reg16.reg8 dest, src
+INSTRUCTION "MOVZX.reg16.reg8" (dest, src) {
     *16* dest := zfill(8, 16, src)
-;
+};
 
-MOVZX.reg16.rm8 dest, src
+INSTRUCTION "MOVZX.reg16.rm8" (dest, src) {
     *16* dest := zfill(8, 16, src)
-;
+};
 
-MOVZX.reg32.reg8 dest, src
+INSTRUCTION "MOVZX.reg32.reg8" (dest, src) {
     *32* dest := zfill(8, 32, src)
-;
+};
 
-MOVZX.reg32.reg16 dest, src
+INSTRUCTION "MOVZX.reg32.reg16" (dest, src) {
     *32* dest := zfill(16, 32, src)
-;
+};
 
-MOVZX.reg32.rm8 dest, src
+INSTRUCTION "MOVZX.reg32.rm8" (dest, src) {
     *32* dest := zfill(8, 32, src)
-;
+};
 
-MOVZX.reg32.rm16 dest, src
+INSTRUCTION "MOVZX.reg32.rm16" (dest, src) {
     *32* dest := zfill(16, 32, src)
-;
+};
 
-MOVZX.reg64.rm8 dest, src
+INSTRUCTION "MOVZX.reg64.rm8" (dest, src) {
     *64* dest := zfill(8, 64, src)
-;
+};
 
-MOVZX.reg64.rm16 dest, src
+INSTRUCTION "MOVZX.reg64.rm16" (dest, src) {
     *64* dest := zfill(16, 64, src)
-;
+};
 
 
 # MUL
-MUL.reg8 src
+INSTRUCTION "MUL.reg8" (src) {
     *16* tmph := %al * src
     *16* %ax := tmph
     MULTFLAGS8(tmph)
-;
+};
 
-MUL.reg16 src
+INSTRUCTION "MUL.reg16" (src) {
     *32* tmp1 := %ax * src
     *16* %ax := tmp1
     *16* %dx := tmp1 >> 16
     MULTFLAGS16(tmp1)
-;
+};
 
-MUL.reg32 src
+INSTRUCTION "MUL.reg32" (src) {
     *32* tmp1 := src
     *64* tmpl := zfill(32, 64, %eax) * zfill(32, 64, tmp1)
     *32* %eax := tmpl@[0:31]
     *32* %edx := tmpl@[32:63]
     MULTFLAGS32(tmpl)
-;
+};
 
-MUL.rm8 src
+INSTRUCTION "MUL.rm8" (src) {
     *16* tmph := %al * src
     *16* %ax := tmph
     MULTFLAGS8(tmph)
-;
+};
 
-MUL.rm32 src
+INSTRUCTION "MUL.rm32" (src) {
     *32* tmp1 := src
     *64* tmpl := zfill(32, 64, %eax) * zfill(32, 64, tmp1)
     *32* %eax := tmpl@[0:31]
     *32* %edx := tmpl@[32:63]
     MULTFLAGS32(tmpl)
-;
+};
 
 
 # NEG
-NEG.reg8 val
+INSTRUCTION "NEG.reg8" (val) {
     *8* tmpval := val
     *8* val := 0 - val
     SUBFLAGS8(0, tmpval, val)
-;
+};
 
-NEG.reg16 val
+INSTRUCTION "NEG.reg16" (val) {
     *16* tmpval := val
     *16* val := 0 - val
     SUBFLAGS16(0, tmpval, val)
-;
+};
 
-NEG.reg32 val
+INSTRUCTION "NEG.reg32" (val) {
     *32* tmpval := val
     *32* val := 0 - val
     SUBFLAGS32(0, tmpval, val)
-;
+};
 
-NEG.reg64 val
+INSTRUCTION "NEG.reg64" (val) {
     *64* tmpval := val
     *64* val := 0 - val
     SUBFLAGS64(0, tmpval, val)
-;
+};
 
-NEG.rm8 val
+INSTRUCTION "NEG.rm8" (val) {
     *8* tmpval := val
     *8* val := 0 - val
     SUBFLAGS8(0, tmpval, val)
-;
+};
 
-NEG.rm16 val
+INSTRUCTION "NEG.rm16" (val) {
     *16* tmpval := val
     *16* val := 0 - val
     SUBFLAGS16(0, tmpval, val)
-;
+};
 
-NEG.rm32 val
+INSTRUCTION "NEG.rm32" (val) {
     *32* tmpval := val
     *32* val := 0 - val
     SUBFLAGS32(0, tmpval, val)
-;
+};
 
 
 # NOP
-NOP
+INSTRUCTION "NOP" () {
     _
-;
+};
 
-NOP.rm16 dummy
+INSTRUCTION "NOP.rm16" (dummy) {
     _
-;
+};
 
-NOP.rm32 dummy
+INSTRUCTION "NOP.rm32" (dummy) {
     _
-;
+};
 
 
 # NOT
-NOT.reg8 reg
+INSTRUCTION "NOT.reg8" (reg) {
     *8* reg := ~reg
-;
+};
 
-NOT.reg16 reg
+INSTRUCTION "NOT.reg16" (reg) {
     *16* reg := ~reg
-;
+};
 
-NOT.reg32 reg
+INSTRUCTION "NOT.reg32" (reg) {
     *32* reg := ~reg
-;
+};
 
-NOT.reg64 reg
+INSTRUCTION "NOT.reg64" (reg) {
     *64* reg := ~reg
-;
+};
 
-NOT.rm8 dest
+INSTRUCTION "NOT.rm8" (dest) {
     *8* dest := ~dest
-;
+};
 
-NOT.rm16 dest
+INSTRUCTION "NOT.rm16" (dest) {
     *16* dest := ~dest
-;
+};
 
-NOT.rm32 dest
+INSTRUCTION "NOT.rm32" (dest) {
     *32* dest := ~dest
-;
+};
 
 
 # OR
-OR.reg8.imm8 dest, src
+INSTRUCTION "OR.reg8.imm8" (dest, src) {
     *8* dest := dest | src
     LOGICALFLAGS8(dest)
-;
+};
 
-OR.reg8.reg8 dest, src
+INSTRUCTION "OR.reg8.reg8" (dest, src) {
     *8* dest := dest | src
     LOGICALFLAGS8(dest)
-;
+};
 
-OR.reg8.rm8 dest, src
+INSTRUCTION "OR.reg8.rm8" (dest, src) {
     *8* dest := dest | src
     LOGICALFLAGS8(dest)
-;
+};
 
-OR.reg16.imm16 dest, src
+INSTRUCTION "OR.reg16.imm16" (dest, src) {
     *16* dest := dest | src
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.reg16.reg16 dest, src
+INSTRUCTION "OR.reg16.reg16" (dest, src) {
     *16* dest := dest | src
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.reg16.rm16 dest, src
+INSTRUCTION "OR.reg16.rm16" (dest, src) {
     *16* dest := dest | src
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.reg32.imm32 dest, src
+INSTRUCTION "OR.reg32.imm32" (dest, src) {
     *32* dest := dest | src
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.reg32.reg32 dest, src
+INSTRUCTION "OR.reg32.reg32" (dest, src) {
     *32* dest := dest | src
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.reg32.rm32 dest, src
+INSTRUCTION "OR.reg32.rm32" (dest, src) {
     *32* dest := dest | src
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.reg64.imm32 dest, src
+INSTRUCTION "OR.reg64.imm32" (dest, src) {
     *64* dest := dest | sgnex(32, 64, src)
     LOGICALFLAGS64(dest)
-;
+};
 
-OR.rm8.imm8 dest, src
+INSTRUCTION "OR.rm8.imm8" (dest, src) {
     *8* dest := dest | src
     LOGICALFLAGS8(dest)
-;
+};
 
-OR.rm8.reg8 dest, src
+INSTRUCTION "OR.rm8.reg8" (dest, src) {
     *8* dest := dest | src
     LOGICALFLAGS8(dest)
-;
+};
 
-OR.rm16.imm8 dest, src
+INSTRUCTION "OR.rm16.imm8" (dest, src) {
     *16* dest := dest | sgnex(8, 16, src)
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.rm16.imm16 dest, src
+INSTRUCTION "OR.rm16.imm16" (dest, src) {
     *16* dest := dest | src
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.rm16.reg16 dest, src
+INSTRUCTION "OR.rm16.reg16" (dest, src) {
     *16* dest := dest | src
     LOGICALFLAGS16(dest)
-;
+};
 
-OR.rm32.imm8 dest, src
+INSTRUCTION "OR.rm32.imm8" (dest, src) {
     *32* dest := dest | sgnex(8, 32, src)
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.rm32.imm32 dest, src
+INSTRUCTION "OR.rm32.imm32" (dest, src) {
     *32* dest := dest | src
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.rm32.reg32 dest, src
+INSTRUCTION "OR.rm32.reg32" (dest, src) {
     *32* dest := dest | src
     LOGICALFLAGS32(dest)
-;
+};
 
-OR.rm64.imm8 dest, src
+INSTRUCTION "OR.rm64.imm8" (dest, src) {
     *64* dest := dest | sgnex(8, 64, src)
     LOGICALFLAGS64(dest)
-;
+};
 
-OR.rm64.reg64 dest, src
+INSTRUCTION "OR.rm64.reg64" (dest, src) {
     *64* dest := dest | src
     LOGICALFLAGS64(dest)
-;
+};
 
 
 # PAUSE
-PAUSE
+INSTRUCTION "PAUSE" () {
     _
-;
+};
 
 
 # POP
-POP.reg16 reg
+INSTRUCTION "POP.reg16" (reg) {
     *16* reg := m[%esp]
     *16* %esp := %esp + 2
-;
+};
 
-POP.reg32 reg
+INSTRUCTION "POP.reg32" (reg) {
     *32* reg := m[%esp]
     *32* %esp := %esp + 4
-;
+};
 
-POP.rm16 rm
+INSTRUCTION "POP.rm16" (rm) {
     *16* rm := m[%esp]
     *16* %esp := %esp + 2
-;
+};
 
-POP.rm32 rm
+INSTRUCTION "POP.rm32" (rm) {
     *32* rm := m[%esp]
     *32* %esp := %esp + 4
-;
+};
 
 
 # POPA
-POPA
+INSTRUCTION "POPA" () {
     *16* %ax := m[%sp + 14]
     *16* %cx := m[%sp + 12]
     *16* %dx := m[%sp + 10]
@@ -3010,11 +3010,11 @@ POPA
     *16* %si := m[%sp +  2]
     *16* %di := m[%sp +  0]
     *16* %sp := %sp + 16
-;
+};
 
 
 # POPAL
-POPAL
+INSTRUCTION "POPAL" () {
     *32* %eax := m[%esp + 28]
     *32* %ecx := m[%esp + 24]
     *32* %edx := m[%esp + 20]
@@ -3024,11 +3024,11 @@ POPAL
     *32* %esi := m[%esp +  4]
     *32* %edi := m[%esp +  0]
     *32* %esp := %esp + 32
-;
+};
 
 
 # POPAW
-POPAW
+INSTRUCTION "POPAW" () {
     *16* %ax := m[%sp + 14]
     *16* %cx := m[%sp + 12]
     *16* %dx := m[%sp + 10]
@@ -3038,62 +3038,62 @@ POPAW
     *16* %si := m[%sp +  2]
     *16* %di := m[%sp +  0]
     *16* %sp := %sp + 16
-;
+};
 
 
 # POPF
-POPF
+INSTRUCTION "POPF" () {
     *16* %flags := m[%esp + 0]
     *32* %esp := %esp + 2
-;
+};
 
 
 # POPFD
-POPFD
+INSTRUCTION "POPFD" () {
     *32* %eflags := m[%esp + 0]
     *32* %esp := %esp + 4
-;
+};
 
 
 # PUSH
-PUSH.imm8 val
+INSTRUCTION "PUSH.imm8" (val) {
     *32* m[%esp - 4] := sgnex(8, 32, val)
     *32* %esp := %esp - 4
-;
+};
 
-PUSH.imm16 val
+INSTRUCTION "PUSH.imm16" (val) {
     *32* m[%esp - 4] := sgnex(16, 32, val)
     *32* %esp := %esp - 4
-;
+};
 
-PUSH.imm32 val
+INSTRUCTION "PUSH.imm32" (val) {
     *32* m[%esp - 4] := val
     *32* %esp := %esp - 4
-;
+};
 
-PUSH.reg16 reg
+INSTRUCTION "PUSH.reg16" (reg) {
     *16* m[%esp - 2] := reg
     *32* %esp := %esp - 2
-;
+};
 
-PUSH.reg32 reg
+INSTRUCTION "PUSH.reg32" (reg) {
     *32* m[%esp - 4] := reg
     *32* %esp := %esp - 4
-;
+};
 
-PUSH.rm16 rm
+INSTRUCTION "PUSH.rm16" (rm) {
     *16* m[%esp - 2] := rm
     *32* %esp := %esp - 2
-;
+};
 
-PUSH.rm32 rm
+INSTRUCTION "PUSH.rm32" (rm) {
     *32* m[%esp - 4] := rm
     *32* %esp := %esp - 4
-;
+};
 
 
 # PUSHA
-PUSHA
+INSTRUCTION "PUSHA" () {
     *16* m[%sp -  2] := %ax
     *16* m[%sp -  4] := %cx
     *16* m[%sp -  6] := %dx
@@ -3103,11 +3103,11 @@ PUSHA
     *16* m[%sp - 14] := %si
     *16* m[%sp - 16] := %di
     *16* %sp := %sp - 16
-;
+};
 
 
 # PUSHAL
-PUSHAL
+INSTRUCTION "PUSHAL" () {
     *32* m[%sp -  4] := %eax
     *32* m[%sp -  8] := %ecx
     *32* m[%sp - 12] := %edx
@@ -3117,11 +3117,11 @@ PUSHAL
     *16* m[%sp - 28] := %esi
     *16* m[%sp - 32] := %edi
     *16* %esp := %esp - 32
-;
+};
 
 
 # PUSHAW
-PUSHAW
+INSTRUCTION "PUSHAW" () {
     *16* m[%sp -  2] := %ax
     *16* m[%sp -  4] := %cx
     *16* m[%sp -  6] := %dx
@@ -3131,1133 +3131,1133 @@ PUSHAW
     *16* m[%sp - 14] := %si
     *16* m[%sp - 16] := %di
     *16* %sp := %sp - 16
-;
+};
 
 
 # PUSHF
-PUSHF
+INSTRUCTION "PUSHF" () {
     *16* m[%esp - 2] := %flags
     *32* %esp := %esp - 2
-;
+};
 
 
 # PUSHFD
-PUSHFD
+INSTRUCTION "PUSHFD" () {
     *32* m[%esp - 4] := %eflags
     *32* %esp := %esp - 4
-;
+};
 
 
 # RCL
-RCL.reg8.imm8 dest, src
+INSTRUCTION "RCL.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rlc src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-RCL.reg8.reg8 dest, src
+INSTRUCTION "RCL.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rlc src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-RCL.reg16.imm8 dest, src
+INSTRUCTION "RCL.reg16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest rlc src
     ROLFLAGS16(dest, tmph, src)
-;
+};
 
-RCL.reg16.imm16 dest, src
+INSTRUCTION "RCL.reg16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest rlc src
     ROLFLAGS16(dest, tmph, src)
-;
+};
 
-RCL.reg16.reg8 dest, src
+INSTRUCTION "RCL.reg16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest rlc src
     ROLFLAGS16(dest, tmph, src)
-;
+};
 
-RCL.reg32.imm8 dest, src
+INSTRUCTION "RCL.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rlc src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
-RCL.reg32.reg8 dest, src
+INSTRUCTION "RCL.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rlc src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
-RCL.reg32.imm32 dest, src
+INSTRUCTION "RCL.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rlc src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
-RCL.rm8.imm8 dest, src
+INSTRUCTION "RCL.rm8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rlc src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-RCL.rm8.reg8 dest, src
+INSTRUCTION "RCL.rm8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rlc src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-RCL.rm32.imm32 dest, src
+INSTRUCTION "RCL.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rlc src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # RCR
-RCR.reg8.imm8 dest, src
+INSTRUCTION "RCR.reg8.imm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest rrc src
     RORFLAGS8(dest, tmp1, src)
-;
+};
 
-RCR.reg8.reg8 dest, src
+INSTRUCTION "RCR.reg8.reg8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest rrc src
     RORFLAGS8(dest, tmp1, src)
-;
+};
 
-RCR.reg16.imm8 dest, src
+INSTRUCTION "RCR.reg16.imm8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rrc src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-RCR.reg16.imm16 dest, src
+INSTRUCTION "RCR.reg16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rrc src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-RCR.reg16.reg8 dest, src
+INSTRUCTION "RCR.reg16.reg8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rrc src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-RCR.reg32.reg8 dest, src
+INSTRUCTION "RCR.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rrc src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-RCR.reg32.imm8 dest, src
+INSTRUCTION "RCR.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rrc src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-RCR.reg32.imm32 dest, src
+INSTRUCTION "RCR.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rrc src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-RCR.rm32.imm32 dest, src
+INSTRUCTION "RCR.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rrc src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # RET
-RET
+INSTRUCTION "RET" () {
     *32* %pc := m[%esp]
     *32* %esp := %esp + 4
-;
+};
 
-RET.imm16 offset
+INSTRUCTION "RET.imm16" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
-;
+};
 
-RET.imm32 offset
+INSTRUCTION "RET.imm32" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
-;
+};
 
 
 # RETF
-RETF
+INSTRUCTION "RETF" () {
     *32* %pc := m[%esp]
     *32* %esp := %esp + 4
-;
+};
 
-RETF.imm16 offset
+INSTRUCTION "RETF.imm16" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
-;
+};
 
-RETF.imm32 offset
+INSTRUCTION "RETF.imm32" (offset) {
     *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
-;
+};
 
 # ROL
-ROL.reg8.imm8 dest, src
+INSTRUCTION "ROL.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rl src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-ROL.reg8.reg8 dest, src
+INSTRUCTION "ROL.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rl src
     ROLFLAGS8(dest, tmpb, src)
-;
+};
 
-ROL.reg16.imm8 dest, src
+INSTRUCTION "ROL.reg16.imm8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rl src
     ROLFLAGS16(dest, tmp1, src)
-;
+};
 
-ROL.reg16.imm16 dest, src
+INSTRUCTION "ROL.reg16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rl src
     ROLFLAGS16(dest, tmp1, src)
-;
+};
 
-ROL.reg16.reg8 dest, src
+INSTRUCTION "ROL.reg16.reg8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rl src
     ROLFLAGS16(dest, tmp1, src)
-;
+};
 
-ROL.reg32.imm8 dest, src
+INSTRUCTION "ROL.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rl src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
-ROL.reg32.reg8 dest, src
+INSTRUCTION "ROL.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rl src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
-ROL.reg32.imm32 dest, src
+INSTRUCTION "ROL.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rl src
     ROLFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # ROR
-ROR.reg8.imm8 dest, src
+INSTRUCTION "ROR.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rr src
     RORFLAGS8(dest, tmpb, src)
-;
+};
 
-ROR.reg8.reg8 dest, src
+INSTRUCTION "ROR.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest rr src
     RORFLAGS8(dest, tmpb, src)
-;
+};
 
-ROR.reg16.imm8 dest, src
+INSTRUCTION "ROR.reg16.imm8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rr src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-ROR.reg16.imm16 dest, src
+INSTRUCTION "ROR.reg16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rr src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-ROR.reg16.reg8 dest, src
+INSTRUCTION "ROR.reg16.reg8" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest rr src
     RORFLAGS16(dest, tmp1, src)
-;
+};
 
-ROR.reg32.reg8 dest, src
+INSTRUCTION "ROR.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-ROR.reg32.imm8 dest, src
+INSTRUCTION "ROR.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-ROR.reg32.imm32 dest, src
+INSTRUCTION "ROR.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-ROR.rm32.imm32 dest, src
+INSTRUCTION "ROR.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
-ROR.rm32.reg8 dest, src
+INSTRUCTION "ROR.rm32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # SAHF
-SAHF
+INSTRUCTION "SAHF" () {
     *1* %SF := %ah@[7:7]
     *1* %ZF := %ah@[6:6]
     *1* %AF := %ah@[4:4]
     *1* %PF := %ah@[2:2]
     *1* %CF := %ah@[0:0]
     SAHFFLAGS(%ah)
-;
+};
 
 
 # SAR
-SAR.reg8.imm8 dest, src
+INSTRUCTION "SAR.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
-;
+};
 
-SAR.reg8.reg8 dest, src
+INSTRUCTION "SAR.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
-;
+};
 
-SAR.reg16.imm8 dest, src
+INSTRUCTION "SAR.reg16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.reg16.imm16 dest, src
+INSTRUCTION "SAR.reg16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.reg16.reg8 dest, src
+INSTRUCTION "SAR.reg16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.reg32.imm8 dest, src
+INSTRUCTION "SAR.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
-SAR.reg32.imm32 dest, src
+INSTRUCTION "SAR.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
-SAR.reg32.reg8 dest, src
+INSTRUCTION "SAR.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
-SAR.rm8.imm8 dest, src
+INSTRUCTION "SAR.rm8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
-;
+};
 
-SAR.rm8.reg8 dest, src
+INSTRUCTION "SAR.rm8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
-;
+};
 
-SAR.rm16.imm8 dest, src
+INSTRUCTION "SAR.rm16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.rm16.imm16 dest, src
+INSTRUCTION "SAR.rm16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.rm16.reg8 dest, src
+INSTRUCTION "SAR.rm16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
-;
+};
 
-SAR.rm32.imm8 dest, src
+INSTRUCTION "SAR.rm32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
-SAR.rm32.imm32 dest, src
+INSTRUCTION "SAR.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
-SAR.rm64.imm8 dest, src
+INSTRUCTION "SAR.rm64.imm8" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
-;
+};
 
 
 # SBB
-SBB.reg8.imm8 dest, src
+INSTRUCTION "SBB.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest - src - %CF
     SUBFLAGS8(tmpb, src, dest)
-;
+};
 
-SBB.reg8.reg8 dest, src
+INSTRUCTION "SBB.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest - src - %CF
     SUBFLAGS8(tmpb, src, dest)
-;
+};
 
-SBB.reg8.rm8 dest, src
+INSTRUCTION "SBB.reg8.rm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest - src - %CF
     SUBFLAGS8(tmpb, src, dest)
-;
+};
 
-SBB.reg16.imm16 dest, src
+INSTRUCTION "SBB.reg16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - src - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.reg16.reg16 dest, src
+INSTRUCTION "SBB.reg16.reg16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - src - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.reg16.rm16 dest, src
+INSTRUCTION "SBB.reg16.rm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - src - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.reg32.imm32 dest, src
+INSTRUCTION "SBB.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.reg32.reg32 dest, src
+INSTRUCTION "SBB.reg32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.reg32.rm32 dest, src
+INSTRUCTION "SBB.reg32.rm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.reg64.rm64 dest, src
+INSTRUCTION "SBB.reg64.rm64" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest - src - %CF
     SUBFLAGS64(tmp1, src, dest)
-;
+};
 
-SBB.rm8.imm8 dest, src
+INSTRUCTION "SBB.rm8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest - src - %CF
     SUBFLAGS8(tmpb, src, dest)
-;
+};
 
-SBB.rm8.reg8 dest, src
+INSTRUCTION "SBB.rm8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest - src - %CF
     SUBFLAGS8(tmpb, src, dest)
-;
+};
 
-SBB.rm16.imm8 dest, src
+INSTRUCTION "SBB.rm16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - sgnex(8, 16, src) - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.rm16.imm16 dest, src
+INSTRUCTION "SBB.rm16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - src - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.rm16.reg16 dest, src
+INSTRUCTION "SBB.rm16.reg16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest - src - %CF
     SUBFLAGS16(tmph, src, dest)
-;
+};
 
-SBB.rm32.imm8 dest, src
+INSTRUCTION "SBB.rm32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - sgnex(8, 32, src) - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.rm32.imm32 dest, src
+INSTRUCTION "SBB.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.rm32.reg32 dest, src
+INSTRUCTION "SBB.rm32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src - %CF
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SBB.rm64.imm8 dest, src
+INSTRUCTION "SBB.rm64.imm8" (dest, src) {
     *64* tmp1 := dest
     *32* dest := dest - sgnex(8, 64, src) - %CF
     SUBFLAGS64(tmp1, src, dest)
-;
+};
 
-SBB.rm64.imm32 dest, src
+INSTRUCTION "SBB.rm64.imm32" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest - sgnex(32, 64, src) - %CF
     SUBFLAGS64(tmp1, src, dest)
-;
+};
 
-SBB.rm64.reg64 dest, src
+INSTRUCTION "SBB.rm64.reg64" (dest, src) {
     *64* tmp1 := dest
     *64* dest := dest - src - %CF
     SUBFLAGS64(tmp1, src, dest)
-;
+};
 
 
 # SETcc
-SETA.reg8  dest         *8* dest := ~%CF & ~%ZF;
-SETA.rm8   dest         *8* dest := ~%CF & ~%ZF;
-SETAE.reg8 dest         *8* dest := ~%CF;
-SETAE.rm8  dest         *8* dest := ~%CF;
-SETB.reg8  dest         *8* dest := %CF;
-SETB.rm8   dest         *8* dest := %CF;
-SETBE.reg8 dest         *8* dest := %CF | %ZF;
-SETBE.rm8  dest         *8* dest := %CF | %ZF;
-SETE.reg8  dest         *8* dest := %ZF;
-SETE.rm8   dest         *8* dest := %ZF;
-SETG.reg8  dest         *8* dest := ~%ZF & ~(%SF ^ %OF);
-SETG.rm8   dest         *8* dest := ~%ZF & ~(%SF ^ %OF);
-SETGE.reg8 dest         *8* dest := ~(%SF ^ %OF);
-SETGE.rm8  dest         *8* dest := ~(%SF ^ %OF);
-SETL.reg8  dest         *8* dest := %SF ^ %OF;
-SETL.rm8   dest         *8* dest := %SF ^ %OF;
-SETLE.reg8 dest         *8* dest := %ZF | (%SF ^ %OF);
-SETLE.rm8  dest         *8* dest := %ZF | (%SF ^ %OF);
-SETNE.reg8 dest         *8* dest := ~%ZF;
-SETNE.rm8  dest         *8* dest := ~%ZF;
-SETNO.reg8 dest         *8* dest := ~%OF;
-SETNO.rm8  dest         *8* dest := ~%OF;
-SETNS.reg8 dest         *8* dest := ~%SF;
-SETNS.rm8  dest         *8* dest := ~%SF;
-SETNP.reg8 dest         *8* dest := ~%PF;
-SETNP.rm8  dest         *8* dest := ~%PF;
-SETP.reg8  dest         *8* dest := %PF;
-SETP.rm8   dest         *8* dest := %PF;
-SETS.reg8  dest         *8* dest := %SF;
-SETS.rm8   dest         *8* dest := %SF;
-SETO.reg8  dest         *8* dest := %OF;
-SETO.rm8   dest         *8* dest := %OF;
+INSTRUCTION "SETA.reg8"  (dest) { *8* dest := ~%CF & ~%ZF         };
+INSTRUCTION "SETA.rm8"   (dest) { *8* dest := ~%CF & ~%ZF         };
+INSTRUCTION "SETAE.reg8" (dest) { *8* dest := ~%CF                };
+INSTRUCTION "SETAE.rm8"  (dest) { *8* dest := ~%CF                };
+INSTRUCTION "SETB.reg8"  (dest) { *8* dest := %CF                 };
+INSTRUCTION "SETB.rm8"   (dest) { *8* dest := %CF                 };
+INSTRUCTION "SETBE.reg8" (dest) { *8* dest := %CF | %ZF           };
+INSTRUCTION "SETBE.rm8"  (dest) { *8* dest := %CF | %ZF           };
+INSTRUCTION "SETE.reg8"  (dest) { *8* dest := %ZF                 };
+INSTRUCTION "SETE.rm8"   (dest) { *8* dest := %ZF                 };
+INSTRUCTION "SETG.reg8"  (dest) { *8* dest := ~%ZF & ~(%SF ^ %OF) };
+INSTRUCTION "SETG.rm8"   (dest) { *8* dest := ~%ZF & ~(%SF ^ %OF) };
+INSTRUCTION "SETGE.reg8" (dest) { *8* dest := ~(%SF ^ %OF)        };
+INSTRUCTION "SETGE.rm8"  (dest) { *8* dest := ~(%SF ^ %OF)        };
+INSTRUCTION "SETL.reg8"  (dest) { *8* dest := %SF ^ %OF           };
+INSTRUCTION "SETL.rm8"   (dest) { *8* dest := %SF ^ %OF           };
+INSTRUCTION "SETLE.reg8" (dest) { *8* dest := %ZF | (%SF ^ %OF)   };
+INSTRUCTION "SETLE.rm8"  (dest) { *8* dest := %ZF | (%SF ^ %OF)   };
+INSTRUCTION "SETNE.reg8" (dest) { *8* dest := ~%ZF                };
+INSTRUCTION "SETNE.rm8"  (dest) { *8* dest := ~%ZF                };
+INSTRUCTION "SETNO.reg8" (dest) { *8* dest := ~%OF                };
+INSTRUCTION "SETNO.rm8"  (dest) { *8* dest := ~%OF                };
+INSTRUCTION "SETNS.reg8" (dest) { *8* dest := ~%SF                };
+INSTRUCTION "SETNS.rm8"  (dest) { *8* dest := ~%SF                };
+INSTRUCTION "SETNP.reg8" (dest) { *8* dest := ~%PF                };
+INSTRUCTION "SETNP.rm8"  (dest) { *8* dest := ~%PF                };
+INSTRUCTION "SETP.reg8"  (dest) { *8* dest := %PF                 };
+INSTRUCTION "SETP.rm8"   (dest) { *8* dest := %PF                 };
+INSTRUCTION "SETS.reg8"  (dest) { *8* dest := %SF                 };
+INSTRUCTION "SETS.rm8"   (dest) { *8* dest := %SF                 };
+INSTRUCTION "SETO.reg8"  (dest) { *8* dest := %OF                 };
+INSTRUCTION "SETO.rm8"   (dest) { *8* dest := %OF                 };
 
 
 # SHL
-SHL.reg8.imm8 dest, src
+INSTRUCTION "SHL.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
-;
+};
 
-SHL.reg8.reg8 dest, src
+INSTRUCTION "SHL.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
-;
+};
 
-SHL.reg16.imm8 dest, src
+INSTRUCTION "SHL.reg16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
-;
+};
 
-SHL.reg16.reg8 dest, src
+INSTRUCTION "SHL.reg16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
-;
+};
 
-SHL.reg16.imm16 dest, src
+INSTRUCTION "SHL.reg16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
-;
+};
 
-SHL.reg32.imm8 dest, src
+INSTRUCTION "SHL.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
-;
+};
 
-SHL.reg32.imm32 dest, src
+INSTRUCTION "SHL.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
-;
+};
 
-SHL.reg32.reg8 dest, src
+INSTRUCTION "SHL.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
-;
+};
 
-SHL.rm8.imm8 dest, src
+INSTRUCTION "SHL.rm8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
-;
+};
 
-SHL.rm8.reg8 dest, src
+INSTRUCTION "SHL.rm8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
-;
+};
 
-SHL.rm16.reg8 dest, src
+INSTRUCTION "SHL.rm16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
-;
+};
 
-SHL.rm16.imm16 dest, src
+INSTRUCTION "SHL.rm16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
-;
+};
 
-SHL.rm32.reg8 dest, src
+INSTRUCTION "SHL.rm32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
-;
+};
 
-SHL.rm32.imm32 dest, src
+INSTRUCTION "SHL.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # SHLD
-SHLD.reg16.reg16.imm8 dest, src, count
+INSTRUCTION "SHLD.reg16.reg16.imm8" (dest, src, count) {
     *32* tmp1 := dest << 32 | src
     *16* dest := (tmp1 << count) >> 16
     SHLDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHLD.reg16.reg16.imm16 dest, src, count
+INSTRUCTION "SHLD.reg16.reg16.imm16" (dest, src, count) {
     *32* tmp1 := dest << 32 | src
     *16* dest := (tmp1 << count) >> 16
     SHLDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHLD.reg16.reg16.reg8 dest, src, count
+INSTRUCTION "SHLD.reg16.reg16.reg8" (dest, src, count) {
     *32* tmp1 := dest << 32 | src
     *16* dest := (tmp1 << count) >> 16
     SHLDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHLD.reg32.reg32.imm8 dest, src, count
+INSTRUCTION "SHLD.reg32.reg32.imm8" (dest, src, count) {
     *64* tmp1 := dest << 32 | src
     *32* dest := (tmp1 << count) >> 32
     SHLDFLAGS32(dest, tmp1, count)
-;
+};
 
-SHLD.reg32.reg32.imm32 dest, src, count
+INSTRUCTION "SHLD.reg32.reg32.imm32" (dest, src, count) {
     *64* tmp1 := dest << 32 | src
     *32* dest := (tmp1 << count) >> 32
     SHLDFLAGS32(dest, tmp1, count)
-;
+};
 
-SHLD.reg32.reg32.reg8 dest, src, count
+INSTRUCTION "SHLD.reg32.reg32.reg8" (dest, src, count) {
     *64* tmp1 := dest << 32 | src
     *32* dest := (tmp1 << count) >> 32
     SHLDFLAGS32(dest, tmp1, count)
-;
+};
 
 
 # SHR
-SHR.reg8.imm8 dest, src
+INSTRUCTION "SHR.reg8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
-;
+};
 
-SHR.reg8.reg8 dest, src
+INSTRUCTION "SHR.reg8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
-;
+};
 
-SHR.reg16.imm8 dest, src
+INSTRUCTION "SHR.reg16.imm8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
-;
+};
 
-SHR.reg16.imm16 dest, src
+INSTRUCTION "SHR.reg16.imm16" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
-;
+};
 
-SHR.reg16.reg8 dest, src
+INSTRUCTION "SHR.reg16.reg8" (dest, src) {
     *16* tmph := dest
     *16* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
-;
+};
 
-SHR.reg32.imm8 dest, src
+INSTRUCTION "SHR.reg32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
-;
+};
 
-SHR.reg32.imm32 dest, src
+INSTRUCTION "SHR.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
-;
+};
 
-SHR.reg32.reg8 dest, src
+INSTRUCTION "SHR.reg32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
-;
+};
 
-SHR.rm8.imm8 dest, src
+INSTRUCTION "SHR.rm8.imm8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
-;
+};
 
-SHR.rm8.reg8 dest, src
+INSTRUCTION "SHR.rm8.reg8" (dest, src) {
     *8* tmpb := dest
     *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
-;
+};
 
-SHR.rm16.imm16 dest, src
+INSTRUCTION "SHR.rm16.imm16" (dest, src) {
     *8* tmph := dest
     *8* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
-;
+};
 
-SHR.rm32.reg8 dest, src
+INSTRUCTION "SHR.rm32.reg8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
-;
+};
 
-SHR.rm32.imm32 dest, src
+INSTRUCTION "SHR.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
-;
+};
 
 
 # SHRD
-SHRD.reg16.reg16.imm8 dest, src, count
+INSTRUCTION "SHRD.reg16.reg16.imm8" (dest, src, count) {
     *32* tmp1 := src << 16 | dest
     *16* dest := tmp1 >> count
     SHRDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHRD.reg16.reg16.imm16 dest, src, count
+INSTRUCTION "SHRD.reg16.reg16.imm16" (dest, src, count) {
     *32* tmp1 := src << 16 | dest
     *16* dest := tmp1 >> count
     SHRDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHRD.reg16.reg16.reg8 dest, src, count
+INSTRUCTION "SHRD.reg16.reg16.reg8" (dest, src, count) {
     *32* tmp1 := src << 16 | dest
     *16* dest := tmp1 >> count
     SHRDFLAGS16(dest, tmp1, count)
-;
+};
 
-SHRD.reg32.reg32.imm8 dest, src, count
+INSTRUCTION "SHRD.reg32.reg32.imm8" (dest, src, count) {
     *64* tmp1 := (src << 32) | dest
     *32* dest := tmp1 >> count
     SHRDFLAGS32(dest, tmp1, count)
-;
+};
 
-SHRD.reg32.reg32.imm32 dest, src, count
+INSTRUCTION "SHRD.reg32.reg32.imm32" (dest, src, count) {
     *64* tmp1 := (src << 32) | dest
     *32* dest := tmp1 >> count
     SHRDFLAGS32(dest, tmp1, count)
-;
+};
 
-SHRD.reg32.reg32.reg8 dest, src, count
+INSTRUCTION "SHRD.reg32.reg32.reg8" (dest, src, count) {
     *64* tmp1 := (src << 32) | dest
     *32* dest := tmp1 >> count
     SHRDFLAGS32(dest, tmp1, count)
-;
+};
 
 
 # STC
-STC
+INSTRUCTION "STC" () {
     *1* %CF := 1
-;
+};
 
 
 # STD
-STD
+INSTRUCTION "STD" () {
     *1* %DF := 1
-;
+};
 
 
 # STI
-STI
+INSTRUCTION "STI" () {
     *1* %IF := 1
-;
+};
 
 
 # SUB
-SUB.reg8.imm8 dest, src
+INSTRUCTION "SUB.reg8.imm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest - src
     SUBFLAGS8(tmp1, src, dest)
-;
+};
 
-SUB.reg8.reg8 dest, src
+INSTRUCTION "SUB.reg8.reg8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest - src
     SUBFLAGS8(tmp1, src, dest)
-;
+};
 
-SUB.reg8.rm8 dest, src
+INSTRUCTION "SUB.reg8.rm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest - src
     SUBFLAGS8(tmp1, src, dest)
-;
+};
 
-SUB.reg16.imm16 dest, src
+INSTRUCTION "SUB.reg16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest - src
     SUBFLAGS16(tmp1, src, dest)
-;
+};
 
-SUB.reg16.reg16 dest, src
+INSTRUCTION "SUB.reg16.reg16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest - src
     SUBFLAGS16(tmp1, src, dest)
-;
+};
 
-SUB.reg16.rm16 dest, src
+INSTRUCTION "SUB.reg16.rm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest - src
     SUBFLAGS16(tmp1, src, dest)
-;
+};
 
-SUB.reg32.imm32 dest, src
+INSTRUCTION "SUB.reg32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SUB.reg32.reg32 dest, src
+INSTRUCTION "SUB.reg32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SUB.reg32.rm32 dest, src
+INSTRUCTION "SUB.reg32.rm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SUB.rm8.imm8 dest, src
+INSTRUCTION "SUB.rm8.imm8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest - src
     SUBFLAGS8(tmp1, src, dest)
-;
+};
 
-SUB.rm8.reg8 dest, src
+INSTRUCTION "SUB.rm8.reg8" (dest, src) {
     *8* tmp1 := dest
     *8* dest := dest - src
     SUBFLAGS8(tmp1, src, dest)
-;
+};
 
-SUB.rm16.imm16 dest, src
+INSTRUCTION "SUB.rm16.imm16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest - src
     SUBFLAGS16(tmp1, src, dest)
-;
+};
 
-SUB.rm16.reg16 dest, src
+INSTRUCTION "SUB.rm16.reg16" (dest, src) {
     *16* tmp1 := dest
     *16* dest := dest - src
     SUBFLAGS16(tmp1, src, dest)
-;
+};
 
-SUB.rm32.imm32 dest, src
+INSTRUCTION "SUB.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
-SUB.rm32.reg32 dest, src
+INSTRUCTION "SUB.rm32.reg32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest - src
     SUBFLAGS32(tmp1, src, dest)
-;
+};
 
 
 # TEST
-TEST.reg8.imm8 lhs, rhs
+INSTRUCTION "TEST.reg8.imm8" (lhs, rhs) {
     *8* tmpb := lhs & rhs
     LOGICALFLAGS8(tmpb)
-;
+};
 
-TEST.reg8.reg8 lhs, rhs
+INSTRUCTION "TEST.reg8.reg8" (lhs, rhs) {
     *8* tmpb := lhs & rhs
     LOGICALFLAGS8(tmpb)
-;
+};
 
-TEST.reg16.imm16 lhs, rhs
+INSTRUCTION "TEST.reg16.imm16" (lhs, rhs) {
     *16* tmph := lhs & rhs
     LOGICALFLAGS16(tmph)
-;
+};
 
-TEST.reg16.reg16 lhs, rhs
+INSTRUCTION "TEST.reg16.reg16" (lhs, rhs) {
     *16* tmph := lhs & rhs
     LOGICALFLAGS16(tmph)
-;
+};
 
-TEST.reg32.imm32 lhs, rhs
+INSTRUCTION "TEST.reg32.imm32" (lhs, rhs) {
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
-;
+};
 
-TEST.reg32.reg32 lhs, rhs
+INSTRUCTION "TEST.reg32.reg32" (lhs, rhs) {
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
-;
+};
 
-TEST.rm8.imm8 lhs, rhs
+INSTRUCTION "TEST.rm8.imm8" (lhs, rhs) {
     *8* tmpb := lhs & rhs
     LOGICALFLAGS8(tmpb)
-;
+};
 
-TEST.rm8.reg8 lhs, rhs
+INSTRUCTION "TEST.rm8.reg8" (lhs, rhs) {
     *8* tmpb := lhs & rhs
     LOGICALFLAGS8(tmpb)
-;
+};
 
-TEST.rm16.imm16 lhs, rhs
+INSTRUCTION "TEST.rm16.imm16" (lhs, rhs) {
     *16* tmph := lhs & rhs
     LOGICALFLAGS16(tmph)
-;
+};
 
-TEST.rm16.reg16 lhs, rhs
+INSTRUCTION "TEST.rm16.reg16" (lhs, rhs) {
     *16* tmph := lhs & rhs
     LOGICALFLAGS16(tmph)
-;
+};
 
-TEST.rm32.imm32 lhs, rhs
+INSTRUCTION "TEST.rm32.imm32" (lhs, rhs) {
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
-;
+};
 
-TEST.rm32.reg32 lhs, rhs
+INSTRUCTION "TEST.rm32.reg32" (lhs, rhs) {
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
-;
+};
 
 
 # UD2
-UD2
+INSTRUCTION "UD2" () {
     _
-;
+};
 
 
 # WAIT
-WAIT
+INSTRUCTION "WAIT" () {
     _
-;
+};
 
 
 # XADD
-XADD.rm8.reg8 dest, src
+INSTRUCTION "XADD.rm8.reg8" (dest, src) {
     *8* tmpb := src + dest
     *8* src := dest
     *8* dest := tmpb
-;
+};
 
-XADD.rm16.reg16 dest, src
+INSTRUCTION "XADD.rm16.reg16" (dest, src) {
     *16* tmph := src + dest
     *16* src := dest
     *16* dest := tmph
-;
+};
 
-XADD.rm32.reg32 dest, src
+INSTRUCTION "XADD.rm32.reg32" (dest, src) {
     *8* tmp1 := src + dest
     *8* src := dest
     *8* dest := tmp1
-;
+};
 
-XADD.rm64.reg64 dest, src
+INSTRUCTION "XADD.rm64.reg64" (dest, src) {
     *8* tmp1 := src + dest
     *8* src := dest
     *8* dest := tmp1
-;
+};
 
 
 # XCHG
-XCHG.reg8.reg8 reg1, reg2
+INSTRUCTION "XCHG.reg8.reg8" (reg1, reg2) {
     *8* tmpreg := reg1
     *8* reg1 := reg2
     *8* reg2 := tmpreg
-;
+};
 
-XCHG.reg16.reg16 reg1, reg2
+INSTRUCTION "XCHG.reg16.reg16" (reg1, reg2) {
     *16* tmpreg := reg1
     *16* reg1 := reg2
     *16* reg2 := tmpreg
-;
+};
 
-XCHG.reg32.reg32 reg1, reg2
+INSTRUCTION "XCHG.reg32.reg32" (reg1, reg2) {
     *32* tmpreg := reg1
     *32* reg1 := reg2
     *32* reg2 := tmpreg
-;
+};
 
-XCHG.rm8.reg8 reg1, reg2
+INSTRUCTION "XCHG.rm8.reg8" (reg1, reg2) {
     *8* tmpreg := reg1
     *8* reg1 := reg2
     *8* reg2 := tmpreg
-;
+};
 
-XCHG.rm16.reg16 reg1, reg2
+INSTRUCTION "XCHG.rm16.reg16" (reg1, reg2) {
     *16* tmpreg := reg1
     *16* reg1 := reg2
     *16* reg2 := tmpreg
-;
+};
 
-XCHG.rm32.reg32 reg1, reg2
+INSTRUCTION "XCHG.rm32.reg32" (reg1, reg2) {
     *32* tmpreg := reg1
     *32* reg1 := reg2
     *32* reg2 := tmpreg
-;
+};
 
 
 # XLATB
-XLATB
+INSTRUCTION "XLATB" () {
     *8* %al := m[%ebx + %al]
-;
+};
 
 
 # XOR
-XOR.reg8.imm8 dest, src
+INSTRUCTION "XOR.reg8.imm8" (dest, src) {
     *8* dest := dest ^ src
     LOGICALFLAGS8(dest)
-;
+};
 
-XOR.reg8.reg8 dest, src
+INSTRUCTION "XOR.reg8.reg8" (dest, src) {
     *8* dest := (dest ^ src)
     LOGICALFLAGS8(dest)
-;
+};
 
-XOR.reg8.rm8 dest, src
+INSTRUCTION "XOR.reg8.rm8" (dest, src) {
     *8* dest := (dest ^ src)
     LOGICALFLAGS8(dest)
-;
+};
 
-XOR.reg16.imm16 dest, src
+INSTRUCTION "XOR.reg16.imm16" (dest, src) {
     *16* dest := dest ^ src
     LOGICALFLAGS16(dest)
-;
+};
 
-XOR.reg16.reg16 dest, src
+INSTRUCTION "XOR.reg16.reg16" (dest, src) {
     *16* dest := dest ^ src
     LOGICALFLAGS16(dest)
-;
+};
 
-XOR.reg16.rm16 dest, src
+INSTRUCTION "XOR.reg16.rm16" (dest, src) {
     *16* dest := dest ^ src
     LOGICALFLAGS16(dest)
-;
+};
 
-XOR.reg32.imm32 dest, src
+INSTRUCTION "XOR.reg32.imm32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
-;
+};
 
-XOR.reg32.reg32 dest, src
+INSTRUCTION "XOR.reg32.reg32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
-;
+};
 
-XOR.reg32.rm32 dest, src
+INSTRUCTION "XOR.reg32.rm32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
-;
+};
 
-XOR.rm8.imm8 dest, src
+INSTRUCTION "XOR.rm8.imm8" (dest, src) {
     *8* dest := dest ^ src
     LOGICALFLAGS8(dest)
-;
+};
 
-XOR.rm8.reg8 dest, src
+INSTRUCTION "XOR.rm8.reg8" (dest, src) {
     *8* dest := dest ^ src
     LOGICALFLAGS8(dest)
-;
+};
 
-XOR.rm16.imm16 dest, src
+INSTRUCTION "XOR.rm16.imm16" (dest, src) {
     *16* dest := dest ^ src
     LOGICALFLAGS16(dest)
-;
+};
 
-XOR.rm16.reg16 dest, src
+INSTRUCTION "XOR.rm16.reg16" (dest, src) {
     *16* dest := dest ^ src
     LOGICALFLAGS16(dest)
-;
+};
 
-XOR.rm32.imm32 dest, src
+INSTRUCTION "XOR.rm32.imm32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
-;
+};
 
-XOR.rm32.reg32 dest, src
+INSTRUCTION "XOR.rm32.reg32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
-;
+};
 
