@@ -144,7 +144,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or
     // are followed by a restore
-    if (delayInst.type != NOP && !callStmt->isReturnAfterCall()) {
+    if (delayInst.iclass != IClass::NOP && !callStmt->isReturnAfterCall()) {
         delayRTL->setAddress(address);
         BB_rtls->push_back(std::move(delayInst.rtl));
     }
@@ -256,7 +256,7 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
 
     // Try the "delay instruction has been copied" optimisation,
     // emitting the delay instruction now if the optimisation won't apply
-    if (delay_inst.type != NOP) {
+    if (delay_inst.iclass != IClass::NOP) {
         if (canOptimizeDelayCopy(pc, SD_stmt->getFixedDest(), delta, textLimit)) {
             SD_stmt->adjustFixedDest(-4);
         }
@@ -293,7 +293,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
     RTL *rtl      = inst.rtl.get();
     RTL *delayRTL = delay_inst.rtl.get();
 
-    if (delay_inst.type != NOP) {
+    if (delay_inst.iclass != IClass::NOP) {
         // Emit the delayed instruction, unless a NOP
         delayRTL->setAddress(address);
         BB_rtls->push_back(std::move(delay_inst.rtl));
@@ -417,7 +417,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
     // If delay_insn decoded to empty list ( NOP) or if it isn't a flag assign => Put delay inst
     // first
     if (delay_inst.rtl->empty() || !delay_inst.rtl->back()->isFlagAssign()) {
-        if (delay_inst.type != NOP) {
+        if (delay_inst.iclass != IClass::NOP) {
             // Emit delay instr
             // This is in case we have an in-edge to the branch. If the BB is split, we want the
             // split to happen here, so this delay instruction is active on this path
@@ -600,8 +600,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
             if (ff != m_previouslyDecoded.end()) {
                 inst.rtl.reset(ff->second);
-                inst.valid = true;
-                inst.type  = DD; // E.g. decode the delay slot instruction
+                inst.valid  = true;
+                inst.iclass = IClass::DD; // E.g. decode the delay slot instruction
             }
             else if (!decodeSingleInstruction(pc, inst)) {
                 warnInvalidInstruction(pc);
@@ -636,8 +636,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 jumpStmt = static_cast<GotoStatement *>(last);
             }
 
-            switch (inst.type) {
-            case NCT: {
+            switch (inst.iclass) {
+            case IClass::NCT: {
                 // Ret/restore epilogues are handled as ordinary RTLs now
                 if (last && last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
@@ -645,7 +645,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             }
                 // fallthrough
 
-            case NOP: {
+            case IClass::NOP: {
                 // Always put the NOP into the BB. It may be needed if it is the
                 // the destinsation of a branch. Even if not the start of a BB,
                 // some other branch may be discovered to it later.
@@ -654,7 +654,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case SKIP: {
+            case IClass::SKIP: {
                 // We can't simply ignore the skipped delay instruction as there
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
@@ -674,7 +674,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case SU: {
+            case IClass::SU: {
                 // Ordinary, non-delay branch.
                 BB_rtls->push_back(std::move(inst.rtl));
 
@@ -691,7 +691,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case SD: {
+            case IClass::SD: {
                 // This includes "call" and "ba". If a "call", it might be a move_call_move idiom,
                 // or a call to .stret4
                 DecodeResult delayInst;
@@ -782,9 +782,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 const RTL *delayRTL = delayInst.rtl.get();
 
-                switch (delayInst.type) {
-                case NOP:
-                case NCT:
+                switch (delayInst.iclass) {
+                case IClass::NOP:
+                case IClass::NCT:
 
                     // Ordinary delayed instruction. Since NCT's can't affect unconditional jumps,
                     // we put the delay instruction before the jump or call
@@ -804,12 +804,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                     break;
 
-                case SKIP:
+                case IClass::SKIP:
                     case_unhandled_stub(pc);
                     pc += 2 * inst.numBytes;
                     break;
 
-                case SU: {
+                case IClass::SU: {
                     // SD/SU.
                     // This will be either BA or CALL followed by BA,A. Our interpretation is that
                     // it is as if the SD (i.e. the BA or CALL) now takes the destination of the SU
@@ -863,7 +863,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case DD: {
+            case IClass::DD: {
                 DecodeResult delayInst;
                 if (!decodeSingleInstruction(pc + inst.numBytes, delayInst)) {
                     warnInvalidInstruction(pc + inst.numBytes);
@@ -871,9 +871,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     continue;
                 }
 
-                switch (delayInst.type) {
-                case NOP:
-                case NCT:
+                switch (delayInst.iclass) {
+                case IClass::NOP:
+                case IClass::NCT:
                     sequentialDecode = case_DD(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(), inst, delayInst,
                         std::move(BB_rtls), _targetQueue, proc, callList);
@@ -885,7 +885,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case SCD: {
+            case IClass::SCD: {
                 // Always execute the delay instr, and branch if condition is met.
                 // Normally, the delayed instruction moves in front of the branch. But if it affects
                 // the condition codes, we may have to duplicate it as an orphan in the true leg of
@@ -902,9 +902,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     continue;
                 }
 
-                switch (delayInst.type) {
-                case NOP:
-                case NCT:
+                switch (delayInst.iclass) {
+                case IClass::NOP:
+                case IClass::NCT:
                     sequentialDecode = case_SCD(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
                         m_program->getBinaryFile()->getImage()->getLimitText(), inst, delayInst,
@@ -929,7 +929,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 break;
             }
 
-            case SCDAN: {
+            case IClass::SCDAN: {
                 // Execute the delay instruction if the branch is taken; skip (anull) the delay
                 // instruction if branch not taken.
                 DecodeResult delayInst;
@@ -939,8 +939,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     continue;
                 }
 
-                switch (delayInst.type) {
-                case NOP: {
+                switch (delayInst.iclass) {
+                case IClass::NOP: {
                     // This is an ordinary two-way branch. Add the branch to the list of RTLs for
                     // this BB
                     BB_rtls->push_back(std::move(inst.rtl));
@@ -959,7 +959,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     break;
                 }
 
-                case NCT:
+                case IClass::NCT:
                     sequentialDecode = case_SCDAN(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
                         m_program->getBinaryFile()->getImage()->getLimitText(), inst, delayInst,
@@ -977,7 +977,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
             default: // Others are non SPARC cases
                 LOG_WARN("Encountered instruction class '%1' which is invalid for SPARC",
-                         (int)inst.type);
+                         (int)inst.iclass);
                 break;
             }
 
@@ -1262,7 +1262,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
     }
 
     nop_inst.numBytes = 0; // So won't disturb coverage
-    nop_inst.type     = NOP;
+    nop_inst.iclass   = IClass::NOP;
     nop_inst.valid    = true;
     nop_inst.rtl      = nullptr;
 }

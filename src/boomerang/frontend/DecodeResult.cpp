@@ -20,7 +20,7 @@ DecodeResult::DecodeResult()
 
 DecodeResult::DecodeResult(DecodeResult &&other)
     : valid(std::move(other.valid))
-    , type(std::move(other.type))
+    , iclass(std::move(other.iclass))
     , reDecode(std::move(other.reDecode))
     , numBytes(std::move(other.numBytes))
     , rtl(std::move(other.rtl))
@@ -36,7 +36,7 @@ DecodeResult::~DecodeResult()
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
     valid        = std::move(other.valid);
-    type         = std::move(other.type);
+    iclass       = std::move(other.iclass);
     reDecode     = std::move(other.reDecode);
     numBytes     = std::move(other.numBytes);
     rtl          = std::move(other.rtl);
@@ -48,7 +48,7 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 void DecodeResult::reset()
 {
     numBytes     = 0;
-    type         = NCT;
+    iclass       = IClass::NCT;
     valid        = true;
     rtl          = nullptr;
     reDecode     = false;
