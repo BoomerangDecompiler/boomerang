@@ -81,6 +81,7 @@ loc.step();
 "FPOP"          return SSL2::parser::make_KW_FPOP(loc);
 "ret"           return SSL2::parser::make_KW_RET(loc);
 "goto"          return SSL2::parser::make_KW_GOTO(loc);
+"call"          return SSL2::parser::make_KW_CALL(loc);
 
 "|"             return SSL2::parser::make_BIT_OR(loc);
 "&"             return SSL2::parser::make_BIT_AND(loc);

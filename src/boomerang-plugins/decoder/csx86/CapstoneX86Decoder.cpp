@@ -230,7 +230,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 
     std::unique_ptr<RTL> rtl;
 
-    // special hack to ignore 'and esp, 0xfffffff0 in startup code
+    // special hack to ignore 'and esp, 0xfffffff0' in startup code
     if (instruction->id == cs::X86_INS_AND && operands[0].type == cs::X86_OP_REG &&
         operands[0].reg == cs::X86_REG_ESP && operands[1].type == cs::X86_OP_IMM &&
         operands[1].imm == 0xFFFFFFF0) {
@@ -247,48 +247,32 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     }
 
     if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
-        Assign *last       = static_cast<Assign *>(rtl->back());
-        SharedExp callDest = last->getRight();
+        auto it = std::find_if(rtl->rbegin(), rtl->rend(),
+            [] (const Statement *stmt) {
+                return stmt->isCall();
+            });
 
-        if (callDest->isConst() && callDest->access<const Const>()->getAddr() == pc + 5) {
-            // This is a call to the next instruction
-            // Use the standard semantics, except for the last statement
-            // (just updates %pc)
-            rtl->pop_back();
-            // And don't make it a call statement
-        }
-        else {
-            // correct the assignment to %pc to be relative
-            if (!rtl->getStatements().empty() && rtl->getStatements().back()->isAssign()) {
-                Assign *asgn = static_cast<Assign *>(rtl->getStatements().back());
-                if (asgn->getLeft()->isPC() && asgn->getRight()->isConst() &&
-                    !asgn->getRight()->isStrConst()) {
-                    const Address absoluteAddr = asgn->getRight()->access<Const>()->getAddr();
-                    const int delta            = (absoluteAddr -
-                                       Address(instruction->address - instruction->size))
-                                          .value();
+        if (it != rtl->rend()) {
+            CallStatement *call = static_cast<CallStatement *>(*it);
 
-                    asgn->setRight(Binary::get(opPlus, Terminal::get(opPC), Const::get(delta)));
+            if (!call->isComputed()) {
+                const SharedConstExp &callDest = call->getDest();
+                const Address destAddr = callDest->access<Const>()->getAddr();
+
+                if (destAddr == pc + 5) {
+                    // call to next instruction (just pushes instruction pointer to stack)
+                    // delete the call statement
+                    rtl->erase(std::next(it).base());
                 }
-            }
+                else {
+                    Function *destProc = m_prog->getOrCreateFunction(destAddr);
 
-            CallStatement *call = new CallStatement;
-            // Set the destination
-            call->setDest(callDest);
-            rtl->append(call);
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
+                        destProc = nullptr;
+                    }
 
-            if (callDest->isConst()) {
-                Function *destProc = m_prog->getOrCreateFunction(
-                    callDest->access<Const>()->getAddr());
-
-                if (destProc == reinterpret_cast<Function *>(-1)) {
-                    destProc = nullptr; // In case a deleted Proc
+                    call->setDestProc(destProc);
                 }
-
-                call->setDestProc(destProc);
-            }
-            else {
-                call->setIsComputed(true);
             }
         }
     }

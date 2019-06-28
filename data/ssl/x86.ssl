@@ -1191,37 +1191,37 @@ INSTRUCTION "BTS.rm32.reg32" (dest, bit) {
 INSTRUCTION "CALL.imm16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
-    *16* %pc := dest
+    call dest
 };
 
 INSTRUCTION "CALL.imm32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
-    *32* %pc := dest
+    call dest
 };
 
 INSTRUCTION "CALL.reg16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
-    *16* %pc := dest
+    call dest
 };
 
 INSTRUCTION "CALL.reg32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
-    *32* %pc := dest
+    call dest
 };
 
 INSTRUCTION "CALL.rm16" (dest) {
     *16* %sp := %sp - 4
     *16* m[%sp] := %pc
-    *16* %pc := dest
+    call dest
 };
 
 INSTRUCTION "CALL.rm32" (dest) {
     *32* %esp := %esp - 4
     *32* m[%esp] := %pc
-    *32* %pc := dest
+    call dest
 };
 
 
