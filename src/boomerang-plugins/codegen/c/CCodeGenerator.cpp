@@ -292,8 +292,8 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
                 s << ", ";
             }
 
-            const Assignment *assign = dynamic_cast<const Assignment *>(*ss);
-            assert(assign != nullptr);
+            assert(dynamic_cast<Assignment *>(*ss) != nullptr);
+            const Assignment *assign = static_cast<const Assignment *>(*ss);
             appendExp(s, *assign->getLeft(), OpPrec::Comma);
         }
 
