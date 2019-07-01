@@ -326,8 +326,8 @@ BinarySection *BinaryImage::createSection(const QString &name, Address from, Add
         // section already existed
         BinarySection *existing = getSectionByAddr(from);
         LOG_ERROR("Could not create section '%1' from address %2 to %3: Section extent matches "
-                  "existing section '%4",
-                  name, from, to, existing->getName());
+                  "existing section '%4'",
+                  name, from, to, existing ? existing->getName() : "<invalid>");
         return nullptr;
     }
     else {
