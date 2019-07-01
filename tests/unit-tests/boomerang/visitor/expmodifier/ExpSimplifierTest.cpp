@@ -277,6 +277,14 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinaryXdivNull",
+                      Binary::get(opDiv,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)),
+                      Binary::get(opDiv,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)));
+
         TEST_SIMPLIFY("BinaryXmult1",
                       Binary::get(opMult,
                                   Location::regOf(REG_PENT_EAX),

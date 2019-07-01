@@ -590,7 +590,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
             const int b = rightOfPlus->access<Const, 2>()->getInt();
             const int c = exp->access<Const, 2>()->getInt();
 
-            if ((a % c == 0) && (b % c == 0)) {
+            if (c != 0 && (a % c == 0) && (b % c == 0)) {
                 changed = true;
                 leftOfPlus->access<Const, 2>()->setInt(a / c);
                 rightOfPlus->access<Const, 2>()->setInt(b / c);
@@ -615,17 +615,19 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
             const int b = rightOfPlus->access<Const, 2>()->getInt();
             const int c = exp->access<Const, 2>()->getInt();
 
-            if ((a % c == 0) && (b % c == 0)) {
-                changed = true;
-                return Const::get(0);
-            }
-            if ((a % c) == 0) {
-                changed = true;
-                return Binary::get(opMod, rightOfPlus, Const::get(c));
-            }
-            if ((b % c) == 0) {
-                changed = true;
-                return Binary::get(opMod, leftOfPlus, Const::get(c));
+            if (c != 0) {
+                if ((a % c == 0) && (b % c == 0)) {
+                    changed = true;
+                    return Const::get(0);
+                }
+                if ((a % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, rightOfPlus, Const::get(c));
+                }
+                if ((b % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, leftOfPlus, Const::get(c));
+                }
             }
         }
     }

@@ -23,6 +23,7 @@ v0.5.0 (in development)
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Potential crash when analyzing dataflow for functions where the entry Basic Block is not at index 0.
+- Fixed: Potential crash when simplifying expressions that divide by zero.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
