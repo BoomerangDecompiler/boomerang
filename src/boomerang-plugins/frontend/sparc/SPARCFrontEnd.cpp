@@ -1295,7 +1295,9 @@ void SPARCFrontEnd::warnInvalidInstruction(Address pc)
     Byte insnBytes[4] = { 0 };
 
     for (int i = 0; i < 4; i++) {
-        image->readNative1(pc + i, insnBytes[i]);
+        const bool ok = image->readNative1(pc + i, insnBytes[i]);
+        assert(ok);
+        Q_UNUSED(ok);
     }
 
     // clang-format off
