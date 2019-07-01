@@ -290,11 +290,12 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
         if (!pred->isType(BBType::Twoway)) {               // look for a two-way BB
             continue;                                      // Ignore all others
         }
+        else if (pred->isEmpty() || !pred->getLastStmt()->isBranch()) {
+            continue;
+        }
 
-        const BranchStatement *lastStmt = dynamic_cast<const BranchStatement *>(
-            pred->getLastStmt());
-        assert(lastStmt != nullptr);
-        SharedConstExp lastCondition = lastStmt->getCondExpr();
+        const BranchStatement *lastStmt = static_cast<const BranchStatement *>(pred->getLastStmt());
+        SharedConstExp lastCondition    = lastStmt->getCondExpr();
         if (lastCondition->getArity() != 2) {
             continue;
         }
