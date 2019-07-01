@@ -520,6 +520,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
 
             if (swi->numTableEntries <= 0) {
                 LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
+                delete swi;
                 return false;
             }
 
