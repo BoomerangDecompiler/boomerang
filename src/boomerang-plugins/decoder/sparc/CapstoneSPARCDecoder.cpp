@@ -174,19 +174,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
 }
 
 
-RegNum CapstoneSPARCDecoder::getRegNumByName(const QString &name) const
-{
-    // todo: slow
-    for (size_t i = cs::SPARC_REG_F0; i < cs::SPARC_REG_ENDING; i++) {
-        if (name == cs::cs_reg_name(m_handle, i)) {
-            return fixRegNum(nullptr, i);
-        }
-    }
-
-    return cs::SPARC_REG_INVALID;
-}
-
-
 QString CapstoneSPARCDecoder::getRegNameByNum(RegNum regNum) const
 {
     return m_dict.getRegDB()->getRegNameByNum(regNum);

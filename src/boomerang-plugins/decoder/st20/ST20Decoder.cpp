@@ -421,11 +421,5 @@ int ST20Decoder::getRegSizeByNum(RegNum regNum) const
 }
 
 
-RegNum ST20Decoder::getRegNumByName(const QString &name) const
-{
-    return m_rtlDict.getRegDB()->getRegNumByName(name);
-}
-
-
 BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, ST20Decoder, "ST20 decoder plugin", BOOMERANG_VERSION,
                         "Boomerang developers")

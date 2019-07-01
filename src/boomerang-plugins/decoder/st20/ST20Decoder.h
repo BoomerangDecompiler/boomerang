@@ -44,9 +44,6 @@ public:
     /// \copydoc IDecoder::getRegSize
     int getRegSizeByNum(RegNum num) const override;
 
-    /// \copydoc IDecoder::getRegNumByName
-    RegNum getRegNumByName(const QString &name) const override;
-
 public:
     /// \copydoc IDecoder::decodeInstruction
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;

@@ -45,17 +45,8 @@ public:
     /// \returns machine-specific register name given its index
     virtual QString getRegNameByNum(RegNum regNum) const = 0;
 
-    /// \returns index of the named register
-    virtual RegNum getRegNumByName(const QString &name) const = 0;
-
     /// \returns size of register in bits
     virtual int getRegSizeByNum(RegNum regNum) const = 0;
-
-    /// \returns the size of the register with name \p name, in bits
-    int getRegSizeByName(const QString &name) const
-    {
-        return getRegSizeByNum(getRegNumByName(name));
-    }
 
     virtual const RTLInstDict *getDict() const = 0;
 
