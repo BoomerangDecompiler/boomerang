@@ -123,55 +123,75 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     OPER opSub2 = exp->getSubExp2()->getOper();
 
     if (opSub1 == opIntConst && opSub2 == opIntConst) {
-        // k1 op k2, where k1 and k2 are integer constants
-        int k1      = exp->access<Const, 1>()->getInt();
-        int k2      = exp->access<Const, 2>()->getInt();
-        bool change = true;
+        const int lhs = exp->access<Const, 1>()->getInt();
+        const int rhs = exp->access<Const, 2>()->getInt();
 
         switch (exp->getOper()) {
-        case opPlus: k1 = k1 + k2; break;
-        case opMinus: k1 = k1 - k2; break;
-        case opMults: k1 = k1 * k2; break;
-        case opDivs: k1 = k1 / k2; break;
-        case opMods: k1 = k1 % k2; break;
-        case opShL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
-        case opShR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
+        case opPlus: changed = true; return Const::get(lhs + rhs);
+        case opMinus: changed = true; return Const::get(lhs - rhs);
+        case opMults: changed = true; return Const::get(lhs * rhs);
+        case opShL: changed = true; return Const::get((rhs < 32) ? lhs << rhs : 0);
+        case opShR: changed = true; return Const::get((rhs < 32) ? lhs >> rhs : 0);
+
+        case opBitAnd: changed = true; return Const::get(lhs & rhs);
+        case opBitOr: changed = true; return Const::get(lhs | rhs);
+        case opBitXor: changed = true; return Const::get(lhs ^ rhs);
+        case opEquals: changed = true; return Const::get(lhs == rhs);
+        case opNotEqual: changed = true; return Const::get(lhs != rhs);
+        case opLess: changed = true; return Const::get(lhs < rhs);
+        case opGtr: changed = true; return Const::get(lhs > rhs);
+        case opLessEq: changed = true; return Const::get(lhs <= rhs);
+        case opGtrEq: changed = true; return Const::get(lhs >= rhs);
+        case opMult: changed = true; return Const::get((int)((uint32)lhs * (uint32)rhs));
+        case opLessUns: changed = true; return Const::get((uint32)lhs < (uint32)rhs);
+        case opGtrUns: changed = true; return Const::get((uint32)lhs > (uint32)rhs);
+        case opLessEqUns: changed = true; return Const::get((uint32)lhs <= (uint32)rhs);
+        case opGtrEqUns: changed = true; return Const::get((uint32)lhs >= (uint32)rhs);
+
         case opShRA: {
-            assert(k2 < 32);
-            k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
-            break;
+            if (rhs == 0) {
+                changed = true;
+                return Const::get(lhs);
+            }
+            else if (rhs >= 32) {
+                changed = true;
+                return Const::get(0);
+            }
+            else {
+                changed = true;
+                return Const::get((int)(lhs >> rhs | ~Util::getLowerBitMask(32 - rhs)));
+            }
         }
 
-        case opBitAnd: k1 = k1 & k2; break;
-        case opBitOr: k1 = k1 | k2; break;
-        case opBitXor: k1 = k1 ^ k2; break;
-        case opEquals: k1 = (k1 == k2); break;
-        case opNotEqual: k1 = (k1 != k2); break;
-        case opLess: k1 = (k1 < k2); break;
-        case opGtr: k1 = (k1 > k2); break;
-        case opLessEq: k1 = (k1 <= k2); break;
-        case opGtrEq: k1 = (k1 >= k2); break;
-
-        case opMult:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) * static_cast<unsigned>(k2));
+        case opDivs:
+            if (rhs != 0) {
+                changed = true;
+                return Const::get(lhs / rhs);
+            }
             break;
+
+        case opMods:
+            if (rhs != 0) {
+                changed = true;
+                return Const::get(lhs % rhs);
+            }
+            break;
+
         case opDiv:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
+            if (rhs != 0) {
+                changed = true;
+                return Const::get((int)((uint32)lhs / (uint32)rhs));
+            }
             break;
+
         case opMod:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
+            if (rhs != 0) {
+                changed = true;
+                return Const::get((int)((uint32)lhs % (uint32)rhs));
+            }
             break;
-        case opLessUns: k1 = static_cast<unsigned>(k1) < static_cast<unsigned>(k2); break;
-        case opGtrUns: k1 = static_cast<unsigned>(k1) > static_cast<unsigned>(k2); break;
-        case opLessEqUns: k1 = static_cast<unsigned>(k1) <= static_cast<unsigned>(k2); break;
-        case opGtrEqUns: k1 = static_cast<unsigned>(k1) >= static_cast<unsigned>(k2); break;
 
-        default: change = false;
-        }
-
-        if (change) {
-            changed = true;
-            return Const::get(k1);
+        default: break;
         }
     }
 
