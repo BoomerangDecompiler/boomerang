@@ -22,7 +22,7 @@ class Project;
 /**
  * Provides declarations for symbols and library function signatures.
  */
-class ISymbolProvider
+class BOOMERANG_API ISymbolProvider
 {
 public:
     ISymbolProvider(Project *) {}

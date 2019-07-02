@@ -24,7 +24,7 @@ class QIODevice;
  * The derived classes define the actual functionality of loading files and are
  * implemented as plugins.
  */
-class IFileLoader
+class BOOMERANG_API IFileLoader
 {
 public:
     IFileLoader(Project *) {}
