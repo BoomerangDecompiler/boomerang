@@ -155,11 +155,12 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
             }
             else if (rhs >= 32) {
                 changed = true;
-                return Const::get(0);
+                return Const::get((lhs < 0) ? -1 : 0);
             }
             else {
                 changed = true;
-                return Const::get((int)(lhs >> rhs | ~Util::getLowerBitMask(32 - rhs)));
+                return Const::get(
+                    (int)(lhs >> rhs | (lhs < 0 ? ~Util::getLowerBitMask(32 - rhs) : 0)));
             }
         }
 
