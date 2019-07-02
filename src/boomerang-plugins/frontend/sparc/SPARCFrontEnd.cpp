@@ -61,21 +61,21 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 {
     if (call->isReturnAfterCall()) {
         // The only RTL in the basic block is a ReturnStatement
-        std::list<Statement *> *ls = new std::list<Statement *>;
+        std::list<Statement *> ls;
 
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so
         // that preservation or otherwise of %o7 is correct
         if (delay && (delay->size() == 1) && delay->front()->isAssign() &&
             static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
-            ls->push_back(delay->front()->clone());
+            ls.push_back(delay->front()->clone());
         }
 
-        ls->push_back(new ReturnStatement);
+        ls.push_back(new ReturnStatement);
 
         // Constuct the RTLs for the new basic block
         std::unique_ptr<RTLList> rtls(new RTLList);
         BasicBlock *returnBB = createReturnBlock(
-            proc, std::move(rtls), std::unique_ptr<RTL>(new RTL(rtl->getAddress() + 1, ls)));
+            proc, std::move(rtls), std::unique_ptr<RTL>(new RTL(rtl->getAddress() + 1, &ls)));
         return returnBB;
     }
     else {
@@ -1295,7 +1295,9 @@ void SPARCFrontEnd::warnInvalidInstruction(Address pc)
     Byte insnBytes[4] = { 0 };
 
     for (int i = 0; i < 4; i++) {
-        image->readNative1(pc + i, insnBytes[i]);
+        const bool ok = image->readNative1(pc + i, insnBytes[i]);
+        assert(ok);
+        Q_UNUSED(ok);
     }
 
     // clang-format off

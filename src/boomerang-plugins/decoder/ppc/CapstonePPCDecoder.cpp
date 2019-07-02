@@ -96,19 +96,6 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
 }
 
 
-RegNum CapstonePPCDecoder::getRegNumByName(const QString &name) const
-{
-    // todo: slow
-    for (size_t i = cs::PPC_REG_CARRY; i < cs::PPC_REG_ENDING; i++) {
-        if (name == cs::cs_reg_name(m_handle, i)) {
-            return fixRegNum(i);
-        }
-    }
-
-    return cs::PPC_REG_INVALID;
-}
-
-
 QString CapstonePPCDecoder::getRegNameByNum(RegNum regNum) const
 {
     return m_dict.getRegDB()->getRegNameByNum(regNum);

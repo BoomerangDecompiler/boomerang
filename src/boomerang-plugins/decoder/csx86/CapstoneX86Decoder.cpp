@@ -187,19 +187,6 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
 }
 
 
-RegNum CapstoneX86Decoder::getRegNumByName(const QString &name) const
-{
-    // todo: slow
-    for (size_t i = cs::X86_REG_AH; i < cs::X86_REG_ENDING; i++) {
-        if (name == cs::cs_reg_name(m_handle, i)) {
-            return fixRegNum(i);
-        }
-    }
-
-    return cs::X86_REG_INVALID;
-}
-
-
 QString CapstoneX86Decoder::getRegNameByNum(RegNum regNum) const
 {
     return m_dict.getRegDB()->getRegNameByNum(regNum);

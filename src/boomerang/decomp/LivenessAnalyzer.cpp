@@ -146,7 +146,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 continue;
             }
 
-            PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
+            PhiAssign *pa = static_cast<PhiAssign *>(st);
 
             for (const auto &v : pa->getDefs()) {
                 if (!cfg->hasBB(v.first)) {

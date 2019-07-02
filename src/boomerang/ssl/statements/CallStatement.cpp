@@ -50,11 +50,12 @@
 class ArgSourceProvider
 {
 public:
-    enum Src
+    enum class ArgSource
     {
-        SRC_LIB,
-        SRC_CALLEE,
-        SRC_COL
+        INVALID   = 0xFF,
+        Lib       = 0,
+        Callee    = 1,
+        Collector = 2
     };
 
 public:
@@ -67,33 +68,38 @@ public:
     SharedExp localise(SharedExp e); // Localise to this call if necessary
 
 public:
-    Src src;
-    CallStatement *call;
-    int i, n; // For SRC_LIB
+    ArgSource src       = ArgSource::INVALID;
+    CallStatement *call = nullptr;
+
+
+    // For SRC_LIB
+    int i = 0;
+    int n = 0;
     std::shared_ptr<Signature> callSig;
-    StatementList::iterator pp; // For SRC_CALLEE
-    StatementList *calleeParams;
-    DefCollector::iterator cc; // For SRC_COL
-    DefCollector *defCol;
+
+    // For SRC_CALLEE
+    StatementList::iterator pp;
+    StatementList *calleeParams = nullptr;
+
+    // For SRC_COL
+    DefCollector::iterator cc;
+    DefCollector *defCol = nullptr;
 };
 
 
 ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
     : call(_call)
-    , i(0)
-    , n(0)
-    , defCol(nullptr)
 {
     Function *procDest = call->getDestProc();
 
     if (procDest && procDest->isLib()) {
-        src     = SRC_LIB;
+        src     = ArgSource::Lib;
         callSig = call->getSignature();
         n       = callSig ? callSig->getNumParams() : 0;
         i       = 0;
     }
     else if (call->getCalleeReturn() != nullptr) {
-        src          = SRC_CALLEE;
+        src          = ArgSource::Callee;
         calleeParams = &static_cast<UserProc *>(procDest)->getParameters();
         pp           = calleeParams->begin();
     }
@@ -105,13 +111,13 @@ ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
         }
 
         if (destSig && destSig->isForced()) {
-            src     = SRC_LIB;
+            src     = ArgSource::Lib;
             callSig = destSig;
             n       = callSig->getNumParams();
             i       = 0;
         }
         else {
-            src    = SRC_COL;
+            src    = ArgSource::Collector;
             defCol = call->getDefCollector();
             cc     = defCol->begin();
         }
@@ -125,7 +131,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
     bool allZero;
 
     switch (src) {
-    case SRC_LIB:
+    case ArgSource::Lib:
 
         if (i == n) {
             return nullptr;
@@ -136,7 +142,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
         call->localiseComp(s);
         return s;
 
-    case SRC_CALLEE:
+    case ArgSource::Callee:
 
         if (pp == calleeParams->end()) {
             return nullptr;
@@ -144,11 +150,12 @@ SharedExp ArgSourceProvider::nextArgLoc()
 
         s = static_cast<Assignment *>(*pp++)->getLeft()->clone();
         s->removeSubscripts(allZero);
-        call->localiseComp(s); // Localise the components. Has the effect of translating into
-        // the contect of this caller
+
+        // Localise the components. Has the effect of translating into the contect of this caller
+        call->localiseComp(s);
         return s;
 
-    case SRC_COL:
+    case ArgSource::Collector:
 
         if (cc == defCol->end()) {
             return nullptr;
@@ -156,6 +163,8 @@ SharedExp ArgSourceProvider::nextArgLoc()
 
         // Give the location, i.e. the left hand side of the assignment
         return static_cast<Assign *>(*cc++)->getLeft();
+
+    default: assert(false); break;
     }
 
     return nullptr; // Suppress warning
@@ -164,7 +173,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
 
 SharedExp ArgSourceProvider::localise(SharedExp e)
 {
-    if (src == SRC_COL) {
+    if (src == ArgSource::Collector) {
         // Provide the RHS of the current assignment
         SharedExp ret = static_cast<Assign *>(*std::prev(cc))->getRight();
         return ret;
@@ -180,18 +189,20 @@ SharedType ArgSourceProvider::curType(SharedExp e)
     Q_UNUSED(e);
 
     switch (src) {
-    case SRC_LIB: return callSig->getParamType(i - 1);
+    case ArgSource::Lib: return callSig->getParamType(i - 1);
 
-    case SRC_CALLEE: {
+    case ArgSource::Callee: {
         SharedType ty = static_cast<Assignment *>(*std::prev(pp))->getType();
         return ty;
     }
 
-    case SRC_COL: {
+    case ArgSource::Collector: {
         // Mostly, there won't be a type here, I would think...
         SharedType ty = (*std::prev(cc))->getType();
         return ty;
     }
+
+    default: assert(false); break;
     }
 
     return nullptr; // Suppress warning
@@ -203,7 +214,7 @@ bool ArgSourceProvider::exists(SharedExp e)
     bool allZero;
 
     switch (src) {
-    case SRC_LIB:
+    case ArgSource::Lib:
 
         if (callSig->hasEllipsis()) {
             // FIXME: for now, just don't check
@@ -222,7 +233,7 @@ bool ArgSourceProvider::exists(SharedExp e)
 
         return false;
 
-    case SRC_CALLEE:
+    case ArgSource::Callee:
         for (pp = calleeParams->begin(); pp != calleeParams->end(); ++pp) {
             SharedExp par = static_cast<Assignment *>(*pp)->getLeft()->clone();
             par->removeSubscripts(allZero);
@@ -235,7 +246,9 @@ bool ArgSourceProvider::exists(SharedExp e)
 
         return false;
 
-    case SRC_COL: return defCol->existsOnLeft(e);
+    case ArgSource::Collector: return defCol->existsOnLeft(e);
+
+    default: assert(false); break;
     }
 
     return false; // Suppress warning

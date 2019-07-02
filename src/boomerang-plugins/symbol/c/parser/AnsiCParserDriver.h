@@ -36,8 +36,8 @@ public:
     // The token's location used by the scanner.
     AnsiC::location location;
 
-    Machine plat;
-    CallConv cc;
+    Machine plat = Machine::INVALID;
+    CallConv cc  = CallConv::INVALID;
 
     std::list<std::shared_ptr<Signature>> signatures;
     std::list<std::shared_ptr<Symbol>> symbols;

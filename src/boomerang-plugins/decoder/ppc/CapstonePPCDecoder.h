@@ -32,9 +32,6 @@ public:
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;
 
-    /// \copydoc IDecoder::getRegNumByName
-    RegNum getRegNumByName(const QString &name) const override;
-
     /// \copydoc IDecoder::getRegSizeByNum
     int getRegSizeByNum(RegNum regNum) const override;
 

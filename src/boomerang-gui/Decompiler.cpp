@@ -230,10 +230,11 @@ bool Decompiler::getRTLForProc(const QString &name, QString &rtl)
 {
     Function *p = m_project.getProg()->getFunctionByName(name);
 
-    if (p->isLib()) {
+    if (!p || p->isLib()) {
         return false;
     }
 
+    assert(dynamic_cast<UserProc *>(p) != nullptr);
     UserProc *up = static_cast<UserProc *>(p);
     OStream os(&rtl);
     up->print(os);

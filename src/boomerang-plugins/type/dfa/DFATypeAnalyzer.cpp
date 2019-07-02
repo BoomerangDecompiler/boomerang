@@ -123,7 +123,7 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
 
     m_changed |= ch;
 
-    visitAssignment(dynamic_cast<Assignment *>(stmt), visitChildren); // Handle the LHS
+    visitAssignment(stmt, visitChildren); // Handle the LHS
 }
 
 

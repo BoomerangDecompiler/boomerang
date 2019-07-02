@@ -6,8 +6,8 @@ Boomerang currently supports:
  - file formats: ELF, PE, DOS MZ, DOS/4GW LE, Mach-O
  - high-level language output: C
 
-Although there are pre-compiled packages available for release versions (`master`),
-it is currently recommended to build the development version (`develop`) of the decompiler from source.
+Although there are pre-compiled packages available for release versions (`master` branch),
+it is currently recommended to build the development version (`develop` branch) of the decompiler from source.
 
 
 ## Building
@@ -78,6 +78,17 @@ for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
 - "Generate" and "Open Project" in cmake-gui.
 - To build the command line tool, build the `boomerang-cli` target; to build the GUI, build the `boomerang-gui` target.
 - Done!
+
+
+## Usage
+
+Boomerang can be run in two ways:
+
+- `boomerang-cli[.exe]`: Command-line interface. Use `boomerang-cli[.exe] --help` for help wrt. how to customize the decompilation process.
+- `boomerang-gui[.exe]`: GUI application.
+
+There are a number of test applications available in the `data/samples` directory. You can use these to assess
+what the decompiler can decompile and also to experiment with the different decompilation options.
 
 
 ## Testing
