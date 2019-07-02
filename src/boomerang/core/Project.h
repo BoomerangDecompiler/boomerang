@@ -215,5 +215,5 @@ private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;
 
-    IFrontEnd *m_fe;
+    IFrontEnd *m_fe = nullptr;
 };
