@@ -173,14 +173,14 @@ private:
     void addPostTestedLoopHeader();
 
     /// Adds: } while (\a cond);
-    void addPostTestedLoopEnd(const SharedExp &cond);
+    void addPostTestedLoopEnd(const SharedConstExp &cond);
 
     // case conditionals "nways"
     /// Adds: switch(\a cond) {
-    void addCaseCondHeader(const SharedExp &cond);
+    void addCaseCondHeader(const SharedConstExp &cond);
 
     /// Adds: case \a opt :
-    void addCaseCondOption(Exp &opt);
+    void addCaseCondOption(const SharedConstExp &opt);
 
     /// Adds: break;
     void addCaseCondOptionEnd();
@@ -193,14 +193,14 @@ private:
 
     // if conditions
     /// Adds: if(\a cond) {
-    void addIfCondHeader(const SharedExp &cond);
+    void addIfCondHeader(const SharedConstExp &cond);
 
     /// Adds: }
     void addIfCondEnd();
 
     // if else conditions
     /// Adds: if(\a cond) {
-    void addIfElseCondHeader(const SharedExp &cond);
+    void addIfElseCondHeader(const SharedConstExp &cond);
 
     /// Adds: } else {
     void addIfElseCondOption();
@@ -261,7 +261,7 @@ private:
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(OStream &str, const Exp &exp, OpPrec curPrec, bool allowUnsigned = false);
+    void appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
     void appendType(OStream &str, SharedConstType typ);
