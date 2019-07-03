@@ -312,11 +312,14 @@ smoke_tests = [
     "sparc/fibo_iter",
     "sparc/fromssa2",
     "sparc/mutual_recurse",
+    "sparc/RayTracer",
     "sparc/recursion",
     "sparc/shared2",
     "sparc/sumarray-O4",
     "sparc/switchAnd_gcc",
     "sparc/switch_epc2",
+    "sparc/switch_gpc",
+    "sparc/twofib"
     "sparc/twoproc",
     "sparc/worms",
 
@@ -330,11 +333,7 @@ smoke_tests = [
 
 # These files are disabled explicitly because decompilation fails for them.
 disabled_tests = [
-    "elf/hello-clang4-static",
-    "mc68328/Starter.prc",
-    "sparc/RayTracer",
-    "sparc/switch_gpc",
-    "sparc/twofib"
+    "elf/hello-clang4-static"
 ]
 
 
