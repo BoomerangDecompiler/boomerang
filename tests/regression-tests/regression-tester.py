@@ -319,7 +319,7 @@ smoke_tests = [
     "sparc/switchAnd_gcc",
     "sparc/switch_epc2",
     "sparc/switch_gpc",
-    "sparc/twofib"
+    "sparc/twofib",
     "sparc/twoproc",
     "sparc/worms",
 
