@@ -261,7 +261,8 @@ private:
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec, bool allowUnsigned = false);
+    void appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec,
+                   bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
     void appendType(OStream &str, SharedConstType typ);

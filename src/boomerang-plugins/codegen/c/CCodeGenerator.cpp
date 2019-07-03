@@ -975,14 +975,15 @@ void CCodeGenerator::addLineComment(const QString &cmt)
 }
 
 
-void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec, bool uns /* = false */)
+void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec,
+                               bool uns /* = false */)
 {
     const OPER op = exp->getOper();
 
     switch (op) {
     case opIntConst: {
         const Const &constExp = *exp->access<Const>();
-        int K = constExp.getInt();
+        int K                 = constExp.getInt();
 
         if (uns && (K < 0)) {
             // An unsigned constant. Use some heuristics
@@ -1071,7 +1072,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
     }
 
     case opAddrOf: {
-        const Unary &unaryExp = *exp->access<Unary>();
+        const Unary &unaryExp    = *exp->access<Unary>();
         const SharedConstExp sub = unaryExp.getSubExp1();
 
         if (sub->isGlobal()) {
@@ -1437,7 +1438,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
     }
 
     case opMult:
-    case opMults: {// FIXME: check types
+    case opMults: { // FIXME: check types
         const Binary &binaryExp = *exp->access<Binary>();
 
         openParen(str, curPrec, OpPrec::Mult);
@@ -1449,7 +1450,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
     }
 
     case opDiv:
-    case opDivs: {// FIXME: check types
+    case opDivs: { // FIXME: check types
         const Binary &binaryExp = *exp->access<Binary>();
 
         openParen(str, curPrec, OpPrec::Mult);
@@ -1461,7 +1462,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
     }
 
     case opMod:
-    case opMods: {// Fixme: check types
+    case opMods: { // Fixme: check types
         const Binary &binaryExp = *exp->access<Binary>();
 
         openParen(str, curPrec, OpPrec::Mult);
@@ -1935,7 +1936,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
 
     case opMemberAccess: {
         const Binary &binaryExp = *exp->access<Binary>();
-        SharedType ty = nullptr;
+        SharedType ty           = nullptr;
 
         //             if (ty == nullptr) {
         LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
