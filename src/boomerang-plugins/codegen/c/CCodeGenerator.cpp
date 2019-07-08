@@ -139,10 +139,10 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
     }
 
     if (lhs->isMemOf() && asgnType && !asgnType->isVoid()) {
-        appendExp(ost, TypedExp(asgnType, lhs), OpPrec::Assign);
+        appendExp(ost, TypedExp::get(asgnType, lhs), OpPrec::Assign);
     }
     else if (lhs->isGlobal() && asgn->getType()->isArray()) {
-        appendExp(ost, Binary(opArrayIndex, lhs, Const::get(0)), OpPrec::Assign);
+        appendExp(ost, Binary::get(opArrayIndex, lhs, Const::get(0)), OpPrec::Assign);
     }
     else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
              lhs->getSubExp3()->isIntConst()) {
@@ -150,7 +150,7 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
         SharedExp exp1 = lhs->getSubExp1();
         const int n    = lhs->access<Const, 2>()->getInt();
         const int m    = lhs->access<Const, 3>()->getInt();
-        appendExp(ost, *exp1, OpPrec::Assign);
+        appendExp(ost, exp1, OpPrec::Assign);
         ost << " = ";
 
         // MSVC winges without most of these parentheses
@@ -165,13 +165,13 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
         // clang-format on
         rhs = rhs->simplify();
 
-        appendExp(ost, *rhs, OpPrec::Assign);
+        appendExp(ost, rhs, OpPrec::Assign);
         ost << ";";
         appendLine(tgt);
         return;
     }
     else {
-        appendExp(ost, *lhs, OpPrec::Assign); // Ordinary LHS
+        appendExp(ost, lhs, OpPrec::Assign); // Ordinary LHS
     }
 
     // C has special syntax for this, eg += and ++
@@ -216,12 +216,12 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
             ost << " -= ";
         }
 
-        appendExp(ost, *rhs->getSubExp2(), OpPrec::Assign);
+        appendExp(ost, rhs->getSubExp2(), OpPrec::Assign);
         ost << ";";
     }
     else {
         ost << " = ";
-        appendExp(ost, *rhs, OpPrec::Assign);
+        appendExp(ost, rhs, OpPrec::Assign);
         ost << ";";
     }
 
@@ -240,7 +240,7 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
     if (!results.empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
         SharedConstExp firstRet = (static_cast<const Assignment *>(*results.begin()))->getLeft();
-        appendExp(s, *firstRet, OpPrec::Assign);
+        appendExp(s, firstRet, OpPrec::Assign);
         s << " = ";
     }
 
@@ -274,7 +274,7 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
         }
 
         if (ok) {
-            appendExp(s, *as_arg, OpPrec::Comma);
+            appendExp(s, as_arg, OpPrec::Comma);
         }
     }
 
@@ -294,7 +294,7 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
 
             assert(dynamic_cast<Assignment *>(*ss) != nullptr);
             const Assignment *assign = static_cast<const Assignment *>(*ss);
-            appendExp(s, *assign->getLeft(), OpPrec::Comma);
+            appendExp(s, assign->getLeft(), OpPrec::Comma);
         }
 
         s << " */";
@@ -313,7 +313,7 @@ void CCodeGenerator::addIndCallStatement(const SharedExp &exp, const StatementLi
     OStream s(&tgt);
     indent(s, m_indent);
     s << "(*";
-    appendExp(s, *exp, OpPrec::None);
+    appendExp(s, exp, OpPrec::None);
     s << ")(";
     QStringList arg_strings;
     QString arg_tgt;
@@ -321,7 +321,7 @@ void CCodeGenerator::addIndCallStatement(const SharedExp &exp, const StatementLi
     for (Statement *ss : args) {
         OStream arg_str(&arg_tgt);
         SharedExp arg = static_cast<Assign *>(ss)->getRight();
-        appendExp(arg_str, *arg, OpPrec::Comma);
+        appendExp(arg_str, arg, OpPrec::Comma);
         arg_strings << arg_tgt;
         arg_tgt.clear();
     }
@@ -344,7 +344,7 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
 
     if (n >= 1) {
         ost << " ";
-        appendExp(ost, *static_cast<Assign *>(*rets->begin())->getRight(), OpPrec::None);
+        appendExp(ost, static_cast<Assign *>(*rets->begin())->getRight(), OpPrec::None);
     }
 
     ost << ";";
@@ -365,9 +365,9 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
                 ost << ", ";
             }
 
-            appendExp(ost, *(static_cast<Assign *>(*retIt))->getLeft(), OpPrec::None);
+            appendExp(ost, (static_cast<Assign *>(*retIt))->getLeft(), OpPrec::None);
             ost << " := ";
-            appendExp(ost, *(static_cast<Assign *>(*retIt))->getRight(), OpPrec::None);
+            appendExp(ost, (static_cast<Assign *>(*retIt))->getRight(), OpPrec::None);
         }
 
         if (n > 1) {
@@ -604,7 +604,7 @@ void CCodeGenerator::addPretestedLoopHeader(const SharedExp &cond)
 
     indent(s, m_indent);
     s << "while (";
-    appendExp(s, *cond, OpPrec::None);
+    appendExp(s, cond, OpPrec::None);
     s << ") {";
     appendLine(tgt);
 
@@ -662,7 +662,7 @@ void CCodeGenerator::addPostTestedLoopHeader()
 }
 
 
-void CCodeGenerator::addPostTestedLoopEnd(const SharedExp &cond)
+void CCodeGenerator::addPostTestedLoopEnd(const SharedConstExp &cond)
 {
     m_indent--;
 
@@ -671,20 +671,20 @@ void CCodeGenerator::addPostTestedLoopEnd(const SharedExp &cond)
 
     indent(s, m_indent);
     s << "} while (";
-    appendExp(s, *cond, OpPrec::None);
+    appendExp(s, cond, OpPrec::None);
     s << ");";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addCaseCondHeader(const SharedExp &cond)
+void CCodeGenerator::addCaseCondHeader(const SharedConstExp &cond)
 {
     QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
     s << "switch(";
-    appendExp(s, *cond, OpPrec::None);
+    appendExp(s, cond, OpPrec::None);
     s << ") {";
     appendLine(tgt);
 
@@ -692,7 +692,7 @@ void CCodeGenerator::addCaseCondHeader(const SharedExp &cond)
 }
 
 
-void CCodeGenerator::addCaseCondOption(Exp &opt)
+void CCodeGenerator::addCaseCondOption(const SharedConstExp &opt)
 {
     m_indent--;
 
@@ -747,14 +747,14 @@ void CCodeGenerator::addCaseCondEnd()
 }
 
 
-void CCodeGenerator::addIfCondHeader(const SharedExp &cond)
+void CCodeGenerator::addIfCondHeader(const SharedConstExp &cond)
 {
     QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
     s << "if (";
-    appendExp(s, *cond, OpPrec::None);
+    appendExp(s, cond, OpPrec::None);
     s << ") {";
     appendLine(tgt);
 
@@ -775,14 +775,14 @@ void CCodeGenerator::addIfCondEnd()
 }
 
 
-void CCodeGenerator::addIfElseCondHeader(const SharedExp &cond)
+void CCodeGenerator::addIfElseCondHeader(const SharedConstExp &cond)
 {
     QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
     s << "if (";
-    appendExp(s, *cond, OpPrec::None);
+    appendExp(s, cond, OpPrec::None);
     s << ") {";
     appendLine(tgt);
 
@@ -900,7 +900,7 @@ void CCodeGenerator::addLocal(const QString &name, SharedType type, bool last)
         if (e->isSubscript() && (e->getSubExp1()->isParam() || e->getSubExp1()->isGlobal()) &&
             e->access<const RefExp>()->isImplicitDef()) {
             ost << " = ";
-            appendExp(ost, *e->getSubExp1(), OpPrec::None);
+            appendExp(ost, e->getSubExp1(), OpPrec::None);
             ost << ";";
         }
         else {
@@ -955,7 +955,7 @@ void CCodeGenerator::addGlobal(const QString &name, SharedType type, const Share
     if (init && !init->isNil()) {
         s << " = ";
         SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
-        appendExp(s, *init, OpPrec::Assign,
+        appendExp(s, init, OpPrec::Assign,
                   base_type->isInteger() ? base_type->as<IntegerType>()->isUnsigned() : false);
     }
 
@@ -975,17 +975,15 @@ void CCodeGenerator::addLineComment(const QString &cmt)
 }
 
 
-void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, bool uns /* = false */)
+void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec curPrec,
+                               bool uns /* = false */)
 {
-    const OPER op = exp.getOper();
-    const Const &constExp(static_cast<const Const &>(exp));
-    const Unary &unaryExp(static_cast<const Unary &>(exp));
-    const Binary &binaryExp(static_cast<const Binary &>(exp));
-    const Ternary &ternaryExp(static_cast<const Ternary &>(exp));
+    const OPER op = exp->getOper();
 
     switch (op) {
     case opIntConst: {
-        int K = constExp.getInt();
+        const Const &constExp = *exp->access<Const>();
+        int K                 = constExp.getInt();
 
         if (uns && (K < 0)) {
             // An unsigned constant. Use some heuristics
@@ -1033,7 +1031,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
     }
 
-    case opLongConst:
+    case opLongConst: {
+        const Const &constExp = *exp->access<Const>();
         // str << std::dec << c->getLong() << "LL"; break;
         if ((static_cast<long long>(constExp.getLong()) < -1000LL) ||
             (constExp.getLong() > 1000ULL)) {
@@ -1043,8 +1042,10 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             str << constExp.getLong() << "LL";
         }
         break;
+    }
 
     case opFltConst: {
+        const Const &constExp = *exp->access<Const>();
         // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000
         // or 0.99999
         QString flt_val = QString::number(constExp.getFlt(), 'g', 8);
@@ -1057,15 +1058,22 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
     }
 
-    case opStrConst:
+    case opStrConst: {
+        const Const &constExp = *exp->access<Const>();
         // escape string:
         str << "\"" << Util::escapeStr(constExp.getRawStr()) << "\"";
         break;
+    }
 
-    case opFuncConst: str << constExp.getFuncName(); break;
+    case opFuncConst: {
+        const Const &constExp = *exp->access<Const>();
+        str << constExp.getFuncName();
+        break;
+    }
 
     case opAddrOf: {
-        SharedConstExp sub = unaryExp.getSubExp1();
+        const Unary &unaryExp    = *exp->access<Unary>();
+        const SharedConstExp sub = unaryExp.getSubExp1();
 
         if (sub->isGlobal()) {
             Prog *prog    = m_proc->getProg();
@@ -1073,19 +1081,19 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
             if (gt && (gt->resolvesToArray() || gt->isCString())) {
                 // Special C requirement: don't emit "&" for address of an array or char*
-                appendExp(str, *sub, curPrec);
+                appendExp(str, sub, curPrec);
                 break;
             }
         }
 
         if (sub->isMemOf()) {
             // Avoid &*(type*)sub, just emit sub
-            appendExp(str, *sub->getSubExp1(), OpPrec::Unary);
+            appendExp(str, sub->getSubExp1(), OpPrec::Unary);
         }
         else {
             openParen(str, curPrec, OpPrec::Unary);
             str << "&";
-            appendExp(str, *sub, OpPrec::Unary);
+            appendExp(str, sub, OpPrec::Unary);
             closeParen(str, curPrec, OpPrec::Unary);
         }
 
@@ -1095,82 +1103,106 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opParam:
     case opGlobal:
     case opLocal: {
-        auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
+        const auto c1 = exp->access<Const, 1>();
         assert(c1 && c1->isStrConst());
         str << c1->getStr();
     } break;
 
     case opEquals: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Equal);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Equal);
         str << " == ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Equal);
         closeParen(str, curPrec, OpPrec::Equal);
     } break;
 
     case opNotEqual: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Equal);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Equal);
         str << " != ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Equal);
         closeParen(str, curPrec, OpPrec::Equal);
     } break;
 
     case opLess:
-    case opLessUns:
+    case opLessUns: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Rel);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Rel, op == opLessUns);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Rel, op == opLessUns);
         str << " < ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Rel, op == opLessUns);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Rel, op == opLessUns);
         closeParen(str, curPrec, OpPrec::Rel);
         break;
+    }
 
     case opGtr:
-    case opGtrUns:
+    case opGtrUns: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Rel);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Rel, op == opGtrUns);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Rel, op == opGtrUns);
         str << " > ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Rel, op == opGtrUns);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Rel, op == opGtrUns);
         closeParen(str, curPrec, OpPrec::Rel);
         break;
+    }
 
     case opLessEq:
-    case opLessEqUns:
+    case opLessEqUns: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Rel);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Rel, op == opLessEqUns);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Rel, op == opLessEqUns);
         str << " <= ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Rel, op == opLessEqUns);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Rel, op == opLessEqUns);
         closeParen(str, curPrec, OpPrec::Rel);
         break;
+    }
 
     case opGtrEq:
-    case opGtrEqUns:
+    case opGtrEqUns: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Rel);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Rel, op == opGtrEqUns);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Rel, op == opGtrEqUns);
         str << " >= ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Rel, op == opGtrEqUns);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Rel, op == opGtrEqUns);
         closeParen(str, curPrec, OpPrec::Rel);
         break;
+    }
 
-    case opAnd:
+    case opAnd: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::LogAnd);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::LogAnd);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::LogAnd);
         str << " && ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::LogAnd);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::LogAnd);
         closeParen(str, curPrec, OpPrec::LogAnd);
         break;
+    }
 
-    case opOr:
+    case opOr: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::LogOr);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::LogOr);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::LogOr);
         str << " || ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::LogOr);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::LogOr);
         closeParen(str, curPrec, OpPrec::LogOr);
         break;
+    }
 
-    case opBitAnd:
+    case opBitAnd: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::BitAnd);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitAnd);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::BitAnd);
         str << " & ";
 
         if (binaryExp.getSubExp2()->isIntConst()) {
@@ -1187,51 +1219,69 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             }
         }
         else {
-            appendExp(str, *binaryExp.getSubExp2(), OpPrec::BitAnd);
+            appendExp(str, binaryExp.getSubExp2(), OpPrec::BitAnd);
         }
 
         closeParen(str, curPrec, OpPrec::BitAnd);
         break;
+    }
 
-    case opBitOr:
+    case opBitOr: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::BitOr);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitOr);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::BitOr);
         str << " | ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::BitOr);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::BitOr);
         closeParen(str, curPrec, OpPrec::BitOr);
         break;
+    }
 
-    case opBitXor:
+    case opBitXor: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::BitXor);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitXor);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::BitXor);
         str << " ^ ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::BitXor);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::BitXor);
         closeParen(str, curPrec, OpPrec::BitXor);
         break;
+    }
 
-    case opBitNot:
+    case opBitNot: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         openParen(str, curPrec, OpPrec::Unary);
         str << "~";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
+    }
 
-    case opLNot:
+    case opLNot: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         openParen(str, curPrec, OpPrec::Unary);
         str << "!";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
+    }
 
     case opNeg:
-    case opFNeg:
+    case opFNeg: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         openParen(str, curPrec, OpPrec::Unary);
         str << "-";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
+    }
 
     case opAt: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         openParen(str, curPrec, OpPrec::BitAnd);
 
         // I guess that most people will find this easier to read
@@ -1241,14 +1291,14 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
         if (needsShift) {
             openParen(str, OpPrec::BitAnd, OpPrec::BitShift);
-            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
+            appendExp(str, ternaryExp.getSubExp1(), OpPrec::BitShift);
 
             str << " >> ";
-            appendExp(str, *first, OpPrec::BitShift);
+            appendExp(str, first, OpPrec::BitShift);
             closeParen(str, OpPrec::BitAnd, OpPrec::BitShift);
         }
         else {
-            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitAnd);
+            appendExp(str, ternaryExp.getSubExp1(), OpPrec::BitAnd);
         }
 
         str << " & ";
@@ -1271,38 +1321,49 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         else {
             maskExp = Binary::get(opMinus, Binary::get(opShL, Const::get(1), maskExp),
                                   Const::get(1));
-            appendExp(str, *maskExp, OpPrec::BitAnd);
+            appendExp(str, maskExp, OpPrec::BitAnd);
         }
 
         closeParen(str, curPrec, OpPrec::BitAnd);
         break;
     }
 
-    case opPlus:
+    case opPlus: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Add);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Add);
         str << " + ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Add);
         closeParen(str, curPrec, OpPrec::Add);
         break;
+    }
 
-    case opMinus:
+    case opMinus: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Add);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Add);
         str << " - ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Add);
         closeParen(str, curPrec, OpPrec::Add);
         break;
+    }
 
-    case opMemOf:
+    case opMemOf: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         openParen(str, curPrec, OpPrec::Unary);
         // annotateMemofs should have added a cast if it was needed
         str << "*";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
+    }
 
     case opRegOf: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         // MVE: this can likely go
         LOG_VERBOSE("Case opRegOf is deprecated");
 
@@ -1322,27 +1383,34 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         else {
             // What is this doing in the back end???
             str << "r[";
-            appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+            appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
             str << "]";
         }
     } break;
 
-    case opTemp:
+    case opTemp: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         // Should never see this; temps should be mapped to locals now so that they get declared
         LOG_VERBOSE("Case opTemp is deprecated");
         // Emit the temp name, e.g. "tmp1"
         str << unaryExp.access<Const, 1>()->getStr();
         break;
+    }
 
-    case opItof:
+    case opItof: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         // TODO: MVE: needs work: float/double/long double.
         str << "(float)";
         openParen(str, curPrec, OpPrec::Unary);
-        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::Unary);
+        appendExp(str, ternaryExp.getSubExp3(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
+    }
 
-    case opFsize:
+    case opFsize: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
 
         // TODO: needs work!
         if (ternaryExp.getSubExp3()->isMemOf()) {
@@ -1358,175 +1426,233 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             }
 
             openParen(str, curPrec, curPrec);
-            appendExp(str, *ternaryExp.getSubExp3(), curPrec);
+            appendExp(str, ternaryExp.getSubExp3(), curPrec);
             closeParen(str, curPrec, curPrec);
             str << ")";
         }
         else {
-            appendExp(str, *ternaryExp.getSubExp3(), curPrec);
+            appendExp(str, ternaryExp.getSubExp3(), curPrec);
         }
 
         break;
+    }
 
     case opMult:
-    case opMults: // FIXME: check types
+    case opMults: { // FIXME: check types
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Mult);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Mult);
         str << " * ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Mult);
         closeParen(str, curPrec, OpPrec::Mult);
         break;
+    }
 
     case opDiv:
-    case opDivs: // FIXME: check types
+    case opDivs: { // FIXME: check types
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Mult);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Mult);
         str << " / ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Mult);
         closeParen(str, curPrec, OpPrec::Mult);
         break;
+    }
 
     case opMod:
-    case opMods: // Fixme: check types
+    case opMods: { // Fixme: check types
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Mult);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Mult);
         str << " % ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Mult);
         closeParen(str, curPrec, OpPrec::Mult);
         break;
+    }
 
-    case opShL:
+    case opShL: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::BitShift);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " << ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::BitShift);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::BitShift);
         closeParen(str, curPrec, OpPrec::BitShift);
         break;
+    }
 
     case opShR:
-    case opShRA:
+    case opShRA: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::BitShift);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitShift);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::BitShift);
         str << " >> ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::BitShift);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::BitShift);
         closeParen(str, curPrec, OpPrec::BitShift);
         break;
+    }
 
-    case opTern:
+    case opTern: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         openParen(str, curPrec, OpPrec::Cond);
         str << " (";
-        appendExp(str, *ternaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, ternaryExp.getSubExp1(), OpPrec::None);
         str << ") ? ";
-        appendExp(str, *ternaryExp.getSubExp2(), OpPrec::Cond);
+        appendExp(str, ternaryExp.getSubExp2(), OpPrec::Cond);
         str << " : ";
-        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::Cond);
+        appendExp(str, ternaryExp.getSubExp3(), OpPrec::Cond);
         closeParen(str, curPrec, OpPrec::Cond);
         break;
+    }
 
-    case opFPlus:
+    case opFPlus: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Add);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Add);
         str << " + ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Add);
         closeParen(str, curPrec, OpPrec::Add);
         break;
+    }
 
-    case opFMinus:
+    case opFMinus: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Add);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Add);
         str << " - ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Add);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Add);
         closeParen(str, curPrec, OpPrec::Add);
         break;
+    }
 
-    case opFMult:
+    case opFMult: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Mult);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Mult);
         str << " * ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Mult);
         closeParen(str, curPrec, OpPrec::Mult);
         break;
+    }
 
-    case opFDiv:
+    case opFDiv: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Mult);
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Mult);
         str << " / ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Mult);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Mult);
         closeParen(str, curPrec, OpPrec::Mult);
         break;
+    }
 
-    case opFround:
+    case opFround: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         // Note: we need roundf or roundl depending on size of operands
         str << "round("; // Note: math.h required
-        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::None);
+        appendExp(str, ternaryExp.getSubExp3(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opFtrunc:
+    case opFtrunc: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         // Note: we need truncf or truncl depending on size of operands
         str << "trunc("; // Note: math.h required
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opFabs:
+    case opFabs: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "fabs(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opFtoi:
+    case opFtoi: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         // Should check size!
         str << "(int)";
-        appendExp(str, *unaryExp.getSubExp3(), OpPrec::Unary);
+        appendExp(str, ternaryExp.getSubExp3(), OpPrec::Unary);
         break;
+    }
 
-    case opRotL:
+    case opRotL: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         str << "ROTL(";
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Unary);
         str << ", ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Unary);
         str << ")";
         break;
+    }
 
-    case opRotR:
+    case opRotR: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         str << "ROTR(";
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Unary);
         str << ", ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Unary);
         str << ")";
         break;
+    }
 
-    case opRotLC:
+    case opRotLC: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         str << "ROTLC(";
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Unary);
         str << ", ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Unary);
         str << ")";
         break;
+    }
 
-    case opRotRC:
+    case opRotRC: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         str << "ROTRC(";
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Unary);
         str << ", ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Unary);
         str << ")";
         break;
+    }
 
-    case opLoge:
+    case opLoge: {
         // not implemented
-        LOG_WARN("Case %1 not implemented", operToString(exp.getOper()));
+        LOG_WARN("Case %1 not implemented", operToString(exp->getOper()));
         // assert(false);
         break;
+    }
 
     case opFlagCall: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         assert(binaryExp.getSubExp1()->isStrConst());
         str << binaryExp.access<Const, 1>()->getStr();
         str << "(";
         auto l = binaryExp.getSubExp2();
 
         for (; l && l->getOper() == opList; l = l->getSubExp2()) {
-            appendExp(str, *l->getSubExp1(), OpPrec::None);
+            appendExp(str, l->getSubExp1(), OpPrec::None);
 
             if (l->getSubExp2()->getOper() == opList) {
                 str << ", ";
@@ -1537,6 +1663,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     } break;
 
     case opList: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         int elems_on_line = 0; // try to limit line lengths
         SharedConstExp b2 = binaryExp.shared_from_this();
         SharedConstExp e2 = binaryExp.getSubExp2();
@@ -1547,7 +1675,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         }
 
         while (e2->getOper() == opList) {
-            appendExp(str, *b2->getSubExp1(), OpPrec::None, uns);
+            appendExp(str, b2->getSubExp1(), OpPrec::None, uns);
             ++elems_on_line;
 
             if ((b2->getSubExp1()->getOper() == opList) ||
@@ -1563,15 +1691,22 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             e2 = b2->getSubExp2();
         }
 
-        appendExp(str, *b2->getSubExp1(), OpPrec::None, uns);
+        appendExp(str, b2->getSubExp1(), OpPrec::None, uns);
         str << " }";
     } break;
 
-    case opFlags: str << "flags"; break;
+    case opFlags: {
+        str << "flags";
+        break;
+    }
 
-    case opPC: str << "pc"; break;
+    case opPC: {
+        str << "pc";
+        break;
+    }
 
-    case opZfill:
+    case opZfill: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
 
         // MVE: this is a temporary hack... needs cast?
         // sprintf(s, "/* zfill %d->%d */ ",
@@ -1596,7 +1731,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
                 str << "*)";
                 openParen(str, curPrec, OpPrec::Unary);
-                appendExp(str, *ternaryExp.getSubExp3()->getSubExp1(), OpPrec::Unary);
+                appendExp(str, ternaryExp.getSubExp3()->getSubExp1(), OpPrec::Unary);
                 closeParen(str, curPrec, OpPrec::Unary);
 
                 break;
@@ -1605,16 +1740,19 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
         LOG_VERBOSE("Case opZfill is deprecated");
         str << "(";
-        appendExp(str, *ternaryExp.getSubExp3(), OpPrec::None);
+        appendExp(str, ternaryExp.getSubExp3(), OpPrec::None);
         str << ")";
         break;
+    }
 
     case opTypedExp: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         if (unaryExp.getSubExp1()->isTypedExp() &&
             (*static_cast<const TypedExp &>(unaryExp).getType() ==
              *unaryExp.access<TypedExp, 1>()->getType())) {
             // We have (type)(type)x: recurse with type(x)
-            appendExp(str, *unaryExp.getSubExp1(), curPrec);
+            appendExp(str, unaryExp.getSubExp1(), curPrec);
         }
         else if (unaryExp.getSubExp1()->isMemOf()) {
             // We have (tt)m[x]
@@ -1640,7 +1778,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             openParen(str, curPrec, OpPrec::Unary);
             // Emit x
             // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
-            appendExp(str, *unaryExp.getSubExp1()->getSubExp1(), OpPrec::Unary);
+            appendExp(str, unaryExp.getSubExp1()->getSubExp1(), OpPrec::Unary);
             closeParen(str, curPrec, OpPrec::Unary);
         }
         else {
@@ -1649,7 +1787,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             appendType(str, tt);
             str << ")";
             openParen(str, curPrec, OpPrec::Unary);
-            appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+            appendExp(str, unaryExp.getSubExp1(), OpPrec::Unary);
             closeParen(str, curPrec, OpPrec::Unary);
         }
 
@@ -1658,6 +1796,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
     case opSgnEx:
     case opTruncs: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         SharedConstExp s = ternaryExp.getSubExp3();
         int toSize       = ternaryExp.access<Const, 2>()->getInt();
 
@@ -1668,11 +1808,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         default: str << "(int) "; break;
         }
 
-        appendExp(str, *s, curPrec);
+        appendExp(str, s, curPrec);
         break;
     }
 
     case opTruncu: {
+        const Ternary &ternaryExp = *exp->access<Ternary>();
+
         SharedConstExp s = ternaryExp.getSubExp3();
         int toSize       = ternaryExp.access<Const, 2>()->getInt();
 
@@ -1683,11 +1825,13 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         default: str << "(unsigned int) "; break;
         }
 
-        appendExp(str, *s, curPrec);
+        appendExp(str, s, curPrec);
         break;
     }
 
     case opMachFtr: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "/* machine specific */ (int) ";
         auto sub = unaryExp.access<Const, 1>();
         assert(sub->isStrConst());
@@ -1703,65 +1847,96 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
     }
 
-    case opFflags: str << "/* Fflags() */ "; break;
+    case opFflags: {
+        str << "/* Fflags() */ ";
+        break;
+    }
 
-    case opPow:
+    case opPow: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         str << "pow(";
-        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Comma);
+        appendExp(str, binaryExp.getSubExp1(), OpPrec::Comma);
         str << ", ";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Comma);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Comma);
         str << ")";
         break;
+    }
 
-    case opLog2:
+    case opLog2: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "log2(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opLog10:
+    case opLog10: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "log10(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opSin:
+    case opSin: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "sin(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opCos:
+    case opCos: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "cos(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opSqrt:
+    case opSqrt: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "sqrt(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opTan:
+    case opTan: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "tan(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opArcTan:
+    case opArcTan: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
         str << "atan(";
-        appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+        appendExp(str, unaryExp.getSubExp1(), OpPrec::None);
         str << ")";
         break;
+    }
 
-    case opSubscript:
-        appendExp(str, *unaryExp.getSubExp1(), curPrec);
+    case opSubscript: {
+        const Unary &unaryExp = *exp->access<Unary>();
+
+        appendExp(str, unaryExp.getSubExp1(), curPrec);
         LOG_ERROR("Subscript in code generation of proc %1", m_proc->getName());
         break;
+    }
 
     case opMemberAccess: {
-        SharedType ty = nullptr;
+        const Binary &binaryExp = *exp->access<Binary>();
+        SharedType ty           = nullptr;
 
         //             if (ty == nullptr) {
         LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
@@ -1777,18 +1952,20 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         // Mike: it shouldn't!  local11 should have a compound type
         // assert(ty->resolvesToCompound());
         if (binaryExp.getSubExp1()->isMemOf()) {
-            appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
+            appendExp(str, binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
             str << "->";
         }
         else {
-            appendExp(str, *binaryExp.getSubExp1(), OpPrec::Prim);
+            appendExp(str, binaryExp.getSubExp1(), OpPrec::Prim);
             str << ".";
         }
 
         str << binaryExp.access<const Const, 2>()->getStr();
     } break;
 
-    case opArrayIndex:
+    case opArrayIndex: {
+        const Binary &binaryExp = *exp->access<Binary>();
+
         openParen(str, curPrec, OpPrec::Prim);
 
         if (binaryExp.getSubExp1()->isMemOf()) {
@@ -1797,43 +1974,52 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
             if (ty && ty->resolvesToPointer() &&
                 ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
                 // a pointer to an array is automatically dereferenced in C
-                appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
+                appendExp(str, binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
             }
             else {
-                appendExp(str, *binaryExp.getSubExp1(), OpPrec::Prim);
+                appendExp(str, binaryExp.getSubExp1(), OpPrec::Prim);
             }
         }
         else {
-            appendExp(str, *binaryExp.getSubExp1(), OpPrec::Prim);
+            appendExp(str, binaryExp.getSubExp1(), OpPrec::Prim);
         }
 
         closeParen(str, curPrec, OpPrec::Prim);
         str << "[";
-        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Prim);
+        appendExp(str, binaryExp.getSubExp2(), OpPrec::Prim);
         str << "]";
         break;
+    }
 
-    case opDefineAll:
+    case opDefineAll: {
         str << "<all>";
         LOG_ERROR("Should not see opDefineAll in codegen");
         break;
+    }
 
-    case opTrue: str << "true"; break;
+    case opTrue: {
+        str << "true";
+        break;
+    }
 
-    case opFalse: str << "false"; break;
+    case opFalse: {
+        str << "false";
+        break;
+    }
 
-    default:
+    default: {
         // others
-        OPER other_op = exp.getOper();
+        const OPER other_op = exp->getOper();
 
         if (other_op >= opZF) {
             // Machine flags; can occasionally be manipulated individually
             // Chop off the "op" part
-            str << operToString(exp.getOper()) + 2;
+            str << operToString(other_op) + 2;
             break;
         }
 
-        LOG_ERROR("case %1 not implemented", operToString(exp.getOper()));
+        LOG_ERROR("case %1 not implemented", operToString(exp->getOper()));
+    }
     }
 }
 
@@ -2268,7 +2454,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
             SharedExp caseValue    = it->first;
             const BasicBlock *succ = it->second;
 
-            addCaseCondOption(*caseValue);
+            addCaseCondOption(caseValue);
             if (std::next(it) != switchDests.end() && std::next(it)->second == succ) {
                 // multiple case values; generate the BB only for the last case value
                 continue;

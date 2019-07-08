@@ -10,13 +10,16 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class QString;
 
 
 /**
  * Abstract base class for log sinks.
  */
-class ILogSink
+class BOOMERANG_API ILogSink
 {
 public:
     virtual ~ILogSink() = default;

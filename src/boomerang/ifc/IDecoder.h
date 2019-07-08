@@ -25,7 +25,7 @@ class RTLInstDict;
  * Base class for machine instruction decoders.
  * Decoders translate raw bytes to statement lists (RTLs).
  */
-class IDecoder
+class BOOMERANG_API IDecoder
 {
 public:
     IDecoder(Project *) {}
