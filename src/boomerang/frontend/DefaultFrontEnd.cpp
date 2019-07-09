@@ -696,6 +696,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     break;
                 case StmtType::INVALID: assert(false); break;
                 }
+
+                // This can happen if a high-level statement (e.g. a return)
+                // is not the last statement in a rtl. Ignore the following statements.
+                if (!sequentialDecode) {
+                    break;
+                }
             }
 
             if (BB_rtls && inst.rtl) {
