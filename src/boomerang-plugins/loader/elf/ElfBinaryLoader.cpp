@@ -651,8 +651,10 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
             Address symbolAddr = Address(elfRead4(&m_symbolSection[symIndex].st_value));
 
             if (m_symbolSection[symIndex].st_info & STT_SECTION) {
-                symbolAddr = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)]
-                                 .SourceAddr;
+                const Elf32_Half shndx = elfRead2(&m_symbolSection[symIndex].st_shndx);
+                if (Util::inRange(shndx, 0, m_elfSections.size())) {
+                    symbolAddr = m_elfSections[shndx].SourceAddr;
+                }
             }
 
             // Overwrite the relocation value... ?
