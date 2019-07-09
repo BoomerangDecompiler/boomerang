@@ -142,17 +142,17 @@ private:
     const Elf32_Rel *m_relocSection  = nullptr; ///< Pointer to the relocation section
     const Elf32_Sym *m_symbolSection = nullptr; ///< Pointer to loaded symbol section
 
-    bool m_relocHasAddend  = false;            ///< true if reloc table has addend
-    Address m_lastAddr     = Address::INVALID; ///< Save last address looked up
-    int m_lastSize         = 0;                ///< Size associated with that name
-    Address m_pltMin       = Address::INVALID; ///< Min address of PLT table
-    Address m_pltMax       = Address::INVALID; ///< Max address (1 past last) of PLT
-    Address *m_importStubs = nullptr;          ///< An array of import stubs
-    Address m_baseAddr     = Address::INVALID; ///< Base image virtual address
-    Address m_firstExtern  = Address::INVALID; ///< where the first extern will be placed
-    Address m_nextExtern   = Address::INVALID; ///< where the next extern will be placed
-    uint32 *m_shLink       = nullptr;          ///< pointer to array of sh_link values
-    uint32 *m_shInfo       = nullptr;          ///< pointer to array of sh_info values
+    bool m_relocHasAddend              = false;            ///< true if reloc table has addend
+    Address m_lastAddr                 = Address::INVALID; ///< Save last address looked up
+    int m_lastSize                     = 0;                ///< Size associated with that name
+    Address m_pltMin                   = Address::INVALID; ///< Min address of PLT table
+    Address m_pltMax                   = Address::INVALID; ///< Max address (1 past last) of PLT
+    Address *m_importStubs             = nullptr;          ///< An array of import stubs
+    Address m_baseAddr                 = Address::INVALID; ///< Base image virtual address
+    Address m_firstExtern              = Address::INVALID; ///< Placement of first extern
+    Address m_nextExtern               = Address::INVALID; ///< Placement of next extern
+    std::unique_ptr<uint32[]> m_shLink = nullptr;          ///< pointer to array of sh_link values
+    std::unique_ptr<uint32[]> m_shInfo = nullptr;          ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
     BinaryFile *m_binaryFile     = nullptr;

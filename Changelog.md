@@ -20,6 +20,7 @@ v0.5.0 (in development)
 - Fixed: Crash when analyzing data-flow for functions where the entry BB is not the BB with the lowest address.
 - Fixed: Crash when analyzing data-flow for recursive functions after removing Basic Blocks from the same function.
 - Fixed: Crash when accessing deleted call statement via callee function.
+- Fixed: Potential crash when loading ELF files with a large number of sections.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Potential crash when analyzing dataflow for functions where the entry Basic Block is not at index 0.

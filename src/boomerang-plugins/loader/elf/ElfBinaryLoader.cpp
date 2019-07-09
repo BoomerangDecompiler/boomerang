@@ -65,12 +65,7 @@ ElfBinaryLoader::~ElfBinaryLoader()
 {
     // Delete the array of import stubs
     delete[] m_importStubs;
-    delete[] m_shLink;
-    delete[] m_shInfo;
-
     m_importStubs = nullptr;
-    m_shLink      = nullptr;
-    m_shInfo      = nullptr;
 }
 
 
@@ -166,15 +161,17 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray &img)
     }
 
     // Set up the m_sh_link and m_sh_info arrays
-    if (m_shLink) {
-        delete[] m_shLink;
-    }
-    if (m_shInfo) {
-        delete[] m_shInfo;
-    }
 
-    m_shLink = new Elf32_Word[numSections];
-    m_shInfo = new Elf32_Word[numSections];
+    try {
+        m_shLink.reset(new Elf32_Word[numSections]);
+        m_shInfo.reset(new Elf32_Word[numSections]);
+    }
+    catch (const std::bad_alloc &) {
+        m_shLink.reset();
+        m_shInfo.reset();
+        LOG_ERROR("Cannot load ELF file: Not enough memory");
+        return false;
+    }
 
     // Set up section header string table pointer
     const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
