@@ -91,7 +91,7 @@ Win32BinaryLoader::Win32BinaryLoader(Project *project)
 
 Win32BinaryLoader::~Win32BinaryLoader()
 {
-    unload();
+    Win32BinaryLoader::unload();
 }
 
 
