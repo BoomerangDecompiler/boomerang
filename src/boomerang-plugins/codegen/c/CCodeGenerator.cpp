@@ -2446,25 +2446,27 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
     else {
         // case header
 
-        // first, determine the optimal fall-through ordering
-        std::list<std::pair<SharedExp, const BasicBlock *>>
-            switchDests = computeOptimalCaseOrdering(bb, psi);
+        if (psi) {
+            // first, determine the optimal fall-through ordering
+            std::list<std::pair<SharedExp, const BasicBlock *>>
+                switchDests = computeOptimalCaseOrdering(bb, psi);
 
-        for (auto it = switchDests.begin(); it != switchDests.end(); ++it) {
-            SharedExp caseValue    = it->first;
-            const BasicBlock *succ = it->second;
+            for (auto it = switchDests.begin(); it != switchDests.end(); ++it) {
+                SharedExp caseValue    = it->first;
+                const BasicBlock *succ = it->second;
 
-            addCaseCondOption(caseValue);
-            if (std::next(it) != switchDests.end() && std::next(it)->second == succ) {
-                // multiple case values; generate the BB only for the last case value
-                continue;
-            }
+                addCaseCondOption(caseValue);
+                if (std::next(it) != switchDests.end() && std::next(it)->second == succ) {
+                    // multiple case values; generate the BB only for the last case value
+                    continue;
+                }
 
-            if (isGenerated(succ)) {
-                emitGotoAndLabel(bb, succ);
-            }
-            else {
-                generateCode(succ, latch, followSet, gotoSet, proc);
+                if (isGenerated(succ)) {
+                    emitGotoAndLabel(bb, succ);
+                }
+                else {
+                    generateCode(succ, latch, followSet, gotoSet, proc);
+                }
             }
         }
 
