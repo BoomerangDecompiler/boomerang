@@ -1000,6 +1000,10 @@ void ElfBinaryLoader::applyRelocations()
                         break;
 
                     case R_386_PC32: // S + A - P
+                        if (assocSymbols == nullptr) {
+                            break; // cannot do relocation for this entry
+                        }
+
                         if (ELF32_ST_TYPE(assocSymbols[symbolIdx].st_info) == STT_SECTION) {
                             S                           = Address::ZERO;
                             const Elf32_Half sectionIdx = elfRead2(
