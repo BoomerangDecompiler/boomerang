@@ -599,7 +599,7 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
         translatedSym.Type       = ELF32_ST_TYPE(m_symbolSection[i].st_info);
         translatedSym.Binding    = ELF32_ST_BIND(m_symbolSection[i].st_info);
         translatedSym.Visibility = ELF32_ST_VISIBILITY(m_symbolSection[i].st_other);
-        translatedSym.SymbolSize = ELF32_ST_VISIBILITY(m_symbolSection[i].st_size);
+        translatedSym.SymbolSize = m_symbolSection[i].st_size;
         translatedSym.SectionIdx = elfRead2(&m_symbolSection[i].st_shndx);
         translatedSym.Value      = val;
 
