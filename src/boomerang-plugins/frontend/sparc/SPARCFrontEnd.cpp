@@ -708,7 +708,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     LOG_MSG("*%1", pc + 4);
                 }
 
-                if (last->getKind() == StmtType::Call) {
+                if (!last) {
+                    LOG_ERROR("Cannot decode Static Delayed branch at address %1: "
+                              "semantics are empty", rtl->getAddress());
+                    break;
+                }
+                else if (last->getKind() == StmtType::Call) {
                     // Check the delay slot of this call. First case of interest is when the
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
@@ -946,7 +951,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     assert(newBB);
 
                     // Visit the destination of the branch; add "true" leg
-                    Address jumpDest = jumpStmt->getFixedDest();
+                    const Address jumpDest = jumpStmt ? jumpStmt->getFixedDest() : Address::INVALID;
                     createJumpToAddress(jumpDest, newBB, cfg, _targetQueue,
                                         m_program->getBinaryFile()->getImage()->getLimitText());
 
