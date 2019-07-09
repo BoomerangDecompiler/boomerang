@@ -33,19 +33,19 @@ CaseStatement::~CaseStatement()
 
 SwitchInfo *CaseStatement::getSwitchInfo()
 {
-    return m_switchInfo;
+    return m_switchInfo.get();
 }
 
 
 const SwitchInfo *CaseStatement::getSwitchInfo() const
 {
-    return m_switchInfo;
+    return m_switchInfo.get();
 }
 
 
-void CaseStatement::setSwitchInfo(SwitchInfo *psi)
+void CaseStatement::setSwitchInfo(std::unique_ptr<SwitchInfo> psi)
 {
-    m_switchInfo = psi;
+    m_switchInfo = std::move(psi);
 }
 
 
@@ -99,7 +99,7 @@ Statement *CaseStatement::clone() const
     ret->m_isComputed = m_isComputed;
 
     if (m_switchInfo) {
-        ret->m_switchInfo            = new SwitchInfo;
+        ret->m_switchInfo.reset(new SwitchInfo);
         *ret->m_switchInfo           = *m_switchInfo;
         ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
     }

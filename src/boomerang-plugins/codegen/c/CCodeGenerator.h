@@ -316,7 +316,7 @@ private:
      * the jump destination for the case is determined by the second part of the pair.
      */
     std::list<std::pair<SharedExp, const BasicBlock *>>
-    computeOptimalCaseOrdering(const BasicBlock *caseHead, SwitchInfo *switchInfo);
+    computeOptimalCaseOrdering(const BasicBlock *caseHead, const SwitchInfo *switchInfo);
 
 private:
     void print(const Module *module);

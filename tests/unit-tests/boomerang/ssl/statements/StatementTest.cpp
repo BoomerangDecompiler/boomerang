@@ -1001,9 +1001,9 @@ void StatementTest::testAddUsedLocsCase()
     CaseStatement c;
 
     c.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    SwitchInfo si;
-    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
-    c.setSwitchInfo(&si);
+    std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
+    c.setSwitchInfo(std::move(si));
     c.addUsedLocs(l);
 
     QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");

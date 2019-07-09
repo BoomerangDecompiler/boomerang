@@ -336,9 +336,8 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
         SharedExp jumpDest = static_cast<CaseStatement *>(lastStmt)->getDest();
 
         if (jumpDest == nullptr) { // Happens if already analysed (we are now redecoding)
-            // SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
             // processSwitch will update the BB type and number of outedges, decode arms, set out
-            // edges, etc
+            // edges, etc.
             IndirectJumpAnalyzer().processSwitch(newBB, proc);
         }
 

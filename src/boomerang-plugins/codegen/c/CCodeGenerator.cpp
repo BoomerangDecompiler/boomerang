@@ -2372,7 +2372,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
     writeBB(bb);
 
     // write the conditional header
-    SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
+    const SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
 
     if (m_analyzer.getCondType(bb) == CondType::Case) {
         // The CaseStatement will be in the last RTL this BB
@@ -2750,7 +2750,7 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
 
 
 std::list<std::pair<SharedExp, const BasicBlock *>>
-CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, SwitchInfo *psi)
+CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const SwitchInfo *psi)
 {
     using CaseEntry = std::pair<SharedExp, const BasicBlock *>;
     std::list<CaseEntry> result;

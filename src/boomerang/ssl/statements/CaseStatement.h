@@ -86,8 +86,8 @@ public:
     SwitchInfo *getSwitchInfo();
     const SwitchInfo *getSwitchInfo() const;
 
-    void setSwitchInfo(SwitchInfo *psi);
+    void setSwitchInfo(std::unique_ptr<SwitchInfo> psi);
 
 private:
-    SwitchInfo *m_switchInfo; ///< Ptr to struct with information about the switch
+    std::unique_ptr<SwitchInfo> m_switchInfo; ///< Ptr to struct with information about the switch
 };
