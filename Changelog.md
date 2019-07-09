@@ -3,6 +3,7 @@ v0.5.0 (in development)
 - Fixed: Crashes when reading malformed SSL specification files.
 - Fixed: Crashes when specifying malformed command line arguments for boomerang-cli.
 - Fixed: Crashes when decoding unrecognized floating point branches on SPARC.
+- Fixed: Crashes when loading ELF files with malformed relocation entries.
 - Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
@@ -20,6 +21,7 @@ v0.5.0 (in development)
 - Fixed: Crash when analyzing data-flow for functions where the entry BB is not the BB with the lowest address.
 - Fixed: Crash when analyzing data-flow for recursive functions after removing Basic Blocks from the same function.
 - Fixed: Crash when accessing deleted call statement via callee function.
+- Fixed: Potential crash when loading ELF files with a large number of sections.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Potential crash when analyzing dataflow for functions where the entry Basic Block is not at index 0.
