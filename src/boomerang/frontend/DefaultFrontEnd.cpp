@@ -704,7 +704,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
             }
 
-            if (BB_rtls && inst.rtl) {
+            if (BB_rtls != nullptr && inst.rtl != nullptr) {
                 // If non null, we haven't put this RTL into a the current BB as yet
                 BB_rtls->push_back(std::move(inst.rtl));
             }

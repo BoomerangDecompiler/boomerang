@@ -648,7 +648,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             switch (inst.type) {
             case NCT: {
                 // Ret/restore epilogues are handled as ordinary RTLs now
-                if (last->getKind() == StmtType::Ret) {
+                if (last && last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
             }
@@ -667,7 +667,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // We can't simply ignore the skipped delay instruction as there
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
-                jumpStmt->setDest(pc + 2 * inst.numBytes);
+                if (jumpStmt) {
+                    jumpStmt->setDest(pc + 2 * inst.numBytes);
+                }
+
                 BB_rtls->push_back(std::move(inst.rtl));
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
@@ -686,8 +689,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
-                createJumpToAddress(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
-                                    m_program->getBinaryFile()->getImage()->getLimitText());
+
+                if (jumpStmt) {
+                    createJumpToAddress(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
+                                        m_program->getBinaryFile()->getImage()->getLimitText());
+                }
 
                 // There is no fall through branch.
                 sequentialDecode = false;
