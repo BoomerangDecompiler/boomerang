@@ -47,7 +47,7 @@ class BOOMERANG_API CaseStatement : public GotoStatement
 public:
     CaseStatement();
     CaseStatement(const CaseStatement &other);
-    CaseStatement(CaseStatement &&other)      = default;
+    CaseStatement(CaseStatement &&other) = default;
 
     virtual ~CaseStatement() override;
 

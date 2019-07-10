@@ -26,7 +26,7 @@ CaseStatement::CaseStatement()
 }
 
 
-CaseStatement::CaseStatement(const CaseStatement& other)
+CaseStatement::CaseStatement(const CaseStatement &other)
     : GotoStatement(other)
     , m_switchInfo(new SwitchInfo(*other.m_switchInfo))
 {
@@ -38,7 +38,7 @@ CaseStatement::~CaseStatement()
 }
 
 
-CaseStatement &CaseStatement::operator=(const CaseStatement& other)
+CaseStatement &CaseStatement::operator=(const CaseStatement &other)
 {
     GotoStatement::operator=(other);
 

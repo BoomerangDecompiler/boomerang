@@ -716,7 +716,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 if (!last) {
                     LOG_ERROR("Cannot decode Static Delayed branch at address %1: "
-                              "semantics are empty", rtl->getAddress());
+                              "semantics are empty",
+                              rtl->getAddress());
                     break;
                 }
                 else if (last->getKind() == StmtType::Call) {
