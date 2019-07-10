@@ -26,8 +26,24 @@ CaseStatement::CaseStatement()
 }
 
 
+CaseStatement::CaseStatement(const CaseStatement &other)
+    : GotoStatement(other)
+    , m_switchInfo(new SwitchInfo(*other.m_switchInfo))
+{
+}
+
+
 CaseStatement::~CaseStatement()
 {
+}
+
+
+CaseStatement &CaseStatement::operator=(const CaseStatement &other)
+{
+    GotoStatement::operator=(other);
+
+    m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    return *this;
 }
 
 

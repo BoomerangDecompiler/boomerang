@@ -98,7 +98,7 @@ ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
         n       = callSig ? callSig->getNumParams() : 0;
         i       = 0;
     }
-    else if (call->getCalleeReturn() != nullptr) {
+    else if (procDest && call->getCalleeReturn() != nullptr) {
         src          = ArgSource::Callee;
         calleeParams = &static_cast<UserProc *>(procDest)->getParameters();
         pp           = calleeParams->begin();

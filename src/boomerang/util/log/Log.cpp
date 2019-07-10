@@ -30,7 +30,7 @@ Log::Log(LogLevel level)
     , m_level(level)
 {
     const char *lastSrc = __FILE__;
-    const char *p       = lastSrc;
+    const char *p;
 
     while ((p = strstr(lastSrc + 1, "src")) != nullptr) {
         m_fileNameOffset += (p - lastSrc);
