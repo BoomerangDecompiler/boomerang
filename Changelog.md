@@ -46,6 +46,7 @@ v0.5.0 (in development)
 - Fixed: High level code output for bit extraction operator on right hand side of assignments.
 - Fixed: Functions used as members in global function pointer arrays before they were declared.
 - Fixed: Memory leaks in parsers.
+- Fixed: Missing high-level code when decompiling via boomerang-gui.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
 - Feature: Added support for Code Generator plugins.
 - Feature: Added support for Type Recovery plugins.

@@ -57,6 +57,6 @@ bool CodeWriter::writeCode(const Module *module, const QStringList &lines)
     }
 
     assert(it != m_dests.end());
-    it->second.m_os << lines.join('\n') << '\n';
+    it->second << lines.join('\n') << '\n';
     return true;
 }
