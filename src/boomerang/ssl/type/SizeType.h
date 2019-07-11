@@ -14,14 +14,15 @@
 
 
 /**
- * This class is for before type analysis. Typically, you have no info at all, or only know the size
- * (e.g. width of a register or memory transfer)
+ * This class is for before type analysis. Typically, you have no info at all,
+ * or only know the size (e.g. width of a register or memory transfer)
  */
 class BOOMERANG_API SizeType : public Type
 {
 public:
     SizeType();
-    SizeType(unsigned sz);
+    SizeType(Size sz);
+
     SizeType(const SizeType &other) = default;
     SizeType(SizeType &&other)      = default;
 
@@ -31,26 +32,37 @@ public:
     SizeType &operator=(SizeType &&other) = default;
 
 public:
-    virtual SharedType clone() const override;
-
-    static std::shared_ptr<SizeType> get(unsigned sz);
-
     static std::shared_ptr<SizeType> get();
+    static std::shared_ptr<SizeType> get(Size sz);
 
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
+
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-    virtual size_t getSize() const override;
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
 
-    virtual void setSize(size_t sz) override;
-    virtual bool isSize() const override;
-    virtual bool isComplete() override; // Basic type is unknown
+    /// \copydoc Type::getSize
+    virtual Size getSize() const override;
+
+    /// \copydoc Type::setSize
+    virtual void setSize(Size sz) override;
+
+    /// \copydoc Type::isComplete
+    virtual bool isComplete() override;
+
+    /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool) const override;
 
 private:
-    size_t size; // Size in bits, e.g. 16
+    Size m_size; ///< Size in bits, e.g. 16
 };

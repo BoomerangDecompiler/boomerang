@@ -16,7 +16,8 @@
 class BOOMERANG_API FloatType : public Type
 {
 public:
-    explicit FloatType(int sz = 64);
+    explicit FloatType(Size numBits);
+
     FloatType(const FloatType &other) = default;
     FloatType(FloatType &&other)      = default;
 
@@ -26,29 +27,33 @@ public:
     FloatType &operator=(FloatType &&other) = default;
 
 public:
-    static std::shared_ptr<FloatType> get(int sz = 64);
+    static std::shared_ptr<FloatType> get(Size numBits);
 
-    virtual bool isFloat() const override { return true; }
-
-    virtual SharedType clone() const override;
-
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-    virtual size_t getSize() const override;
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
 
-    virtual void setSize(size_t sz) override { size = sz; }
+    /// \copydoc Type::getSize
+    virtual Size getSize() const override;
 
+    /// \copydoc Type::setSize
+    virtual void setSize(Size sz) override;
+
+    /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
-
-    virtual QString getTempName() const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    size_t size; // Size in bits, e.g. 64
+    Size m_size; ///< Size in bits, e.g. 64
 };

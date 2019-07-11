@@ -1,26 +1,28 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x00002778 */
 int main(int argc, char *argv[])
 {
-    union { unsigned int; char; } g0; 		// r0
-    int g1; 		// r1
+    int XERCA; 		// r202
+    unsigned int g0; 		// r0
+    union { int; __size8 *; } g1; 		// r1
     int g10; 		// r10
     int g11; 		// r11
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 104]
-    int local1; 		// m[g1 - 112]
-    int local2; 		// m[g1 - 116]
+    union { int; __size8 *; } local1; 		// m[g1 - 112]
+    union { int; __size8 *; } local2; 		// m[g1 - 116]
     char local3; 		// m[g1 - 96]
     __size32 local4; 		// m[g1 - 128]
-    __size32 local5; 		// m[g1 - 124]
+    char **local5; 		// m[g1 - 124]
     int local6; 		// m[g1 - 108]
     int local7; 		// m[g1 - 120]
-    __size32 local8; 		// m[g1 - 128]{14}
+    __size32 local8; 		// m[g1 - 128]{15}
 
     g3 = malloc(12);
-    *(__size32*)(g3 + 4) = /* machine specific */ (int) LR + 0x1864;
+    *(__size32*)(g3 + 4) = 0x3ff4;
     local4 = 2;
     local5 = g3 + 4;
     local8 = local4;
@@ -46,31 +48,32 @@ bb0x2810:
                 local1 = 0;
 bb0x2874:
                 if (local1 <= 6) {
-                    g10 = (ROTL(local2) & ~0x7) + g1 + local1 - 96;
-                    g11 = (ROTL((rs * 7 + local7)) & ~0x3) + /* machine specific */ (int) LR + 0x1890;
+                    g10 = local2 * 8 + g1 + local1 - 96;
+                    g11 = (((local0 >> 3) + XERCA) * 7 + local7) * 4 + 0x4020;
                     g0 = *g11;
-                    g0 = *(unsigned char*)(rs * 7 + local1 + g0);
+                    g0 = *(unsigned char*)((local0 - ((local0 >> 3) + XERCA) * 8) * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
                     local1++;
                     goto bb0x2874;
                 }
-                *(__size8*)((ROTL(local2) & ~0x7) + g1 - 89) = 32;
+                *(__size8*)(local2 * 8 + g1 - 89) = 32;
                 local2++;
             }
-            local2 = (ROTL(local6) & ~0x7) - 1;
+            local2 = local6 * 8 - 1;
             while (local2 >= 0) {
                 g0 = *(unsigned char*)(g1 + local2 - 96);
-                if ((int) g0 == 32) {
-                    *(__size8*)(g1 + local2 - 96) = 0;
-                    local2--;
+                if ((int) g0 != 32) {
+                    break;
                 }
+                *(__size8*)(g1 + local2 - 96) = 0;
+                local2--;
             }
             g10 = puts(&local3); /* Warning: also results in g11 */
             local7++;
             goto bb0x2810;
         }
-        puts(/* machine specific */ (int) LR + 1108);
-        local5 += 4;
+        puts("");
+        local5++;
         local8 = local4;
         local4 = local8 - 1;
     }

@@ -1,22 +1,23 @@
 int main(int argc, char *argv[]);
-__size32 elf_hash(union { __size32; char *; } param1, int param2);
+__size32 elf_hash(char *param1, int param2);
+
 
 /** address: 0x00010678 */
 int main(int argc, char *argv[])
 {
-    int o0; 		// r8
+    unsigned int o0_1; 		// r8
     int o2; 		// r10
 
-    o0 = elf_hash(0x107a8, o2);
-    printf("elf_hash(\"main\") is %x\n", o0);
+    o0_1 = elf_hash("main", o2);
+    printf("elf_hash(\"main\") is %x\n", o0_1);
     return 0;
 }
 
 /** address: 0x000106b4 */
-__size32 elf_hash(union { __size32; char *; } param1, int param2)
+__size32 elf_hash(char *param1, int param2)
 {
-    __size32 g1; 		// r1
-    __size32 g1_1; 		// r1{7}
+    char *g1; 		// r1
+    char *g1_1; 		// r1{7}
     int local0; 		// param2{8}
     int local1; 		// o2{17}
     int local2; 		// o3{18}
@@ -43,7 +44,7 @@ __size32 elf_hash(union { __size32; char *; } param1, int param2)
             local2 = o3_2;
             g1 = g1_1 + 1;
             o4_2 = (o4_1 << 4) + o3_1 & 0xf0000000;
-            if (o4_2 != 0) {
+            if (((o4_1 << 4) + o3_1 & 0xf0000000) != 0) {
                 o2 = (unsigned int)o4_2 >> 24;
                 local1 = o2;
                 o3 = (o4_1 << 4) + o3_1 ^ (unsigned int)o4_2 >> 24;

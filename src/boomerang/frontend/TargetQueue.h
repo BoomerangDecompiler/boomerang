@@ -20,7 +20,7 @@ class BasicBlock;
 
 
 /// Put the target queue logic into this small class
-class TargetQueue
+class BOOMERANG_API TargetQueue
 {
 public:
     TargetQueue(bool traceDecoder);

@@ -1,5 +1,6 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x00001d10 */
 int main(int argc, char *argv[])
 {
@@ -9,9 +10,10 @@ int main(int argc, char *argv[])
     if (argc < -2) {
         local0 = -2;
     }
-    if (local0 <= 3) {
+    if (local0 > 3) {
+        local0 = 3;
     }
-    printf(/* machine specific */ (int) LR + 684);
+    printf("MinMax adjusted number of arguments is %d\n", local0);
     return 0;
 }
 

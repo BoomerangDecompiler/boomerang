@@ -36,86 +36,117 @@ void BinaryImage::reset()
 }
 
 
-Byte BinaryImage::readNative1(Address addr) const
+bool BinaryImage::readNative1(Address addr, Byte &value) const
 {
     const BinarySection *section = getSectionByAddr(addr);
 
     if (section == nullptr || section->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr);
-        return 0xFF;
+        return false;
     }
 
     HostAddress host = section->getHostAddr() - section->getSourceAddr() + addr;
-    return *reinterpret_cast<Byte *>(host.value());
+    value            = *reinterpret_cast<Byte *>(host.value());
+    return true;
 }
 
 
-SWord BinaryImage::readNative2(Address addr) const
+bool BinaryImage::readNative2(Address addr, SWord &value) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
-        return 0x0000;
+        return false;
     }
     else if (addr + 2 > si->getSourceAddr() + si->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0x0000;
+        return false;
     }
     else if (si->isAddressBss(addr)) {
-        return 0x0000;
+        return false;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    value = Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    return true;
 }
 
 
-DWord BinaryImage::readNative4(Address addr) const
+bool BinaryImage::readNative4(Address addr, DWord &value) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
-        return 0x00000000;
+        return false;
     }
     else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0x00000000;
+        return false;
     }
     else if (si->isAddressBss(addr)) {
-        return 0x00000000;
+        return false;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readDWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    value = Util::readDWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    return true;
 }
 
 
-QWord BinaryImage::readNative8(Address addr) const
+bool BinaryImage::readNative8(Address addr, QWord &value) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
-        return 0x0000000000000000;
+        return false;
     }
     else if (addr + 8 > si->getSourceAddr() + si->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0x0000000000000000;
+        return false;
     }
     else if (si->isAddressBss(addr)) {
-        return 0x0000000000000000;
+        return false;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readQWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    value = Util::readQWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
+    return true;
+}
+
+
+bool BinaryImage::readNativeAddr4(Address addr, Address &value) const
+{
+    assert(Address::getSourceBits() == 32);
+    DWord val = value.value() & Address::getSourceMask();
+    if (readNative4(addr, val)) {
+        value = Address(val);
+        return true;
+    }
+
+    return false;
+}
+
+
+bool BinaryImage::readNativeAddr8(Address addr, Address &value) const
+{
+    assert(Address::getSourceBits() == 64);
+    QWord val = value.value() & Address::getSourceMask();
+    if (readNative8(addr, val)) {
+        value = Address(val);
+        return true;
+    }
+
+    return false;
 }
 
 
 bool BinaryImage::readNativeFloat4(Address addr, float &value) const
 {
     const BinarySection *sect = getSectionByAddr(addr);
+    DWord raw                 = 0;
 
     if (sect == nullptr || sect->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
@@ -125,8 +156,9 @@ bool BinaryImage::readNativeFloat4(Address addr, float &value) const
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
         return false;
     }
-
-    DWord raw = readNative4(addr);
+    else if (!readNative4(addr, raw)) {
+        return false;
+    }
 
     value = *reinterpret_cast<float *>(&raw); // Note: cast, not convert
     return true;
@@ -136,6 +168,7 @@ bool BinaryImage::readNativeFloat4(Address addr, float &value) const
 bool BinaryImage::readNativeFloat8(Address addr, double &value) const
 {
     const BinarySection *sect = getSectionByAddr(addr);
+    QWord raw                 = 0;
 
     if (sect == nullptr || sect->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
@@ -145,9 +178,11 @@ bool BinaryImage::readNativeFloat8(Address addr, double &value) const
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
         return false;
     }
+    else if (!readNative8(addr, raw)) {
+        return false;
+    }
 
-    QWord raw = readNative8(addr);
-    value     = *reinterpret_cast<double *>(&raw);
+    value = *reinterpret_cast<double *>(&raw);
     return true;
 }
 
@@ -291,8 +326,8 @@ BinarySection *BinaryImage::createSection(const QString &name, Address from, Add
         // section already existed
         BinarySection *existing = getSectionByAddr(from);
         LOG_ERROR("Could not create section '%1' from address %2 to %3: Section extent matches "
-                  "existing section '%4",
-                  name, from, to, existing->getName());
+                  "existing section '%4'",
+                  name, from, to, existing ? existing->getName() : "<invalid>");
         return nullptr;
     }
     else {

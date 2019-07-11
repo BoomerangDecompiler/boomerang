@@ -13,17 +13,11 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
-/**
- * Holds one subexpression and the type of this subexpression.
- */
+/// Holds one subexpression and the type of this subexpression.
 class BOOMERANG_API TypedExp : public Unary
 {
 public:
     TypedExp(SharedExp e1);
-
-    /// Constructor, type, and subexpression.
-    /// A rare const parameter allows the common case of providing a temporary,
-    /// e.g. foo = new TypedExp(Type(INTEGER), ...);
     TypedExp(SharedType ty, SharedExp e1);
     TypedExp(const TypedExp &other);
     TypedExp(TypedExp &&other) = default;
@@ -34,6 +28,9 @@ public:
     TypedExp &operator=(TypedExp &&other) = default;
 
 public:
+    static std::shared_ptr<TypedExp> get(SharedExp exp);
+    static std::shared_ptr<TypedExp> get(SharedType ty, SharedExp exp);
+
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 
@@ -43,11 +40,8 @@ public:
     /// \copydoc Unary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator<<
-    bool operator<<(const Exp &o) const override;
-
-    /// \copydoc Unary::operator*=
-    bool operator*=(const Exp &o) const override;
+    /// \copydoc Unary::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// Get and set the type
     SharedType getType() { return m_type; }
@@ -59,7 +53,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
-    virtual void descendType(SharedType, bool &, Statement *) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Unary::acceptVisitor

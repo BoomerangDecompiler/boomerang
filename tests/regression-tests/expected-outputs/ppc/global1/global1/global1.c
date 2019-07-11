@@ -1,8 +1,9 @@
-int a = 5;
-int b = 7;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();
+
+int a = 5;
+int b = 7;
 
 /** address: 0x10000498 */
 int main(int argc, char *argv[])

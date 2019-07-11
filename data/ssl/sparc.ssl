@@ -1,175 +1,213 @@
 #
-# Copyright (C) 1997, Shane Sendall
-# Copyright (C) 1998-2001, The University of Queensland
-# Copyright (C) 2001, Sun Microsystems, Inc
+# This file is part of the Boomerang Decompiler.
 #
 # See the file "LICENSE.TERMS" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL
 # WARRANTIES.
 #
 
-# File: sparc.ssl
-# Desc: This file contains a semantic description of the SPARC V8 processor.
-
-# --------------------------------------------------------------------------
-# SPARC RTL
-# --------------------------------------------------------------------------
-
-# $Revision$
-# Jun-Dec 97 - Shane: Created
-# 30 Apr 01 - Nathan: Minor clean-up to trap instructions, changed logicals to
-#                   use 0- rather than !
-# 21 Jun 01 - Nathan: Fixed precedence problem in LDD & STD
-# 26 Nov 02 - Mike: Added RETURN (V9) instruction
-# 04 Dec 02 - Mike: r[rs1] -> rs1 (so we can make r[0] -> 0)
-# 09 Dec 02 - Mike: Use succ(rd) and succ(rs1) for LDD and STD
-# 23 Nov 04 - Mike: Use ~(regimm) for ANDN, ORN, XORN etc
-
-NWINDOWS    := 8;            # Number of windows (register windows)-
-                             # implementation dependent
-MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
-MAX32BIT    := 0xFFFFFFFF;    # a word of all 1's
-MAXSIGN32   := 0x7FFFFFFF;    # all bits except sign bit are set
-SIGN_32_NEG := 0x80000000;
-WORD        := 4;            # size of word in bytes (for now)
+# This file contains a semantic description of the SPARC V8 processor.
 
 ENDIANNESS BIG;
 
-# register mapping
-# normal registers have a mapping to a Cardinal
-# special register maps to -1
+WORD := 4; # number of bytes
+MAX_BYTE := 0xFF;
 
-INTEGER
-[ %g0, %g1, %g2, %g3, %g4, %g5, %g6, %g7,
-  %o0, %o1, %o2, %o3, %o4, %o5, %o6, %o7,
-  %l0, %l1, %l2, %l3, %l4, %l5, %l6, %l7,
-  %i0, %i1, %i2, %i3, %i4, %i5, %i6, %i7 ][32] -> 0..31,
+#
+# registers
+#
+INTEGER %g0[32] -> 0;
+INTEGER %g1[32] -> 1;
+INTEGER %g2[32] -> 2;
+INTEGER %g3[32] -> 3;
+INTEGER %g4[32] -> 4;
+INTEGER %g5[32] -> 5;
+INTEGER %g6[32] -> 6;
+INTEGER %g7[32] -> 7;
 
-  %sp[32] -> 14,  # Aliases
-  %fp[32] -> 30;
+INTEGER %o0[32] -> 8;
+INTEGER %o1[32] -> 9;
+INTEGER %o2[32] -> 10;
+INTEGER %o3[32] -> 11;
+INTEGER %o4[32] -> 12;
+INTEGER %o5[32] -> 13;
+INTEGER %o6[32] -> 14;
+INTEGER %o7[32] -> 15;
 
-FLOAT
-[ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
-  %f8 , %f9 , %f10, %f11, %f12, %f13, %f14, %f15,
-  %f16, %f17, %f18, %f19, %f20, %f21, %f22, %f23,
-  %f24, %f25, %f26, %f27, %f28, %f29, %f30, %f31 ][32] -> 32..63,
+INTEGER %l0[32] -> 16;
+INTEGER %l1[32] -> 17;
+INTEGER %l2[32] -> 18;
+INTEGER %l3[32] -> 19;
+INTEGER %l4[32] -> 20;
+INTEGER %l5[32] -> 21;
+INTEGER %l6[32] -> 22;
+INTEGER %l7[32] -> 23;
 
-%f0to1[64] -> 64 COVERS %f0..%f1,
-%f2to3[64] -> 65 COVERS %f2..%f3,
-%f4to5[64] -> 66 COVERS %f4..%f5,
-%f6to7[64] -> 67 COVERS %f6..%f7,
-%f8to9[64] -> 68 COVERS  %f8..%f9,
-%f10to11[64] -> 69 COVERS %f10..%f11,
-%f12to13[64] -> 70 COVERS %f12..%f13,
-%f14to15[64] -> 71 COVERS %f14..%f15,
-%f16to17[64] -> 72 COVERS %f16..%f17,
-%f18to19[64] -> 73 COVERS %f18..%f19,
-%f20to21[64] -> 74 COVERS %f20..%f21,
-%f22to23[64] -> 75 COVERS %f22..%f23,
-%f24to25[64] -> 76 COVERS %f24..%f25,
-%f26to27[64] -> 77 COVERS %f26..%f27,
-%f28to29[64] -> 78 COVERS %f28..%f29,
-%f30to31[64] -> 79 COVERS %f30..%f31,
-%f0to3[128]  -> 80 COVERS %f0..%f3,
-%f4to7[128]  -> 81 COVERS %f4..%f7,
-%f8to11[128] -> 82 COVERS %f8..%f11,
-%f12to15[128]-> 83 COVERS %f12..%f15,
-%f16to19[128]-> 84 COVERS %f16..%f19,
-%f20to23[128]-> 85 COVERS %f20..%f23,
-%f24to27[128]-> 86 COVERS %f24..%f27,
-%f28to31[128]-> 87 COVERS %f28..%f31;
+INTEGER %i0[32] -> 24;
+INTEGER %i1[32] -> 25;
+INTEGER %i2[32] -> 26;
+INTEGER %i3[32] -> 27;
+INTEGER %i4[32] -> 28;
+INTEGER %i5[32] -> 29;
+INTEGER %i6[32] -> 30;
+INTEGER %i7[32] -> 31;
 
-INTEGER
-[ %pc, %npc, %Y, %CWP, %TBR, %WIM, %PSR, %FSR ][32] -> -1, # control regs
-[ %CF, %ZF, %NF, %OF, %AF ][1] -> -1,  # Standard flags
-[ %FZF,%FLF,%FGF ][1] -> -1;           # Floating point flags
+# Aliases
+INTEGER %sp[32] -> 14;
+INTEGER %fp[32] -> 30;
+
+# Float regs
+FLOAT %f0[32] -> 32;
+FLOAT %f1[32] -> 33;
+FLOAT %f2[32] -> 34;
+FLOAT %f3[32] -> 35;
+FLOAT %f4[32] -> 36;
+FLOAT %f5[32] -> 37;
+FLOAT %f6[32] -> 38;
+FLOAT %f7[32] -> 39;
+
+FLOAT %f8[32] -> 40;
+FLOAT %f9[32] -> 41;
+FLOAT %f10[32] -> 42;
+FLOAT %f11[32] -> 43;
+FLOAT %f12[32] -> 44;
+FLOAT %f13[32] -> 45;
+FLOAT %f14[32] -> 46;
+FLOAT %f15[32] -> 47;
+
+FLOAT %f16[32] -> 48;
+FLOAT %f17[32] -> 49;
+FLOAT %f18[32] -> 50;
+FLOAT %f19[32] -> 51;
+FLOAT %f20[32] -> 52;
+FLOAT %f21[32] -> 53;
+FLOAT %f22[32] -> 54;
+FLOAT %f23[32] -> 55;
+
+FLOAT %f24[32] -> 56;
+FLOAT %f25[32] -> 57;
+FLOAT %f26[32] -> 58;
+FLOAT %f27[32] -> 59;
+FLOAT %f28[32] -> 60;
+FLOAT %f29[32] -> 61;
+FLOAT %f30[32] -> 62;
+FLOAT %f31[32] -> 63;
+
+FLOAT %f0to1[64]   -> 64 COVERS %f0..%f1;
+FLOAT %f2to3[64]   -> 65 COVERS %f2..%f3;
+FLOAT %f4to5[64]   -> 66 COVERS %f4..%f5;
+FLOAT %f6to7[64]   -> 67 COVERS %f6..%f7;
+FLOAT %f8to9[64]   -> 68 COVERS %f8..%f9;
+FLOAT %f10to11[64] -> 69 COVERS %f10..%f11;
+FLOAT %f12to13[64] -> 70 COVERS %f12..%f13;
+FLOAT %f14to15[64] -> 71 COVERS %f14..%f15;
+FLOAT %f16to17[64] -> 72 COVERS %f16..%f17;
+FLOAT %f18to19[64] -> 73 COVERS %f18..%f19;
+FLOAT %f20to21[64] -> 74 COVERS %f20..%f21;
+FLOAT %f22to23[64] -> 75 COVERS %f22..%f23;
+FLOAT %f24to25[64] -> 76 COVERS %f24..%f25;
+FLOAT %f26to27[64] -> 77 COVERS %f26..%f27;
+FLOAT %f28to29[64] -> 78 COVERS %f28..%f29;
+FLOAT %f30to31[64] -> 79 COVERS %f30..%f31;
+
+FLOAT %f0to3[128]  -> 80 COVERS %f0..%f3;
+FLOAT %f4to7[128]  -> 81 COVERS %f4..%f7;
+FLOAT %f8to11[128] -> 82 COVERS %f8..%f11;
+FLOAT %f12to15[128]-> 83 COVERS %f12..%f15;
+FLOAT %f16to19[128]-> 84 COVERS %f16..%f19;
+FLOAT %f20to23[128]-> 85 COVERS %f20..%f23;
+FLOAT %f24to27[128]-> 86 COVERS %f24..%f27;
+FLOAT %f28to31[128]-> 87 COVERS %f28..%f31;
+
+# control regs
+INTEGER %pc[32]  -> -1;
+INTEGER %npc[32] -> -1;
+
+INTEGER %Y[32]   -> 100;
+INTEGER %CWP[32] -> 101;
+INTEGER %TBR[32] -> 102;
+INTEGER %WIM[32] -> 103;
+INTEGER %PSR[32] -> 104;
+INTEGER %FSR[32] -> 105;
+
+# Standard flags
+FLAGS %icc[4] -> 200 SHARES %PSR@[20..23];
+FLAGS %CF[1] -> -1 SHARES %icc@[0..0];
+FLAGS %OF[1] -> -1 SHARES %icc@[1..1];
+FLAGS %ZF[1] -> -1 SHARES %icc@[2..2];
+FLAGS %NF[1] -> -1 SHARES %icc@[3..3];
+
+# Floating point flags
+INTEGER %FZF[1] -> -1;
+INTEGER %FLF[1] -> -1;
+INTEGER %FGF[1] -> -1;
 
 INTEGER %CTI[1] -> -1;
 
-#@EXCEPTIONS
-# Priority name -> id
-# 1 reset -> 0
-# 2 data_store_error -> 0x2B
-#       instruction_access_MMU_miss -> 0x3C
-# 3 instruction_access_error -> 0x21
-# 4 r_register_access_error -> 0x20
-# 5 instruction_access_exception -> 0x01
-# 6 privileged_instruction -> 0x03
-# 7 illegal_instruction -> 0x02
-# 8 fp_disabled -> 0x04
-#       cp_disabled -> 0x24
-#       unimplemented_FLUSH -> 0x25
-#       watchpoint_detected -> 0x0B
-# 9 window_overflow -> 0x05
-#       window_underflow -> 0x06
-#10 mem_address_not_aligned -> 0x07
-#11 fp_exception -> 0x08
-#       cp_exception -> 0x28
-#12 data_access_error -> 0x29
-#       data_access_MMU_miss -> 0x2C
-#13 data_access_exception -> 0x09
-#14 tag_overflow -> 0x0A
-#15 division_by_zero -> 0x2A
-#16 trap_instruction[0..0x7F] -> 0x80..0xFF
-#31..17 interrupt[1..15] -> 0x11..0x1F
-#@EXCEPTIONS
 
 LOGICALFLAGS(op1)   {
-        *1*  %NF := op1@[31:31]
-        *1*  %ZF := [op1 = 0 ? 1 : 0]
-        *1*  %OF := 0
-        *1*  %CF := 0
+    *1*  %NF := op1@[31:31]
+    *1*  %ZF := [op1 = 0 ? 1 : 0]
+    *1*  %OF := 0
+    *1*  %CF := 0
 };
+
 ADDFLAGS(op1, op2, result)  {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
-                (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
-        *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
-                (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+    *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
+            (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
+    *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
+            (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
 };
+
 TADDFLAGS(op1, op2, result) {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-#       *1*  %OF := temp_v
-        *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
-                (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+#   *1*  %OF := temp_v
+    *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
+            (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
 };
+
 SUBFLAGS(op1, op2, result)  {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := ((op1@[31:31]) & ~(op2@[31:31]) & ~(result@[31:31])) |
-                (~(op1@[31:31]) & (op2@[31:31]) & (result@[31:31]))
-        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
-                ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+    *1*  %OF := ((op1@[31:31]) & ~(op2@[31:31]) & ~(result@[31:31])) |
+            (~(op1@[31:31]) & (op2@[31:31]) & (result@[31:31]))
+    *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
+            ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
 };
+
 TSUBFLAGS(op1, op2, result) {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-#       *1*  %OF := temp_v
-        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
-                ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+#   *1*  %OF := temp_v
+    *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
+            ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
 };
-# MVE: These are correct only for a 32 but result; usually result is 64 bits
+
+# MVE: These are correct only for a 32 bit result; usually result is 64 bits
 MULTFLAGS(op1, op2, result) {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := 0
-        *1*  %CF := 0
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+    *1*  %OF := 0
+    *1*  %CF := 0
 };
+
 MULTSFLAGS(op1, op2, result){
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
-                (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
-        *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
-                (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+    *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
+            (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
+    *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
+            (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
 };
+
 DIVFLAGS(op1, op2, result)  {
-        *1*  %NF := result@[31:31]
-        *1*  %ZF := [result = 0 ? 1 : 0]
-#       *1*  %OF := temp_v
-        *1*  %CF := 0
+    *1*  %NF := result@[31:31]
+    *1*  %ZF := [result = 0 ? 1 : 0]
+#   *1*  %OF := temp_v
+    *1*  %CF := 0
 };
 
 SETFFLAGS(op1, op2) {
@@ -183,208 +221,144 @@ TRAP(cond, op1) {
     *32* %l1 := %pc
     *32* %l2 := %npc
     *32* %TBR@[4:11] := op1
-     *1* %PSR@[7:7] := 1
+    *1*  %PSR@[7:7] := 1
     *32* %pc := %TBR
     *32* %npc := %TBR+4
 };
 
 
-FAST
-  UMUL ->  UMULQ,
-  SMUL ->  SMULQ,
-  UDIV ->  UDIVQ,
-  SDIV ->  SDIVQ,
-  UMULCC -> UMULCCQ,
-  SMULCC -> SMULCCS,
-  UDIVCC -> UDIVCCQ,
-  SDIVCC -> SDIVCCQ;
-
-
-OPERAND
-    eaddr := { absoluteA, dispA, indirectA, indexA },
-    reg_or_imm := { imode, rmode };
-
-OPERAND
-    dispA      rs1, simm13      *32* rs1 + sgnex(13,32,simm13),
-    absoluteA  simm13           *32* sgnex(13,32,simm13),
-    indexA     rs1, rs2         *32* rs1 + rs2,
-    indirectA  rs1              *32* rs1,
-    imode      simm13           *32* sgnex(13,32,simm13),
-    rmode      rs2              *32* rs2,
-    indexR     rs1, rs2         *32* rs1 + rs2,
-    indirectR  rs1              *32* rs1;
-
-
-
-FETCHEXEC           *32* %g0 := 0
-                    *1* %CTI := 0
-                    *32* execute( %pc )
-                    *32* %pc := [ %CTI = 0 ? %npc : %pc ]
-                    *32* %npc := [ %CTI = 0 ? %npc + 4 : %npc ];
+#synthetic instructions
+MOV src, dest           *32* dest := src;
+CMP rs1, reg_or_imm     SUBFLAGS(rs1, reg_or_imm, rs1 - reg_or_imm);
 
 
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd.
-#LOADD := { LDD_, LDDA_ }
-LDD      eaddr, rd                      *32*            rd := m[eaddr]
-                                        *32* succ(rd) := m[eaddr + WORD];
-# Note: the above offset (WORD) is now in bytes!
 
-#LOADU := { LD_, LDA_ }
-LD       eaddr, rd                      *32* rd := m[eaddr]{32};
+LDD src, rd
+    *32*    rd       := src
+    *32*    succ(rd) := m[addr(src) + WORD]
+;
 
-#LOADUH := { LDUH_, LDUHA_ }
-LDUH     eaddr, rd                      *32* rd := zfill(16, 32, m[eaddr]);
-
-#LOADUB := { LDUB_, LDUBA_ }
-LDUB     eaddr, rd                      *32* rd := zfill(8, 32, m[eaddr]);
-
-#LOADSH := { LDSH_, LDSHA_ }
-LDSH     eaddr, rd                      *32* rd := sgnex(16, 32, m[eaddr]);
-
-#LOADSB := { LDSB_, LDSBA_ }
-LDSB     eaddr, rd                      *32* rd := sgnex(8, 32, m[eaddr]);
+LD      src, dest       *32* dest := src;
+LDUH    src, dest       *32* dest := zfill(16, 32, src);
+LDUB    src, dest       *32* dest := zfill( 8, 32, src);
+LDSH    src, dest       *32* dest := sgnex(16, 32, src);
+LDSB    src, dest       *32* dest := sgnex( 8, 32, src);
 
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-#STOD := { STD_, STDA_ }
-STD      rd, eaddr                      *32* m[eaddr] := rd
-                                        *32* m[eaddr + WORD] := succ(rd);
+STD     rd, eaddr       *32* m[eaddr] := rd
+                        *32* m[eaddr + WORD] := succ(rd)
+;
 
-#STW := { ST_, STA_}
-ST       rd, eaddr                      *32* m[eaddr] := rd;
-
-#STH := { STH_, STHA_ }
-STH      rd, eaddr                      *16* m[eaddr] := truncs(32, 16, rd);
-
-#STB := { STB_, STBA_ }
-STB      rd, eaddr                      *8*  m[eaddr] := truncs(32, 8, rd);
+ST      src, dest       *32* dest := src;
+STH     src, dest       *16* dest := truncs(32, 16, src);
+STB     src, dest       *8*  dest := truncs(32, 8, src);
 
 
 # LOad STore Unsigned Byte
 # the byte number given by address offset
 # (1st 2 bytes of addr.) is selected by a shift
 # the copied byte (in the source addr.) is replaced with 1's
-#LDSTUNBYTE := { LDSTUB_, LDSTUBA_ }
-LDSTUB   eaddr, rd                      *32*  rd := zfill(8,32,m[eaddr])
-                                        *8*  m[eaddr] := m[eaddr] | MAX_BYTE;
+LDSTUB  eaddr, rd       *32*  rd       := zfill(8, 32, m[eaddr])
+                        *8*   m[eaddr] := m[eaddr] | MAX_BYTE;
 
 # Swap using temp register
-#SWAPS := { SWAP_, SWAPA_ }
-SWAP     eaddr, rd                      *32* tmp1 := rd
-                                        *32* rd := m[eaddr]
-                                        *32* m[eaddr] := tmp1;
+SWAP    lhs, rhs        *32* tmp1 := rhs
+                        *32* rhs := lhs
+                        *32* lhs := tmp1
+;
 
-# Logical operators - use OP1 (table) to map the correct operator.
 
-LOG_N   := { "AND","OR","XOR","ANDCC","ORCC","XORCC" };
-OP1     := {  "&",  "|", "^",   "&",    "|",   "^" };
-LOG_NOT := { "ANDN","ORN","XNOR","ANDNCC","ORNCC","XNORCC" };
-LOG_CC  := { "ANDCC","ANDNCC","ORCC","ORNCC","XORCC","XNORCC" };
+AND     rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm;
+ANDCC   rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rs1 & reg_or_imm);
+OR      rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm;
+ORCC    rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rs1 | reg_or_imm);
+XOR     rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm;
+XORCC   rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rs1 ^ reg_or_imm);
 
-LOG_N[IDX]      rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] reg_or_imm;
-LOG_NOT[IDX]    rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] (~reg_or_imm);    # ~ has weird precedence
-LOG_CC[IDX]     rs1, reg_or_imm, rd
-                    LOGICALFLAGS(rd);
+ANDN    rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm);
+ANDNCC  rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rs1 & (~reg_or_imm));
+ORN     rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm);
+ORNCC   rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rs1 | (~reg_or_imm));
+XNOR    rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm);
+XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rs1 ^ (~reg_or_imm));
+
 
 # sethi instruction- puts the immediate into the top 22 bits
-SETHI   val, rd                         *32* rd := val;
+SETHI val, rd           *32* rd := val << 10;
 
-NOP                                    _;
+NOP                     _;
 
-FLUSH  eaddr                            _; # icache flush
-STBAR                                   _; # store barrier
+FLUSH  eaddr            _; # icache flush
+STBAR                   _; # store barrier
 
-# Shift operators- again uses OP2 table for correct operator.
-
-SHIFTS  := { "SLL", "SRL", "SRA" };
-OP2     := { "<<",  ">>",  ">>A" };
-SHIFTS[IDX]     rs1, reg_or_imm, rd
-                                *32* rd := rs1 OP2[IDX] reg_or_imm;
+SLL     rs1, reg_or_imm, rd     *32* rd := rs1 <<  reg_or_imm;
+SRL     rs1, reg_or_imm, rd     *32* rd := rs1 >>  reg_or_imm;
+SRA     rs1, reg_or_imm, rd     *32* rd := rs1 >>A reg_or_imm;
 
 
-# Arithmetic operators- uses OP3 table for correct operator.
 # NOTE: The format of these (number of RTLs, etc) must agree with the
 # isCompare function in rtl/ctisparc.cc.
+ADD     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm;
+ADDCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     ADDFLAGS(tmp, reg_or_imm, rd);
+SUB     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm;
+SUBCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, rd);
+TADDCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     TADDFLAGS(tmp, reg_or_imm, rd);
+TSUBCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     TSUBFLAGS(tmp, reg_or_imm, rd);
 
-ARITH   := { "ADD", "SUB", "ADDCC", "SUBCC", "TADDCC", "TSUBCC" };
-OP3     := {  "+",   "-",    "+",     "-",     "+",       "-"   };
+ADDX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
+ADDXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   ADDFLAGS(tmp, reg_or_imm, rd);
+SUBX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF);
+SUBXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd);
 
-ARITH[IDX]   rs1, reg_or_imm, rd
-                *32* tmp := rs1
-                *32* rd  := rs1 OP3[IDX] reg_or_imm;
 
-ADDCC         rs1, reg_or_imm, rd
-                ADDFLAGS(tmp, reg_or_imm, rd);
-
-SUBCC         rs1, reg_or_imm, rd
-                SUBFLAGS(tmp, reg_or_imm, rd);
-
-TADDCC        rs1, reg_or_imm, rd
-              TADDFLAGS(tmp, reg_or_imm, rd);
-
-TSUBCC        rs1, reg_or_imm, rd
-              TSUBFLAGS(tmp, reg_or_imm, rd);
-
-ARITH_C := { "ADDX", "SUBX", "ADDXCC", "SUBXCC" };
-OP4     := { "+",      "-",    "+",      "-" };
-
-ARITH_C[idx]  rs1, reg_or_imm, rd
-                *32* tmp := rs1
-                *32* rd  := rs1 OP4[idx] reg_or_imm OP4[idx] zfill(1,32,%CF) ;
-ADDXCC        rs1, reg_or_imm, rd
-                ADDFLAGS(tmp, reg_or_imm, rd);
-SUBXCC        rs1, reg_or_imm, rd
-                SUBFLAGS(tmp, reg_or_imm, rd);
-
-# Unsigned Multiplication - uses the Y register to store top 32 bits treats  Y
-#  and rd as 64 bit register
+# Unsigned Multiplication - uses the Y register to store top 32 bits
+# treats Y and rd as 64 bit register
 UMULT   := { "UMUL", "UMULCC" };
 
 UMULT[idx]  rs1, reg_or_imm, rd
-                *32* tmp := rs1
-                *64* tmpl := zfill(32, 64, rs1) * zfill(32, 64, reg_or_imm)
-                *32* rd := truncs(64, 32, tmpl)
-                *32* %Y := tmpl@[32:63];
-UMULTCC     rs1, reg_or_imm, rd
-                MULTFLAGS(tmp, reg_or_imm, rd);
+    *32* tmp := rs1
+    *64* tmpl := zfill(32, 64, rs1) * zfill(32, 64, reg_or_imm)
+    *32* rd := truncs(64, 32, tmpl)
+    *32* %Y := tmpl@[32:63]
+;
+
+UMULCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
+
+MULSCC rs1, reg_or_imm, rd
+    *32* tmp := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
+    *32* tmp2 := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
+    *32* %Y := %Y >> 1 | (rs1 << 31)
+    *32* rd := tmp + tmp2
+    ADDFLAGS( tmp, tmp2, rd )
+;
 
 
-MULSCC      rs1, reg_or_imm, rd
-                *32* tmp := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
-                *32* tmp2 := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
-                *32* %Y := %Y >> 1 | (rs1 << 31)
-                *32* rd := tmp + tmp2
-                ADDFLAGS( tmp, tmp2, rd);
-
-
-# Signed Multiplication - uses the Y register to store top 32 bits treats  Y
-# and rd as 64 bit register
+# Signed Multiplication - uses the Y register to store top 32 bits
+# treats Y and rd as 64 bit register
 SMULT   := { "SMUL", "SMULCC" };
 SMULT[idx]  rs1, reg_or_imm, rd
-                *32* tmp := rs1
-                *64* tmpl := sgnex(32, 64, rs1) *! sgnex(32, 64, reg_or_imm)
-                *32* rd := truncs(64, 32, tmpl)
-                *32* %Y := tmpl@[32:63];
-SMULCC      rs1, reg_or_imm, rd
-                MULTFLAGS(tmp, reg_or_imm, rd);
+    *32* tmp := rs1
+    *64* tmpl := sgnex(32, 64, rs1) *! sgnex(32, 64, reg_or_imm)
+    *32* rd := truncs(64, 32, tmpl)
+    *32* %Y := tmpl@[32:63]
+;
+SMULCC rs1, reg_or_imm, rd
+    MULTFLAGS(tmp, reg_or_imm, rd)
+;
 
 # Unsigned Multiplication Quick - 32 x 32 -> 32 bits
 UMULTQ  := { "UMULQ", "UMULCCQ" };
-UMULTQ[idx] rs1, reg_or_imm, rd
-                *32* rd := rs1 * reg_or_imm;
-UMULCCQ     rs1, reg_or_imm, rd
-                MULTFLAGS(rs1, reg_or_imm, rd);
+UMULTQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 * reg_or_imm;
+UMULCCQ     rs1, reg_or_imm, rd     MULTFLAGS(rs1, reg_or_imm, rd);
 
 # Signed Multiplication - 32 x 32 bits -> 32 bits
 SMULTQ := { "SMULQ", "SMULCCQ" };
-SMULTQ[idx]  rs1, reg_or_imm, rd
-                *32* rd := rs1 *! reg_or_imm;
-SMULCCQ      rs1, reg_or_imm, rd
-                MULTFLAGS(rs1, reg_or_imm, rd);
+SMULTQ[idx]  rs1, reg_or_imm, rd    *32* rd := rs1 *! reg_or_imm;
+SMULCCQ      rs1, reg_or_imm, rd    MULTFLAGS(rs1, reg_or_imm, rd);
 
 
 # Unsigned Division
@@ -395,18 +369,17 @@ SMULCCQ      rs1, reg_or_imm, rd
 UDIVS := { "UDIV", "UDIVCC" };
 UDIVS[idx]  rs1, reg_or_imm, rd
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
-    *32* rd := truncu(64, 32, tmpl / zfill(32, 64, reg_or_imm));
-#   *64* tmpl := tmpl / reg_or_imm{64}
-#   *32* rd := [tmpl > MAX32BIT  ? MAX32BIT : tmpl{32}] ;
+    *32* rd := truncu(64, 32, tmpl / zfill(32, 64, reg_or_imm))
+;
+UDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(tmpl, reg_or_imm, rd);
 
 #
 # Unsigned division: 32 / 32 bits -> 32 bits
 #
 UDIVSQ := { "UDIVQ", "UDIVCCQ" };
-UDIVSQ[idx] rs1, reg_or_imm, rd
-                *32* rd := rs1 / reg_or_imm;
-UDIVCCQ     rs1, reg_or_imm, rd
-                DIVFLAGS(rs1, reg_or_imm, rd);
+UDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 / reg_or_imm;
+UDIVCCQ     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+
 
 # Signed Division
 # If no overflow or underflow then put value in result
@@ -416,201 +389,223 @@ UDIVCCQ     rs1, reg_or_imm, rd
 # For now, we don't model the behaviour with these inputs (too expensive)
 SDIVS := { "SDIV", "SDIVCC" };
 SDIVS[idx]  rs1, reg_or_imm, rd
-                *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
-                *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm)) ;
-#   *32* rd := [((tmp@[32:63] = 0) or (tmp@[32:63] = MAX32BIT)) ?
-#   tmp : [tmp > 0 ? MAXSIGN32 : SIGN_32_NEG]]! ;
+    *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
+    *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm))
+;
+SDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
-SDIVSQ[idx] rs1, reg_or_imm, rd
-                *32* rd := rs1 /! reg_or_imm;
-SDIVCCQ     rs1, reg_or_imm, rd
-                DIVFLAGS(rs1, reg_or_imm, rd);
+SDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 /! reg_or_imm;
+SDIVCCQ     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
 
 # Save instruction is machine-dependant (register windows)
 # Note that these versions of save and restore are one possible implementation
 # of the sparc spec (essentially number of windows = 1 & assume the window traps
 # do what they're supposed to do).
 SAVE  rs1, reg_or_imm, rd
-                        *32* tmp := rs1 + reg_or_imm
-                        *32* m[%sp+0]  := %l0
-                        *32* m[%sp+4]  := %l1
-                        *32* m[%sp+8]  := %l2
-                        *32* m[%sp+12] := %l3
-                        *32* m[%sp+16] := %l4
-                        *32* m[%sp+20] := %l5
-                        *32* m[%sp+24] := %l6
-                        *32* m[%sp+28] := %l7
-                        *32* m[%sp+32] := %i0
-                        *32* m[%sp+36] := %i1
-                        *32* m[%sp+40] := %i2
-                        *32* m[%sp+44] := %i3
-                        *32* m[%sp+48] := %i4
-                        *32* m[%sp+52] := %i5
-                        *32* m[%sp+56] := %i6
-                        *32* m[%sp+60] := %i7
-                        *32* %i0 := %o0
-                        *32* %i1 := %o1
-                        *32* %i2 := %o2
-                        *32* %i3 := %o3
-                        *32* %i4 := %o4
-                        *32* %i5 := %o5
-                        *32* %i6 := %o6
-                        *32* %i7 := %o7
-                        *32* rd := tmp;
+    *32* tmp := rs1 + reg_or_imm
+    *32* m[%sp+0]  := %l0
+    *32* m[%sp+4]  := %l1
+    *32* m[%sp+8]  := %l2
+    *32* m[%sp+12] := %l3
+    *32* m[%sp+16] := %l4
+    *32* m[%sp+20] := %l5
+    *32* m[%sp+24] := %l6
+    *32* m[%sp+28] := %l7
+    *32* m[%sp+32] := %i0
+    *32* m[%sp+36] := %i1
+    *32* m[%sp+40] := %i2
+    *32* m[%sp+44] := %i3
+    *32* m[%sp+48] := %i4
+    *32* m[%sp+52] := %i5
+    *32* m[%sp+56] := %i6
+    *32* m[%sp+60] := %i7
+    *32* %i0 := %o0
+    *32* %i1 := %o1
+    *32* %i2 := %o2
+    *32* %i3 := %o3
+    *32* %i4 := %o4
+    *32* %i5 := %o5
+    *32* %i6 := %o6
+    *32* %i7 := %o7
+    *32* rd := tmp
+;
 
 # Restore instruction is machine-dependent (register windows)
 RESTORE  rs1, reg_or_imm, rd
-                        *32* tmp := rs1 + reg_or_imm
-                        *32* %o0 := %i0
-                        *32* %o1 := %i1
-                        *32* %o2 := %i2
-                        *32* %o3 := %i3
-                        *32* %o4 := %i4
-                        *32* %o5 := %i5
-                        *32* %o6 := %i6
-                        *32* %o7 := %i7
-                        *32* rd := tmp # for rd==sp
-                        *32* %l0 := m[%sp+0]
-                        *32* %l1 := m[%sp+4]
-                        *32* %l2 := m[%sp+8]
-                        *32* %l3 := m[%sp+12]
-                        *32* %l4 := m[%sp+16]
-                        *32* %l5 := m[%sp+20]
-                        *32* %l6 := m[%sp+24]
-                        *32* %l7 := m[%sp+28]
-                        *32* %i0 := m[%sp+32]
-                        *32* %i1 := m[%sp+36]
-                        *32* %i2 := m[%sp+40]
-                        *32* %i3 := m[%sp+44]
-                        *32* %i4 := m[%sp+48]
-                        *32* %i5 := m[%sp+52]
-                        *32* %i6 := m[%sp+56]
-                        *32* %i7 := m[%sp+60]
-                        *32* rd := tmp; # repeat
+    *32* tmp := rs1 + reg_or_imm
+    *32* %o0 := %i0
+    *32* %o1 := %i1
+    *32* %o2 := %i2
+    *32* %o3 := %i3
+    *32* %o4 := %i4
+    *32* %o5 := %i5
+    *32* %o6 := %i6
+    *32* %o7 := %i7
+    *32* rd := tmp # for rd==sp
+    *32* %l0 := m[%sp+0]
+    *32* %l1 := m[%sp+4]
+    *32* %l2 := m[%sp+8]
+    *32* %l3 := m[%sp+12]
+    *32* %l4 := m[%sp+16]
+    *32* %l5 := m[%sp+20]
+    *32* %l6 := m[%sp+24]
+    *32* %l7 := m[%sp+28]
+    *32* %i0 := m[%sp+32]
+    *32* %i1 := m[%sp+36]
+    *32* %i2 := m[%sp+40]
+    *32* %i3 := m[%sp+44]
+    *32* %i4 := m[%sp+48]
+    *32* %i5 := m[%sp+52]
+    *32* %i6 := m[%sp+56]
+    *32* %i7 := m[%sp+60]
+    *32* rd := tmp # repeat
+;
+
+RESTORE
+    *32* tmp := 0
+    *32* %o0 := %i0
+    *32* %o1 := %i1
+    *32* %o2 := %i2
+    *32* %o3 := %i3
+    *32* %o4 := %i4
+    *32* %o5 := %i5
+    *32* %o6 := %i6
+    *32* %o7 := %i7
+    *32* %g0 := tmp
+    *32* %l0 := m[%sp+0]
+    *32* %l1 := m[%sp+4]
+    *32* %l2 := m[%sp+8]
+    *32* %l3 := m[%sp+12]
+    *32* %l4 := m[%sp+16]
+    *32* %l5 := m[%sp+20]
+    *32* %l6 := m[%sp+24]
+    *32* %l7 := m[%sp+28]
+    *32* %i0 := m[%sp+32]
+    *32* %i1 := m[%sp+36]
+    *32* %i2 := m[%sp+40]
+    *32* %i3 := m[%sp+44]
+    *32* %i4 := m[%sp+48]
+    *32* %i5 := m[%sp+52]
+    *32* %i6 := m[%sp+56]
+    *32* %i7 := m[%sp+60]
+    *32* %g0 := tmp
+;
 
 RETURN  addr
-                        *32* %o0 := %i0
-                        *32* %o1 := %i1
-                        *32* %o2 := %i2
-                        *32* %o3 := %i3
-                        *32* %o4 := %i4
-                        *32* %o5 := %i5
-                        *32* %o6 := %i6
-                        *32* %o7 := %i7
-                        *32* %l0 := m[%sp+0]
-                        *32* %l1 := m[%sp+4]
-                        *32* %l2 := m[%sp+8]
-                        *32* %l3 := m[%sp+12]
-                        *32* %l4 := m[%sp+16]
-                        *32* %l5 := m[%sp+20]
-                        *32* %l6 := m[%sp+24]
-                        *32* %l7 := m[%sp+28]
-                        *32* %i0 := m[%sp+32]
-                        *32* %i1 := m[%sp+36]
-                        *32* %i2 := m[%sp+40]
-                        *32* %i3 := m[%sp+44]
-                        *32* %i4 := m[%sp+48]
-                        *32* %i5 := m[%sp+52]
-                        *32* %i6 := m[%sp+56]
-                        *32* %i7 := m[%sp+60];
+    *32* %o0 := %i0
+    *32* %o1 := %i1
+    *32* %o2 := %i2
+    *32* %o3 := %i3
+    *32* %o4 := %i4
+    *32* %o5 := %i5
+    *32* %o6 := %i6
+    *32* %o7 := %i7
+    *32* %l0 := m[%sp+0]
+    *32* %l1 := m[%sp+4]
+    *32* %l2 := m[%sp+8]
+    *32* %l3 := m[%sp+12]
+    *32* %l4 := m[%sp+16]
+    *32* %l5 := m[%sp+20]
+    *32* %l6 := m[%sp+24]
+    *32* %l7 := m[%sp+28]
+    *32* %i0 := m[%sp+32]
+    *32* %i1 := m[%sp+36]
+    *32* %i2 := m[%sp+40]
+    *32* %i3 := m[%sp+44]
+    *32* %i4 := m[%sp+48]
+    *32* %i5 := m[%sp+52]
+    *32* %i6 := m[%sp+56]
+    *32* %i7 := m[%sp+60]
+;
 
-# Jump instructions- uses COND table for correct boolean expression.
-# Always executes delay instr. on branch
+RET     _;
+RETT    _;
+RETL    _;
 
-JUMPS := { "BA", "BN", "BNE", "BE", "BG", "BLE", "BGE", "BL",
-        "BGU", "BLEU", "BCC", "BCS", "BPOS", "BNEG", "BVC", "BVS" };
+# Jump instructions - hard-coded semantics
+BA      reloc       _;
+BA      cc, reloc   _;
+BAA     reloc       _;
+BAA     cc, reloc   _;
+BN      cc, reloc   _;
+BN      reloc       _;
+BNA     reloc       _;
+BNA     cc, reloc   _;
 
-# Predicted jumps - treat just the same as non predicted jumps
-PJUMPS := { "BPA", "BPN", "BPNE", "BPE", "BPG", "BPLE", "BPGE", "BPL",
-        "BPGU", "BPLEU", "BPCC", "BPCS", "BPPOS", "BPNEG", "BPVC", "BPVS" };
+# Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
+BNE     reloc       _;
+BNE     cc, reloc   _;
+BNEA    reloc       _;
+BNEA    cc, reloc   _;
+BE      reloc       _;
+BE      cc, reloc   _;
+BEA     reloc       _;
+BEA     cc, reloc   _;
+BG      reloc       _;
+BG      cc, reloc   _;
+BGA     reloc       _;
+BGA     cc, reloc   _;
+BLE     reloc       _;
+BLE     cc, reloc   _;
+BLEA    reloc       _;
+BLEA    cc, reloc   _;
+BGE     reloc       _;
+BGE     cc, reloc   _;
+BGEA    reloc       _;
+BGEA    cc, reloc   _;
+BL      reloc       _;
+BL      cc, reloc   _;
+BLA     reloc       _;
+BLA     cc, reloc   _;
+BGU     reloc       _;
+BGU     cc, reloc   _;
+BGUA    reloc       _;
+BGUA    cc, reloc   _;
+BLEU    reloc       _;
+BLEU    cc, reloc   _;
+BLEUA   reloc       _;
+BLEUA   cc, reloc   _;
+BCC     reloc       _;
+BCC     cc, reloc   _;
+BCCA    reloc       _;
+BCCA    cc, reloc   _;
+BCS     reloc       _;
+BCS     cc, reloc   _;
+BCSA    reloc       _;
+BCSA    cc, reloc   _;
+BPOS    reloc       _;
+BPOS    cc, reloc   _;
+BPOSA   reloc       _;
+BPOSA   cc, reloc   _;
+BNEG    reloc       _;
+BNEG    cc, reloc   _;
+BNEGA   reloc       _;
+BNEGA   cc, reloc   _;
+BVC     reloc       _;
+BVC     cc, reloc   _;
+BVCA    reloc       _;
+BVCA    cc, reloc   _;
+BVS     reloc       _;
+BVS     cc, reloc   _;
+BVSA    reloc       _;
+BVSA    cc, reloc   _;
 
-COND := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)",
-        "~(%NF ^ %OF)", "%NF ^ %OF", "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF",
-        "~%NF", "%NF", "~%OF", "%OF" };
 
-JUMPS[idx]  reloc
-                *32* %pc := %npc
-                *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
-                *1* %CTI := 1;
+# Call instruction - always executes delay instruction
+CALL    dest    _;
 
-PJUMPS[idx]  reloc
-                *32* %pc := %npc
-                *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
-                *1* %CTI := 1;
-
-JUMPSA_C  := { "BNEA", "BEA", "BGA", "BLEA", "BGEA",
-            "BLA", "BGUA", "BLEUA", "BCCA", "BCSA", "BPOSA",
-            "BNEGA", "BVCA", "BVSA" };
-
-COND1_C := { "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))",
-            "%ZF | (%NF ^ %OF)", "~(%NF ^ %OF)", "%NF ^ %OF",
-            "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF", "~%NF", "%NF",
-            "~%OF", "%OF" };
-
-BAA reloc  # unconditional branches
-                *32* %pc := reloc
-                *32* %npc := reloc + 4
-                *1* %CTI := 1;
-BNA reloc
-                *32* %pc := %npc + 4
-                *32* %npc := %npc + 8
-                *1* %CTI := 1;
-
-JUMPSA_C[idx] reloc   # Conditional branches
-                *32* %pc := [(COND1_C[idx] = 0) ? %npc+4 : %npc ]
-                *32* %npc := [(COND1_C[idx] = 0) ? %npc+8 : reloc]
-                *1* %CTI := 1;
-
-# BG_ := JUMPS( ~(%ZF | (%NF ^ %OF)), 1)
-
-# *32* %npc := [(COND[idx] = 1) ? %pc+(4*disp22) : [(a = 1) ? %pc+4 : %npc]]
-# *32* %pc := [((COND[idx] = 0) and (a = 1)) ? %pc+4 : %pc]
-# *32* %pc := %pc;
-
-# Call instruction- always executes delay instruction
-# PC relative transfer of control
-CALL__ reloc
-                *32* r[15] := %pc
-                *32* %pc := %npc
-                *32* %npc := reloc
-                *1* %CTI := 1;
-
-# Jump and Link instruction- always executes delay instruction
+# Jump and Link instruction - always executes delay instruction
 # Register indirect transfer of control
 # Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
-JMPL  eaddr, rd
-                *32* tmp := eaddr
-                *32* rd := %pc
-                *32* %pc := %npc
-                *32* %npc := tmp
-                *1* %CTI := 1;
-
+JMPL  eaddr, rd _;
+JMP   dest      _;
 
 # Read and Write State Register Instructions
-RDY  rd
-                *32* rd := %Y;
+RD src, dest            *32* dest := src;
+WR rs1, rs2, rd         *32* rd := rs1 ^ rs2;
 
-RDPSR   rd
-                *32* rd := %PSR;
-
-RDWIM   rd
-                *32* rd := %WIM;
-
-RDTBR   rd
-                *32* rd := %TBR;
-
-WRY  rs1, reg_or_imm
-                *32* %Y := rs1 ^ reg_or_imm;
-
-WRPSR  rs1, reg_or_imm
-                *32* %PSR := rs1 ^ reg_or_imm;
-
-WRWIM  rs1, reg_or_imm
-                *32* %WIM := rs1 ^ reg_or_imm;
-
-WRTBR  rs1, reg_or_imm
-                *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
 
 ## Float Instructions
 # NB all instructions assume that we have registers up to 128 bits and that
@@ -619,68 +614,34 @@ WRTBR  rs1, reg_or_imm
 # destination floating point register.
 # NB: This means that 2 FMOVs statements are required to move a double and
 # 4 to move a quad.
-
-FMOVs      fs2s, fds
-                *32* fds := fs2s;
-FNEGs      fs2s, fds
-                *32* fds := 0.0 -f fs2s;
-FABSs      fs2s, fds
-                *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
-
-# FMUL requires primitives
-#   *f      (multiply 2 32 bit floats and store the result in
-#           a 32 bit float)
-#   *fd     (multiply 2 64 bit floats and store the result in
-#           a 64 bit float)
-#   *fq     (multiply 2 128 bit floats and store the result
-#           in a 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-#FxMULy Requires primitives:
-#   *fsd    (multiply 2 32 bit floats to produce a 64 bit float)
-#   *fdq    (multiply 2 64 bit floats to produce a 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-# FADD requires primitives
-#   +f  (add two 32 bit floats)
-#   +fd (add two 64 bit floats)
-#   +fq (add two 128 bit floats)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-# FSUB requires primitives
-#   -f  (subtract a 32 bit float from another 32 bit float)
-#   -fd (subtract a 64 bit float from another 64 bit float)
-#   -fq (subtract a 128 bit float from another 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-# Note MVE: I want to use just -f now
-
-# FDIV requires primitives
-#   /f  (divides 2 32 bit floats)
-#   /fd (divides 2 64 bit floats)
-#   /fq (divides 2 128 bit floats)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
+FMOVs      fs2s, fds        *32* fds := fs2s;
+FNEGs      fs2s, fds        *32* fds := 0.0 -f fs2s;
+FABSs      fs2s, fds        *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
 
 # Shamelessly borrowed from integers
+FADDs  fs1, fs2, fd  *32*  fd := fs1 +f fs2;
+FSUBs  fs1, fs2, fd  *32*  fd := fs1 -f fs2;
+FDIVs  fs1, fs2, fd  *32*  fd := fs1 /f fs2;
+FMULs  fs1, fs2, fd  *32*  fd := fs1 *f fs2;
 
-OPS5    := { "+f",    "-f",    "/f",    "*f" };
-FARITHS := { "FADDs", "FSUBs", "FDIVs", "FMULs" };
+FADDd  fs1, fs2, fd  *64*  fd := fs1 +f fs2;
+FSUBd  fs1, fs2, fd  *64*  fd := fs1 -f fs2;
+FDIVd  fs1, fs2, fd  *64*  fd := fs1 /f fs2;
+FMULd  fs1, fs2, fd  *64*  fd := fs1 *f fs2;
+FsMULd fs1, fs2, fd  *64*  fd := fs1 *f fs2;
 
-OPD5    := { "+f",    "-f",    "/f",    "*f",    "*f" };
-FARITHD := { "FADDd", "FSUBd", "FDIVd", "FMULd", "FsMULd" };
+FADDq  fs1, fs2, fd  *128* fd := fs1 +f fs2;
+FSUBq  fs1, fs2, fd  *128* fd := fs1 -f fs2;
+FDIVQ  fs1, fs2, fd  *128* fd := fs1 /f fs2;
+FMULq  fs1, fs2, fd  *128* fd := fs1 *f fs2;
+FdMULq fs1, fs2, fd  *128* fd := fs1 *f fs2;
 
-OPQ5    := { "+f",    "-f",    "/f",    "*f",    "*f" };
-FARITHQ := { "FADDq", "FSUBq", "FDIVq", "FMULq", "FdMULq" };
-
-# Note: FsMULd and FdMULq probably read from the wrong registers!
-FARITHS[idx] fs1s, fs2s, fds  *32* fds := fs1s OPS5[idx] fs2s ;
-FARITHD[idx] fs1d, fs2d, fdd  *64* fdd := fs1d OPD5[idx] fs2d ;
-FARITHQ[idx] fs1q, fs2q, fdq *128* fdq := fs1q OPQ5[idx] fs2q ;
 
 # FSQRTx_ assumes that SQRT can operate on a register of any size
+FSQRTs     fs2s, fds  *32*  fds := sqrt(fs2s);
+FSQRTd     fs2d, fdd  *64*  fdd := sqrt(fs2d);
+FSQRTq     fs2q, fdq  *128* fdq := sqrt(fs2q);
 
-FSQRTs     fs2s, fds      *32* fds := sqrt(fs2s);
-FSQRTd     fs2d, fdd      *64* fdd := sqrt(fs2d);
-FSQRTq     fs2q, fdq     *128* fdq := sqrt(fs2q);
 
 # FiTOf etc are no longer their own unique unary operators
 FiTOs      fs2s, fds     *32* fds := itof(32, 32,  fs2s);
@@ -700,137 +661,84 @@ FqTOd      fs2q, fdd     *64* fdd := fsize(128, 64, fs2q);
 FsTOq      fs2s, fdq    *128* fdq := fsize(32, 128, fs2s);
 FdTOq      fs2d, fdq    *128* fdq := fsize(64, 128, fs2d);
 
+
 #FCMPx
 # Since we are only concerned with the result value being 0, >0 or <0
-# NB these comparisons set the flag registers.  They do NOT result in a
+# NB these comparisons set the flag registers. They do NOT result in a
 # jump in themselves.
 
 FCOMPS := { "FCMPs", "FCMPEs" };
 FCOMPD := { "FCMPd", "FCMPEd" };
 FCOMPQ := { "FCMPq", "FCMPEq" };
 
-FCOMPS[idx] fs1s, fs2s       *32* tmpf := fs1s -f fs2s
-                                  SETFFLAGS(fs1s, fs2s);
-FCOMPD[idx] fs1d, fs2d       *64* tmpd := fs1d -f fs2d
-                                  SETFFLAGS(fs1d, fs2d);
+FCOMPS[idx] fs1s, fs2s      *32* tmpf := fs1s -f fs2s
+                            SETFFLAGS(fs1s, fs2s);
+FCOMPD[idx] fs1d, fs2d      *64* tmpd := fs1d -f fs2d
+                            SETFFLAGS(fs1d, fs2d);
 FCOMPQ[idx] fs1q, fs2q      *128* tmpD := fs1q -f fs2q
-                                  SETFFLAGS(fs1q, fs2q);
+                            SETFFLAGS(fs1q, fs2q);
 
 
-#More generalised form based loosely on the 8086 architecture.  a
-#different "variable" for each of the following conditions: Zero(%FZF),
-#Greater than zero(%FG), Less than Zero(%FL).  The concept of orderedness
-#has been removed but can still be accessed. If a result %FZF=0 and %FGF=0
-#and %FLF=0 then it must be an unordered result.  Tables "borrowed" from
-#integer arithmatic section and modified for floating point instructions.
-# %FGF is 1 iff the fcc field of the FSR = 2
-# %FLF is 1 iff the fcc field of the FSR = 1
-# %FZF is 1 iff the fcc field of the FSR = 0
+# More generalised form based loosely on the 8086 architecture.
+# A different "variable" for each of the following conditions:
+# - Zero(%FZF),
+# - Greater than zero(%FG),
+# - Less than Zero(%FL).
+# The concept of orderedness has been removed but can still be accessed.
+# If a result %FZF=0 and %FGF=0 and %FLF=0 then it must be an unordered result.
+#  %FGF is 1 iff the fcc field of the FSR = 2
+#  %FLF is 1 iff the fcc field of the FSR = 1
+#  %FZF is 1 iff the fcc field of the FSR = 0
 # operators exist and have been setup correctly as at 14/12/1998
 
-COND2_C   := { "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
-            "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
-            "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
-            "~%FLF", "~(%FZF | %FGF | %FLF)", "(%FZF | %FGF | %FLF)" };
+FBA     reloc   *32*%pc := %npc     *32* %npc := [ 1                     ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBN     reloc   *32*%pc := %npc     *32* %npc := [ 0                     ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBNE    reloc   *32*%pc := %npc     *32* %npc := [ ~%FZF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBE     reloc   *32*%pc := %npc     *32* %npc := [ %FZF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBG     reloc   *32*%pc := %npc     *32* %npc := [ %FGF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBLE    reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUE    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FGF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUL    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBGE    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FZF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBL     reloc   *32*%pc := %npc     *32* %npc := [ %FLF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBLG    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUG    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBULE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FGF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBUGE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FLF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBU     reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF | %FLF) ? reloc : %npc+4 ]      *1* %CTI := 1;
+FBO     reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FGF | %FLF)  ? reloc : %npc+4 ]      *1* %CTI := 1;
 
-COND2     := { "1", "0", "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
-            "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
-            "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
-            "~%FLF", "~(%FZF | %FGF | %FLF)", "(%FZF | %FGF | %FLF)" };
 
-JUMPS2_C  := { "FBNE", "FBE", "FBG", "FBLE", "FBUE",
-            "FBUL", "FBGE", "FBL", "FBLG", "FBUG", "FBULE",
-            "FBUGE", "FBU", "FBO" };
-JUMPS2 := { "FBA", "FBN", JUMPS2_C };
+# Anullable FP branches
+FBAA    reloc   *32* %pc := reloc       *32* %npc := reloc + 4      *1* %CTI := 1;
+FBNA    reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8       *1* %CTI := 1;
 
-JUMPS2[idx]  reloc
-            *32* %pc := %npc
-            *32* %npc := [(COND2[idx] = 0) ? %npc+4 : reloc]
-            *1* %CTI := 1;
+FBNEA   reloc   *32* %pc := [ ~%FZF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FZF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBEA    reloc   *32* %pc := [ %FZF                  ? %npc : %npc+4 ]   *32* %npc := [ %FZF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBGA    reloc   *32* %pc := [ %FGF                  ? %npc : %npc+4 ]   *32* %npc := [ %FGF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLEA   reloc   *32* %pc := [ (%FZF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUEA   reloc   *32* %pc := [ ~(%FGF | %FLF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FGF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBULA   reloc   *32* %pc := [ ~(%FZF | %FGF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBGEA   reloc   *32* %pc := [ (%FGF | %FZF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FZF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLA    reloc   *32* %pc := [ %FLF                  ? %npc : %npc+4 ]   *32* %npc := [ %FLF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBLGA   reloc   *32* %pc := [ (%FGF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUGA   reloc   *32* %pc := [  ~(%FZF | %FLF)       ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBULEA  reloc   *32* %pc := [ ~%FGF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FGF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUGEA  reloc   *32* %pc := [ ~%FLF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FLF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBUA    reloc   *32* %pc := [ ~(%FZF | %FGF | %FLF) ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF | %FLF)  ? reloc : %npc+8 ]    *1* %CTI := 1;
+FBOA    reloc   *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FGF | %FLF)   ? reloc : %npc+8 ]    *1* %CTI := 1;
 
-FBAA    reloc
-            *32* %pc := reloc
-            *32* %npc := reloc + 4
-            *1* %CTI := 1;
-
-FBNA    reloc
-            *32* %pc := %npc + 4
-            *32* %npc := %npc + 8
-            *1* %CTI := 1;
-
-JUMPS2_C[idx]"A"   reloc
-            *32* %pc := [(COND2_C[idx] = 0) ? %npc+4 : %npc ]
-            *32* %npc := [(COND2_C[idx] = 0) ? %npc+8 : reloc]
-            *1* %CTI := 1;
 
 # Loading and storing Floating point registers.
-LDFSR      eaddr       *32* %FSR := m[eaddr]{32};
+LDFSR      eaddr       *32* %FSR := m[eaddr];
 
-LDF  eaddr, fds        *32* fds := m[eaddr]{32};
-LDDF eaddr, fdd        *64* fdd := m[eaddr]{64};
+LDF  src, fds        *32* fds := src;
+LDDF src, fdd        *64* fdd := src;
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-STFSR      eaddr       *32* m[eaddr] := %FSR;
-STF   fds, eaddr       *32* m[eaddr] := fds;
-STDF  fdd, eaddr       *64* m[eaddr] := fdd;
+STFSR      dest        *32* dest := %FSR;
+STF   fds, dest        *32* dest := fds;
+STDF  fdd, dest        *64* dest := fdd;
 
-TRAPS := { "TA", "TN", "TNE", "TE", "TG", "TLE", "TGE", "TL",
-           "TGU", "TLEU", "TCC", "TCS", "TPOS", "TNEG", "TVC", "TVS" };
-COND3 := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))",
-           "%ZF | (%NF ^ %OF)", "~(%NF ^ %OF)", "%NF ^ %OF",
-           "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF",
-           "~%NF", "%NF", "~%OF", "%OF" };
-
-TRAPS[idx]  eaddr
-                TRAP((COND3[idx] = 1), eaddr+128);
-
-#####################################################################
-# These are the semantics for certain prologues and epilogues that we
-# need to see for CSR analysis. We need the semantics for a logue to
-# be specified when it uses and/or defines locations that relevant for
-# CSR analysis involving the logue. For example, the callee epilogue
-# "restore_copies_ret_val" on SPARC defines %o0 which is the location
-# used for return values (as specified in sparc.csr).
-#####################################################################
-
-# This is the semantics for a ret/restore, with %o0 as the destination of
-# the implicit add of the restore.
-# Note: we don't want to re-use the more elaborate semantics of the
-# call/restore (below), because this can clutter the output (.c) file with
-# redundant moves, but more importantly it causes all the I registers to be
-# use before define, and that forces 6 parameters for the enclosing procedure
-RET_REG_VAL rs1, rs2         *32* %o0 := rs1 + rs2;
-RET_IMM_VAL rs1, imm         *32* %o0 := rs1 + imm;
-
-# A restore in the delay slot of a call.
-# The temp is needed because the sources are in the old register window, and
-# and the destination is in the new window. Consider foo(1, 2) implemented as:
-# mov 1, %i0
-# mov 2, %o0                # Note: old window %o0
-# call foo
-# restore %g0, %o0, %o1     # This has been seen in real code!
-# Note: the (possibly) redundant moves here will make it appear that the call
-# uses all 6 register parameters, unless the live-ins are considered as well
-DLY_RST_REG rs1, rs2, rd     *32* tmp1 := rs1 + rs2
-                              *32* %o0 := %i0
-                              *32* %o1 := %i1
-                              *32* %o2 := %i2
-                              *32* %o3 := %i3
-                              *32* %o4 := %i4
-                              *32* %o5 := %i5
-                              *32* rd := tmp1;
-# Same as above but for immediates
-DLY_RST_IMM rs1, imm, rd     *32* tmp1 := rs1 + imm
-                              *32* %o0 := %i0
-                              *32* %o1 := %i1
-                              *32* %o2 := %i2
-                              *32* %o3 := %i3
-                              *32* %o4 := %i4
-                              *32* %o5 := %i5
-                              *32* rd := tmp1;
-
-# Semantics for the standard return, i.e. ret/restore. The effect is to copy
-# i0 to o0, so o0 is the real return location (for integers) for all types of
-# procedures
-STD_RET                      *32* %o0 := %i0;
+UNIMP val   _;

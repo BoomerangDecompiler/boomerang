@@ -12,7 +12,6 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/FlagDef.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -129,26 +128,6 @@ bool ExpDotWriter::visit(const std::shared_ptr<Const> &exp)
 }
 
 
-bool ExpDotWriter::postVisit(const std::shared_ptr<FlagDef> &exp)
-{
-    *m_os << "e_" << HostAddress(exp.get()) << " [shape=record,label=\"{";
-    *m_os << "opFlagDef \\n" << HostAddress(exp.get()) << "| ";
-    // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
-    *m_os << "{ RTL ";
-
-    const size_t n = exp->getRTL()->size();
-    for (size_t i = 0; i < n; i++) {
-        *m_os << "| <r" << i << "> ";
-    }
-
-    *m_os << "} | <p1> }\"];\n";
-    *m_os << "e_" << HostAddress(exp.get()) << ":p1->e_" << HostAddress(exp->getSubExp1().get())
-          << ";\n";
-
-    return true;
-}
-
-
 bool ExpDotWriter::visit(const std::shared_ptr<Terminal> &exp)
 {
     *m_os << "e_" << HostAddress(exp.get()).toString() << " [shape=parallelogram,label=\"";
@@ -184,11 +163,11 @@ bool ExpDotWriter::postVisit(const std::shared_ptr<TypedExp> &exp)
 
 bool ExpDotWriter::postVisit(const std::shared_ptr<RefExp> &exp)
 {
-    return postVisit(std::static_pointer_cast<Unary>(exp));
+    return postVisit(exp->access<Unary>());
 }
 
 
 bool ExpDotWriter::postVisit(const std::shared_ptr<Location> &exp)
 {
-    return postVisit(std::static_pointer_cast<Unary>(exp));
+    return postVisit(exp->access<Unary>());
 }

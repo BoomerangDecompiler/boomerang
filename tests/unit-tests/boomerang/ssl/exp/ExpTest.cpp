@@ -85,33 +85,9 @@ void ExpTest::testBinaries()
 
 void ExpTest::testUnaries()
 {
-    QCOMPARE(Unary::get(opNot,  Terminal::get(opZF))->toString(), QString("~%ZF"));
-    QCOMPARE(Unary::get(opLNot, Terminal::get(opZF))->toString(), QString("L~%ZF"));
-    QCOMPARE(Unary::get(opNeg,  Terminal::get(opZF))->toString(), QString("-%ZF"));
-}
-
-
-void ExpTest::testIsAfpTerm()
-{
-    SharedExp afp   = Terminal::get(opAFP);
-    SharedExp plus  = Binary::get(opPlus, afp->clone(), Const::get(-99));
-    SharedExp minus = Binary::get(opMinus, afp->clone(), m_99->clone());
-
-    QVERIFY(afp->isAfpTerm());
-    QVERIFY(plus->isAfpTerm());
-    QVERIFY(minus->isAfpTerm());
-    QVERIFY(!m_99->isAfpTerm());
-    QVERIFY(!m_rof2->isAfpTerm());
-
-    // Now with typed expressions
-    SharedExp tafp = std::make_shared<TypedExp>(IntegerType::get(Address::getSourceBits()), afp->clone());
-    // Unary tafp  (opTypedExp, afp.clone());
-    SharedExp tplus  = Unary::get(opTypedExp, plus->clone());
-    SharedExp tminus = Unary::get(opTypedExp, minus->clone());
-
-    QVERIFY(tafp->isAfpTerm());
-    QVERIFY(tplus->isAfpTerm());
-    QVERIFY(tminus->isAfpTerm());
+    QCOMPARE(Unary::get(opBitNot, Terminal::get(opZF))->toString(), QString("~%ZF"));
+    QCOMPARE(Unary::get(opLNot,   Terminal::get(opZF))->toString(), QString("!%ZF"));
+    QCOMPARE(Unary::get(opNeg,    Terminal::get(opZF))->toString(), QString("-%ZF"));
 }
 
 
@@ -230,7 +206,7 @@ void ExpTest::testSearch2()
     // Search using wildcards
     SharedExp e = Binary::get(opDivs, m_rof2->clone(), m_99->clone());         // r2 /! 99
     SharedExp result;
-    SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
+    SharedExp search = Location::regOf(Terminal::get(opWild)); // r[?]
 
     QVERIFY(e->search(*search, result));
     QVERIFY(result != nullptr);
@@ -279,7 +255,7 @@ void ExpTest::testSearch3()
 
 void ExpTest::testSearchAll()
 {
-    SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
+    SharedExp search = Location::regOf(Terminal::get(opWild)); // r[?]
 
     // A more complex expression:
     // (r2 * 99) + (r8 * 4)
@@ -302,7 +278,7 @@ void ExpTest::testSearchAll()
 
 void ExpTest::testAccumulate()
 {
-    SharedExp rof2     = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
+    SharedExp rof2     = Location::regOf(REG_SPARC_G2);
     SharedExp nineNine = Const::get(99);
 
     // Zero terms
@@ -330,28 +306,29 @@ void ExpTest::testAccumulate()
     QVERIFY(*Exp::accumulate(le) == expected3);
 
     // Four terms, one repeated
-    le.push_back(Terminal::get(opAFP));
-    Binary expected4(opPlus, rof2->clone(),
+    le.push_back(Terminal::get(opPC));
+    Binary expected4(opPlus,
+                     rof2->clone(),
                      Binary::get(opPlus,
                                  nineNine->clone(),
                                  Binary::get(opPlus,
                                              nineNine->clone(),
-                                             Terminal::get(opAFP))));
+                                             Terminal::get(opPC))));
     QVERIFY(*Exp::accumulate(le) == expected4);
 }
 
 
 void ExpTest::testPartitionTerms()
 {
-    // afp + 108 + n - (afp + 92)
+    // %pc + 108 + n - (%pc + 92)
     Binary e(opMinus,
              Binary::get(opPlus,
                          Binary::get(opPlus,
-                                     Terminal::get(opAFP),
+                                     Terminal::get(opPC),
                                      Const::get(108)),
                          Unary::get(opParam, Const::get("n"))),
              Binary::get(opPlus,
-                         Terminal::get(opAFP),
+                         Terminal::get(opPC),
                          Const::get(92)));
 
     std::list<SharedExp> positives, negatives;
@@ -360,12 +337,12 @@ void ExpTest::testPartitionTerms()
     e.partitionTerms(positives, negatives, integers, false);
     SharedExp res = Exp::accumulate(positives);
     Binary    expected1(opPlus,
-                        Terminal::get(opAFP),
+                        Terminal::get(opPC),
                         Unary::get(opParam, Const::get("n")));
     QVERIFY(*res == expected1);
 
     res = Exp::accumulate(negatives);
-    Terminal expected2(opAFP);
+    Terminal expected2(opPC);
     QVERIFY(*res == expected2);
 
     QCOMPARE(integers.size(), static_cast<size_t>(2));
@@ -399,24 +376,24 @@ void ExpTest::testSimplify_data()
     QTest::addColumn<SharedExpWrapper>("exp");
     QTest::addColumn<SharedExpWrapper>("expectedResult");
 
-    TEST_SIMPLIFY("negConst",  Unary::get(opNeg, Const::get(55)),    Const::get(-55));
-    TEST_SIMPLIFY("notConst",  Unary::get(opNot, Const::get(0x55AA)), Const::get(0xFFFFAA55));
-    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot, Const::get(55)),   Const::get(0));
-    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot, Const::get(0)),    Const::get(1));
-    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg, Unary::get(opLocal, Const::get("abc"))),
+    TEST_SIMPLIFY("negConst",  Unary::get(opNeg,    Const::get(55)),     Const::get(-55));
+    TEST_SIMPLIFY("notConst",  Unary::get(opBitNot, Const::get(0x55AA)), Const::get(0xFFFFAA55));
+    TEST_SIMPLIFY("LNotConst", Unary::get(opLNot,   Const::get(55)),     Const::get(0));
+    TEST_SIMPLIFY("LNotZero",  Unary::get(opLNot,   Const::get(0)),      Const::get(1));
+    TEST_SIMPLIFY("NegLocal",  Unary::get(opNeg,    Unary::get(opLocal,  Const::get("abc"))),
                   Unary::get(opNeg, Unary::get(opLocal, Const::get("abc"))));
 
     TEST_SIMPLIFY("plusConst", Binary::get(opPlus,    Const::get(2),    Const::get(3)),    Const::get(5));
     TEST_SIMPLIFY("multConst", Binary::get(opMult,    Const::get(2),    Const::get(3)),    Const::get(6));
-    TEST_SIMPLIFY("shlConst",  Binary::get(opShiftL,  Const::get(2),    Const::get(3)),    Const::get(16));
-    TEST_SIMPLIFY("sarConst",  Binary::get(opShiftRA, Const::get(-144), Const::get(3)),    Const::get(-18));
+    TEST_SIMPLIFY("shlConst",  Binary::get(opShL,     Const::get(2),    Const::get(3)),    Const::get(16));
+    TEST_SIMPLIFY("sarConst",  Binary::get(opShRA,    Const::get(-144), Const::get(3)),    Const::get(-18));
     TEST_SIMPLIFY("xorConst",  Binary::get(opBitXor,  Const::get(0x55), Const::get(0x0F)), Const::get(0x5A));
     TEST_SIMPLIFY("xorSelf",   Binary::get(opBitXor,  m_rof2->clone(),  m_rof2->clone()),  Const::get(0));
     TEST_SIMPLIFY("commute",   Binary::get(opMults,   Const::get(77),   m_rof2->clone()),  Binary::get(opMults, m_rof2->clone(), Const::get(77)));
     TEST_SIMPLIFY("mult1",     Binary::get(opMult,    m_rof2->clone(),  Const::get(1)),    m_rof2->clone());
     TEST_SIMPLIFY("or0",       Binary::get(opBitOr,   Const::get(0),    m_rof2->clone()),  m_rof2->clone());
-    TEST_SIMPLIFY("shlZero",   Binary::get(opShiftL,  m_rof2->clone(),  Const::get(0)),    m_rof2->clone());
-    TEST_SIMPLIFY("shlMult",   Binary::get(opShiftL,  m_rof2->clone(),  Const::get(2)),    Binary::get(opMult, m_rof2->clone(), Const::get(4)));
+    TEST_SIMPLIFY("shlZero",   Binary::get(opShL,     m_rof2->clone(),  Const::get(0)),    m_rof2->clone());
+    TEST_SIMPLIFY("shlMult",   Binary::get(opShL,     m_rof2->clone(),  Const::get(2)),    Binary::get(opMult, m_rof2->clone(), Const::get(4)));
 
     // As of June 2003, I've decided to go the old way. esp + -4 is just
     // too ugly, and all the code has to cope with pluses and minuses anyway,
@@ -443,23 +420,21 @@ void ExpTest::testSimplifyBinary()
                                                                       Location::regOf(REG_PENT_EBP),
                                                                       Const::get(-4)))));
     as->simplify();
-    QCOMPARE(as->prints(), QString("   0 *v* r27 := m[r29 - 4]"));
+    QCOMPARE(as->toString(), QString("   0 *v* r27 := m[r29 - 4]"));
 }
 
 
 void ExpTest::testSimplifyAddr()
 {
-    // a[m[1000]] - a[m[r2]{64}]@0:15
+    // a[m[1000]] - a[m[r2]]@0:15
     SharedExp e = Binary::get(opMinus,
                               Unary::get(opAddrOf, Location::memOf(Const::get(1000))),
                               Ternary::get(opAt,
                                            Unary::get(opAddrOf,
-                                                      Binary::get(opSize,
-                                                                  Const::get(64),
-                                                                  Location::memOf(Location::regOf(REG_SPARC_G2)))),
+                                                      Location::memOf(Location::regOf(REG_SPARC_G2))),
                                            Const::get(0),
                                            Const::get(15)));
-    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@0:15)"));
+    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@[0:15])"));
 
     // Now test at top level
     e = Unary::get(opAddrOf, Location::memOf(Const::get(1000)));
@@ -479,8 +454,8 @@ void ExpTest::testLess()
     QVERIFY(minusThreePointThree < twoPointTwo);
 
     // Terminal
-    Terminal afp(opAFP), agp(opAGP);
-    QVERIFY((opAFP < opAGP) == (afp < agp));
+    Terminal pc(opPC), nil(opNil);
+    QVERIFY((opPC < opNil) == (pc < nil));
 
     // Unary
     Unary negTwo(opNeg, Const::get(2)), negThree(opNeg, Const::get(3));
@@ -517,7 +492,7 @@ void ExpTest::testMapOfExp()
                                                       Const::get(5))));
 
     m[e] = -100;
-    SharedExp rof2 = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
+    SharedExp rof2 = Location::regOf(REG_SPARC_G2);
     m[rof2] = 2; // Should overwrite
 
     QCOMPARE(m.size(), static_cast<size_t>(3));
@@ -534,37 +509,37 @@ void ExpTest::testList()
 
     // 1 element list
     SharedExp e = Binary::get(opList,
-                              Location::get(opParam, Const::get("a"), nullptr),
+                              Location::param("a", nullptr),
                               Terminal::get(opNil));
     QCOMPARE(e->toString(), QString("a"));
 
     // 2 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Terminal::get(opNil)));
     QCOMPARE(e->toString(), QString("a, b"));
 
     // 3 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Binary::get(opList,
-                                            Location::get(opParam, Const::get("c"), nullptr),
+                                            Location::param("c"),
                                             Terminal::get(opNil))));
     QCOMPARE(e->toString(), QString("a, b, c"));
 
     // 4 element list
     e = Binary::get(opList,
-                    Location::get(opParam, Const::get("a"), nullptr),
+                    Location::param("a"),
                     Binary::get(opList,
-                                Location::get(opParam, Const::get("b"), nullptr),
+                                Location::param("b"),
                                 Binary::get(opList,
-                                            Location::get(opParam, Const::get("c"), nullptr),
+                                            Location::param("c"),
                                             Binary::get(opList,
-                                                        Location::get(opParam, Const::get("d"), nullptr),
+                                                        Location::param("d"),
                                                         Terminal::get(opNil)))));
     QCOMPARE(e->toString(), QString("a, b, c, d"));
 }
@@ -572,17 +547,17 @@ void ExpTest::testList()
 
 void ExpTest::testParen()
 {
-    Assign a(Location::regOf(Location::get(opParam, Const::get("rd"), nullptr)),
+    Assign a(Location::regOf(Location::param("rd", nullptr)),
              Binary::get(opBitAnd,
-                         Location::regOf(Location::get(opParam, Const::get("rs1"), nullptr)),
+                         Location::regOf(Location::param("rs1", nullptr)),
                          Binary::get(opMinus,
                                      Binary::get(opMinus,
                                                  Const::get(0),
-                                                 Location::get(opParam, Const::get("reg_or_imm"), nullptr)),
+                                                 Location::param("reg_or_imm", nullptr)),
                                      Const::get(1))));
 
 
-    QCOMPARE(a.prints(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
+    QCOMPARE(a.toString(), QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
 }
 
 
@@ -626,67 +601,6 @@ void ExpTest::testAssociativity()
     // Note: at one stage, simplifyArith was part of simplify().
     // Now call simplifyArith() explicitly only where needed
     QCOMPARE(*e1->simplify()->simplifyArith(), *e2->simplify()->simplifyArith());
-}
-
-
-void ExpTest::testSubscriptVar()
-{
-    // m[r28 - 4] := r28 + r29
-    SharedExp lhs = Location::memOf(Binary::get(opMinus,
-                                                 Location::regOf(REG_PENT_ESP),
-                                                 Const::get(4)));
-
-    Assign    *ae  = new Assign(lhs->clone(),
-                                Binary::get(opPlus,
-                                            Location::regOf(REG_PENT_ESP),
-                                            Location::regOf(REG_PENT_EBP)));
-
-    // Subtest 1: should do nothing
-    SharedExp r28   = Location::regOf(REG_PENT_ESP);
-    Statement *def1 = new Assign(r28->clone(), r28->clone());
-
-    def1->setNumber(12);
-    def1->subscriptVar(lhs, def1); // Should do nothing
-
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28 - 4] := r28 + r29"));
-
-    // m[r28 - 4]
-
-    // Subtest 2: Ordinary substitution, on LHS and RHS
-    ae->subscriptVar(r28, def1);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
-
-
-    // Subtest 3: change to a different definition
-    // 99: r28 := 0
-    // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
-    Statement *def3 = new Assign(Location::regOf(REG_PENT_ESP), Const::get(0));
-    def3->setNumber(99);
-    ae->subscriptVar(r28, def3);
-    QCOMPARE(ae->prints(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
-
-    delete def1;
-    delete def3;
-    delete ae;
-}
-
-
-void ExpTest::testTypeOf()
-{
-    // T[r24{5}] = T[r25{9}]
-    Statement *s5 = new Assign;
-    Statement *s9 = new Assign;
-
-    s5->setNumber(5);
-    s9->setNumber(9);
-    SharedExp e = Binary::get(opEquals,
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_EAX), s5)),
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_ECX), s9)));
-
-    QCOMPARE(e->toString(), QString("T[r24{5}] = T[r25{9}]"));
-
-    delete s5;
-    delete s9;
 }
 
 

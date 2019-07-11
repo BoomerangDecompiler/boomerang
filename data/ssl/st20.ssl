@@ -1,647 +1,791 @@
 #
-# RTL description for ST20
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
 #
 
-MAXSIGN32   := 2**31 - 1;    # all bits except sign bit are set
-SIGN_32_NEG := -2**31;
-INF := 0x7F800000;
+SIGN_32_NEG := 0x80000000;
+INF         := 0x7F800000;
 
-INTEGER
-[ %Areg, %Breg, %Creg ][32] -> 0..2,
-%sp[32] -> 3,
-%pc[32] -> -1,
-[ %ZF, %CF ][1] -> -1 ;
+INTEGER %Areg[32] -> 0;
+INTEGER %Breg[32] -> 1;
+INTEGER %Creg[32] -> 2;
 
-
-
-
-
-#A was replaced so dont overwrite it
+INTEGER %sp[32] -> 3;
+INTEGER %pc[32] -> -1;
+INTEGER %ZF[1]  -> -1;
+INTEGER %CF[1]  -> -1;
 
 
+#
+# instructions (sorted alphabetically)
+#
 
-#OP2(op) {
-#    *32* %Areg := %Breg op %Areg
-#    POP1()
-#};
-
-#OP2C(op) {
-#    *32* %Areg := [%Breg op %Areg?1:0];
-#    POP1()
-#};
-
-adc        val      # add constant
+adc     val                     # add constant
     *32* %Areg := %Areg + val;
-add              # add
+
+add                             # add
     *32* %Areg := %Breg + %Areg
-    
     *32* %Breg := %Creg;
-addc             # add with carry
+
+addc                            # add with carry
     _ ;
-ajw        val      # adjust work space
+
+ajw        val                  # adjust work space
     *32* %sp := %sp + (4*val);
-andq         # and
+
+AND                             # and
     *32* %Areg := %Breg & %Areg
-    
     *32* %Breg := %Creg;
-arot             # anti-rotate stack
+
+arot                            # anti-rotate stack
     _ ;
-ashr             # arithmetic shift right
-    #OP2(">>");
+
+ashr                            # arithmetic shift right
     *32* %Areg := %Breg >>A %Areg
-    
     *32* %Breg := %Creg;
-biquad           # biquad IIR filter step
+
+biquad                          # biquad IIR filter step
     _ ;
-bitld            # load bit
+
+bitld                           # load bit
     _ ;
-bitmask          # create bit mask
+
+bitmask                         # create bit mask
     _ ;
-bitst            # store bit
+
+bitst                           # store bit
     _ ;
-breakpoint       # breakpoint
+
+breakpoint                      # breakpoint
     _ ;
-cj         val      # conditional jump
+
+cj         val                  # conditional jump
     *32* tmp := %Areg
     *32* %ZF := [tmp = 0?1:0]
     *32* %Areg := [tmp = 0?%Areg:%Breg]
     *32* %Breg := [tmp = 0?%Breg:%Creg]
     *32* %pc := [tmp = 0?%pc+val:%pc];
-cj1        val      # conditional jump
+
+cj1        val                  # conditional jump
     *32* tmp := %Areg
     *32* %ZF := [tmp = 0?1:0]
     *32* %Areg := [tmp = 0?%Areg:%Breg]
     *32* %Breg := [tmp = 0?%Breg:%Creg];
-dequeue          # dequeue a process
+
+dequeue                         # dequeue a process
     _ ;
-divstep          # divide step
+
+divstep                         # divide step
     _ ;
-dup              # duplicate
-    
+
+dup                             # duplicate
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := %Areg;
-ecall            # exception call
+
+ecall                           # exception call
     _ ;
-enqueue          # enqueue a process
+
+enqueue                         # enqueue a process
     _ ;
-eqc        val      # equals constant
+
+eqc        val                  # equals constant
     *32* %Areg := [%Areg = val?1:0];
-eret             # exception return
+
+eret                            # exception return
     _ ;
-fcall      val   # function call
+
+fcall      val                  # function call
     _ ;
-gajw             # general adjust workspace
+
+gajw                            # general adjust workspace
     *32* tmp := %sp
     *32* %sp := %Areg
     *32* %Areg := tmp;
-gt               # greater than
-    #OP2C(">");
+
+gt                              # greater than
     *32* %Areg := [%Breg > %Areg?1:0]
-    
     *32* %Breg := %Creg;
-gtu              # greater than unsigned
-    #OP2C(">");
+
+gtu                             # greater than unsigned
     *32* %Areg := [%Breg >u %Areg?1:0]
-    
     *32* %Breg := %Creg;
-io               # input/output
+
+io                              # input/output
     _ ;
-j          val   # jump
+
+j          val                  # jump
     *32* %pc := %pc + val;
-#    *32* %pc := val;
-jab              # jump absolute
+
+jab                             # jump absolute
     _ ;
-lbinc            # load byte and increment
+
+lbinc                           # load byte and increment
     _ ;
-ldc        val      # load constant
-    
+
+ldc        val                  # load constant
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := val;
-ldl        val      # load local
-    
+
+ldl        val                  # load local
     *32* %Creg := %Breg
     *32* %Breg := %Areg
-    *32* %Areg := m[%sp + (val*4)]{32};
-ldlp       val      # load local pointer
-    
+    *32* %Areg := m[%sp + (val*4)];
+
+ldlp       val                  # load local pointer
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := %sp + (val*4);
-ldnl       val      # load non-local
-    *32* %Areg := m[%Areg + (val * 4)]{32};
-ldnlp      val      # load non-local pointer
+
+ldnl       val                  # load non-local
+    *32* %Areg := m[%Areg + (val * 4)];
+
+ldnlp      val                  # load non-local pointer
     *32* %Areg := %Areg + (val * 4);
-ldpi             # load pointer to instruction
+
+ldpi                            # load pointer to instruction
     *32* %Areg := %pc + (%Areg * 4);
-ldprodid         # load product identity
+
+ldprodid                        # load product identity
     _ ;
-ldtdesc          # load task descriptor
+
+ldtdesc                         # load task descriptor
     _ ;
-lsinc            # load sixteen and increment
+
+lsinc                           # load sixteen and increment
     _ ;
-lsxinc           # load sixteen sign extended and increment
+
+lsxinc                          # load sixteen sign extended and increment
     _ ;
-lwinc            # load word and increment
+
+lwinc                           # load word and increment
     _ ;
-mac              # multiply accumulate
+
+mac                             # multiply accumulate
     _ ;
-mul              # multiply
-    #OP2("*");
+
+mul                             # multiply
     *32* %Areg := %Breg * %Areg
-    
     *32* %Breg := %Creg;
-nfix       val      # negative prefix
+
+nfix       val                  # negative prefix
     _ ;
-nop              # no operation
+
+nop                             # no operation
     _ ;
-not              # bitwise not
+
+not                             # bitwise not
     *32* %Areg := ~%Areg;
-opr        val      # operate
+
+opr        val                  # operate
     _ ;
-orq               # or
-    #OP2("|");
+
+OR                              # or
     *32* %Areg := %Breg | %Areg
-    
     *32* %Breg := %Creg;
-order            # order
+
+order                           # order
     _ ;
-orderu           # unsigned order
+
+orderu                          # unsigned order
     _ ;
-pfix       val      # prefix
+
+pfix       val                  # prefix
     _ ;
-rev              # reverse
+
+rev                             # reverse
     *32* tmp := %Areg
     *32* %Areg := %Breg
     *32* %Areg := tmp;
-rmw              # read modify write
+
+rmw                             # read modify write
     _ ;
-rot              # rotate stack
+
+rot                             # rotate stack
     _ ;
-run              # run process
+
+run                             # run process
     _ ;
-saturate         # saturate
+
+saturate                        # saturate
     _ ;
-sbinc            # store byte and increment
+
+sbinc                           # store byte and increment
     _ ;
-shl              # shift left
-    #OP2("<<");
+
+shl                             # shift left
     *32* %Areg := %Breg << %Areg
-    
     *32* %Breg := %Creg;
-shr              # shift right
-    #OP2(">>");
+
+shr                             # shift right
     *32* %Areg := %Breg >> %Areg
-    
     *32* %Breg := %Creg;
-signal           # signal
+
+signal                          # signal
     _ ;
-smacinit         # initialize short multiply accumulate loop
+
+smacinit                        # initialize short multiply accumulate loop
     _ ;
-smacloop         # short multiply accumulate loop
+
+smacloop                        # short multiply accumulate loop
     _ ;
-smul             # short multiply
+
+smul                            # short multiply
     _ ;
-ssinc            # store sixteen and increment
+
+ssinc                           # store sixteen and increment
     _ ;
-statusclr        # clear bits in status register
+
+statusclr                       # clear bits in status register
     _ ;
-statusset        # set bits in status register
+
+statusset                       # set bits in status register
     _ ;
-statustst        # test status register
+
+statustst                       # test status register
     _ ;
-stl        val      # store local
+
+stl        val                  # store local
     *32* m[%sp + (val * 4)] := %Areg
-    
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-stnl       val      # store non-local
+
+stnl       val                  # store non-local
     *32* m[%Areg + (val * 4) ] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-stop             # stop process
+
+stop                            # stop process
     _ ;
-sub              # subtract
-    #OP2("-");
+
+sub                             # subtract
     *32* %Areg := %Breg - %Areg
-    
-    *32* %Breg := %Creg;
-subc             # subtract with carry
-    _ ;
-swap32           # byte swap 32
-    _ ;
-swinc            # store word and increment
-    _ ;
-timeslice        # timeslice
-    _ ;
-umac             # unsigned multiply accumulate
-    _ ;
-unsign           # unsign argument
-    _ ;
-wait             # wait
-    _ ;
-wsub             # word subscript
-    #OP2("*4 +");
-    *32* %Areg := (%Breg * 4) + %Areg
-    
-    *32* %Breg := %Creg;
-xbword           # sign extend byte to word
-    *32* %Areg := sgnex(8,32,%Areg{8});
-xor              # exclusive or
-    #OP2("^");
-    *32* %Areg := %Breg ^ %Areg
-    
     *32* %Breg := %Creg;
 
-xsword           # sign extend sixteen to word
-    *32* %Areg := sgnex(16, 32, %Areg{16});
+subc                            # subtract with carry
+    _ ;
+
+swap32                          # byte swap 32
+    _ ;
+
+swinc                           # store word and increment
+    _ ;
+
+timeslice                       # timeslice
+    _ ;
+
+umac                            # unsigned multiply accumulate
+    _ ;
+
+unsign                          # unsign argument
+    _ ;
+
+wait                            # wait
+    _ ;
+
+wsub                            # word subscript
+    *32* %Areg := (%Breg * 4) + %Areg
+    *32* %Breg := %Creg;
+
+xbword                          # sign extend byte to word
+    *32* %Areg := sgnex(8, 32, %Areg@[0:7]);
+
+# Note: the weird instruction name specification is because "xor" is a reserved identifer
+# (Also x.or does not work either because "or" is reserved)
+xo . r                          # exclusive or
+    *32* %Areg := %Breg ^ %Areg
+    *32* %Breg := %Creg;
+
+xsword                          # sign extend sixteen to word
+    *32* %Areg := sgnex(16, 32, %Areg);
+
 
 # C2-C4 instructions
+altq                            # alt start
+    _ ;
 
-altq                 # alt start
+altend                          # alt end
     _ ;
-altend              # alt end
+
+altwt                           # alt wait
     _ ;
-altwt               # alt wait
-    _ ;
-bcnt                # byte count
+
+bcnt                            # byte count
     *32* %Areg := %Areg * 32;
-bitcnt              # count bits set in word
+
+bitcnt                          # count bits set in word
     _ ;
-bitrevnbits         # reverse bottom n bits in word
+
+bitrevnbits                     # reverse bottom n bits in word
     _ ;
-bitrevword          # reverse bits in word
+
+bitrevword                      # reverse bits in word
     _ ;
-bsub                # byte subscript
-    #OP2("+");
+
+bsub                            # byte subscript
     *32* %Areg := %Breg + %Areg
-    
     *32* %Breg := %Creg;
-call    val         # call
-    *32* %sp := %sp - 16
-    *32* m[%sp] := %pc
-    *32* m[%sp+4] := %Areg
-    *32* m[%sp+8] := %Breg
-    *32* m[%sp+12] := %Creg
-#    *32* %Areg := %pc
-#    *32* %Breg := -1
-#    *32* %Creg := -1
-    *32* %pc := %pc + val;
-#    *32* %pc := val;
-call1   val         # call
+
+call    dest                    # call
     *32* %sp := %sp - 16
     *32* m[%sp] := %pc
     *32* m[%sp+4] := %Areg
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg;
-#    *32* %Areg := %pc
-#    *32* %Breg := -1
-#    *32* %Creg := -1
-#    *32* %pc := %pc + val;
-#    *32* %pc := val;
-call2   val         # call
+
+call1   dest                    # call
+    *32* %sp := %sp - 16
+    *32* m[%sp] := %pc
+    *32* m[%sp+4] := %Areg
+    *32* m[%sp+8] := %Breg
+    *32* m[%sp+12] := %Creg;
+
+call2   dest                    # call
     *32* %sp := %sp - 16
     *32* m[%sp] := %pc
     *32* m[%sp+4] := %Areg
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg
     *32* %sp := %sp + 16;
-#    *32* %Areg := %pc
-#    *32* %Breg := -1
-#    *32* %Creg := -1
-#    *32* %pc := %pc + val;
-#    *32* %pc := val;
-causeerror          # cause error
+
+causeerror                      # cause error
     _ ;
-cb                  # check byte
+
+cb                              # check byte
     _ ;
-cbu                 # check byte unsigned
+
+cbu                             # check byte unsigned
     _ ;
-ccnt1               # check count from 1
+
+ccnt1                           # check count from 1
     _ ;
-cflerr              # check floating point error
+
+cflerr                          # check floating point error
     _ ;
-cir                 # check in range
+
+cir                             # check in range
     _ ;
-ciru                # check in range unsigned
+
+ciru                            # check in range unsigned
     _ ;
-clockdis            # clock disable
+
+clockdis                        # clock disable
     _ ;
-clockenb            # clock enable
+
+clockenb                        # clock enable
     _ ;
-clrhalterr          # clear halt-on error flag
+
+clrhalterr                      # clear halt-on error flag
     _ ;
-crcbyte             # calculate CRC on byte
+
+crcbyte                         # calculate CRC on byte
     _ ;
-crcword             # calculate CRC on word
+
+crcword                         # calculate CRC on word
     _ ;
-cs                  # check sixteen
+
+cs                              # check sixteen
     _ ;
-csngl               # check single
+
+csngl                           # check single
     _ ;
-csu                 # check sixteen unsigned
+
+csu                             # check sixteen unsigned
     _ ;
-csub0               # check subscript from 0
+
+csub0                           # check subscript from 0
     _ ;
-cword               # check word
+
+cword                           # check word
     _ ;
-devlb               # device load byte
-    *32* %Areg := zfill(8,32,m[%Areg]{8});
-devls               # device load sixteen
-    *32* %Areg := zfill(16,32,m[%Areg]{16});
-devlw               # device load word
-    *32* %Areg := m[%Areg]{32};
-devmove             # device move
+
+devlb                           # device load byte
+    *32* %Areg := zfill(8,32,m[%Areg]);
+
+devls                           # device load sixteen
+    *32* %Areg := zfill(16,32,m[%Areg]);
+
+devlw                           # device load word
+    *32* %Areg := m[%Areg];
+
+devmove                         # device move
     _ ;
-devsb               # device store byte
+
+devsb                           # device store byte
     *8* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-devss               # device store sixteen
+
+devss                           # device store sixteen
     *16* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-devsw               # device store word
+
+devsw                           # device store word
     *32* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-diff                # difference
-    #OP2("-");
+
+diff                            # difference
     *32* %Areg := %Breg - %Areg
-    
     *32* %Breg := %Creg;
-disc                # disable channel
+
+disc                            # disable channel
     _ ;
-diss                # disable skip
+
+diss                            # disable skip
     _ ;
-dist                # disable timer
+
+dist                            # disable timer
     _ ;
-div                 # divide
-    #OP2("/");
+
+div                             # divide
     *32* %Areg := %Breg / %Areg
-    
     *32* %Breg := %Creg;
-enbc                # enable channel
+
+enbc                            # enable channel
     _ ;
-enbs                # enable skip
+
+enbs                            # enable skip
     _ ;
-enbt                # enable timer
+
+enbt                            # enable timer
     _ ;
-endp                # end process
+
+endp                            # end process
     _ ;
-fmul                # fractional multiply
+
+fmul                            # fractional multiply
     _ ;
-fptesterr           # test for FPU error
+
+fptesterr                       # test for FPU error
     _ ;
-gcall               # general call
-    *32* tmp := %pc
-    *32* %pc := %Areg
-    *32* %Areg := tmp;
-gintdis             # general interrupt disable
+
+gcall                           # general call
+    *32* tmp := %Areg
+    *32* %Areg := %pc
+    *32* %pc := tmp;
+
+gintdis                         # general interrupt disable
     _ ;
-gintenb             # general interrupt enable
+
+gintenb                         # general interrupt enable
     _ ;
-in                  # input message
+
+in                              # input message
     _ ;
-insertqueue         # insert at front of scheduler queue
+
+insertqueue                     # insert at front of scheduler queue
     _ ;
-intdis              # (localised) interrupt disable
+
+intdis                          # (localised) interrupt disable
     _ ;
-intenb              # (localised) interrupt enable
+
+intenb                          # (localised) interrupt enable
     _ ;
-iret                # interrupt return
-    *32* %Creg := m[%sp+20]{32}
-    *32* %Breg := m[%sp+16]{32}
-    *32* %Areg := m[%sp+12]{32}
-    *32* %pc := m[%sp+8]{32}
-    *32* %sp := m[%sp+4]{32};
+
+iret                            # interrupt return
+    *32* %Creg := m[%sp+20]
+    *32* %Breg := m[%sp+16]
+    *32* %Areg := m[%sp+12]
+    *32* %pc := m[%sp+8]
+    *32* %sp := m[%sp+4];
     # no status reg yet
-ladd                # long add
+
+ladd                            # long add
     *32* %Areg := %Areg + %Breg + zfill(1,32,%Creg@[0:0])
     ;
-lb                  # load byte
-    *32* %Areg := m[%Areg]{8};
-lbx                 # load byte and sign extend
-    *32* %Areg := m[%Areg]{8};
-ldclock             # load clock
+
+lb                              # load byte
+    *32* %Areg := m[%Areg];
+
+lbx                             # load byte and sign extend
+    *32* %Areg := m[%Areg];
+
+ldclock                         # load clock
     _ ;
-lddevid             # load device identity
+
+lddevid                         # load device identity
     _ ;
-ldiff               # long diff
+
+ldiff                           # long diff
     *33* tmp := %Breg - %Areg - zfill(1,32,%Creg@[0:0])
     *32* %Areg := tmp@[0:31]
     *32* %Breg := tmp@[32:32]
     *32* %Creg := -1;
-ldinf               # load infinity
-    
+
+ldinf                           # load infinity
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := INF;
-ldiv                # long divide
+
+ldiv                            # long divide
     *64* tmp@[0:31] := %Breg
     *64* tmp@[32:63] := %Creg
     *32* %Breg := tmp % %Areg
     *32* %Areg := tmp / %Areg
     *32* %Creg := -1;
-ldmemstartval       # load value of MemStart address
+
+ldmemstartval                   # load value of MemStart address
     _ ;
-ldpri               # load current priority
+
+ldpri                           # load current priority
     _ ;
-ldshadow            # load shadow registers
+
+ldshadow                        # load shadow registers
     _ ;
-ldtimer             # load timer
-    
+
+ldtimer                         # load timer
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := 0;
-ldtraph             # load trap handler
+
+ldtraph                         # load trap handler
     _ ;
-ldtrapped           # load trapped process status
+
+ldtrapped                       # load trapped process status
     _ ;
-lend                # loop end
+
+lend                            # loop end
     _ ;
-lmul                # long multiply
+
+lmul                            # long multiply
     *64* tmp := %Breg * %Areg
     *32* %Areg := tmp@[0:31]
     *32* %Breg := tmp@[32:63]
     *32* %Creg := -1;
-ls                  # load sixteen
-    *32* %Areg := m[%Areg]{16};
-lshl                # long shift left
-    #OP2("<<");
+
+ls                              # load sixteen
+    *32* %Areg := m[%Areg];
+
+lshl                            # long shift left
     *32* %Areg := %Breg >> %Areg
-    
     *32* %Breg := %Creg;
-lshr                # long shift right
-    #OP2(">>");
+
+lshr                            # long shift right
     *32* %Areg := %Breg >> %Areg
-    
     *32* %Breg := %Creg;
-lsub                # long subtract
+
+lsub                            # long subtract
     _ ;
-lsum                # long sum
+
+lsum                            # long sum
     _ ;
-lsx                 # load sixteen and sign extend
-    *32* %Areg := m[%Areg]{16};
-mint                # minimum integer
-    
+
+lsx                             # load sixteen and sign extend
+    *32* %Areg := m[%Areg];
+
+mint                            # minimum integer
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := SIGN_32_NEG;
-move                # move message
-    _ ;        #special function
-move2dall           # 2D block copy
+
+move                            # move message
+    _ ;                         # special function
+
+move2dall                       # 2D block copy
     _ ;
-move2dinit          # initialize data for 2D block move
+
+move2dinit                      # initialize data for 2D block move
     _ ;
-move2dnonzero       # 2D block copy non-zero bytes
+
+move2dnonzero                   # 2D block copy non-zero bytes
     _ ;
-move2dzero          # 2D block copy zero bytes
+
+move2dzero                      # 2D block copy zero bytes
     _ ;
-norm                # normalize
+
+norm                            # normalize
     _ ;
-out                 # output message
+
+out                             # output message
     _ ;
-outbyte             # output byte
+
+outbyte                         # output byte
     _ ;
-outword             # output word
+
+outword                         # output word
     _ ;
-pop                 # pop processor stack
-    
+
+pop                             # pop processor stack
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
-postnormsn          # post-normalize correction of single length fp number
+
+postnormsn                      # post-normalize correction of single length fp number
     _ ;
-prod                # product
-    #OP2("*");
+
+prod                            # product
     *32* %Areg := %Breg * %Areg
-    
     *32* %Breg := %Creg;
-reboot              # reboot
+
+reboot                          # reboot
     _ ;
-rem                 # remainder
-    #OP2("%");
+
+rem                             # remainder
     *32* %Areg := %Breg % %Areg
-    
     *32* %Breg := %Creg;
-resetch             # reset channel
+
+resetch                         # reset channel
     _ ;
-restart             # restart
+
+restart                         # restart
     _ ;
-ret                 # return
-    *32* %pc := m[%sp]{32}
+
+ret                             # return
+    *32* %pc := m[%sp]
     *32* %sp := %sp + 16;
-roundsn             # round single length floating point number
+
+roundsn                         # round single length floating point number
     _ ;
-runp                # run process
+
+runp                            # run process
     _ ;
-satadd              # saturating add
+
+satadd                          # saturating add
     _ ;
-satmul              # saturating multiply
+
+satmul                          # saturating multiply
     _ ;
-satsub              # saturating subtract
+
+satsub                          # saturating subtract
     _ ;
-saveh               # save high priority queue registers
+
+saveh                           # save high priority queue registers
     _ ;
-savel               # save low priority queue registers
+
+savel                           # save low priority queue registers
     _ ;
-sb                  # store byte
-    *8* m[%Areg{32}] := %Breg@[0:7]
-    ;
-seterr              # set error flags
+
+sb                              # store byte
+    *8* m[%Areg] := %Breg@[0:7];
+
+seterr                          # set error flags
     _ ;
-sethalterr          # set halt-on error flag
+
+sethalterr                      # set halt-on error flag
     _ ;
-settimeslice        # set timeslicing status
+
+settimeslice                    # set timeslicing status
     _ ;
-slmul               # signed long multiply
+
+slmul                           # signed long multiply
     _ ;
-ss                  # store sixteen
-    *16* m[%Areg{32}] := %Breg@[0:15]
-    ;
-ssub                # sixteen subscript
-    #OP2("*2 +");
+
+ss                              # store sixteen
+    *16* m[%Areg] := %Breg@[0:15];
+
+ssub                            # sixteen subscript
     *32* %Areg := (%Breg *2) + %Areg
-    
     *32* %Breg := %Creg;
-startp              # start process
+
+startp                          # start process
     _ ;
-stclock             # store clock register
+
+stclock                         # store clock register
     _ ;
-sthb                # store high priority back pointer
+
+sthb                            # store high priority back pointer
     _ ;
-sthf                # store high priority front pointer
+
+sthf                            # store high priority front pointer
     _ ;
-stlb                # store low priority back pointer
+
+stlb                            # store low priority back pointer
     _ ;
-stlf                # store low priority front pointer
+
+stlf                            # store low priority front pointer
     _ ;
-stoperr             # stop on error
+
+stoperr                         # stop on error
     _ ;
-stopp               # stop process
+
+stopp                           # stop process
     _ ;
-stshadow            # store shadow registers
+
+stshadow                        # store shadow registers
     _ ;
-sttimer             # store timer
+
+sttimer                         # store timer
     _ ;
-sttraph             # store trap handler
+
+sttraph                         # store trap handler
     _ ;
-sttrapped           # store trapped process
+
+sttrapped                       # store trapped process
     _ ;
-sulmul              # signed timer unsigned long multiply
+
+sulmul                          # signed timer unsigned long multiply
     _ ;
-sum                 # sum
+
+sum                             # sum
     _ ;
-swapqueue           # swap scheduler queue
+
+swapqueue                       # swap scheduler queue
     _ ;
-swaptimer           # swap timer queue
+
+swaptimer                       # swap timer queue
     _ ;
-talt                # timer alt start
+
+talt                            # timer alt start
     _ ;
-taltwt              # timer alt wait
+
+taltwt                          # timer alt wait
     _ ;
-testerr             # test error flag
+
+testerr                         # test error flag
     _ ;
-testhalterr         # test halt-on error flag
+
+testhalterr                     # test halt-on error flag
     _ ;
-testpranal          # test processor analysing
+
+testpranal                      # test processor analysing
     _ ;
-tin                 # timer input
+
+tin                             # timer input
     _ ;
-trapdis             # trap disable
+
+trapdis                         # trap disable
     _ ;
-trapenb             # trap enable
+
+trapenb                         # trap enable
     _ ;
-tret                # trap return
+
+tret                            # trap return
     _ ;
-unpacksn            # unpack single length fp number
+
+unpacksn                        # unpack single length fp number
     _ ;
-wcnt                # word count
+
+wcnt                            # word count
     _ ;
-wsubdb              # form double word subscript
-    #OP2("*8 +");
+
+wsubdb                          # form double word subscript
     *32* %Areg := (%Breg *8) + %Areg
-    
     *32* %Breg := %Creg;
-xdble               # extend to double
+
+xdble                           # extend to double
     *32* %Creg := %Breg
     *32* %Breg := [%Areg@[31:31] = 0?0:-1];
-xword               # extend word
+
+xword                           # extend word
     _ ;

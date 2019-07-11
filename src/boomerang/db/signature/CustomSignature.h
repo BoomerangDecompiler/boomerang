@@ -29,8 +29,8 @@ public:
     void setSP(int spReg);
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override { return m_spReg; }
+    virtual RegNum getStackRegister() const override { return m_spReg; }
 
 protected:
-    int m_spReg;
+    RegNum m_spReg;
 };

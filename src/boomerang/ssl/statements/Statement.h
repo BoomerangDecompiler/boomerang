@@ -21,13 +21,11 @@ class BasicBlock;
 class Function;
 class UserProc;
 class Exp;
-class Const;
 class Type;
 class StmtVisitor;
 class StmtExpVisitor;
 class StmtModifier;
 class StmtPartModifier;
-class ICodeGenerator;
 class LocationSet;
 class Assignment;
 class Settings;
@@ -42,15 +40,15 @@ typedef std::shared_ptr<const Type> SharedConstType;
 enum class StmtType : uint8_t
 {
     INVALID = 0,
-    Assign  = 1,
-    PhiAssign, ///< x := phi(a, b, c)
-    ImpAssign,
-    BoolAssign, ///< For "setCC" instructions
-    Call,
-    Ret, ///< Return
-    Branch,
-    Goto,
-    Case ///< switch statement
+    Assign  = 1, ///< Ordinary Assignment x := y
+    PhiAssign,   ///< x := phi(a, b, c)
+    ImpAssign,   ///< Implicit assignment (potential function parameter) x := -
+    BoolAssign,  ///< For "setCC" instructions
+    Call,        ///< Call statements rets := CALL foo(args)
+    Ret,         ///< Return
+    Branch,      ///< Conditional jump / if-then
+    Goto,        ///< Unconditional jump / goto
+    Case         ///< switch statement
 };
 
 /**
@@ -129,7 +127,6 @@ public:
     virtual void setNumber(int num) { m_number = num; }
 
     StmtType getKind() const { return m_kind; }
-    void setKind(StmtType k) { m_kind = k; }
 
     /// Accept a visitor (of various kinds) to this Statement.
     /// \return true to continue visiting
@@ -181,19 +178,12 @@ public:
 
     bool isCase() const { return m_kind == StmtType::Case; }
 
-    /// \returns true if this is a fpush/fpop
-    bool isFpush() const;
-    bool isFpop() const;
-
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
     /// returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}
 
     /// \returns true if this Statement defines loc
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }
-
-    /// returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp &exp) const = 0;
 
     /**
      * Display a text reprentation of this statement to the given stream
@@ -203,16 +193,19 @@ public:
      */
     virtual void print(OStream &os) const = 0;
 
-    QString prints() const; // For logging, was also for debugging
+    /// Print this statement to a string
+    QString toString() const;
 
-    /// general search
+    /// Search for the expression \p pattern in this statement.
+    /// If found, put the found expression into \p result and return true.
+    /// Otherwise, return false.
     virtual bool search(const Exp &pattern, SharedExp &result) const = 0;
 
     /**
-     * Find all instances of \p pattern and adds all found expressions
+     * Find all instances of \p pattern and add all found expressions
      * to \p result in reverse nesting order.
      *
-     * \param   pattern an expression to search for
+     * \param   pattern the expression pattern to search for
      * \param   result  a list which will have any matching exps
      *                  appended to it in reverse nesting order.
      * \returns true if there were any matches
@@ -220,14 +213,15 @@ public:
     virtual bool searchAll(const Exp &pattern, std::list<SharedExp> &result) const = 0;
 
     /**
-     * Replace all instances of search with replace.
-     * \param pattern a location to search for
-     * \param replace the expression with which to replace it
-     * \param cc      Set to true to change collectors as well.
+     * Replace all instances of \p pattern with \p replacement.
+     * \param pattern       an expression pattern to search for
+     * \param replacement   the expression with which to replace it
+     * \param changeCols    Set to true to change collectors as well.
      * \returns True if any change
      * \todo consider constness
      */
-    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) = 0;
+    virtual bool searchAndReplace(const Exp &pattern, SharedExp replacement,
+                                  bool changeCols = false) = 0;
 
     /**
      * \returns true if can propagate to \p exp (must be a RefExp to return true)
@@ -240,40 +234,24 @@ public:
     /**
      * Propagate to this statement.
      * \param destCounts is a map that indicates how may times a statement's definition is used
-     * \param convert set true if an indirect call is changed to direct (otherwise, no change)
      * \param force set to true to propagate even memofs (for switch analysis)
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
      */
-    bool propagateTo(bool &convert, Settings *settings, ExpIntMap *destCounts = nullptr,
+    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr,
                      LocationSet *usedByDomPhi = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
     bool propagateFlagsTo(Settings *settings);
 
-    /// Generate code for this statement
-    virtual void generateCode(ICodeGenerator *gen) const = 0;
-
     /// simpify internal expressions
+    /// \sa ExpSimplifier
     virtual void simplify() = 0;
 
     /// simplify internal address expressions (a[m[x]] -> x) etc
     /// Only Assignments override at present
     virtual void simplifyAddr() {}
-
-    /// map registers and temporaries to local variables
-    void mapRegistersToLocals();
-
-    /// The last part of the fromSSA logic: replace subscripted locations with suitable local
-    /// variables
-    void replaceSubscriptsWithLocals();
-
-    /// insert casts where needed, since fromSSA will erase type information
-    void insertCasts();
-
-    // Only Assign overrides at present
-    virtual void fixSuccessor() {}
 
     /// Meet the type associated with \p e with \p ty
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);
@@ -283,58 +261,35 @@ public:
      * Find the locations used by expressions in this Statement.
      * Use the StmtExpVisitor and UsedLocsFinder visitor classes
      * Adds (inserts) all locations (registers or memory etc) used by this statement
-     * Set \a cc to true to count the uses in collectors
-     * \param used set of used locations
-     * \param cc count collectors
-     * \param memOnly - only add memory references.
+     * Set \p coutCols to true to count the uses in collectors
+     *
+     * \param used      set of used locations
+     * \param countCols count collectors
+     * \param memOnly   only add memory references.
      */
-    void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
-
-    /// Special version of Statement::addUsedLocs for finding used locations.
-    /// \return true if defineAll was found
-    bool addUsedLocals(LocationSet &used);
+    void addUsedLocs(LocationSet &used, bool countCols = false, bool memOnly = false);
 
     /// Fix references to the returns of call statements
     /// Bypass calls for references in this statement
     void bypass();
 
-    /// replace a use of def->getLeft() by def->getRight() in this statement
-    /// replaces a use in this statement with an expression from an ordinary assignment
-    /// \returns true if change
-    /// \note Internal use only
-    bool replaceRef(SharedExp e, Assignment *def, bool &convert);
-
-    /// Find all constants in this statement
-    void findConstants(std::list<std::shared_ptr<Const>> &lc);
-
-    /// Strip all size casts
-    void stripSizes();
-
-    /// For all expressions in this Statement, replace any e with e{def}
-    void subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */);
-
-    // Map expressions to locals
-    void dfaMapLocals();
-
-    // End Statement visitation functions
-
     /// Get the type for the definition, if any, for expression e in this statement
     /// Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual SharedConstType getTypeFor(SharedConstExp) const { return nullptr; }
-    virtual SharedType getTypeFor(SharedExp) { return nullptr; }
+    virtual SharedConstType getTypeForExp(SharedConstExp) const { return nullptr; }
+    virtual SharedType getTypeForExp(SharedExp) { return nullptr; }
 
-    /// Set the type for the definition of e in this Statement
-    virtual void setTypeFor(SharedExp, SharedType);
+    /// Set the type for the definition of \p e in this Statement to \p ty
+    virtual void setTypeForExp(SharedExp exp, SharedType ty);
 
-    /// Parameter convert is set true if an indirect call is converted to direct
-    /// Return true if a change made
-    /// Note: this procedure does not control what part of this statement is propagated to
     /// Propagate to e from definition statement def.
-    /// Set convert to true if convert a call from indirect to direct.
-    bool doPropagateTo(const SharedExp &e, Assignment *def, bool &convert, Settings *settings);
+    /// \returns true if a change made
+    /// \note this procedure does not control what part of this statement is propagated to
+    bool doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings);
 
-    /// returns true if e1 may alias e2
-    bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
+private:
+    /// replace a use of def->getLeft() by def->getRight() in this statement
+    /// \returns true if change
+    bool replaceRef(SharedExp e, Assignment *def);
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
@@ -353,35 +308,6 @@ protected:
  * \returns copy of os (for concatenation)
  */
 BOOMERANG_API OStream &operator<<(OStream &os, const Statement *stmt);
-
-
-enum class SwitchType : char
-{
-    Invalid = 0,
-    a       = 'a',
-    A       = 'A',
-    o       = 'o',
-    O       = 'O',
-    r       = 'r',
-    R       = 'R',
-    H       = 'H',
-    F       = 'F', // Fortran style
-};
-
-/**
- * CaseStatement is derived from GotoStatement. In addition to the destination
- * of the jump, it has a switch variable Exp.
- */
-struct SwitchInfo
-{
-    SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
-    SwitchType switchType; ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
-    int lowerBound;        ///< Lower bound of the switch variable
-    int upperBound;        ///< Upper bound for the switch variable
-    Address tableAddr;     ///< Native address of the table, or ptr to array of values for form F
-    int numTableEntries;   ///< Number of entries in the table (form H only)
-    int offsetFromJumpTbl = 0; ///< Distance from jump to table (form R only)
-};
 
 /// Wildcard for statment search
 #define STMT_WILD (reinterpret_cast<Statement *>(-1))

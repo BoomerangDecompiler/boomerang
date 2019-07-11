@@ -63,10 +63,10 @@ void StatementListTest::testMakeIsect()
     list1.append(&a1);
     locs.insert(Location::regOf(REG_PENT_ECX));
     list1.makeIsect(list1, locs);
-    QCOMPARE(list1.prints(), QString("   0 *v* r25 := r26"));
+    QCOMPARE(list1.toString(), QString("   0 *v* r25 := r26"));
 
     list2.makeIsect(list1, locs);
-    QCOMPARE(list1.prints(), QString("   0 *v* r25 := r26"));
+    QCOMPARE(list1.toString(), QString("   0 *v* r25 := r26"));
 
     locs.clear();
     list2.makeIsect(list1, locs);
@@ -80,20 +80,20 @@ void StatementListTest::testAppend()
     Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
 
     list.append(&assign);
-    QCOMPARE(list.prints(), QString("   0 *v* r25 := r26"));
+    QCOMPARE(list.toString(), QString("   0 *v* r25 := r26"));
 
     list.append(StatementList());
-    QCOMPARE(list.prints(), QString("   0 *v* r25 := r26"));
+    QCOMPARE(list.toString(), QString("   0 *v* r25 := r26"));
 
     list.append(list);
-    QCOMPARE(list.prints(), QString("   0 *v* r25 := r26,\t   0 *v* r25 := r26"));
+    QCOMPARE(list.toString(), QString("   0 *v* r25 := r26,\t   0 *v* r25 := r26"));
 
     StatementSet set;
     Assign asgn(Location::regOf(REG_PENT_ESI), Location::regOf(REG_PENT_EDI));
     set.insert(&asgn);
 
     list.append(set);
-    QCOMPARE(list.prints(), QString("   0 *v* r25 := r26,\t   0 *v* r25 := r26,\t   0 *v* r30 := r31"));
+    QCOMPARE(list.toString(), QString("   0 *v* r25 := r26,\t   0 *v* r25 := r26,\t   0 *v* r30 := r31"));
 }
 
 

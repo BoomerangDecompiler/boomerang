@@ -10,12 +10,16 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/db/proc/UserProc.h"
 
 #include <unordered_map>
 
 
-class ProcDecompiler
+/**
+ * Contains the algorithm that determines how and in which order UserProcs are decompiled.
+ */
+class BOOMERANG_API ProcDecompiler
 {
 public:
     ProcDecompiler();
@@ -30,6 +34,10 @@ private:
     void addToRecursionGroup(UserProc *proc, const std::shared_ptr<ProcSet> &recursionGroup);
 
 private:
+    /// Decompile \p callee recursively when called by \p caller
+    /// \returns caller->getStatus();
+    ProcStatus decompileCallee(UserProc *callee, UserProc *caller);
+
     /// Early decompile:
     /// sort CFG, number statements, dominator tree, place phi functions, number statements, first
     /// rename, propagation: ready for preserveds.
@@ -61,6 +69,34 @@ private:
      * without having any SSA renaming, propagation, etc
      */
     void saveDecodedICTs(UserProc *proc);
+
+    /**
+     * Re-decompile \p proc from scratch. The proc must be at the top of the call stack
+     * (i.e. the one that is currently decompiled).
+     */
+    ProcStatus reDecompileRecursive(UserProc *proc);
+
+    /**
+     * Tries to convert indirect call statements to direct call statements.
+     * If successfully converted, decompiles the callee recursively.
+     */
+    bool tryConvertCallsToDirect(UserProc *proc);
+
+    /**
+     * Tries to find and decompile functions whose addresses are assigned to function pointers,
+     * e.g. for
+     *  *func* foo := 0x08049190
+     * we can decompile the address 0x08049190.
+     */
+    bool tryConvertFunctionPointerAssignments(UserProc *proc);
+
+    /**
+     * Tries to decompile the function starting at address \p addr.
+     * Does not decompile library functions.
+     * If the function does not exist, it is created.
+     * \returns the new function.
+     */
+    Function *tryDecompileRecursive(Address entryAddr, Prog *prog, UserProc *caller);
 
 private:
     ProcList m_callStack;

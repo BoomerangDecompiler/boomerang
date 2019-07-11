@@ -17,8 +17,8 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -715,61 +715,73 @@ void StatementTest::testWildLocationSet()
 
 void StatementTest::testRecursion()
 {
-    QSKIP("Disabled.");
-
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     Prog *prog = m_project.getProg();
-
-    IFrontEnd *fe = new PentiumFrontEnd(m_project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
     ProcCFG *cfg   = proc->getCFG();
 
-    // push bp
-    // r28 := r28 + -4
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
-
-    // m[r28] := r29
-    Assign *a2 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP));
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { a1, a2 })));
-    bbRTLs.reset(); // ???
 
-    // push arg+1
-    // r28 := r28 + -4
-    Assign *a3 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
+    // the fallthrough bb
+    {
+        // push bp
+        // r28 := r28 + -4
+        Assign *a1 = new Assign(Location::regOf(REG_PENT_ESP),
+                                Binary::get(opPlus,
+                                            Location::regOf(REG_PENT_ESP),
+                                            Const::get(-4)));
+        a1->setProc(proc);
 
-    // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
-    // esp+8 is return address; esp+12 is our arg
-    // m[r28] := m[r28+12] + 1
-    Assign *a4 = new Assign(
-        Location::memOf(Location::regOf(REG_PENT_ESP)),
-        Binary::get(opPlus, Location::memOf(
-                        Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(12))), Const::get(1)));
+        // m[r28] := r29
+        Assign *a2 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP));
+        a2->setProc(proc);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1004), { a1, a2 })));
 
-    a4->setProc(proc);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { a3, a4 })));
+        // push arg+1
+        // r28 := r28 + -4
+        Assign *a3 = (Assign *)a1->clone();
+        a3->setProc(proc);
+
+        // Reference our parameter. At esp+0 is this arg; at esp+4 is old ebp;
+        // esp+8 is return address; esp+12 is our arg
+        // m[r28] := m[r28+12] + 1
+        Assign *a4 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)),
+                                Binary::get(opPlus,
+                                            Location::memOf(Binary::get(opPlus,
+                                                                        Location::regOf(REG_PENT_ESP),
+                                                                        Const::get(12))),
+                                            Const::get(1)));
+
+        a4->setProc(proc);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1006), { a3, a4 })));
+    }
+
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
     // The call BB
     bbRTLs.reset(new RTLList);
+    {
+        // r28 := r28 + -4
+        Assign *a5 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
+        a5->setProc(proc);
+        // m[r28] := pc
+        Assign *a6 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC));
+        a6->setProc(proc);
 
-    // r28 := r28 + -4
-    Assign *a5 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
-    // m[r28] := pc
-    Assign *a6 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC));
-    // %pc := (%pc + 5) + 135893848
-    Assign *a7 = new Assign(Terminal::get(opPC),
-                   Binary::get(opPlus,
-                               Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
-                               Const::get(135893848)));
-    a7->setProc(proc);
+        // %pc := (%pc + 5) + 135893848
+        Assign *a7 = new Assign(Terminal::get(opPC),
+                    Binary::get(opPlus,
+                                Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
+                                Const::get(0x8199358)));
+        a7->setProc(proc);
 
-    CallStatement *c = new CallStatement;
-    c->setDestProc(proc); // Just call self
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x0001), { a5, a6, a7, c })));
+        CallStatement *c = new CallStatement;
+        c->setDestProc(proc); // Just call self
+
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1008), { a5, a6, a7, c })));
+    }
+
     BasicBlock *callbb = cfg->createBB(BBType::Call, std::move(bbRTLs));
 
     first->addSuccessor(callbb);
@@ -777,50 +789,79 @@ void StatementTest::testRecursion()
     callbb->addSuccessor(callbb);
     callbb->addPredecessor(callbb);
 
+    // the ret bb
     bbRTLs.reset(new RTLList);
-    ReturnStatement *retStmt = new ReturnStatement;
-    // This ReturnStatement requires the following two sets of semantics to pass the
-    // tests for standard Pentium calling convention
-    // pc = m[r28]
-    a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP)));
-    // r28 = r28 + 4
-    a2 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)));
+    {
+        ReturnStatement *retStmt = new ReturnStatement;
+        // This ReturnStatement requires the following two sets of semantics to pass the
+        // tests for standard Pentium calling convention
+        // pc = m[r28]
+        Assign *a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP)));
+        // r28 = r28 + 4
+        Assign *a2 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)));
 
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { retStmt, a1, a2 })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x100C), { a1, a2, retStmt })));
+    }
 
     BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
+
     callbb->addSuccessor(ret);
     ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
 
+    proc->setEntryAddress(Address(0x1004));
+
     // decompile the "proc"
+    prog->addEntryPoint(Address(0x1004));
     ProgDecompiler dcomp(prog);
     dcomp.decompile();
+
+    proc->numberStatements();
 
     // print cfg to a string
     QString     actual;
     OStream st(&actual);
     cfg->print(st);
 
-    QString expected = "Control Flow Graph:\n"
-                       "Fall BB: reach in: \n"
-                       "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-                       "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-                       "Call BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
-                       "00000001 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
-                       "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
-                       "cfg reachExit: \n";
-    QCOMPARE(actual, expected);
+    const QString expected =
+        "Control Flow Graph:\n"
+        "Fall BB:\n"
+        "  in edges: \n"
+        "  out edges: 0x00001008 \n"
+        "0x00000000    1 *union* r28 := -\n"
+        "              2 *32* r29 := -\n"
+        "              3 *v* m[r28{1} + 4] := -\n"
+        "0x00001004\n"
+        "0x00001006    4 *union* r28 := r28{1} - 8\n"
+        "Call BB:\n"
+        "  in edges: 0x00001006(0x00001004) 0x00001008(0x00001008) \n"
+        "  out edges: 0x00001008 0x0000100c \n"
+        "0x00000000    5 *union* r28 := phi{4 7}\n"
+        "0x00001008    6 *u32* m[r28{5} - 4] := %pc\n"
+        "              7 *union* r28 := CALL test(<all>)\n"
+        "              Reaching definitions: r28=r28{5} - 4,   r29=r29{2},   m[r28{1} + 4]=m[r28{1} + 4]{3},\n"
+        "                m[r28{1} - 4]=r29{2},   m[r28{1} - 8]=m[r28{1} + 4]{3} + 1\n"
+        "              Live variables: r28\n"
+        "Ret BB:\n"
+        "  in edges: 0x00001008(0x00001008) \n"
+        "  out edges: \n"
+        "0x0000100c    8 RET\n"
+        "              Modifieds: <None>\n"
+        "              Reaching definitions: r28=r28{7} + 4,   r29=r29{7},   m[r28{1} + 4]=m[r28{1} + 4]{7},\n"
+        "                m[r28{1} - 4]=m[r28{1} - 4]{7},   m[r28{1} - 8]=m[r28{1} - 8]{7},   <all>=<all>{7}\n"
+        "\n";
+
+    compareLongStrings(actual, expected);
 }
 
 
 void StatementTest::testClone()
 {
     Assign *a1 = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
-    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::get(opParam, Const::get("x"), nullptr),
-                            Location::get(opParam, Const::get("y"), nullptr));
-    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::get(opParam, Const::get("z"), nullptr),
-                            Location::get(opParam, Const::get("q"), nullptr));
+    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"),
+                            Location::param("y"));
+    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"),
+                            Location::param("q"));
 
     Statement *c1 = a1->clone();
     Statement *c2 = a2->clone();
@@ -960,9 +1001,9 @@ void StatementTest::testAddUsedLocsCase()
     CaseStatement c;
 
     c.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    SwitchInfo si;
-    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
-    c.setSwitchInfo(&si);
+    std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
+    c.setSwitchInfo(std::move(si));
     c.addUsedLocs(l);
 
     QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
@@ -1057,7 +1098,7 @@ void StatementTest::testAddUsedLocsBool()
 
     actual   = "";
     l.print(ost);
-    QCOMPARE(actual, QString("m[local21 + 16]{372},\tlocal21"));
+    QCOMPARE(actual, QString("local21,\tm[local21 + 16]{372}"));
 
     // m[r28{-} - 4] := -
     l.clear();
@@ -1073,187 +1114,12 @@ void StatementTest::testAddUsedLocsBool()
 }
 
 
-void StatementTest::testSubscriptVars()
-{
-    SharedExp srch = Location::regOf(REG_PENT_ESP);
-    Assign    s9(Const::get(0), Const::get(0));
-
-    s9.setNumber(9);
-
-    // m[r28-4] := m[r28-8] * r26
-    Assign a(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_ESP),
-                                         Const::get(4))),
-             Binary::get(opMult,
-                         Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_PENT_ESP),
-                                                     Const::get(8))),
-                         Location::regOf(REG_PENT_EDX)));
-    a.setNumber(1);
-    QString     actual;
-    OStream ost(&actual);
-
-    a.subscriptVar(srch, &s9);
-    ost << &a;
-    QString expected = "   1 *v* m[r28{9} - 4] := m[r28{9} - 8] * r26";
-    QCOMPARE(actual, expected);
-
-    // GotoStatement
-    GotoStatement g;
-    g.setNumber(55);
-    g.setDest(Location::regOf(REG_PENT_ESP));
-    g.subscriptVar(srch, &s9);
-
-    actual   = "";
-    ost << &g;
-
-    expected = "  55 GOTO r28{9}";
-    QCOMPARE(actual, expected);
-
-    // BranchStatement with dest m[r26{99}]{55}, condition %flags
-    BranchStatement b;
-    b.setNumber(99);
-    SharedExp srchb = Location::memOf(RefExp::get(Location::regOf(REG_PENT_EDX), &b));
-    b.setDest(RefExp::get(srchb, &g));
-    b.setCondExpr(Terminal::get(opFlags));
-
-    b.subscriptVar(srchb, &s9); // Should be ignored now: new behaviour
-    b.subscriptVar(Terminal::get(opFlags), &g);
-
-    actual   = "";
-    expected = "  99 BRANCH m[r26{99}]{55}, condition equals\n"
-               "High level: %flags{55}";
-    ost << &b;
-    QCOMPARE(actual, expected);
-
-    // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
-    CaseStatement c1;
-    c1.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    SwitchInfo si;
-    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
-    c1.setSwitchInfo(&si);
-
-    c1.subscriptVar(srch, &s9);
-
-    actual   = "";
-    expected = "   0 SWITCH(m[r28{9} - 12])\n";
-    ost << &c1;
-    QCOMPARE(actual, expected);
-
-    // CaseStatement (before recog) with dest = r28, switchVar is nullptr
-    CaseStatement c2;
-    c2.setDest(Location::regOf(REG_PENT_ESP));
-    c2.setSwitchInfo(nullptr);
-
-    c2.subscriptVar(srch, &s9);
-    actual   = "";
-    expected = "   0 CASE [r28{9}]";
-    ost << &c2;
-    QCOMPARE(expected, actual);
-
-    // CallStatement with dest = m[r26], params = m[r27], r28, defines r28, m[r28]
-    CallStatement ca;
-    ca.setDest(Location::memOf(Location::regOf(REG_PENT_ESP)));
-    StatementList argl;
-
-//    BinaryFile bf(QByteArray{}, nullptr);
-    Prog   *prog = new Prog("testSubscriptVars", nullptr);
-    Module *mod  = prog->getOrInsertModuleForSymbol("test");
-
-    argl.append(new Assign(Location::memOf(Location::regOf(REG_PENT_EBX)), Const::get(1)));
-    argl.append(new Assign(Location::regOf(REG_PENT_ESP), Const::get(2)));
-    ca.setArguments(argl);
-    ca.addDefine(new ImplicitAssign(Location::regOf(REG_PENT_ESP)));
-    ca.addDefine(new ImplicitAssign(Location::memOf(Location::regOf(REG_PENT_ESP))));
-
-    ReturnStatement retStmt;
-    UserProc destProc(Address(0x2000), "dest", mod);
-    ca.setDestProc(&destProc);    // Must have a dest to be non-childless
-    ca.setCalleeReturn(&retStmt); // So it's not a childless call, and we can see the defs and params
-    ca.subscriptVar(srch, &s9);
-
-    actual   = "";
-    expected = "   0 {*v* r28, *v* m[r28]} := CALL dest(\n"
-               "                *v* m[r27] := 1\n"
-               "                *v* r28 := 2\n"
-               "              )\n"
-               "              Reaching definitions: <None>\n"
-               "              Live variables: <None>";
-    ost << &ca;
-    QCOMPARE(expected, actual);
-
-    argl.clear();
-
-    // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
-    CallStatement ca2;
-    ca2.setDest(Location::regOf(REG_PENT_ESP));
-    argl.append(new Assign(Location::memOf(Location::regOf(REG_PENT_EBX)), Const::get(1)));
-    argl.append(new Assign(Location::regOf(REG_PENT_EBP), Const::get(2)));
-    ca2.setArguments(argl);
-    ca2.addDefine(new ImplicitAssign(Location::regOf(REG_PENT_EDI)));
-    ca2.addDefine(new ImplicitAssign(Location::memOf(Location::regOf(REG_PENT_EDI))));
-    ReturnStatement retStmt2;
-    UserProc dest2(Address(0x2000), "dest", mod);
-    ca2.setDestProc(&dest2);        // Must have a dest to be non-childless
-    ca2.setCalleeReturn(&retStmt2); // So it's not a childless call, and we can see the defs and params
-    ca2.subscriptVar(srch, &s9);
-
-    actual   = "";
-    expected = "   0 {*v* r31, *v* m[r31]} := CALL dest(\n"
-               "                *v* m[r27] := 1\n"
-               "                *v* r29 := 2\n"
-               "              )\n"
-               "              Reaching definitions: <None>\n"
-               "              Live variables: <None>";
-    ost << &ca2;
-
-    QCOMPARE(actual, expected);
-    argl.clear();
-
-    // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
-    // FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
-    ReturnStatement r;
-    r.addReturn(new Assign(Location::regOf(REG_PENT_ESP), Const::get(1000)));
-    r.addReturn(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Const::get(2000)));
-    r.addReturn(new Assign(
-                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), &g),
-                                                 RefExp::get(Location::regOf(REG_PENT_EDX), &b))),
-                     Const::get(100)));
-
-    r.subscriptVar(srch, &s9); // New behaviour: gets ignored now
-
-    actual   = "";
-    expected = "   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{55} + r26{99}] := 100\n"
-               "              Modifieds: <None>\n"
-               "              Reaching definitions: <None>";
-    ost << &r;
-    QCOMPARE(actual, expected);
-
-    // Boolstatement with condition m[r28] = r28, dest m[r28]
-    BoolAssign bs(8);
-    bs.setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_ESP)));
-    bs.setLeft(Location::memOf(Location::regOf(REG_PENT_ESP)));
-
-    bs.subscriptVar(srch, &s9);
-
-    actual   = "";
-    expected = "   0 BOOL m[r28{9}] := CC(equals)\n"
-               "High level: m[r28{9}] = r28{9}\n";
-    ost << &bs;
-    QCOMPARE(actual, expected);
-
-    delete prog;
-}
-
-
 void StatementTest::testBypass()
 {
-    QSKIP("Disabled.");
-
     QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(m_project.getLoadedBinaryFile(), prog);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);
@@ -1270,11 +1136,15 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
+    // Number the statements
+    proc->numberStatements();
+
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
 
-    // Number the statements
-    proc->numberStatements();
+    // Note: we need to have up to date call defines before transforming to SSA form,
+    // because otherwise definitions of calls get ignored.
+    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Find various needed statements
@@ -1286,85 +1156,18 @@ void StatementTest::testBypass()
         ++it;
     }
     QVERIFY(it != stmts.end());
-
-    CallStatement *call = static_cast<CallStatement *>(*it); // Statement 18, a call to printf
-    call->setDestProc(proc);                    // A recursive call
-
     Statement *s20 = *std::next(it, 2); // Statement 20
     QVERIFY(s20->getKind() == StmtType::Assign);
 
-    QString     actual;
-    OStream ost(&actual);
-    ost << s20;
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{18} + 16");
 
-    // TODO ???
-    QString expected = "20 *32* r28 := r28{15} - 16";
-
-    QCOMPARE(actual, expected);
-
-    // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
     s20->bypass();        // r28 should bypass the call
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
 
-    actual = "";
-    ost << s20;
-
-    expected = "  20 *32* r28 := r28{-} - 16";
-    QCOMPARE(actual, expected);
-
-    delete prog;
-}
-
-
-void StatementTest::testStripSizes()
-{
-    // *v* r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
-    // The double size casting happens as a result of substitution
-    SharedExp lhs = Location::regOf(REG_PENT_EAX);
-    SharedExp rhs = Binary::get(
-        opDiv,
-        Binary::get(opSize,
-                    Const::get(8),
-                    Binary::get(opSize, Const::get(8),
-                                Location::memOf(Binary::get(opPlus,
-                                                            std::make_shared<Ternary>(opZfill,
-                                                                                      Const::get(8),
-                                                                                      Const::get(32),
-                                                                                      Location::local("local5", nullptr)),
-                                                            Location::local("param6", nullptr))))),
-        Const::get(16));
-
-    Statement *s = new Assign(lhs, rhs);
-
-    s->stripSizes();
-    QString     expected("   0 *v* r24 := m[zfill(8, 32, local5) + param6] / 16");
-    QString     actual;
-    OStream ost(&actual);
-    ost << s;
-    QCOMPARE(actual, expected);
-
-    delete s;
-}
-
-
-void StatementTest::testFindConstants()
-{
-    Assign a(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
-
-    std::list<std::shared_ptr<Const>> lc;
-    a.findConstants(lc);
-
-    QString     actual;
-    OStream ost(&actual);
-
-    for (auto it = lc.begin(); it != lc.end();) {
-        ost << *it;
-
-        if (++it != lc.end()) {
-            ost << ", ";
-        }
-    }
-
-    QCOMPARE(actual, QString("3, 4"));
+    // Second pass (should do nothing because r28{15} is the only reference to r28
+    // that reaches the call)
+    s20->bypass();
+    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
 }
 
 

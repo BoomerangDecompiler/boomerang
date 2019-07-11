@@ -41,7 +41,7 @@ class QString;
 class BOOMERANG_API DefaultFrontEnd : public IFrontEnd
 {
 public:
-    DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    DefaultFrontEnd(Project *project);
     DefaultFrontEnd(const DefaultFrontEnd &) = delete;
     DefaultFrontEnd(DefaultFrontEnd &&)      = default;
 
@@ -51,9 +51,11 @@ public:
     DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
+    virtual bool initialize(Project *project) override;
+
     /// \copydoc IFrontEnd::getDecoder
-    IDecoder *getDecoder() override { return m_decoder.get(); }
-    const IDecoder *getDecoder() const override { return m_decoder.get(); }
+    IDecoder *getDecoder() override { return m_decoder; }
+    const IDecoder *getDecoder() const override { return m_decoder; }
 
     /// \copydoc IFrontEnd::decodeEntryPointsRecursive
     bool decodeEntryPointsRecursive(bool decodeMain = true) override;
@@ -138,10 +140,16 @@ private:
     /// Returns nullptr on failure.
     UserProc *createFunctionForEntryPoint(Address entryAddr, const QString &functionType);
 
+    /**
+     * Get the address of the destination of a library thunk.
+     * Returns Address::INVALID if the call is not a library thunk or an error occurred.
+     */
+    Address getAddrOfLibraryThunk(CallStatement *call, UserProc *proc);
+
 protected:
-    std::unique_ptr<IDecoder> m_decoder;
-    BinaryFile *m_binaryFile;
-    Prog *m_program;
+    IDecoder *m_decoder      = nullptr;
+    BinaryFile *m_binaryFile = nullptr;
+    Prog *m_program          = nullptr;
 
     TargetQueue m_targetQueue; ///< Holds the addresses that still need to be processed
 

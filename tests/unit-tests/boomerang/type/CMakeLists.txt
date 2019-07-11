@@ -15,12 +15,12 @@ set(TESTS
 
 
 foreach(t ${TESTS})
-	BOOMERANG_ADD_TEST(
-		NAME ${t}
-		SOURCES ${t}.h ${t}.cpp
-		LIBRARIES
-			${DEBUG_LIB}
-			boomerang
-			${CMAKE_THREAD_LIBS_INIT}
-	)
+    BOOMERANG_ADD_TEST(
+        NAME ${t}
+        SOURCES ${t}.h ${t}.cpp
+        LIBRARIES
+            ${DEBUG_LIB}
+            boomerang
+            ${CMAKE_THREAD_LIBS_INIT}
+    )
 endforeach()

@@ -12,9 +12,21 @@ include(boomerang-utils)
 set(TESTS
     exp/ExpTest
     parser/ParserTest
+    type/ArrayTypeTest
+    type/BooleanTypeTest
+    type/CharTypeTest
+    type/CompoundTypeTest
+    type/FloatTypeTest
+    type/FuncTypeTest
+    type/NamedTypeTest
+    type/IntegerTypeTest
+    type/PointerTypeTest
     type/MeetTest
+    RegDBTest
     RTLTest
+    type/UnionTypeTest
 )
+
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
@@ -27,14 +39,14 @@ set(TESTS_WITH_WIN32
 
 foreach(t ${TESTS})
     string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
-	BOOMERANG_ADD_TEST(
-		NAME ${TEST_NAME}
-		SOURCES ${t}.h ${t}.cpp
-		LIBRARIES
-			${DEBUG_LIB}
-			boomerang
-			${CMAKE_THREAD_LIBS_INIT}
-	)
+    BOOMERANG_ADD_TEST(
+        NAME ${TEST_NAME}
+        SOURCES ${t}.h ${t}.cpp
+        LIBRARIES
+            ${DEBUG_LIB}
+            boomerang
+            ${CMAKE_THREAD_LIBS_INIT}
+    )
 endforeach()
 
 

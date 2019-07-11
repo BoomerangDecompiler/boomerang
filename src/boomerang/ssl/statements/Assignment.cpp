@@ -28,11 +28,11 @@ Assignment::Assignment(SharedExp lhs)
     : TypingStatement(VoidType::get())
     , m_lhs(lhs)
 {
-    if (lhs && lhs->isRegOf()) {
-        int n = lhs->access<Const, 1>()->getInt();
-
+    if (lhs && lhs->isRegOfConst()) {
         if (lhs->access<Location>()->getProc()) {
-            m_type = SizeType::get(lhs->access<Location>()->getProc()->getProg()->getRegSize(n));
+            const RegNum n = lhs->access<Const, 1>()->getInt();
+            m_type         = SizeType::get(
+                lhs->access<Location>()->getProc()->getProg()->getRegSizeByNum(n));
         }
     }
 }
@@ -50,21 +50,27 @@ Assignment::~Assignment()
 }
 
 
-SharedConstType Assignment::getTypeFor(SharedConstExp) const
+bool Assignment::operator<(const Assignment &o)
+{
+    return *m_lhs < *o.m_lhs;
+}
+
+
+SharedConstType Assignment::getTypeForExp(SharedConstExp) const
 {
     // assert(*lhs == *e); // No: local vs base expression
     return m_type;
 }
 
 
-SharedType Assignment::getTypeFor(SharedExp /*e*/)
+SharedType Assignment::getTypeForExp(SharedExp /*e*/)
 {
     // assert(*lhs == *e); // No: local vs base expression
     return m_type;
 }
 
 
-void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
+void Assignment::setTypeForExp(SharedExp /*e*/, SharedType ty)
 {
     m_type = ty;
 }
@@ -82,14 +88,6 @@ bool Assignment::definesLoc(SharedExp loc) const
 }
 
 
-bool Assignment::usesExp(const Exp &e) const
-{
-    SharedExp where = nullptr;
-
-    return (m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where);
-}
-
-
 void Assignment::getDefinitions(LocationSet &defs, bool) const
 {
     if (m_lhs->getOper() == opAt) { // foo@[m:n] really only defines foo
@@ -103,6 +101,8 @@ void Assignment::getDefinitions(LocationSet &defs, bool) const
     if (m_lhs->isFlags()) {
         defs.insert(Terminal::get(opCF));
         defs.insert(Terminal::get(opZF));
+        defs.insert(Terminal::get(opOF));
+        defs.insert(Terminal::get(opNF));
     }
 }
 

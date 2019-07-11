@@ -27,19 +27,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFMult);
         HANDLE_OPER(opFDiv);
         HANDLE_OPER(opFNeg);
-        HANDLE_OPER(opFPlusd);
-        HANDLE_OPER(opFMinusd);
-        HANDLE_OPER(opFMultd);
-        HANDLE_OPER(opFDivd);
-        HANDLE_OPER(opFPlusq);
-        HANDLE_OPER(opFMinusq);
-        HANDLE_OPER(opFMultq);
-        HANDLE_OPER(opFDivq);
-        HANDLE_OPER(opFMultsd);
-        HANDLE_OPER(opFMultdq);
-        HANDLE_OPER(opSQRTs);
-        HANDLE_OPER(opSQRTd);
-        HANDLE_OPER(opSQRTq);
         HANDLE_OPER(opMults);
         HANDLE_OPER(opDivs);
         HANDLE_OPER(opMod);
@@ -57,28 +44,21 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opGtrUns);
         HANDLE_OPER(opLessEqUns);
         HANDLE_OPER(opGtrEqUns);
-        HANDLE_OPER(opNot);
+        HANDLE_OPER(opBitNot);
         HANDLE_OPER(opLNot);
-        HANDLE_OPER(opSignExt);
         HANDLE_OPER(opBitAnd);
         HANDLE_OPER(opBitOr);
         HANDLE_OPER(opBitXor);
-        HANDLE_OPER(opShiftL);
-        HANDLE_OPER(opShiftR);
-        HANDLE_OPER(opShiftRA);
-        HANDLE_OPER(opRotateL);
-        HANDLE_OPER(opRotateR);
-        HANDLE_OPER(opRotateLC);
-        HANDLE_OPER(opRotateRC);
-        HANDLE_OPER(opTargetInst);
+        HANDLE_OPER(opShL);
+        HANDLE_OPER(opShR);
+        HANDLE_OPER(opShRA);
+        HANDLE_OPER(opRotL);
+        HANDLE_OPER(opRotR);
+        HANDLE_OPER(opRotLC);
+        HANDLE_OPER(opRotRC);
         HANDLE_OPER(opTypedExp);
-        HANDLE_OPER(opNamedExp);
-        HANDLE_OPER(opGuard);
         HANDLE_OPER(opFlagCall);
-        HANDLE_OPER(opFlagDef);
         HANDLE_OPER(opList);
-        HANDLE_OPER(opExpTable);
-        HANDLE_OPER(opOpTable);
         HANDLE_OPER(opSuccessor);
         HANDLE_OPER(opTern);
         HANDLE_OPER(opAt);
@@ -89,7 +69,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opWildRegOf);
         HANDLE_OPER(opWildAddrOf);
         HANDLE_OPER(opDefineAll);
-        HANDLE_OPER(opPhi);
         HANDLE_OPER(opSubscript);
         HANDLE_OPER(opParam);
         HANDLE_OPER(opLocal);
@@ -97,7 +76,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opMemberAccess);
         HANDLE_OPER(opArrayIndex);
         HANDLE_OPER(opTemp);
-        HANDLE_OPER(opSize);
         HANDLE_OPER(opMachFtr);
         HANDLE_OPER(opTruncu);
         HANDLE_OPER(opTruncs);
@@ -109,8 +87,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFround);
         HANDLE_OPER(opFtrunc);
         HANDLE_OPER(opFabs);
-        HANDLE_OPER(opFpush);
-        HANDLE_OPER(opFpop);
         HANDLE_OPER(opSin);
         HANDLE_OPER(opCos);
         HANDLE_OPER(opTan);
@@ -120,7 +96,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opLoge);
         HANDLE_OPER(opPow);
         HANDLE_OPER(opSqrt);
-        HANDLE_OPER(opExecute);
         HANDLE_OPER(opIntConst);
         HANDLE_OPER(opLongConst);
         HANDLE_OPER(opFltConst);
@@ -129,15 +104,11 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opWildIntConst);
         HANDLE_OPER(opWildStrConst);
         HANDLE_OPER(opPC);
-        HANDLE_OPER(opAFP);
-        HANDLE_OPER(opAGP);
         HANDLE_OPER(opNil);
         HANDLE_OPER(opFlags);
         HANDLE_OPER(opFflags);
-        HANDLE_OPER(opAnull);
         HANDLE_OPER(opTrue);
         HANDLE_OPER(opFalse);
-        HANDLE_OPER(opTypeOf);
         HANDLE_OPER(opZF);
         HANDLE_OPER(opCF);
         HANDLE_OPER(opNF);
@@ -145,11 +116,8 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opDF);
         HANDLE_OPER(opFZF);
         HANDLE_OPER(opFLF);
-        HANDLE_OPER(opFGF);
-        HANDLE_OPER(opCTI);
-        HANDLE_OPER(opNEXT);
 
-    case opNumOf: break;
+    case opInvalid: break;
     }
 
     assert(!"operToString: Invalid operator.");

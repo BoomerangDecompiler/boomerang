@@ -30,4 +30,7 @@ if (BOOMERANG_BUILD_LOADER_Elf)
                 ${CMAKE_THREAD_LIBS_INIT}
         )
     endforeach()
+
+    target_link_libraries(PentiumFrontEndTest boomerang-X86FrontEnd)
+    target_link_libraries(SPARCFrontEndTest boomerang-SPARCFrontEnd)
 endif (BOOMERANG_BUILD_LOADER_Elf)

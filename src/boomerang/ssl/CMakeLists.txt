@@ -9,6 +9,7 @@
 
 list(APPEND boomerang-ssl-sources
     ssl/Register
+    ssl/RegDB
     ssl/RTLInstDict
     ssl/RTL
     ssl/TableEntry
@@ -18,7 +19,6 @@ list(APPEND boomerang-ssl-sources
     ssl/exp/Const
     ssl/exp/Exp
     ssl/exp/ExpHelp
-    ssl/exp/FlagDef
     ssl/exp/Location
     ssl/exp/RefExp
     ssl/exp/Terminal
@@ -26,12 +26,6 @@ list(APPEND boomerang-ssl-sources
     ssl/exp/TypedExp
     ssl/exp/Unary
     ssl/exp/Operator
-
-    ssl/parser/InsNameElem
-    ssl/parser/SSLParser
-    ssl/parser/SSLParserSupport
-    ssl/parser/SSLScanner
-    ssl/parser/Table
 
     # statement handling
     ssl/statements/Assign
@@ -63,6 +57,8 @@ list(APPEND boomerang-ssl-sources
     ssl/type/UnionType
     ssl/type/VoidType
 )
+
+add_subdirectory(parser)
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-ssl-sources ".cpp")
 

@@ -19,7 +19,7 @@ class Statement;
 
 
 /// Remove unused statements
-class UnusedStatementRemovalPass : public IPass
+class UnusedStatementRemovalPass final : public IPass
 {
     typedef std::map<Statement *, int> RefCounter;
 
@@ -27,6 +27,7 @@ public:
     UnusedStatementRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

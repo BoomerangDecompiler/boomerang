@@ -9,17 +9,17 @@
 #pragma endregion License
 #include "ProgTest.h"
 
+#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/proc/LibProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -46,7 +46,7 @@ void ProgTest::testFrontend()
     m_project.getProg()->createModule("foo");
     QVERIFY(m_project.getProg()->getModuleList().size() == 2);
 
-    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(nullptr, m_project.getProg()));
+    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(&m_project));
     QVERIFY(m_project.getProg()->getFrontEnd() != nullptr);
     QVERIFY(m_project.getProg()->getModuleList().size() == 1);
     QVERIFY(m_project.getProg()->getRootModule() != nullptr);
@@ -269,15 +269,15 @@ void ProgTest::testIsWin32()
 }
 
 
-void ProgTest::testGetRegName()
+void ProgTest::testGetRegNameByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
-void ProgTest::testGetRegSize()
+void ProgTest::testGetRegSizeByNum()
 {
-    QSKIP("TODO");
+    QSKIP("Not implemented.");
 }
 
 
@@ -405,16 +405,6 @@ void ProgTest::testIsDynamicallyLinkedProcPointer()
 }
 
 
-void ProgTest::testGetDynamicProcName()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-
-    QCOMPARE(m_project.getProg()->getDynamicProcName(Address::INVALID),    QString(""));
-    QCOMPARE(m_project.getProg()->getDynamicProcName(Address(0x080483f4)), QString(""));
-    QCOMPARE(m_project.getProg()->getDynamicProcName(Address(0x08048268)), QString("printf"));
-}
-
-
 void ProgTest::testGetOrInsertModuleForSymbol()
 {
     Prog prog("test", nullptr);
@@ -432,14 +422,6 @@ void ProgTest::testGetOrInsertModuleForSymbol()
     QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol(mainSym->getName()), m_project.getProg()->getOrInsertModule("foo"));
 }
 
-
-void ProgTest::testReadNative4()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-
-    QCOMPARE(m_project.getProg()->readNative4(Address::INVALID), 0);
-    QCOMPARE(m_project.getProg()->readNative4(Address(0x80483FC)), 0x6c6c6548);
-}
 
 
 void ProgTest::testDecodeEntryPoint()
@@ -467,12 +449,6 @@ void ProgTest::testReDecode()
     QVERIFY(!m_project.getProg()->reDecode(nullptr));
     QVERIFY(m_project.getProg()->reDecode(mainProc)); // actually processing for the first time
     QVERIFY(m_project.getProg()->reDecode(mainProc)); // actual re-decode
-}
-
-
-void ProgTest::testFinishDecode()
-{
-    QSKIP("TODO");
 }
 
 
@@ -557,10 +533,10 @@ void ProgTest::testMakeArrayType()
 
     // type of hello world
     ty = m_project.getProg()->makeArrayType(Address(0x80483FC), CharType::get());
-    QCOMPARE(ty->prints(), QString("char[15]"));
+    QCOMPARE(ty->getCtype(), QString("char[15]"));
 
     ty = m_project.getProg()->makeArrayType(Address(0x80483FC), VoidType::get());
-    QCOMPARE(ty->prints(), QString("void[15]"));
+    QCOMPARE(ty->getCtype(), QString("void[15]"));
 }
 
 
@@ -587,12 +563,12 @@ void ProgTest::testGlobalType()
 
     SharedType ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
-    QCOMPARE(ty->prints(), QString("char[15]"));
+    QCOMPARE(ty->getCtype(), QString("char[15]"));
 
     m_project.getProg()->setGlobalType("helloworld", IntegerType::get(32, Sign::Signed));
     ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
-    QCOMPARE(ty->prints(), QString("int"));
+    QCOMPARE(ty->getCtype(), QString("int"));
 }
 
 

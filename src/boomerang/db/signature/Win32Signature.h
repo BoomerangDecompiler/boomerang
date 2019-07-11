@@ -11,12 +11,15 @@
 
 
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
 namespace CallingConvention
 {
-/// Win32Signature is for __stdcall calling convention: parameters pushed right-to-left,
-/// return value in %eax register
+/**
+ * Win32Signature is for __stdcall calling convention: parameters pushed right-to-left,
+ * return value in %eax register
+ */
 class BOOMERANG_API Win32Signature : public Signature
 {
 public:
@@ -47,7 +50,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override { return 28; }
+    virtual RegNum getStackRegister() const override { return REG_PENT_ESP; }
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
@@ -66,9 +69,11 @@ public:
 };
 
 
-/// Win32TcSignature is for "thiscall" signatures, i.e. those that have register ecx as the first
-/// parameter Only needs to override a few member functions; the rest can inherit from
-/// Win32Signature
+/**
+ * Win32TcSignature is for "thiscall" signatures, i.e. those that have register %ecx as the first
+ * parameter. Only needs to override a few member functions; the rest can inherit from
+ * Win32Signature
+ */
 class Win32TcSignature : public Win32Signature
 {
 public:

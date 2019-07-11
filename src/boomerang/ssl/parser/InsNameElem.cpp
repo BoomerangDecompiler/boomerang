@@ -45,7 +45,7 @@ QString InsNameElem::getInsPattern() const
 }
 
 
-void InsNameElem::getRefMap(std::map<QString, InsNameElem *> &map)
+void InsNameElem::getRefMap(std::map<QString, std::shared_ptr<InsNameElem>> &map)
 {
     if (m_nextElem != nullptr) {
         m_nextElem->getRefMap(map);
@@ -165,7 +165,7 @@ QString InsListElem::getInsPattern() const
 }
 
 
-void InsListElem::getRefMap(std::map<QString, InsNameElem *> &m)
+void InsListElem::getRefMap(std::map<QString, std::shared_ptr<InsNameElem>> &m)
 {
     if (m_nextElem != nullptr) {
         m_nextElem->getRefMap(m);
@@ -174,7 +174,7 @@ void InsListElem::getRefMap(std::map<QString, InsNameElem *> &m)
         m.clear();
     }
 
-    m[m_indexName] = this;
+    m[m_indexName] = shared_from_this();
     // of course, we're assuming that we've already checked (try in the parser)
     // that indexname hasn't been used more than once on this line ..
 }

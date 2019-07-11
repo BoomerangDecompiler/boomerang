@@ -107,8 +107,9 @@ MainWindow::MainWindow(QWidget *_parent)
 
     if (ui->cbInputFile->count() > 0) {
         int currentIdx = ui->cbInputFile->findText(settings.value("inputfile").toString());
-        currentIdx     = std::max(currentIdx,
-                              0); // if selected input file could not be found, use last one
+
+        // if selected input file could not be found, use last one
+        currentIdx = std::max(currentIdx, 0);
         ui->cbInputFile->setCurrentIndex(currentIdx);
     }
 
@@ -748,6 +749,7 @@ void MainWindow::on_twModuleTree_itemDoubleClicked(QTreeWidgetItem *item, int co
         QFile file(filename);
 
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            delete n;
             return;
         }
 
@@ -876,6 +878,7 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
         QFile file(filename);
 
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            delete n;
             return;
         }
 

@@ -16,7 +16,8 @@
 class BOOMERANG_API IntegerType : public Type
 {
 public:
-    explicit IntegerType(unsigned NumBits, Sign sign = Sign::Unknown);
+    explicit IntegerType(Size numBits, Sign sign = Sign::Unknown);
+
     IntegerType(const IntegerType &other) = default;
     IntegerType(IntegerType &&other)      = default;
 
@@ -26,52 +27,60 @@ public:
     IntegerType &operator=(IntegerType &&other) = default;
 
 public:
-    static std::shared_ptr<IntegerType> get(unsigned NumBits, Sign sign = Sign::Unknown);
+    static std::shared_ptr<IntegerType> get(Size numBits, Sign sign = Sign::Unknown);
 
-    virtual bool isInteger() const override { return true; }
-    virtual bool isComplete() override { return signedness != Sign::Unknown && size != 0; }
-
-    virtual SharedType clone() const override;
-
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
+
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-    virtual size_t getSize() const override; // Get size in bits
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
 
-    virtual void setSize(size_t sz) override { size = sz; }
+    /// \copydoc Type::isComplete
+    virtual bool isComplete() override;
 
+    /// \copydoc Type::getCtype
+    virtual QString getCtype(bool final = false) const override;
+
+    /// \copydoc Type::getSize
+    virtual Size getSize() const override;
+
+    /// \copydoc Type::setSize
+    virtual void setSize(Size sz) override { m_size = sz; }
+
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+public:
     /// \returns true if definitely signed
-    bool isSigned() const { return signedness > Sign::Unknown; }
+    bool isSigned() const { return m_sign > Sign::Unknown; }
 
     /// \returns true if definitely unsigned
-    bool isUnsigned() const { return signedness < Sign::Unknown; }
+    bool isUnsigned() const { return m_sign < Sign::Unknown; }
 
     /// \returns true if signedness is signed or unknown
-    bool isMaybeSigned() const { return signedness >= Sign::Unknown; }
+    bool isMaybeSigned() const { return m_sign >= Sign::Unknown; }
 
     /// \returns true if signedness is unsigned or unknown
-    bool isMaybeUnsigned() const { return signedness <= Sign::Unknown; }
+    bool isMaybeUnsigned() const { return m_sign <= Sign::Unknown; }
 
-    bool isSignUnknown() const { return signedness == Sign::Unknown; }
+    /// \returns true if we don't know the sign yet
+    bool isSignUnknown() const { return m_sign == Sign::Unknown; }
 
     /// A hint for signedness
     void hintAsSigned();
     void hintAsUnsigned();
 
-    void setSignedness(Sign sign) { signedness = sign; }
-    Sign getSign() const { return signedness; }
+    void setSignedness(Sign sign) { m_sign = sign; }
+    Sign getSign() const { return m_sign; }
 
-    /// Get the C type as a string. If full, output comments re the lack of sign information (in
-    /// IntegerTypes).
-    virtual QString getCtype(bool final = false) const override;
-
-    virtual QString getTempName() const override;
-
-    /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    size_t size;     ///< Size in bits, e.g. 16
-    Sign signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
+    Size m_size; ///< Size in bits, e.g. 16
+    Sign m_sign;
 };

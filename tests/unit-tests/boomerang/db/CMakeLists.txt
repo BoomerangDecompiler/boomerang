@@ -30,15 +30,29 @@ set(TESTS_WITH_ELF
 
 foreach(t ${TESTS})
     string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
-	BOOMERANG_ADD_TEST(
-		NAME ${TEST_NAME}
-		SOURCES ${t}.h ${t}.cpp
-		LIBRARIES
-			${DEBUG_LIB}
-			boomerang
-			${CMAKE_THREAD_LIBS_INIT}
-	)
+    BOOMERANG_ADD_TEST(
+        NAME ${TEST_NAME}
+        SOURCES ${t}.h ${t}.cpp
+        LIBRARIES
+            ${DEBUG_LIB}
+            boomerang
+            ${CMAKE_THREAD_LIBS_INIT}
+    )
 endforeach()
+
+target_link_libraries(ProgTest
+    boomerang-X86FrontEnd
+)
+
+if (MSVC)
+    add_custom_command(TARGET ProgTest POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS
+            -E copy_if_different
+            "$<TARGET_FILE:boomerang-X86FrontEnd>"
+            "${BOOMERANG_OUTPUT_DIR}/bin/"
+    )
+endif (MSVC)
 
 
 if (BOOMERANG_BUILD_LOADER_Elf)

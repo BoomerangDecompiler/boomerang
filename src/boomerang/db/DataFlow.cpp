@@ -40,81 +40,83 @@ DataFlow::~DataFlow()
 }
 
 
-void DataFlow::dfs(int myIdx, int parentIdx)
+void DataFlow::dfs(BBIndex myIdx, BBIndex parentIdx)
 {
-    if (m_dfnum[myIdx] == -1) {
-        m_dfnum[myIdx]  = N;
-        m_vertex[N]     = myIdx;
-        m_parent[myIdx] = parentIdx;
+    assert(myIdx != BBINDEX_INVALID);
+    if (m_dfnum[myIdx] >= 0) {
+        // already visited
+        return;
+    }
 
-        N++;
+    m_dfnum[myIdx]  = N;
+    m_vertex[N]     = myIdx;
+    m_parent[myIdx] = parentIdx;
 
-        // Recurse to successors
-        BasicBlock *bb = m_BBs[myIdx];
+    N++;
 
-        for (BasicBlock *succ : bb->getSuccessors()) {
-            dfs(m_indices[succ], myIdx);
-        }
+    // Recurse to successors
+    BasicBlock *bb = m_BBs[myIdx];
+
+    for (BasicBlock *succ : bb->getSuccessors()) {
+        dfs(m_indices[succ], myIdx);
     }
 }
 
 
 bool DataFlow::calculateDominators()
 {
-    ProcCFG *cfg        = m_proc->getCFG();
-    BasicBlock *entryBB = cfg->getEntryBB();
-    const int numBB     = cfg->getNumBBs();
+    ProcCFG *cfg            = m_proc->getCFG();
+    BasicBlock *entryBB     = cfg->getEntryBB();
+    const std::size_t numBB = cfg->getNumBBs();
 
     if (!entryBB || numBB == 0) {
         return false; // nothing to do
     }
 
-    N = 0;
     allocateData();
+    recalcSpanningTree();
 
-    dfs(0, -1);
     assert(N >= 1);
 
-    for (int i = N - 1; i >= 1; i--) {
-        int n = m_vertex[i];
-        int p = m_parent[n];
-        int s = p;
+    // Process BBs in reverse pre-traversal order (i.e. return blocks first)
+    for (std::size_t i = N - 1; i >= 1; i--) {
+        BBIndex n = m_vertex[i];
+        BBIndex p = m_parent[n];
+        BBIndex s = p;
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
         for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(pred) == m_indices.end()) {
-                OStream q_cerr(stderr);
-
-                q_cerr << "BB not in indices: ";
-                pred->print(q_cerr);
-                assert(false);
+                LOG_ERROR("BB not in indices: ", pred->toString());
+                return false;
             }
 
-            int v     = m_indices[pred];
-            int sdash = v;
+            const BBIndex v = m_indices[pred];
+            BBIndex sdash   = v;
 
-            if (m_dfnum[v] > m_dfnum[n]) {
+            if (isAncestorOf(v, n)) {
                 sdash = m_semi[getAncestorWithLowestSemi(v)];
             }
 
-            if (m_dfnum[sdash] < m_dfnum[s]) {
+            if (isAncestorOf(s, sdash)) {
                 s = sdash;
             }
         }
 
         m_semi[n] = s;
-        /* Calculation of n's dominator is deferred until the path from s to n has been linked into
-         * the forest */
+
+        // Calculation of n's dominator is deferred until the path from s to n
+        // has been linked into the forest
         m_bucket[s].insert(n);
         link(p, n);
 
         // for each v in bucket[p]
-        for (int v : m_bucket[p]) {
+        for (BBIndex v : m_bucket[p]) {
             /* Now that the path from p to v has been linked into the spanning forest,
              * these lines calculate the dominator of v, based on the first clause of the Dominator
              * Theorem,# or else defer the calculation until y's dominator is known. */
-            int y = getAncestorWithLowestSemi(v);
+            const BBIndex y = getAncestorWithLowestSemi(v);
 
             if (m_semi[y] == m_semi[v]) {
                 m_idom[v] = p; // Success!
@@ -127,30 +129,38 @@ bool DataFlow::calculateDominators()
         m_bucket[p].clear();
     }
 
-    for (int i = 1; i < N - 1; i++) {
-        /* Now all the deferred dominator calculations, based on the second clause of the Dominator
-         * Theorem, are performed. */
-        int n = m_vertex[i];
+    for (std::size_t i = 1; i < N - 1; i++) {
+        // Now all the deferred dominator calculations, based on the second clause of the Dominator
+        // Theorem, are performed.
+        BBIndex n = m_vertex[i];
 
-        if (m_samedom[n] != -1) {
+        if (m_samedom[n] != BBINDEX_INVALID) {
             m_idom[n] = m_idom[m_samedom[n]]; // Deferred success!
         }
     }
 
-    computeDF(0); // Finally, compute the dominance frontiers
+    const BBIndex entryIndex = pbbToNode(entryBB);
+    assert(entryIndex != BBINDEX_INVALID);
+
+    // the entry BB is always executed.
+    m_idom[entryIndex] = entryIndex;
+    m_semi[entryIndex] = entryIndex;
+
+    computeDF(entryIndex); // Finally, compute the dominance frontiers
     return true;
 }
 
 
-int DataFlow::getAncestorWithLowestSemi(int v)
+BBIndex DataFlow::getAncestorWithLowestSemi(BBIndex v)
 {
-    int a = m_ancestor[v];
+    assert(v != BBINDEX_INVALID);
 
-    if (m_ancestor[a] != -1) {
-        int b         = getAncestorWithLowestSemi(a);
-        m_ancestor[v] = m_ancestor[a];
+    const BBIndex a = m_ancestor[v];
+    if (a != BBINDEX_INVALID && m_ancestor[a] != BBINDEX_INVALID) {
+        const BBIndex b = getAncestorWithLowestSemi(a);
+        m_ancestor[v]   = m_ancestor[a];
 
-        if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
+        if (isAncestorOf(m_semi[m_best[v]], m_semi[b])) {
             m_best[v] = b;
         }
     }
@@ -159,16 +169,21 @@ int DataFlow::getAncestorWithLowestSemi(int v)
 }
 
 
-void DataFlow::link(int p, int n)
+void DataFlow::link(BBIndex p, BBIndex n)
 {
+    assert(n != BBINDEX_INVALID);
+
     m_ancestor[n] = p;
     m_best[n]     = n;
 }
 
 
-bool DataFlow::doesDominate(int n, int w)
+bool DataFlow::doesDominate(BBIndex n, BBIndex w)
 {
-    while (m_idom[w] != -1) {
+    assert(n != BBINDEX_INVALID);
+    assert(w != BBINDEX_INVALID);
+
+    while (w != BBINDEX_INVALID && m_idom[w] != w) {
         if (m_idom[w] == n) {
             return true;
         }
@@ -180,15 +195,17 @@ bool DataFlow::doesDominate(int n, int w)
 }
 
 
-void DataFlow::computeDF(int n)
+void DataFlow::computeDF(BBIndex n)
 {
-    std::set<int> S;
-    /* This loop computes DF_local[n] */
+    assert(n != BBINDEX_INVALID);
+
+    std::set<BBIndex> S;
+    // This loop computes DF_local[n]
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
 
     for (BasicBlock *b : bb->getSuccessors()) {
-        int y = m_indices[b];
+        BBIndex y = m_indices[b];
 
         if (m_idom[y] != n) {
             S.insert(y);
@@ -197,21 +214,21 @@ void DataFlow::computeDF(int n)
 
     // for each child c of n in the dominator tree
     // Note: this is a linear search!
-    int sz = m_idom.size(); // ? Was ancestor.size()
+    const size_t sz = m_idom.size(); // ? Was ancestor.size()
 
-    for (int c = 0; c < sz; ++c) {
+    for (BBIndex c = 0; c < sz; ++c) {
         if (m_idom[c] != n) {
             continue;
         }
-
-        computeDF(c);
+        else if (c != n) { // do not calculate DF for entry BB again
+            computeDF(c);
+        }
 
         /* This loop computes DF_up[c] */
         // for each element w of DF[c]
-        std::set<int> &s = m_DF[c];
-        std::set<int>::iterator ww;
+        std::set<BBIndex> &s = m_DF[c];
 
-        for (int w : s) {
+        for (BBIndex w : s) {
             if (n == w || !doesDominate(n, w)) {
                 S.insert(w);
             }
@@ -285,10 +302,13 @@ bool DataFlow::placePhiFunctions()
     m_definedAt.clear(); // and A_orig,
     m_defStmts.clear();  // and the map from variable to defining Stmt
 
+    for (BasicBlock *bb : *m_proc->getCFG()) {
+        bb->clearPhis();
+    }
 
     // Set the sizes of needed vectors
-    const int numIndices = m_indices.size();
-    const int numBB      = m_proc->getCFG()->getNumBBs();
+    const std::size_t numIndices = m_indices.size();
+    const std::size_t numBB      = m_proc->getCFG()->getNumBBs();
     assert(numIndices == numBB);
     Q_UNUSED(numIndices);
 
@@ -298,7 +318,7 @@ bool DataFlow::placePhiFunctions()
 
     // We need to create m_definedAt[n] for all n
     // Recreate each call because propagation and other changes make old data invalid
-    for (int n = 0; n < numBB; n++) {
+    for (std::size_t n = 0; n < numBB; n++) {
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         BasicBlock *bb = m_BBs[n];
@@ -307,9 +327,10 @@ bool DataFlow::placePhiFunctions()
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
-            if (stmt->isCall() && static_cast<const CallStatement *>(stmt)
-                                      ->isChildless()) { // If this is a childless call
-                m_defallsites.insert(n);                 // then this block defines every variable
+            // If this is a childless call
+            if (stmt->isCall() && static_cast<const CallStatement *>(stmt)->isChildless()) {
+                // then this block defines every variable
+                m_defallsites.insert(n);
             }
 
             for (const SharedExp &exp : locationSet) {
@@ -321,7 +342,7 @@ bool DataFlow::placePhiFunctions()
         }
     }
 
-    for (int n = 0; n < numBB; n++) {
+    for (std::size_t n = 0; n < numBB; n++) {
         for (const SharedExp &a : m_definedAt[n]) {
             m_defsites[a].insert(n);
         }
@@ -334,18 +355,18 @@ bool DataFlow::placePhiFunctions()
 
         // Those variables that are defined everywhere (i.e. in defallsites)
         // need to be defined at every defsite, too
-        for (int da : m_defallsites) {
+        for (BBIndex da : m_defallsites) {
             m_defsites[a].insert(da);
         }
 
-        std::set<int> W = m_defsites[a];
+        std::set<BBIndex> W = m_defsites[a];
 
         while (!W.empty()) {
             // Pop first node from W
-            const int n = *W.begin();
+            const BBIndex n = *W.begin();
             W.erase(W.begin());
 
-            for (int y : m_DF[n]) {
+            for (BBIndex y : m_DF[n]) {
                 // phi function already created for y?
                 if (m_A_phi[a].find(y) != m_A_phi[a].end()) {
                     continue;
@@ -376,23 +397,21 @@ void DataFlow::convertImplicits()
     ProcCFG *cfg = m_proc->getCFG();
 
     // Convert statements in A_phi from m[...]{-} to m[...]{0}
-    std::map<SharedExp, std::set<int>, lessExpStar> A_phi_copy = m_A_phi; // Object copy
+    std::map<SharedExp, std::set<BBIndex>, lessExpStar> A_phi_copy = m_A_phi; // Object copy
     ImplicitConverter ic(cfg);
     m_A_phi.clear();
 
-    for (std::pair<SharedExp, std::set<int>> it : A_phi_copy) {
-        SharedExp e = it.first->clone();
-        e           = e->acceptModifier(&ic);
-        m_A_phi[e]  = it.second; // Copy the set (doesn't have to be deep)
+    for (auto &[exp, set] : A_phi_copy) {
+        SharedExp e = exp->clone()->acceptModifier(&ic);
+        m_A_phi[e]  = set; // Copy the set (doesn't have to be deep)
     }
 
-    std::map<SharedExp, std::set<int>, lessExpStar> defsites_copy = m_defsites; // Object copy
+    std::map<SharedExp, std::set<BBIndex>, lessExpStar> defsites_copy = m_defsites; // Object copy
     m_defsites.clear();
 
-    for (std::pair<SharedExp, std::set<int>> dd : defsites_copy) {
-        SharedExp e   = dd.first->clone();
-        e             = e->acceptModifier(&ic);
-        m_defsites[e] = dd.second; // Copy the set (doesn't have to be deep)
+    for (auto &[exp, set] : defsites_copy) {
+        SharedExp e   = exp->clone()->acceptModifier(&ic);
+        m_defsites[e] = set; // Copy the set (doesn't have to be deep)
     }
 
     std::vector<ExSet> definedAtCopy = m_definedAt;
@@ -412,16 +431,26 @@ void DataFlow::convertImplicits()
 }
 
 
-void DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+bool DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
                                 std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi)
 {
-    return findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+    const BasicBlock *entryBB = m_proc->getCFG()->getEntryBB();
+    if (!entryBB) {
+        return false;
+    }
+
+    const BBIndex entryIndex = pbbToNode(entryBB);
+    assert(entryIndex != BBINDEX_INVALID);
+    findLiveAtDomPhi(entryIndex, usedByDomPhi, usedByDomPhi0, defdByPhi);
+    return true;
 }
 
 
-void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+void DataFlow::findLiveAtDomPhi(BBIndex n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
                                 std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi)
 {
+    assert(n != BBINDEX_INVALID);
+
     if (m_BBs.empty()) {
         return;
     }
@@ -437,9 +466,9 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign *pa = static_cast<PhiAssign *>(S);
 
-            for (RefExp &exp : *pa) {
-                if (exp.getSubExp1()) {
-                    auto re = RefExp::get(exp.getSubExp1(), exp.getDef());
+            for (const std::shared_ptr<RefExp> &exp : *pa) {
+                if (exp->getSubExp1()) {
+                    auto re = RefExp::get(exp->getSubExp1(), exp->getDef());
                     usedByDomPhi0.insert(re);
                 }
             }
@@ -482,8 +511,8 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
     // attempting to erase the irrelevant ones would probably cost more than leaving them alone
     const size_t sz = m_idom.size();
 
-    for (size_t c = 0; c < sz; ++c) {
-        if (m_idom[c] != n) {
+    for (BBIndex c = 0; c < sz; ++c) {
+        if (m_idom[c] != n || n == c) {
             continue;
         }
 
@@ -495,39 +524,56 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
 
 void DataFlow::allocateData()
 {
-    ProcCFG *cfg     = m_proc->getCFG();
-    const int numBBs = cfg->getNumBBs();
+    ProcCFG *cfg             = m_proc->getCFG();
+    const std::size_t numBBs = cfg->getNumBBs();
 
     m_BBs.assign(numBBs, nullptr);
     m_indices.clear();
 
     m_dfnum.assign(numBBs, -1);
-    m_semi.assign(numBBs, -1);
-    m_ancestor.assign(numBBs, -1);
-    m_idom.assign(numBBs, -1);
-    m_samedom.assign(numBBs, -1);
-    m_vertex.assign(numBBs, -1);
-    m_parent.assign(numBBs, -1);
-    m_best.assign(numBBs, -1);
-    m_bucket.resize(numBBs);
-    m_definedAt.resize(numBBs);
-    m_DF.resize(numBBs);
+    m_semi.assign(numBBs, BBINDEX_INVALID);
+    m_ancestor.assign(numBBs, BBINDEX_INVALID);
+    m_idom.assign(numBBs, BBINDEX_INVALID);
+    m_samedom.assign(numBBs, BBINDEX_INVALID);
+    m_vertex.assign(numBBs, BBINDEX_INVALID);
+    m_parent.assign(numBBs, BBINDEX_INVALID);
+    m_best.assign(numBBs, BBINDEX_INVALID);
+    m_bucket.assign(numBBs, {});
+    m_DF.assign(numBBs, {});
+    m_definedAt.assign(numBBs, {});
 
     m_A_phi.clear();
     m_defsites.clear();
     m_defallsites.clear();
     m_defStmts.clear();
 
-
     // Set up the BBs and indices vectors. Do this here
     // because sometimes a BB can be unreachable
     // (so relying on in-edges doesn't work)
-    int i = 0;
+    std::size_t i = 0;
     for (BasicBlock *bb : *cfg) {
         m_BBs[i++] = bb;
     }
 
-    for (int j = 0; j < numBBs; j++) {
+    for (std::size_t j = 0; j < numBBs; j++) {
         m_indices[m_BBs[j]] = j;
     }
+}
+
+
+void DataFlow::recalcSpanningTree()
+{
+    BasicBlock *entryBB = m_proc->getEntryBB();
+    assert(entryBB);
+    const BBIndex entryIndex = pbbToNode(entryBB);
+    assert(entryIndex != BBINDEX_INVALID);
+
+    N = 0;
+    dfs(entryIndex, BBINDEX_INVALID);
+}
+
+
+bool DataFlow::isAncestorOf(BBIndex n, BBIndex parent) const
+{
+    return m_dfnum[parent] < m_dfnum[n];
 }

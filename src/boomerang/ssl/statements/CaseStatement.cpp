@@ -26,26 +26,42 @@ CaseStatement::CaseStatement()
 }
 
 
+CaseStatement::CaseStatement(const CaseStatement &other)
+    : GotoStatement(other)
+    , m_switchInfo(new SwitchInfo(*other.m_switchInfo))
+{
+}
+
+
 CaseStatement::~CaseStatement()
 {
 }
 
 
+CaseStatement &CaseStatement::operator=(const CaseStatement &other)
+{
+    GotoStatement::operator=(other);
+
+    m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    return *this;
+}
+
+
 SwitchInfo *CaseStatement::getSwitchInfo()
 {
-    return m_switchInfo;
+    return m_switchInfo.get();
 }
 
 
 const SwitchInfo *CaseStatement::getSwitchInfo() const
 {
-    return m_switchInfo;
+    return m_switchInfo.get();
 }
 
 
-void CaseStatement::setSwitchInfo(SwitchInfo *psi)
+void CaseStatement::setSwitchInfo(std::unique_ptr<SwitchInfo> psi)
 {
-    m_switchInfo = psi;
+    m_switchInfo = std::move(psi);
 }
 
 
@@ -99,7 +115,7 @@ Statement *CaseStatement::clone() const
     ret->m_isComputed = m_isComputed;
 
     if (m_switchInfo) {
-        ret->m_switchInfo            = new SwitchInfo;
+        ret->m_switchInfo.reset(new SwitchInfo);
         *ret->m_switchInfo           = *m_switchInfo;
         ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
     }
@@ -115,29 +131,6 @@ Statement *CaseStatement::clone() const
 bool CaseStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
-}
-
-
-void CaseStatement::generateCode(ICodeGenerator *) const
-{
-    // don't generate any code for switches, they will be handled by the bb
-}
-
-
-bool CaseStatement::usesExp(const Exp &e) const
-{
-    // Before a switch statement is recognised, m_dest is non null
-    if (m_dest) {
-        return *m_dest == e;
-    }
-
-    // After a switch statement is recognised, m_dest is null, and m_switchInfo->m_switchVar takes
-    // over
-    if (m_switchInfo->switchExp) {
-        return *m_switchInfo->switchExp == e;
-    }
-
-    return false;
 }
 
 

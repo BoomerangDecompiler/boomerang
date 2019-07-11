@@ -9,10 +9,12 @@
 
 list(APPEND boomerang-core-sources
     core/BoomerangAPI
-    core/Plugin
     core/Project
     core/Settings
     core/Watcher
+    core/plugin/Plugin
+    core/plugin/PluginHandle
+    core/plugin/PluginManager
 )
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-core-sources ".cpp")

@@ -13,16 +13,45 @@
 #include "boomerang/ssl/statements/GotoStatement.h"
 
 
+enum class SwitchType : char
+{
+    Invalid = 0,
+    a       = 'a',
+    A       = 'A',
+    o       = 'o',
+    O       = 'O',
+    r       = 'r',
+    R       = 'R',
+    H       = 'H',
+    F       = 'F', // Fortran style
+};
+
+/**
+ * CaseStatement is derived from GotoStatement. In addition to the destination
+ * of the jump, it has a switch variable Exp.
+ */
+struct SwitchInfo
+{
+    SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
+    SwitchType switchType; ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
+    int lowerBound;        ///< Lower bound of the switch variable
+    int upperBound;        ///< Upper bound for the switch variable
+    Address tableAddr;     ///< Native address of the table, or ptr to array of values for form F
+    int numTableEntries;   ///< Number of entries in the table (form H only)
+    int offsetFromJumpTbl = 0; ///< Distance from jump to table (form R only)
+};
+
+
 class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
     CaseStatement();
-    CaseStatement(const CaseStatement &other) = default;
-    CaseStatement(CaseStatement &&other)      = default;
+    CaseStatement(const CaseStatement &other);
+    CaseStatement(CaseStatement &&other) = default;
 
     virtual ~CaseStatement() override;
 
-    CaseStatement &operator=(const CaseStatement &other) = default;
+    CaseStatement &operator=(const CaseStatement &other);
     CaseStatement &operator=(CaseStatement &&other) = default;
 
 public:
@@ -50,12 +79,6 @@ public:
     /// \copydoc GotoStatement::searchAll
     virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
-    /// \copydoc GotoStatement::generateCode
-    virtual void generateCode(ICodeGenerator *generator) const override;
-
-    /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 
@@ -63,8 +86,8 @@ public:
     SwitchInfo *getSwitchInfo();
     const SwitchInfo *getSwitchInfo() const;
 
-    void setSwitchInfo(SwitchInfo *psi);
+    void setSwitchInfo(std::unique_ptr<SwitchInfo> psi);
 
 private:
-    SwitchInfo *m_switchInfo; ///< Ptr to struct with information about the switch
+    std::unique_ptr<SwitchInfo> m_switchInfo; ///< Ptr to struct with information about the switch
 };

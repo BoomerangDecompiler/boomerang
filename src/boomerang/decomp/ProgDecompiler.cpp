@@ -15,6 +15,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/decomp/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -89,6 +90,17 @@ void ProgDecompiler::decompile()
     // Now it is OK to transform out of SSA form
     fromSSAForm();
     removeUnusedGlobals();
+
+    LOG_MSG("Compressing CFG...");
+
+    for (const auto &module : m_prog->getModuleList()) {
+        for (Function *func : *module) {
+            if (!func->isLib()) {
+                CFGCompressor().compressCFG(static_cast<UserProc *>(func)->getCFG());
+            }
+        }
+    }
+
     LOG_MSG("Decompilation finished.");
 }
 

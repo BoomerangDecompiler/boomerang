@@ -12,7 +12,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/signature/MIPSSignature.h"
 #include "boomerang/db/signature/PPCSignature.h"
 #include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/SPARCSignature.h"
@@ -72,6 +71,10 @@ std::shared_ptr<Signature> Signature::clone() const
 
 bool Signature::operator==(const Signature &other) const
 {
+    if (m_name != other.m_name) {
+        return false;
+    }
+
     if (m_params.size() != other.m_params.size() || m_returns.size() != other.m_returns.size()) {
         return false;
     }
@@ -84,6 +87,35 @@ bool Signature::operator==(const Signature &other) const
            std::equal(m_returns.begin(), m_returns.end(), other.m_returns.begin(),
                       [](const std::shared_ptr<Return> &ret,
                          const std::shared_ptr<Return> &otherRet) { return *ret == *otherRet; });
+}
+
+
+bool Signature::operator<(const Signature &other) const
+{
+    if (m_name != other.m_name) {
+        return m_name < other.m_name;
+    }
+
+    if (m_params.size() != other.m_params.size()) {
+        return m_params.size() < other.m_params.size();
+    }
+    else if (m_returns.size() != m_params.size()) {
+        return m_returns.size() < other.m_returns.size();
+    }
+
+    for (size_t i = 0; i < m_params.size(); ++i) {
+        if (*m_params[i] != *other.m_params[i]) {
+            return *m_params[i] < *other.m_params[i];
+        }
+    }
+
+    for (size_t i = 0; i < m_returns.size(); ++i) {
+        if (*m_returns[i] != *other.m_returns[i]) {
+            return *m_returns[i] < *other.m_returns[i];
+        }
+    }
+
+    return false; // equal
 }
 
 
@@ -367,56 +399,54 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 {
     // FIXME: the whole promotion idea needs a redesign...
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(*this));
+        return std::make_shared<CallingConvention::Win32Signature>(*this);
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PentiumSignature>(*this);
     }
 
     if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::SPARCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::SPARCSignature>(*this);
     }
 
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PPCSignature>(*this);
     }
 
     if (CallingConvention::StdC::ST20Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(*this));
+        return std::make_shared<CallingConvention::StdC::ST20Signature>(*this);
     }
 
     return shared_from_this();
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
+std::unique_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
 {
     switch (machine) {
     case Machine::PENTIUM:
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention Pentium signatures will be Windows
-            return std::make_shared<CallingConvention::Win32Signature>(name);
+            return std::make_unique<CallingConvention::Win32Signature>(name);
         }
         else if (cc == CallConv::ThisCall) {
-            return std::make_shared<CallingConvention::Win32TcSignature>(name);
+            return std::make_unique<CallingConvention::Win32TcSignature>(name);
         }
         else {
-            return std::make_shared<CallingConvention::StdC::PentiumSignature>(name);
+            return std::make_unique<CallingConvention::StdC::PentiumSignature>(name);
         }
 
-    case Machine::SPARC: return std::make_shared<CallingConvention::StdC::SPARCSignature>(name);
+    case Machine::SPARC: return std::make_unique<CallingConvention::StdC::SPARCSignature>(name);
 
-    case Machine::PPC: return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
+    case Machine::PPC: return std::make_unique<CallingConvention::StdC::PPCSignature>(name);
 
-    case Machine::ST20: return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
-
-    case Machine::MIPS: return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
+    case Machine::ST20: return std::make_unique<CallingConvention::StdC::ST20Signature>(name);
 
     // insert other conventions here
     default:
         LOG_WARN("Unknown signature: %1 (CallConv: %2)", name, Util::getCallConvName(cc));
-        return std::make_shared<Signature>(name);
+        return std::make_unique<Signature>(name);
     }
 }
 
@@ -507,13 +537,13 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
 }
 
 
-int Signature::getStackRegister() const
+RegNum Signature::getStackRegister() const
 {
-    return -1;
+    return RegNumSpecial;
 }
 
 
-bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
+bool Signature::isStackLocal(RegNum spIndex, SharedConstExp e) const
 {
     // e must be m[...]
     if (e->isSubscript()) {
@@ -527,17 +557,16 @@ bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
 }
 
 
-bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const
+bool Signature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const
 {
-    OPER op = e->getOper();
-
-    if (op == opAddrOf) {
+    if (e->isAddrOf()) {
         return isStackLocal(spIndex, e->getSubExp1());
     }
 
     // e must be sp -/+ K or just sp
     SharedConstExp sp = Location::regOf(spIndex);
 
+    const OPER op = e->getOper();
     if ((op != opMinus) && (op != opPlus)) {
         // Matches if e is sp or sp{0} or sp{-}
         return *e == *sp || (e->isSubscript() && e->access<RefExp>()->isImplicitDef() &&
@@ -547,9 +576,7 @@ bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const
     // We may have weird expressions like sp + -4
     // which is the address of a stack local on x86
     SharedConstExp exp2 = e->clone()->simplify();
-    op                  = exp2->getOper();
-
-    if (!isOpCompatStackLocal(op)) {
+    if (!isOpCompatStackLocal(exp2->getOper())) {
         return false;
     }
 

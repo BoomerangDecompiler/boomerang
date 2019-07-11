@@ -2,18 +2,19 @@ int main(int argc, char *argv[]);
 void mid(__size32 param1);
 void fst(__size32 param1);
 
+
 /** address: 0x080483ac */
 int main(int argc, char *argv[])
 {
     int edx; 		// r26
     int local0; 		// m[esp - 12]
-    __size32 local2; 		// m[esp - 16]
+    char *local2; 		// m[esp - 16]
     int local3; 		// m[esp - 8]
 
     local0 = 0;
     mid(0x8049654);
     fst(0x804964a);
-    local2 = 0x8049654;
+    local2 = "\2\4\6\b\n";
     local3 = 0;
     while (local3 <= 4) {
         edx = (int) *local2;

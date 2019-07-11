@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "VoidType.h"
 
+#include "boomerang/ssl/type/UnionType.h"
+
 
 VoidType::VoidType()
     : Type(TypeClass::Void)
@@ -27,7 +29,7 @@ SharedType VoidType::clone() const
 }
 
 
-size_t VoidType::getSize() const
+Type::Size VoidType::getSize() const
 {
     return 0;
 }
@@ -41,7 +43,7 @@ bool VoidType::operator==(const Type &other) const
 
 bool VoidType::operator<(const Type &other) const
 {
-    return id < other.getId();
+    return m_id < other.getId();
 }
 
 
@@ -53,9 +55,15 @@ QString VoidType::getCtype(bool /*final*/) const
 
 SharedType VoidType::meetWith(SharedType other, bool &changed, bool) const
 {
-    // void meet x = x
-    changed |= !other->resolvesToVoid();
-    return other->clone();
+    if (other->resolvesToUnion()) {
+        changed = true;
+        return other->as<UnionType>()->simplify(changed)->clone();
+    }
+    else {
+        // void meet x = x
+        changed |= !other->resolvesToVoid();
+        return other->clone();
+    }
 }
 
 

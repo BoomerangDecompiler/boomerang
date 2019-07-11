@@ -84,9 +84,6 @@ public:
     /// \copydoc Assignment::printCompact
     virtual void printCompact(OStream &os) const override;
 
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
-
     /// \copydoc Statement::simplify
     virtual void simplify() override;
 
@@ -95,9 +92,6 @@ public:
 
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return getCondExpr(); }
-
-    /// \copydoc Assignment::usesExp
-    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc Statement::search
     virtual bool search(const Exp &search, SharedExp &result) const override;

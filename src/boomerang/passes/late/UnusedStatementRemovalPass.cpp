@@ -116,11 +116,6 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
             const Assignment *as  = static_cast<const Assignment *>(s);
             SharedConstExp asLeft = as->getLeft();
 
-            // If depth < 0, consider all depths
-            // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-            //    ++ll;
-            //    continue;
-            // }
             if (asLeft && (asLeft->getOper() == opGlobal)) {
                 // assignments to globals must always be kept
                 ++ll;
@@ -128,20 +123,20 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
             }
 
             // If it's a memof and renameable it can still be deleted
-            if ((asLeft->getOper() == opMemOf) && !proc->canRename(asLeft)) {
+            if (asLeft->isMemOf() && !proc->canRename(asLeft)) {
                 // Assignments to memof-anything-but-local must always be kept.
                 ++ll;
                 continue;
             }
 
-            if ((asLeft->getOper() == opMemberAccess) || (asLeft->getOper() == opArrayIndex)) {
+            if (asLeft->isMemberOf() || asLeft->isArrayIndex()) {
                 // can't say with these; conservatively never remove them
                 ++ll;
                 continue;
             }
 
-            if ((refCounts.find(s) == refCounts.end()) ||
-                (refCounts[s] == 0)) { // Care not to insert unnecessarily
+            // Care not to insert unnecessarily
+            if ((refCounts.find(s) == refCounts.end()) || (refCounts[s] == 0)) {
                 // First adjust the counts, due to statements only referenced by statements that are
                 // themselves unused. Need to be careful not to count two refs to the same def as
                 // two; refCounts is a count of the number of statements that use a definition, not
@@ -190,7 +185,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
-    proc->setStatus(PROC_FINAL);
+    proc->setStatus(ProcStatus::FinalDone);
 }
 
 

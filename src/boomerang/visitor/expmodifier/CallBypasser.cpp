@@ -32,13 +32,14 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)
     m_mask >>= 1;
     // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and
     // avoids a cast
-    Statement *def      = exp->getDef();
-    CallStatement *call = dynamic_cast<CallStatement *>(def);
+    Statement *def = exp->getDef();
 
-    if (call) {
+    if (def && def->isCall()) {
+        CallStatement *call = static_cast<CallStatement *>(def);
+
         assert(std::dynamic_pointer_cast<RefExp>(ret));
         bool ch;
-        ret = call->bypassRef(std::static_pointer_cast<RefExp>(ret), ch);
+        ret = call->bypassRef(ret->access<RefExp>(), ch);
 
         if (ch) {
             m_unchanged &= ~m_mask;

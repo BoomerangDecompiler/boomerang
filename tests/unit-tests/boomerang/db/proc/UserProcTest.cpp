@@ -40,7 +40,7 @@ void UserProcTest::testIsNoReturn()
     UserProc testProc(Address(0x1000), "test", nullptr);
     QCOMPARE(testProc.isNoReturn(), false);
 
-    testProc.setStatus(PROC_DECODED);
+    testProc.setStatus(ProcStatus::Decoded);
     QCOMPARE(testProc.isNoReturn(), true);
 
     ReturnStatement *retStmt = new ReturnStatement();
@@ -51,7 +51,7 @@ void UserProcTest::testIsNoReturn()
     QCOMPARE(testProc.isNoReturn(), false);
 
     UserProc noReturnProc(Address(0x2000), "noReturn", nullptr);
-    noReturnProc.setStatus(PROC_DECODED);
+    noReturnProc.setStatus(ProcStatus::Decoded);
 
     CallStatement *call = new CallStatement();
     call->setDestProc(&noReturnProc);
@@ -229,7 +229,7 @@ void UserProcTest::testFilterParams()
     QVERIFY(mainProc != nullptr && !mainProc->isLib());
 
     QVERIFY(mainProc->filterParams(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterParams(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(mainProc->filterParams(Location::tempOf(Terminal::get(opTrue))));
     QVERIFY(mainProc->filterParams(Location::regOf(REG_PENT_ESP)));
     QVERIFY(!mainProc->filterParams(Location::regOf(REG_PENT_EDX)));
     QVERIFY(mainProc->filterParams(Location::memOf(Const::get(0x08048328))));

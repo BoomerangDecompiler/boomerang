@@ -1,7 +1,17 @@
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-int fib (int x)
+
+int fib(int x)
 {
     int z;
     if (x > 1) {
@@ -12,18 +22,23 @@ int fib (int x)
     }
     else {
         /* Force a definition of eax */
-        if (x == 1) return strlen("x");
-        else return (x);
+        if (x == 1) {
+            return strlen("x");
+        }
+        else {
+            return x;
+        }
     }
 }
 
-int main ()
-{   int number, value;
 
-    printf ("Input number: ");
-    scanf ("%d", &number);
-    value = fib(number);
-    printf("fibonacci(%d) = %d\n", number, value);
-    return (0);
+int main()
+{
+    int number;
+
+    printf("Input number: ");
+    scanf("%d", &number);
+
+    printf("fibonacci(%d) = %d\n", number, fib(number));
+    return EXIT_SUCCESS;
 }
-

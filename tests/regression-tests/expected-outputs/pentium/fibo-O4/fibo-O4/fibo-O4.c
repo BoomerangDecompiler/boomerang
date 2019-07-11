@@ -1,12 +1,13 @@
 int main(int argc, char *argv[]);
 __size32 fib(int param1);
 
+
 /** address: 0x080487cc */
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
-    __size32 eax_1; 		// r24{6}
-    int local0; 		// m[esp - 8]
+    union { int; void *; } eax_1; 		// r24{6}
+    union { int; void *; } local0; 		// m[esp - 8]
 
     printf("Input number: ");
     scanf("%d", &local0);

@@ -1,16 +1,17 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x00010704 */
 int main(int argc, char *argv[])
 {
-    int local0; 		// m[o6 - 32]
-    int local1; 		// m[o6 - 36]
-    int local2; 		// m[o6 - 44]
+    union { int; void *; } local0; 		// m[o6 - 32]
+    union { int; char *; } local1; 		// m[o6 - 36]
+    union { int; char *; } local2; 		// m[o6 - 44]
     char local3; 		// m[o6 - 128]
     __size32 local4; 		// m[o6 - 20]
-    __size32 local5; 		// m[o6 - 24]
-    int local6; 		// m[o6 - 40]
-    int local7; 		// m[o6 - 28]
+    union { int; char *; } *local5; 		// m[o6 - 24]
+    union { int; char *; } local6; 		// m[o6 - 40]
+    union { int; char *; } local7; 		// m[o6 - 28]
     __size32 local8; 		// m[o6 - 20]{10}
     int o0; 		// r8
     int o1; 		// r9
@@ -63,17 +64,18 @@ bb0x10804:
             local0 = local6 * 8 - 1;
             while (local0 >= 0) {
                 o0 = *(unsigned char*)(o6 + local0 - 128);
-                if (o0 << 24 >> 24 == 32) {
-                    *(__size8*)(o6 + local0 - 128) = 0;
-                    local0--;
+                if (o0 << 24 >> 24 != 32) {
+                    break;
                 }
+                *(__size8*)(o6 + local0 - 128) = 0;
+                local0--;
             }
             o2 = puts(&local3); /* Warning: also results in o3, o4 */
             local7++;
             goto bb0x10794;
         }
         puts("");
-        local5 += 4;
+        local5++;
         local8 = local4;
         local4 = local8 - 1;
     }

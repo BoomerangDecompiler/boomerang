@@ -29,6 +29,12 @@ Terminal::Terminal(const Terminal &o)
 }
 
 
+SharedExp Terminal::get(OPER op)
+{
+    return std::make_shared<Terminal>(op);
+}
+
+
 SharedExp Terminal::clone() const
 {
     return std::make_shared<Terminal>(*this);
@@ -68,7 +74,7 @@ bool Terminal::operator<(const Exp &o) const
 }
 
 
-bool Terminal::operator*=(const Exp &o) const
+bool Terminal::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -92,7 +98,11 @@ SharedType Terminal::ascendType()
     switch (m_oper) {
     case opPC: return IntegerType::get(STD_SIZE, Sign::Unsigned);
     case opCF:
-    case opZF: return BooleanType::get();
+    case opZF:
+    case opFZF:
+    case opFLF:
+    case opTrue:
+    case opFalse: return BooleanType::get();
     case opDefineAll: return VoidType::get();
     case opFlags: return IntegerType::get(STD_SIZE, Sign::Unsigned);
     default: LOG_WARN("Unknown type %1", shared_from_this()); return VoidType::get();
@@ -100,9 +110,9 @@ SharedType Terminal::ascendType()
 }
 
 
-void Terminal::descendType(SharedType, bool &changed, Statement *)
+bool Terminal::descendType(SharedType)
 {
-    changed = false;
+    return false;
 }
 
 

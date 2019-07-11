@@ -1,9 +1,11 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x08048410 */
 int main(int argc, char *argv[])
 {
-    size_t eax; 		// r24
+    FILE *eax; 		// r24
+    size_t eax_1; 		// r24
     int local0; 		// m[esp - 12]
     unsigned int local1; 		// m[esp - 16]
 
@@ -81,11 +83,11 @@ bb0x8048576:
         eax = *0x8049854;
         fwrite("Minus\n", 1, 6, eax);
     }
-    eax = local0;
+    eax_1 = local0;
     if (5 < local0) {
         eax = *0x8049854;
-        eax = fwrite("Plus\n", 1, 5, eax);
+        eax_1 = fwrite("Plus\n", 1, 5, eax);
     }
-    return eax;
+    return eax_1;
 }
 

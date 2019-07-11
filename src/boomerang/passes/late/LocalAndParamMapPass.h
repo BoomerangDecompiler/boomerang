@@ -14,11 +14,12 @@
 
 
 /// Map expressions to locals and initial parameters
-class LocalAndParamMapPass : public IPass
+class LocalAndParamMapPass final : public IPass
 {
 public:
     LocalAndParamMapPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

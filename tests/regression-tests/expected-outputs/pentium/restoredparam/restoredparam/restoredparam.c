@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 twice(__size32 param1);
 
+
 /** address: 0x0804837c */
 int main(int argc, char *argv[])
 {

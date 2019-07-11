@@ -9,20 +9,20 @@
 #pragma endregion License
 #include "DataFlowTest.h"
 
+#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
 
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/passes/PassManager.h"
 
 #include <QDebug>
 
@@ -45,7 +45,45 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 }
 
 
-void DataFlowTest::testCalculateDominators()
+void DataFlowTest::testCalculateDominators1()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    ProcCFG *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
+
+    BasicBlock *entry = cfg->createBB(BBType::Ret, createRTLs(Address(0x1000), 1));
+
+    proc.setEntryBB();
+
+    QVERIFY(df->calculateDominators());
+    QCOMPARE(df->getSemiDominator(entry), entry);
+
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
+}
+
+
+void DataFlowTest::testCalculateDominators2()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    ProcCFG *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
+
+    BasicBlock *entry = cfg->createBB(BBType::Call, createRTLs(Address(0x1000), 1));
+    BasicBlock *exit  = cfg->createBB(BBType::Ret, createRTLs(Address(0x1001), 1));
+
+    cfg->addEdge(entry, exit);
+    proc.setEntryBB();
+
+    QVERIFY(df->calculateDominators());
+    QCOMPARE(df->getSemiDominator(entry), entry);
+    QCOMPARE(df->getSemiDominator(exit), entry);
+
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
+    QCOMPARE(df->getDominanceFrontier(exit), std::set<const BasicBlock *>({}));
+}
+
+
+void DataFlowTest::testCalculateDominatorsComplex()
 {
     // Appel, Figure 19.8
     UserProc proc(Address(0x1000), "test", nullptr);
@@ -82,7 +120,7 @@ void DataFlowTest::testCalculateDominators()
     proc.setEntryBB();
 
     // test!
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
 
     QCOMPARE(df->getSemiDominator(b), a); QCOMPARE(df->getDominator(b), a);
     QCOMPARE(df->getSemiDominator(c), a); QCOMPARE(df->getDominator(c), a);
@@ -129,20 +167,20 @@ void DataFlowTest::testPlacePhi()
     QCOMPARE(mainProc->getName(), QString("main"));
 
     DataFlow *df = mainProc->getDataFlow();
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
 
     // test!
-    QCOMPARE(df->placePhiFunctions(), true);
+    QVERIFY(df->placePhiFunctions());
 
     SharedExp e = Location::regOf(REG_PENT_EAX);
     QString     actualStr;
     OStream actual(&actualStr);
 
     // r24 == eax
-    std::set<int>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
+    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
 
-    for (int bb : A_phi) {
-        actual << bb << " ";
+    for (BBIndex bb : A_phi) {
+        actual << (int)bb << " ";
     }
 
     QCOMPARE(actualStr, QString("8 10 15 20 21 "));
@@ -165,16 +203,16 @@ void DataFlowTest::testPlacePhi2()
     UserProc *proc = static_cast<UserProc *>(mainFunction);
 
     DataFlow *df = proc->getDataFlow();
-    df->calculateDominators();
+    QVERIFY(df->calculateDominators());
     QVERIFY(df->placePhiFunctions());
 
     QString     actual_st;
     OStream actual(&actual_st);
-    SharedExp               e = Location::regOf(REG_PENT_EAX);
-    std::set<int>&          s = df->getA_phi(e);
+    SharedExp          e = Location::regOf(REG_PENT_EAX);
+    std::set<BBIndex>& s = df->getA_phi(e);
 
-    for (std::set<int>::iterator pp = s.begin(); pp != s.end(); ++pp) {
-        actual << *pp << " ";
+    for (auto pp = s.begin(); pp != s.end(); ++pp) {
+        actual << (uint64)*pp << " ";
     }
 
     QCOMPARE(actual_st, QString("4 "));

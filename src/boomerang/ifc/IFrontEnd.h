@@ -19,16 +19,18 @@
 #include <vector>
 
 
-class IDecoder;
-class DecodeResult;
-class QString;
-class Exp;
-class RTL;
-class CallStatement;
-class Statement;
-class Signature;
-class UserProc;
 class BasicBlock;
+class CallStatement;
+class DecodeResult;
+class Exp;
+class IDecoder;
+class Project;
+class RTL;
+class Signature;
+class Statement;
+class UserProc;
+
+class QString;
 
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -41,10 +43,12 @@ using RTLList        = std::list<std::unique_ptr<RTL>>;
 class BOOMERANG_API IFrontEnd
 {
 public:
+    IFrontEnd(Project *) {}
     virtual ~IFrontEnd() = default;
 
-    // decoding related
 public:
+    virtual bool initialize(Project *project) = 0;
+
     virtual IDecoder *getDecoder()             = 0;
     virtual const IDecoder *getDecoder() const = 0;
 

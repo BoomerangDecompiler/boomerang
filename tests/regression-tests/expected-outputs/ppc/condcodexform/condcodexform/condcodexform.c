@@ -1,16 +1,17 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x100004f8 */
 int main(int argc, char *argv[])
 {
-    int CR0; 		// r64
-    int CR1; 		// r65
-    int CR2; 		// r66
-    int CR3; 		// r67
-    int CR4; 		// r68
-    int CR5; 		// r69
-    int CR6; 		// r70
-    __size32 CR7; 		// r71
+    int CR0; 		// r100
+    int CR1; 		// r101
+    int CR2; 		// r102
+    int CR3; 		// r103
+    int CR4; 		// r104
+    int CR5; 		// r105
+    int CR6; 		// r106
+    __size32 CR7; 		// r107
     __size32 local0; 		// m[g1 - 40]
     __size32 local1; 		// m[g1 - 36]
     __size32 local2; 		// m[g1 - 32]
@@ -48,13 +49,13 @@ int main(int argc, char *argv[])
     }
     if (argc <= 1) {
         local5 = 0;
-        if (!(local1 != 0x10000434 || local2 != 0x1000046c || local3 != 0x100004a4 || local4 != 0x100004dc)) {
+        if (local1 == 0x10000434 && local2 == 0x1000046c && local3 == 0x100004a4 && local4 == 0x100004dc) {
             local5 = 1;
         }
     }
     else {
         local5 = 0;
-        if (!(local1 != 0x10000418 || local2 != 0x10000450 || local3 != 0x10000488 || local4 != 0x100004c0)) {
+        if (local1 == 0x10000418 && local2 == 0x10000450 && local3 == 0x10000488 && local4 == 0x100004c0) {
             local5 = 1;
         }
     }
@@ -64,6 +65,6 @@ int main(int argc, char *argv[])
     else {
         printf("Pass\n");
     }
-    return ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7)) & 0x1;
+    return ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7), 31) & 0x1;
 }
 

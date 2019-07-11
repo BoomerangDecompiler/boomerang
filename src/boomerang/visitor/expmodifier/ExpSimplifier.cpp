@@ -26,7 +26,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
 {
     bool &changed = m_modified;
 
-    if (exp->getOper() == opNot || exp->getOper() == opLNot) {
+    if (exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         OPER oper = exp->getSubExp1()->getOper();
 
         switch (oper) {
@@ -50,17 +50,15 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         }
     }
 
-    if (exp->getOper() == opNeg || exp->getOper() == opNot || exp->getOper() == opLNot ||
-        exp->getOper() == opSize) {
+    if (exp->getOper() == opNeg || exp->getOper() == opBitNot || exp->getOper() == opLNot) {
         if (exp->getSubExp1()->isIntConst()) {
             // -k, ~k, or !k
             int k = exp->access<Const, 1>()->getInt();
 
             switch (exp->getOper()) {
             case opNeg: k = -k; break;
-            case opNot: k = ~k; break;
+            case opBitNot: k = ~k; break;
             case opLNot: k = !k; break;
-            case opSize: /* No change required */
             default: break;
             }
 
@@ -79,6 +77,40 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         return exp->getSubExp1()->getSubExp1();
     }
 
+    // Simplify e.g. ~(x comp y) -> !(x comp y)
+    const OPER myOper = exp->getOper();
+    if (myOper == opBitNot && exp->getSubExp1()->isLogExp()) {
+        changed = true;
+        exp->setOper(opLNot);
+        return exp;
+    }
+
+    // if still not simplified, try De Morgan's laws
+    const OPER subOper = exp->getSubExp1()->getOper();
+
+    if (myOper == opBitNot && (subOper == opBitAnd || subOper == opBitOr)) {
+        changed = true;
+        if (subOper == opBitAnd) {
+            return Binary::get(opBitOr, Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
+        }
+        else {
+            return Binary::get(opBitAnd, Unary::get(opBitNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opBitNot, exp->access<Exp, 1, 2>()));
+        }
+    }
+    else if (myOper == opLNot && (subOper == opAnd || subOper == opOr)) {
+        changed = true;
+        if (subOper == opAnd) {
+            return Binary::get(opOr, Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opLNot, exp->access<Exp, 1, 2>()));
+        }
+        else {
+            return Binary::get(opAnd, Unary::get(opLNot, exp->access<Exp, 1, 1>()),
+                               Unary::get(opLNot, exp->access<Exp, 1, 2>()));
+        }
+    }
+
     return exp;
 }
 
@@ -91,55 +123,76 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     OPER opSub2 = exp->getSubExp2()->getOper();
 
     if (opSub1 == opIntConst && opSub2 == opIntConst) {
-        // k1 op k2, where k1 and k2 are integer constants
-        int k1      = exp->access<Const, 1>()->getInt();
-        int k2      = exp->access<Const, 2>()->getInt();
-        bool change = true;
+        const int lhs = exp->access<Const, 1>()->getInt();
+        const int rhs = exp->access<Const, 2>()->getInt();
 
         switch (exp->getOper()) {
-        case opPlus: k1 = k1 + k2; break;
-        case opMinus: k1 = k1 - k2; break;
-        case opMults: k1 = k1 * k2; break;
-        case opDivs: k1 = k1 / k2; break;
-        case opMods: k1 = k1 % k2; break;
-        case opShiftL: k1 = (k2 < 32) ? k1 << k2 : 0; break;
-        case opShiftR: k1 = (k2 < 32) ? k1 >> k2 : 0; break;
-        case opShiftRA: {
-            assert(k2 < 32);
-            k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
-            break;
+        case opPlus: changed = true; return Const::get(lhs + rhs);
+        case opMinus: changed = true; return Const::get(lhs - rhs);
+        case opMults: changed = true; return Const::get(lhs * rhs);
+        case opShL: changed = true; return Const::get((rhs < 32) ? lhs << rhs : 0);
+        case opShR: changed = true; return Const::get((rhs < 32) ? lhs >> rhs : 0);
+
+        case opBitAnd: changed = true; return Const::get(lhs & rhs);
+        case opBitOr: changed = true; return Const::get(lhs | rhs);
+        case opBitXor: changed = true; return Const::get(lhs ^ rhs);
+        case opEquals: changed = true; return Const::get(lhs == rhs);
+        case opNotEqual: changed = true; return Const::get(lhs != rhs);
+        case opLess: changed = true; return Const::get(lhs < rhs);
+        case opGtr: changed = true; return Const::get(lhs > rhs);
+        case opLessEq: changed = true; return Const::get(lhs <= rhs);
+        case opGtrEq: changed = true; return Const::get(lhs >= rhs);
+        case opMult: changed = true; return Const::get((int)((uint32)lhs * (uint32)rhs));
+        case opLessUns: changed = true; return Const::get((uint32)lhs < (uint32)rhs);
+        case opGtrUns: changed = true; return Const::get((uint32)lhs > (uint32)rhs);
+        case opLessEqUns: changed = true; return Const::get((uint32)lhs <= (uint32)rhs);
+        case opGtrEqUns: changed = true; return Const::get((uint32)lhs >= (uint32)rhs);
+
+        case opShRA: {
+            if (rhs == 0) {
+                changed = true;
+                return Const::get(lhs);
+            }
+            else if (rhs >= 32) {
+                changed = true;
+                return Const::get((lhs < 0) ? -1 : 0);
+            }
+            else {
+                changed = true;
+                return Const::get(
+                    (int)(lhs >> rhs | (lhs < 0 ? ~Util::getLowerBitMask(32 - rhs) : 0)));
+            }
         }
 
-        case opBitAnd: k1 = k1 & k2; break;
-        case opBitOr: k1 = k1 | k2; break;
-        case opBitXor: k1 = k1 ^ k2; break;
-        case opEquals: k1 = (k1 == k2); break;
-        case opNotEqual: k1 = (k1 != k2); break;
-        case opLess: k1 = (k1 < k2); break;
-        case opGtr: k1 = (k1 > k2); break;
-        case opLessEq: k1 = (k1 <= k2); break;
-        case opGtrEq: k1 = (k1 >= k2); break;
-
-        case opMult:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) * static_cast<unsigned>(k2));
+        case opDivs:
+            if (rhs != 0) {
+                changed = true;
+                return Const::get(lhs / rhs);
+            }
             break;
+
+        case opMods:
+            if (rhs != 0) {
+                changed = true;
+                return Const::get(lhs % rhs);
+            }
+            break;
+
         case opDiv:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
+            if (rhs != 0) {
+                changed = true;
+                return Const::get((int)((uint32)lhs / (uint32)rhs));
+            }
             break;
+
         case opMod:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
+            if (rhs != 0) {
+                changed = true;
+                return Const::get((int)((uint32)lhs % (uint32)rhs));
+            }
             break;
-        case opLessUns: k1 = static_cast<unsigned>(k1) < static_cast<unsigned>(k2); break;
-        case opGtrUns: k1 = static_cast<unsigned>(k1) > static_cast<unsigned>(k2); break;
-        case opLessEqUns: k1 = static_cast<unsigned>(k1) <= static_cast<unsigned>(k2); break;
-        case opGtrEqUns: k1 = static_cast<unsigned>(k1) >= static_cast<unsigned>(k2); break;
 
-        default: change = false;
-        }
-
-        if (change) {
-            changed = true;
-            return Const::get(k1);
+        default: break;
         }
     }
 
@@ -210,7 +263,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // check for (x - a) + b where a and b are constants, becomes x + -a+b
     if (exp->getOper() == opPlus && opSub1 == opMinus && opSub2 == opIntConst &&
-        exp->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        exp->access<Exp, 1, 2>()->isIntConst()) {
         const int n = exp->access<Const, 2>()->getInt();
         exp->getSubExp1()->setOper(opPlus);
         exp->access<Const, 1, 2>()->setInt(-exp->access<Const, 1, 2>()->getInt() + n);
@@ -282,6 +335,13 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return res->getSubExp1();
     }
 
+    // x xor 0 = x
+    if (exp->getOper() == opBitXor && opSub2 == opIntConst &&
+        exp->access<Const, 2>()->getInt() == 0) {
+        changed = true;
+        return res->getSubExp1();
+    }
+
     // Check for SharedExp (a * x) / x -> a
     if ((exp->getOper() == opDiv || exp->getOper() == opDivs) &&
         (opSub1 == opMult || opSub1 == opMults) &&
@@ -327,6 +387,13 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return exp->getSubExp1();
     }
 
+    // Check for exp OR -1 (bitwise OR)
+    if (exp->getOper() == opBitOr && opSub2 == opIntConst &&
+        exp->access<Const, 2>()->getInt() == -1) {
+        changed = true;
+        return exp->getSubExp2();
+    }
+
     // Check for exp AND TRUE (logical AND)
     if (exp->getOper() == opAnd &&
         // Is the below really needed?
@@ -345,7 +412,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     }
 
     // Check for [exp] << k where k is a positive integer const
-    if (exp->getOper() == opShiftL && opSub2 == opIntConst) {
+    if (exp->getOper() == opShL && opSub2 == opIntConst) {
         const int k = exp->access<Const, 2>()->getInt();
 
         if (Util::inRange(k, 0, 4)) { // do not express e.g. a << 4 as multiplication
@@ -483,6 +550,23 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return exp->getSubExp1();
     }
 
+    // Check for (x compare y) || (x != y), becomes x compare y
+    // Note: Case (x == y) || (x != y) handled above
+    if ((exp->isOr() || exp->getOper() == opBitOr) && exp->getSubExp1()->isComparison() &&
+        exp->getSubExp2()->isComparison() &&
+        (exp->getSubExp1()->isNotEquality() || exp->getSubExp2()->isNotEquality()) &&
+        *exp->access<Exp, 1, 1>() == *exp->access<Exp, 2, 1>() && // x on left == x on right
+        *exp->access<Exp, 1, 2>() == *exp->access<Exp, 2, 2>()) { // y on left == y on right
+        if (exp->getSubExp1()->isNotEquality()) {
+            changed = true;
+            return exp->getSubExp2();
+        }
+        else {
+            changed = true;
+            return exp->getSubExp1();
+        }
+    }
+
     // For (a || b) or (a && b) recurse on a and b
     if ((exp->getOper() == opOr) || (exp->getOper() == opAnd)) {
         exp->refSubExp1() = exp->getSubExp1()->acceptModifier(this);
@@ -495,12 +579,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         return res;
     }
 
-    // check for a*n*m, becomes a*(n*m) where n and m are ints
+    // check for (a*n)*m, becomes a*(n*m) where n and m are ints
     if ((exp->getOper() == opMult) && (opSub1 == opMult) && (opSub2 == opIntConst) &&
-        (exp->getSubExp1()->getSubExp2()->getOper() == opIntConst)) {
-        int m = std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt();
-        res   = res->getSubExp1();
-        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
+        exp->access<Exp, 1, 2>()->isIntConst()) {
+        const int n = exp->access<const Const, 1, 2>()->getInt();
+        const int m = exp->access<const Const, 2>()->getInt();
+
+        res = res->getSubExp1();
+        res->access<Const, 2>()->setInt(n * m);
         changed = true;
         return res;
     }
@@ -525,7 +611,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
             const int b = rightOfPlus->access<Const, 2>()->getInt();
             const int c = exp->access<Const, 2>()->getInt();
 
-            if ((a % c == 0) && (b % c == 0)) {
+            if (c != 0 && (a % c == 0) && (b % c == 0)) {
                 changed = true;
                 leftOfPlus->access<Const, 2>()->setInt(a / c);
                 rightOfPlus->access<Const, 2>()->setInt(b / c);
@@ -550,26 +636,21 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
             const int b = rightOfPlus->access<Const, 2>()->getInt();
             const int c = exp->access<Const, 2>()->getInt();
 
-            if ((a % c == 0) && (b % c == 0)) {
-                changed = true;
-                return Const::get(0);
-            }
-            if ((a % c) == 0) {
-                changed = true;
-                return Binary::get(opMod, rightOfPlus, Const::get(c));
-            }
-            if ((b % c) == 0) {
-                changed = true;
-                return Binary::get(opMod, leftOfPlus, Const::get(c));
+            if (c != 0) {
+                if ((a % c == 0) && (b % c == 0)) {
+                    changed = true;
+                    return Const::get(0);
+                }
+                if ((a % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, rightOfPlus, Const::get(c));
+                }
+                if ((b % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, leftOfPlus, Const::get(c));
+                }
             }
         }
-    }
-
-    // Replace opSize(n, loc) with loc and set the type if needed
-    if ((exp->getOper() == opSize) && exp->getSubExp2()->isLocation()) {
-        res     = res->getSubExp2();
-        changed = true;
-        return res;
     }
 
     return res;
@@ -615,8 +696,42 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary> &exp)
     }
 
     /// sign-extend constant value
-    if ((exp->getOper() == opSgnEx || exp->getOper() == opZfill) &&
-        exp->getSubExp3()->isIntConst()) {
+    if (exp->getOper() == opSgnEx && exp->getSubExp1()->isIntConst() &&
+        exp->getSubExp2()->isIntConst() && exp->getSubExp3()->isIntConst()) {
+        const int from = exp->access<Const, 1>()->getInt();
+        const int to   = exp->access<Const, 2>()->getInt();
+
+        if (from >= 0 && to >= 0) {
+            const int oldVal = exp->access<Const, 3>()->getInt();
+            if (to <= from) {
+                changed = true;
+                return exp->getSubExp3();
+            }
+            else if (from == 0) {
+                changed = true;
+                return Const::get(0);
+            }
+
+            const bool sign = ((oldVal >> (from - 1)) & 1) == 1;
+            if (sign) {
+                changed = true;
+                if (to > 32) {
+                    return Const::get((Util::getLowerBitMask(to - from) << from) |
+                                      (oldVal & Util::getLowerBitMask(from)));
+                }
+                else {
+                    return Const::get((int)(Util::getLowerBitMask(to - from) << from) |
+                                      (int)(oldVal & Util::getLowerBitMask(from)));
+                }
+            }
+            else {
+                changed = true;
+                return Const::get((int)(oldVal & Util::getLowerBitMask(from)));
+            }
+        }
+    }
+
+    if (exp->getOper() == opZfill && exp->getSubExp3()->isIntConst()) {
         changed = true;
         return exp->getSubExp3();
     }
@@ -678,8 +793,20 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary> &exp)
         int val  = exp->access<Const, 3>()->getInt();
 
         if (from > to) {
+            changed = true;
             return Const::get(val & (int)Util::getLowerBitMask(to));
         }
+    }
+
+    if (exp->getOper() == opAt && exp->getSubExp1()->isIntConst() &&
+        exp->getSubExp2()->isIntConst() && exp->getSubExp3()->isIntConst()) {
+        const int val           = exp->access<Const, 1>()->getInt();
+        const int from          = exp->access<Const, 2>()->getInt();
+        const int to            = exp->access<Const, 3>()->getInt();
+        const unsigned int mask = Util::getLowerBitMask(to + 1) & ~Util::getLowerBitMask(from);
+
+        changed = true;
+        return Const::get((int)(val & mask));
     }
 
     return exp;

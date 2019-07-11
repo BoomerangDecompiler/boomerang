@@ -37,7 +37,6 @@ private slots:
     /// Test push of argument (X86 style), then call self
     void testRecursion();
 
-
     /// Test cloning of Assigns (and exps)
     void testClone();
 
@@ -55,15 +54,6 @@ private slots:
     void testAddUsedLocsReturn();
     void testAddUsedLocsBool();
 
-    /// Test the subscripting of locations in Statements
-    void testSubscriptVars();
-
     /// Test the visitor code that fixes references that were to locations defined by calls
     void testBypass();
-
-    /// Test the visitor code that strips out size casts
-    void testStripSizes();
-
-    /// Test the visitor code that finds constants
-    void testFindConstants();
 };

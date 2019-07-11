@@ -16,16 +16,15 @@
 class CallStatement;
 
 
-/**
- * Set the defines to the set of locations modified by the callee,
- * or if no callee, to all variables live at this call
- */
-class CallDefineUpdatePass : public IPass
+/// Set the defines to the set of locations modified by the callee,
+/// or if no callee, to all variables live at this call
+class CallDefineUpdatePass final : public IPass
 {
 public:
     CallDefineUpdatePass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

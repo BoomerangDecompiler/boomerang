@@ -84,12 +84,6 @@ bool ReturnStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void ReturnStatement::generateCode(ICodeGenerator *gen) const
-{
-    gen->addReturnStatement(&getReturns());
-}
-
-
 void ReturnStatement::simplify()
 {
     for (Statement *s : m_modifieds) {
@@ -151,20 +145,6 @@ bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result
     }
 
     return found;
-}
-
-
-bool ReturnStatement::usesExp(const Exp &e) const
-{
-    SharedExp where;
-
-    for (Statement *ret : m_returns) {
-        if (ret->search(e, where)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 
@@ -288,7 +268,7 @@ void ReturnStatement::getDefinitions(LocationSet &ls, bool assumeABICompliance) 
 }
 
 
-SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
+SharedConstType ReturnStatement::getTypeForExp(SharedConstExp e) const
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
@@ -300,7 +280,7 @@ SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
 }
 
 
-SharedType ReturnStatement::getTypeFor(SharedExp e)
+SharedType ReturnStatement::getTypeForExp(SharedExp e)
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
@@ -312,7 +292,7 @@ SharedType ReturnStatement::getTypeFor(SharedExp e)
 }
 
 
-void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
+void ReturnStatement::setTypeForExp(SharedExp e, SharedType ty)
 {
     for (Statement *stmt : m_modifieds) {
         if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {

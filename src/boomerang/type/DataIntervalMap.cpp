@@ -208,7 +208,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
                 return end();
             }
 
-            LOG_VERBOSE("%1", this->prints());
+            LOG_VERBOSE("%1", this->toString());
             LOG_VERBOSE("%1 %2", memberType->getCtype(), it->second.type->getCtype());
 
             bool ch;
@@ -312,7 +312,7 @@ void DataIntervalMap::deleteItem(Address addr)
 }
 
 
-QString DataIntervalMap::prints()
+QString DataIntervalMap::toString()
 {
     QString tgt;
     OStream ost(&tgt);

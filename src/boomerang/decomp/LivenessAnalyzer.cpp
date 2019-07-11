@@ -25,8 +25,9 @@
 
 /**
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of
- * locations in ls Also check for type conflicts when using DFA type analysis This is a helper
- * function that is not directly declared in the BasicBlock class
+ * locations in \p ls.
+ * Also check for type conflicts when using DFA type analysis
+ * This is a helper function that is not directly declared in the BasicBlock class
  */
 void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc *proc)
 {
@@ -37,8 +38,8 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
         }
 
         assert(std::dynamic_pointer_cast<RefExp>(exp) != nullptr);
+        auto refexp = exp->access<RefExp>();
 
-        auto refexp = std::static_pointer_cast<RefExp>(exp);
         // Interference if we can find a live variable which differs only in the reference
         SharedExp dr;
 
@@ -49,7 +50,7 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
             ig.connect(refexp, dr);
 
             if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
-                LOG_VERBOSE("Interference of %1 with %2", dr, refexp);
+                LOG_MSG("Interference of %1 with %2", dr, refexp);
             }
         }
 
@@ -66,25 +67,22 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
     LocationSet liveLocs, phiLocs;
     getLiveOut(bb, liveLocs, phiLocs);
 
-    // Do the livensses that result from phi statements at successors first.
+    // Do the livenesses that result from phi statements at successors first.
     // FIXME: document why this is necessary
     checkForOverlap(liveLocs, phiLocs, ig, myProc);
 
-    // For each RTL in this BB
-    RTLList::reverse_iterator rit;
     const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
 
-    if (bb->getRTLs()) { // this can be nullptr
-        for (rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
-            std::list<Statement *>::reverse_iterator sit;
-
-            // For each statement this RTL
-            for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
+    if (bb->getRTLs()) {
+        // For all statements in this BB in reverse order
+        for (auto rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
+            for (auto sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 Statement *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs, assumeABICompliance);
+
                 // The definitions don't have refs yet
-                defs.addSubscript(s /* , myProc->getCFG() */);
+                defs.addSubscript(s);
 
                 // Definitions kill uses. Now we are moving to the "top" of statement s
                 liveLocs.makeDiff(defs);
@@ -105,7 +103,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
                 checkForOverlap(liveLocs, uses, ig, myProc);
 
                 if (myProc->getProg()->getProject()->getSettings()->debugLiveness) {
-                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.prints());
+                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.toString());
                 }
             }
         }
@@ -148,7 +146,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 continue;
             }
 
-            PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
+            PhiAssign *pa = static_cast<PhiAssign *>(st);
 
             for (const auto &v : pa->getDefs()) {
                 if (!cfg->hasBB(v.first)) {
@@ -198,8 +196,13 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 }
             }
 
-            SharedExp ref = RefExp::get(pa->getLeft()->clone(), def);
+            if (!def) {
+                // This is not defined anywhere, so it is an initial parameter.
+                def = cfg->findOrCreateImplicitAssign(pa->getLeft());
+            }
+
             assert(def);
+            SharedExp ref = RefExp::get(pa->getLeft()->clone(), def);
             liveout.insert(ref);
             phiLocs.insert(ref);
 

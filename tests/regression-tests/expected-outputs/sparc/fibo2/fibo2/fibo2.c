@@ -1,16 +1,17 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
 void fib1();
 
+
 /** address: 0x00010738 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
-    __size32 fp; 		// r30
     __size32 i0; 		// r24
-    __size32 i1; 		// r25
+    char * *i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
     __size32 i4; 		// r28
     __size32 i5; 		// r29
+    void *i6; 		// r30
     __size32 i7; 		// r31
     __size32 l0; 		// r16
     __size32 l1; 		// r17
@@ -21,7 +22,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 l6; 		// r22
     __size32 l7; 		// r23
     int local0; 		// m[o6 - 20]
-    int o1; 		// r9
+    __size32 o1; 		// r9
     int o2; 		// r10
     int o2_1; 		// r10{10}
     int o3; 		// r11
@@ -36,7 +37,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
 
     printf("Input number: ");
     o1 = scanf("%d", &local0); /* Warning: also results in o2_1, o3_1, o4_1, o5_1, o7_1 */
-    fib1(0x10800, local0, o1, o2_1, o3_1, o4_1, o5_1, o7_1, 0, argv, o2, o3, o4, o5, o6, o7, l0, l1, l2, l3, l4, l5, l6, l7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0);
+    fib1(0x10800, local0, o1, o2_1, o3_1, o4_1, o5_1, o7_1, 0, argv, o2, o3, o4, o5, o6, o7, l0, l1, l2, l3, l4, l5, l6, l7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, i6, i7, local0);
 }
 
 /** address: 0x000106f4 */

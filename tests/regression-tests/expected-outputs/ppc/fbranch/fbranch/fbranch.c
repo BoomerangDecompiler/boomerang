@@ -1,9 +1,10 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x10000440 */
 int main(int argc, char *argv[])
 {
-    __size32 g1; 		// r1
+    void *g1; 		// r1
     double g4_1; 		// r4
     int g5; 		// r5
     float local0; 		// m[g1 - 20]

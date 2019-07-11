@@ -20,12 +20,13 @@ typedef std::set<UserProc *> ProcSet;
 
 
 /// Removes unused function parameters from a function.
-class UnusedParamRemovalPass : public IPass
+class UnusedParamRemovalPass final : public IPass
 {
 public:
     UnusedParamRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:

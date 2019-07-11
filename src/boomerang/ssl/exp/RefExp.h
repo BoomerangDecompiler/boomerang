@@ -55,27 +55,23 @@ public:
     /// \copydoc Unary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Unary::operator*=
-    bool operator*=(const Exp &o) const override;
+    /// \copydoc Unary::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
-    Statement *getDef() const { return m_def; } // Ugh was called getRef()
-    void setDef(Statement *_def);
+    Statement *getDef() const { return m_def; }
+    void setDef(Statement *def);
 
-    SharedExp addSubscript(Statement *_def);
+    SharedExp addSubscript(Statement *def);
 
-    bool references(const Statement *s) const { return m_def == s; }
-
-    /**
-     * Before type analysis, implicit definitions are nullptr.
-     * During and after TA, they point to an implicit assignment statement.
-     */
+    /// Before type analysis, implicit definitions are nullptr.
+    /// During and after TA, they point to an implicit assignment statement.
     bool isImplicitDef() const;
 
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Unary::acceptVisitor

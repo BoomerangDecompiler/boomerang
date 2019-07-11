@@ -20,9 +20,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 PentiumSignature::PentiumSignature(const QString &name)
     : Signature(name)
@@ -86,7 +84,7 @@ bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
             continue;
         }
 
-        if (e->getLeft()->getOper() == opPC) {
+        if (e->getLeft()->isPC()) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP)) {
                 LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;
@@ -110,7 +108,7 @@ bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
 }
 
 
-int PentiumSignature::getStackRegister() const
+RegNum PentiumSignature::getStackRegister() const
 {
     return REG_PENT_ESP;
 }
@@ -174,10 +172,16 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
         case REG_PENT_ESP:                                                            // esp
             return Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)); // esp+4
 
+        case REG_PENT_BX:
+        case REG_PENT_BP:
+        case REG_PENT_SI:
+        case REG_PENT_DI:
+        case REG_PENT_BL:
+        case REG_PENT_BH:
+        case REG_PENT_EBX:
         case REG_PENT_EBP:
         case REG_PENT_ESI:
-        case REG_PENT_EDI:
-        case REG_PENT_EBX: return Location::regOf(r);
+        case REG_PENT_EDI: return Location::regOf(r);
         }
     }
 
@@ -279,5 +283,5 @@ bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment
     // Else don't care about the order
     return *la < *lb;
 }
-}
+
 }

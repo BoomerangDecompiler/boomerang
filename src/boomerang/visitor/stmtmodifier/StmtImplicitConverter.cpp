@@ -28,11 +28,11 @@ void StmtImplicitConverter::visit(PhiAssign *stmt, bool &visitChildren)
     // The LHS could be a m[x] where x has a null subscript; must do first
     stmt->setLeft(stmt->getLeft()->acceptModifier(m_mod));
 
-    for (RefExp &exp : *stmt) {
-        assert(exp.getSubExp1() != nullptr);
+    for (const std::shared_ptr<RefExp> &exp : *stmt) {
+        assert(exp->getSubExp1() != nullptr);
 
-        if (exp.getDef() == nullptr) {
-            exp.setDef(m_cfg->findOrCreateImplicitAssign(exp.getSubExp1()));
+        if (exp->getDef() == nullptr) {
+            exp->setDef(m_cfg->findOrCreateImplicitAssign(exp->getSubExp1()));
         }
     }
 

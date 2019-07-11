@@ -25,7 +25,7 @@ Const::Const(uint32_t i)
     : Exp(opIntConst)
     , m_type(VoidType::get())
 {
-    m_value.i = i;
+    m_value = (int)i;
 }
 
 
@@ -33,7 +33,7 @@ Const::Const(int i)
     : Exp(opIntConst)
     , m_type(VoidType::get())
 {
-    m_value.i = i;
+    m_value = i;
 }
 
 
@@ -41,7 +41,7 @@ Const::Const(QWord ll)
     : Exp(opLongConst)
     , m_type(VoidType::get())
 {
-    m_value.ll = ll;
+    m_value = ll;
 }
 
 
@@ -49,7 +49,7 @@ Const::Const(double d)
     : Exp(opFltConst)
     , m_type(VoidType::get())
 {
-    m_value.d = d;
+    m_value = d;
 }
 
 
@@ -57,15 +57,23 @@ Const::Const(const QString &p)
     : Exp(opStrConst)
     , m_type(VoidType::get())
 {
-    m_string = p;
+    m_value = p;
 }
 
 
-Const::Const(Function *p)
-    : Exp(opFuncConst)
+Const::Const(const char *rawString)
+    : Exp(opStrConst)
     , m_type(VoidType::get())
 {
-    m_value.pp = p;
+    m_value = rawString;
+}
+
+
+Const::Const(Function *func)
+    : Exp(opFuncConst)
+    , m_type(PointerType::get(FuncType::get(func->getSignature())))
+{
+    m_value = func;
 }
 
 
@@ -73,16 +81,15 @@ Const::Const(Address addr)
     : Exp(opIntConst)
     , m_type(VoidType::get())
 {
-    m_value.ll = addr.value();
+    m_value = (QWord)addr.value();
 }
 
 
 Const::Const(const Const &other)
     : Exp(other.m_oper)
-    , m_string(other.m_string)
+    , m_value(other.m_value)
     , m_type(other.m_type)
 {
-    memcpy(&m_value, &other.m_value, sizeof(m_value));
 }
 
 
@@ -95,10 +102,10 @@ bool Const::operator<(const Exp &o) const
     const Const &otherConst = static_cast<const Const &>(o);
 
     switch (m_oper) {
-    case opIntConst: return m_value.i < otherConst.m_value.i;
-    case opLongConst: return m_value.ll < otherConst.m_value.ll;
-    case opFltConst: return m_value.d < otherConst.m_value.d;
-    case opStrConst: return m_string < otherConst.m_string;
+    case opIntConst: return getInt() < otherConst.getInt();
+    case opLongConst: return getLong() < otherConst.getLong();
+    case opFltConst: return getFlt() < otherConst.getFlt();
+    case opStrConst: return getStr() < otherConst.getStr();
 
     default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
@@ -107,7 +114,7 @@ bool Const::operator<(const Exp &o) const
 }
 
 
-bool Const::operator*=(const Exp &o) const
+bool Const::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -119,9 +126,132 @@ bool Const::operator*=(const Exp &o) const
 }
 
 
+int Const::getInt() const
+{
+    if (std::get_if<int>(&m_value) != nullptr) {
+        return *std::get_if<int>(&m_value);
+    }
+    else if (std::get_if<QWord>(&m_value) != nullptr) {
+        return (int)*std::get_if<QWord>(&m_value);
+    }
+    else if (std::get_if<double>(&m_value) != nullptr) {
+        return (int)*std::get_if<double>(&m_value);
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return 0;
+}
+
+
+QWord Const::getLong() const
+{
+    if (std::get_if<QWord>(&m_value) != nullptr) {
+        return *std::get_if<QWord>(&m_value);
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return 0;
+}
+
+
+double Const::getFlt() const
+{
+    if (std::get_if<double>(&m_value) != nullptr) {
+        return *std::get_if<double>(&m_value);
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return 0.0;
+}
+
+
+QString Const::getStr() const
+{
+    if (std::get_if<QString>(&m_value) != nullptr) {
+        return *std::get_if<QString>(&m_value);
+    }
+    else if (std::get_if<const char *>(&m_value) != nullptr) {
+        return *std::get_if<const char *>(&m_value);
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return "";
+}
+
+
+const char *Const::getRawStr() const
+{
+    if (std::get_if<const char *>(&m_value) != nullptr) {
+        return *std::get_if<const char *>(&m_value);
+    }
+    else if (std::get_if<QString>(&m_value) != nullptr) {
+        return qPrintable(*std::get_if<QString>(&m_value));
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return nullptr;
+}
+
+
+Address Const::getAddr() const
+{
+    if (std::get_if<QWord>(&m_value) != nullptr) {
+        return Address(static_cast<Address::value_type>(*std::get_if<QWord>(&m_value)));
+    }
+    else if (std::get_if<int>(&m_value) != nullptr) {
+        return Address(static_cast<Address::value_type>(*std::get_if<int>(&m_value)));
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return Address::INVALID;
+}
+
+
 QString Const::getFuncName() const
 {
-    return m_value.pp->getName();
+    if (std::get_if<Function *>(&m_value) != nullptr) {
+        assert(*std::get_if<Function *>(&m_value) != nullptr);
+        return (*std::get_if<Function *>(&m_value))->getName();
+    }
+
+    LOG_FATAL("Bad variant access (currently held index %1)", m_value.index());
+    return "";
+}
+
+
+void Const::setInt(int value)
+{
+    m_value = value;
+}
+
+
+void Const::setLong(QWord value)
+{
+    m_value = value;
+}
+
+
+void Const::setFlt(double value)
+{
+    m_value = value;
+}
+
+
+void Const::setStr(const QString &value)
+{
+    m_value = value;
+}
+
+
+void Const::setRawStr(const char *p)
+{
+    m_value = p;
+}
+
+
+void Const::setAddr(Address addr)
+{
+    m_value = (QWord)addr.value();
 }
 
 
@@ -135,7 +265,7 @@ SharedExp Const::clone() const
 void Const::printNoQuotes(OStream &os) const
 {
     if (m_oper == opStrConst) {
-        os << m_string;
+        os << getStr();
     }
     else {
         print(os);
@@ -162,11 +292,19 @@ bool Const::operator==(const Exp &other) const
         return false;
     }
 
+    const Const &otherConst = static_cast<const Const &>(other);
+
     switch (m_oper) {
-    case opIntConst: return m_value.i == static_cast<const Const &>(other).m_value.i;
-    case opLongConst: return m_value.ll == static_cast<const Const &>(other).m_value.ll;
-    case opFltConst: return m_value.d == static_cast<const Const &>(other).m_value.d;
-    case opStrConst: return m_string == static_cast<const Const &>(other).m_string;
+    case opIntConst: return getInt() == otherConst.getInt();
+    case opLongConst: return getLong() == otherConst.getLong();
+    case opFltConst: return getFlt() == otherConst.getFlt();
+    case opStrConst: return getStr() == otherConst.getStr();
+    case opFuncConst: {
+        const Function *const *myData    = std::get_if<Function *>(&m_value);
+        const Function *const *otherData = std::get_if<Function *>(&otherConst.m_value);
+
+        return myData && otherData && *myData == *otherData;
+    }
     default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
@@ -193,31 +331,32 @@ SharedType Const::ascendType()
 }
 
 
-void Const::descendType(SharedType parentType, bool &changed, Statement *)
+bool Const::descendType(SharedType newType)
 {
-    bool thisCh = false;
+    bool changed = false;
+    m_type       = m_type->meetWith(newType, changed);
 
-    m_type = m_type->meetWith(parentType, thisCh);
-    changed |= thisCh;
-
-    if (thisCh) {
+    if (changed) {
         // May need to change the representation
         if (m_type->resolvesToFloat()) {
             if (m_oper == opIntConst) {
-                m_oper    = opFltConst;
-                m_type    = FloatType::get(64);
-                float f   = *reinterpret_cast<float *>(&m_value.i);
-                m_value.d = static_cast<double>(f);
+                m_oper  = opFltConst;
+                m_type  = FloatType::get(64);
+                int i   = getInt();
+                m_value = *reinterpret_cast<float *>(&i);
             }
             else if (m_oper == opLongConst) {
-                m_oper    = opFltConst;
-                m_type    = FloatType::get(64);
-                m_value.d = *reinterpret_cast<double *>(&m_value.ll);
+                m_oper  = opFltConst;
+                m_type  = FloatType::get(64);
+                QWord i = getLong();
+                m_value = *reinterpret_cast<double *>(&i);
             }
         }
 
         // May be other cases
     }
+
+    return changed;
 }
 
 

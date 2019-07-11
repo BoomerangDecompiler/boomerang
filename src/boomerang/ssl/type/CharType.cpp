@@ -30,7 +30,7 @@ SharedType CharType::clone() const
 }
 
 
-size_t CharType::getSize() const
+Type::Size CharType::getSize() const
 {
     return 8;
 }
@@ -44,8 +44,9 @@ bool CharType::operator==(const Type &other) const
 
 bool CharType::operator<(const Type &other) const
 {
-    return id < other.getId();
+    return m_id < other.getId();
 }
+
 
 QString CharType::getCtype(bool /*final*/) const
 {
@@ -65,7 +66,7 @@ SharedType CharType::meetWith(SharedType other, bool &changed, bool useHighestPt
         return other->clone();
     }
 
-    if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == 8)) {
+    if (other->resolvesToSize() && getSize() <= (other->as<SizeType>()->getSize())) {
         return const_cast<CharType *>(this)->shared_from_this();
     }
 

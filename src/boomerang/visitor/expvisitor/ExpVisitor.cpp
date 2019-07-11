@@ -62,19 +62,6 @@ bool ExpVisitor::postVisit(const std::shared_ptr<TypedExp> &)
 }
 
 
-bool ExpVisitor::preVisit(const std::shared_ptr<FlagDef> &, bool &visitChildren)
-{
-    visitChildren = true;
-    return true;
-}
-
-
-bool ExpVisitor::postVisit(const std::shared_ptr<FlagDef> &)
-{
-    return true;
-}
-
-
 bool ExpVisitor::preVisit(const std::shared_ptr<RefExp> &, bool &visitChildren)
 {
     visitChildren = true;

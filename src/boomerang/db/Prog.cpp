@@ -9,8 +9,6 @@
 #pragma endregion License
 #include "Prog.h"
 
-#include "boomerang/c/CSymbolProvider.h"
-#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/DebugInfo.h"
@@ -53,7 +51,6 @@
 
 Prog::Prog(const QString &name, Project *project)
     : m_name(name)
-    , m_symbolProvider(new CSymbolProvider(this))
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
@@ -321,15 +318,15 @@ bool Prog::isWin32() const
 }
 
 
-QString Prog::getRegName(int idx) const
+QString Prog::getRegNameByNum(RegNum regNum) const
 {
-    return m_fe->getDecoder()->getRegName(idx);
+    return m_fe->getDecoder()->getRegNameByNum(regNum);
 }
 
 
-int Prog::getRegSize(int idx) const
+int Prog::getRegSizeByNum(RegNum regNum) const
 {
-    return m_fe->getDecoder()->getRegSize(idx);
+    return m_fe->getDecoder()->getRegSizeByNum(regNum);
 }
 
 
@@ -344,45 +341,59 @@ void Prog::readDefaultLibraryCatalogues()
     LOG_MSG("Reading library signatures...");
 
     const QDir dataDir = m_project->getSettings()->getDataDirectory();
-    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
+    Plugin *plugin     = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    if (!plugin) {
+        LOG_ERROR("Symbol provider plugin not found!");
+        return;
+    }
+
+    ISymbolProvider *prov = plugin->getIfc<ISymbolProvider>();
+    prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/common.hs"));
 
     QString libCatalogName;
     switch (getMachine()) {
     case Machine::PENTIUM: libCatalogName = "signatures/pentium.hs"; break;
     case Machine::SPARC: libCatalogName = "signatures/sparc.hs"; break;
-    case Machine::HPRISC: libCatalogName = "signatures/parisc.hs"; break;
     case Machine::PPC: libCatalogName = "signatures/ppc.hs"; break;
     case Machine::ST20: libCatalogName = "signatures/st20.hs"; break;
-    case Machine::MIPS: libCatalogName = "signatures/mips.hs"; break;
     default: libCatalogName = ""; break;
     }
 
     if (!libCatalogName.isEmpty()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath(libCatalogName));
     }
 
     if (isWin32()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/win32.hs"));
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/objc.hs"));
     }
 }
 
 
 bool Prog::addSymbolsFromSymbolFile(const QString &fname)
 {
-    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
+    Plugin *plugin = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    if (!plugin) {
+        return false;
+    }
+
+    ISymbolProvider *prov = plugin->getIfc<ISymbolProvider>();
+    return prov->addSymbolsFromSymbolFile(this, fname);
 }
 
 
 std::shared_ptr<Signature> Prog::getLibSignature(const QString &name)
 {
-    std::shared_ptr<Signature> signature = m_symbolProvider
-                                               ? m_symbolProvider->getSignatureByName(name)
-                                               : nullptr;
+    Plugin *plugin = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    std::shared_ptr<Signature> signature = nullptr;
+
+    if (plugin) {
+        signature = plugin->getIfc<ISymbolProvider>()->getSignatureByName(name);
+    }
 
     if (signature) {
         signature->setUnknown(false);
@@ -531,14 +542,6 @@ bool Prog::isDynamicallyLinkedProcPointer(Address dest) const
 }
 
 
-const QString &Prog::getDynamicProcName(Address addr) const
-{
-    static const QString defaultName("");
-    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
-    return (sym && sym->isImportedFunction()) ? sym->getName() : defaultName;
-}
-
-
 Module *Prog::getOrInsertModuleForSymbol(const QString &symbolName)
 {
     const BinarySymbol *sym = nullptr;
@@ -567,12 +570,6 @@ Module *Prog::getOrInsertModuleForSymbol(const QString &symbolName)
     module = getOrInsertModule(moduleName);
     m_rootModule->addChild(module);
     return module;
-}
-
-
-int Prog::readNative4(Address a) const
-{
-    return m_binaryFile->getImage()->readNative4(a);
 }
 
 

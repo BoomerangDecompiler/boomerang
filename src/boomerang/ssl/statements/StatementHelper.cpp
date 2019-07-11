@@ -11,6 +11,7 @@
 
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -18,12 +19,7 @@
 // Return true if this is now a floating point Branch
 bool condToRelational(SharedExp &condExp, BranchType jtCond)
 {
-    condExp = condExp->simplifyArith()->simplify();
-
-    QString tgt;
-    OStream os(&tgt);
-    condExp->print(os);
-
+    condExp     = condExp->simplifyArith()->simplify();
     OPER condOp = condExp->getOper();
 
     if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
@@ -89,24 +85,24 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
         case BranchType::JUG: op = opGtrUns; break;
 
         case BranchType::JMI:
-
-            /*       condExp
+            /*
+             *       condExp
              *      /      \
-             *  Const       opList
-             * "SUBFLAGS"    /    \
-             * P1    opList
-             *     /     \
-             *   P2    opList
-             *          /     \
-             *        P3     opNil */
+             *  Const      opList
+             * "SUBFLAGS"  /    \
+             *            P1    opList
+             *                  /    \
+             *                 P2    opList
+             *                       /    \
+             *                      P3    opNil
+             */
             condExp = Binary::get(opLess, // P3 < 0
                                   condExp->access<const Exp, 2, 2, 2, 1>()->clone(), Const::get(0));
             break;
 
         case BranchType::JPOS:
             condExp = Binary::get(opGtrEq, // P3 >= 0
-                                  condExp->access<const Exp, 2, 2, 2, 1>()->getSubExp1()->clone(),
-                                  Const::get(0));
+                                  condExp->access<const Exp, 2, 2, 2, 1>()->clone(), Const::get(0));
             break;
 
         case BranchType::JOF:
@@ -123,8 +119,9 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                   condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
         }
     }
-    else if ((condOp == opFlagCall) &&
-             condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS")) {
+    else if (condOp == opFlagCall &&
+             (condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS") ||
+              condExp->access<Const, 1>()->getStr().startsWith("INCDECFLAGS"))) {
         OPER op = opWild;
 
         switch (jtCond) {
@@ -147,13 +144,14 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
         case BranchType::JSG: op = opGtr; break;
 
-        // These next few seem to fluke working fine on architectures like X86, SPARC, and 68K which
+        // These next few seem to fluke working fine on architectures like X86 and SPARC which
         // clear the carry on all logical operations.
         case BranchType::JUL:
+            // NOTE: this is equivalent to never branching, since nothing
+            // can be unsigned less than zero
             op = opLessUns;
-            break; // NOTE: this is equivalent to never branching, since nothing
+            break;
 
-        // can be unsigned less than zero
         case BranchType::JULE: op = opLessEqUns; break;
 
         case BranchType::JUGE:
@@ -167,19 +165,19 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             // This is Pentium specific too; see below for more notes.
 
             /*
-             *                                      condExp
-             *                                      /    \
-             *                                Const        opList
-             *                      "LOGICALFLAGS8"        /    \
-             *                                      opBitAnd    opNil
-             *                                           /        \
-             *                                 opFlagCall        opIntConst
-             *                                  /        \            mask
-             *                              Const        opList
-             *                          "SETFFLAGS"      /    \
-             *                                          P1    opList
-             *                                        /    \
-             *                                      P2    opNil
+             *              condExp
+             *              /     \
+             *          Const      opList
+             * "LOGICALFLAGS8"     /    \
+             *               opBitAnd    opNil
+             *               /      \
+             *        opFlagCall    opIntConst
+             *        /        \         mask
+             *    Const        opList
+             * "SETFFLAGS"     /    \
+             *                P1    opList
+             *                      /    \
+             *                     P2    opNil
              */
             SharedExp flagsParam = condExp->getSubExp2()->getSubExp1();
             SharedExp test       = flagsParam;
@@ -202,7 +200,19 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                 }
             }
 
-            SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
+            if (!flagsParam->getSubExp1() || !flagsParam->getSubExp2() || (mask & ~0x41) != 0) {
+                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
+            const SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
+            if (!at_opFlagsCall_List || !at_opFlagsCall_List->getSubExp1() ||
+                !at_opFlagsCall_List->getSubExp2() ||
+                !at_opFlagsCall_List->getSubExp2()->getSubExp1()) {
+                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time.
             // So effectively the branch is for any one of the (one or two) bits being on. For
             // example, if the mask is 0x41, we are branching of less (0x1) or equal (0x41).
@@ -375,6 +385,8 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
                         break;
 
+                    case 0: condExp = Terminal::get(opFalse); return false;
+
                     default: LOG_FATAL("Mask is %1", QString::number(mask, 16));
                     }
                 }
@@ -384,6 +396,58 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                           left1->getSubExp2()->getSubExp2()->getSubExp1());
                     return true; // This is now a float comparison
                 }
+            }
+        }
+    }
+    else if (condExp->isFlagCall() && condExp->access<Const, 1>()->getStr() == "SAHFFLAGS") {
+        const SharedExp param = condExp->access<Exp, 2, 1>();
+        if (param->isFlagCall() && param->access<Const, 1>()->getStr() == "SETFFLAGS") {
+            // Can happen e.g. with the following assembly:
+            //  fucompp
+            //  fnstsw ax
+            //  sahf
+            //  jne <foo>
+            const SharedExp floatParam1 = param->access<Const, 2, 1>();
+            const SharedExp floatParam2 = param->access<Const, 2, 2, 1>();
+
+            // We have:
+            // %ZF = floatParam1 == floatParam2
+            // %CF = floatParam1 <  floatParam2
+            // %PF = 0 (if not unordered)
+            switch (jtCond) {
+            case BranchType::JNE: { // ~%ZF
+                condExp = Binary::get(opNotEqual, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JE: { // %ZF
+                condExp = Binary::get(opEquals, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JPAR: { // %PF
+                condExp = Terminal::get(opFalse);
+                return true;
+            }
+            case BranchType::JNPAR: { // ~%PF
+                condExp = Terminal::get(opTrue);
+                return true;
+            }
+            case BranchType::JUL: { // %CF
+                condExp = Binary::get(opLess, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JUGE: { // ~%CF
+                condExp = Binary::get(opGtrEq, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JULE: { // %CF | %ZF
+                condExp = Binary::get(opLessEq, floatParam1, floatParam2);
+                return true;
+            }
+            case BranchType::JUG: { // ~%CF & ~%ZF
+                condExp = Binary::get(opGtr, floatParam1, floatParam2);
+                return true;
+            }
+            default: break;
             }
         }
     }

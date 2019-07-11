@@ -31,12 +31,12 @@ class BOOMERANG_API CallStatement : public GotoStatement
 {
 public:
     CallStatement();
-    CallStatement(const CallStatement &other) = default;
+    CallStatement(const CallStatement &other) = delete;
     CallStatement(CallStatement &&other)      = default;
 
     virtual ~CallStatement() override;
 
-    CallStatement &operator=(const CallStatement &other) = default;
+    CallStatement &operator=(const CallStatement &other) = delete;
     CallStatement &operator=(CallStatement &&other) = default;
 
 public:
@@ -162,12 +162,6 @@ public:
     Function *getDestProc();
     const Function *getDestProc() const;
 
-    /// \copydoc GotoStatement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
-
-    /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp &exp) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
@@ -177,16 +171,14 @@ public:
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedType getTypeForExp(SharedExp exp) override;
 
-    /// \copydoc Statement::setTypeFor
-    virtual void
-    setTypeFor(SharedExp e,
-               SharedType ty) override; // Set the type for this location, defined in this statement
+    /// \copydoc Statement::setTypeForExp
+    virtual void setTypeForExp(SharedExp exp, SharedType ty) override;
 
     /// \returns pointer to the def collector object
     const DefCollector *getDefCollector() const { return &m_defCol; }
@@ -223,7 +215,7 @@ public:
     /// NOTE: at present, we igore the possibility that some other statement
     /// will modify the global. This is a serious limitation!!
     /// \returns true if converted
-    bool convertToDirect();
+    bool tryConvertToDirect();
 
     /// direct call
     void useColfromSSAForm(Statement *s) { m_useCol.fromSSAForm(m_proc, s); }

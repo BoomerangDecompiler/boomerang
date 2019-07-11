@@ -22,7 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-find_package(Qt5Core REQUIRED HINTS $ENV{QTDIR})
+find_package(Qt5 COMPONENTS Core REQUIRED HINTS $ENV{QTDIR})
+if (Qt5_FOUND)
+    mark_as_advanced(Qt5_DIR Qt5Core_DIR)
+endif (Qt5_FOUND)
 
 # Retrieve the absolute path to qmake and then use that path to find
 # the windeployqt binary

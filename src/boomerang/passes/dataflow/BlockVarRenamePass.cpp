@@ -19,6 +19,8 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpSubscripter.h"
+#include "boomerang/visitor/stmtmodifier/StmtSubscripter.h"
 
 
 BlockVarRenamePass::BlockVarRenamePass()
@@ -72,7 +74,7 @@ bool BlockVarRenamePass::renameBlockVars(
                 // A phi statement may use a location defined in a childless call,
                 // in which case its use collector needs updating
                 for (auto &pp : *pa) {
-                    Statement *def = pp.getDef();
+                    Statement *def = pp->getDef();
 
                     if (def && def->isCall()) {
                         static_cast<CallStatement *>(def)->useBeforeDefine(phiLeft->clone());
@@ -96,7 +98,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     // return, and also because we may have just removed all call livenesses
                     // Update use information in calls, and in the proc (for parameters)
                     SharedExp base = location->getSubExp1();
-                    def            = std::static_pointer_cast<RefExp>(location)->getDef();
+                    def            = location->access<RefExp>()->getDef();
 
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at
@@ -131,8 +133,8 @@ bool BlockVarRenamePass::renameBlockVars(
 
 
                 if (def && def->isCall()) {
-                    // Calls have UseCollectors for locations that are used before definition at the
-                    // call
+                    // Calls have UseCollectors for locations that are used before definition
+                    // at the call
                     static_cast<CallStatement *>(def)->useBeforeDefine(location->clone());
                 }
 
@@ -144,13 +146,14 @@ bool BlockVarRenamePass::renameBlockVars(
                     phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(location, def));
                 }
                 else {
-                    S->subscriptVar(location, def);
+                    subscriptVar(S, location, def);
                 }
             }
         }
 
         // MVE: Check for Call and Return Statements; these have DefCollector objects that need to
-        // be updated Do before the below, so CallStatements have not yet processed their defines
+        // be updated
+        // Do before the below, so CallStatements have not yet processed their defines
         if (S->isCall() || S->isReturn()) {
             DefCollector *col;
 
@@ -189,7 +192,7 @@ bool BlockVarRenamePass::renameBlockVars(
             }
 
             // FIXME: MVE: do we need this awful hack?
-            if (a->getOper() == opLocal) {
+            if (a->isLocal()) {
                 SharedConstExp a1 = S->getProc()->expFromSymbol(a->access<Const, 1>()->getStr());
                 assert(a1);
 
@@ -249,7 +252,8 @@ bool BlockVarRenamePass::renameBlockVars(
     const int numBB = proc->getCFG()->getNumBBs();
 
     for (int X = 0; X < numBB; X++) {
-        if (proc->getDataFlow()->getIdom(X) == n) { // if 'n' is immediate dominator of X
+        const int idom = proc->getDataFlow()->getIdom(X);
+        if (idom == n && X != n) { // if 'n' is immediate dominator of X
             renameBlockVars(proc, X, stacks);
         }
     }
@@ -271,14 +275,13 @@ bool BlockVarRenamePass::renameBlockVars(
                 continue;
             }
 
-            // if ((*dd)->getMemDepth() == memDepth)
-            auto ss = stacks.find(def);
+            auto stackIt = stacks.find(def);
 
-            if (ss == stacks.end()) {
+            if (stackIt == stacks.end()) {
                 LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", def);
             }
 
-            ss->second.pop_back();
+            stackIt->second.pop_back();
         }
 
         // Pop all defs due to childless calls
@@ -299,5 +302,20 @@ bool BlockVarRenamePass::execute(UserProc *proc)
 {
     /// The stack which remembers the last definition of an expression.
     std::map<SharedExp, std::deque<Statement *>, lessExpStar> stacks;
-    return renameBlockVars(proc, 0, stacks);
+    BasicBlock *entryBB = proc->getCFG()->getEntryBB();
+
+    if (entryBB == nullptr) {
+        return false;
+    }
+
+    return renameBlockVars(proc, proc->getDataFlow()->pbbToNode(entryBB), stacks);
+}
+
+
+void BlockVarRenamePass::subscriptVar(Statement *stmt, SharedExp var, Statement *varDef)
+{
+    ExpSubscripter es(var, varDef);
+    StmtSubscripter ss(&es);
+
+    stmt->accept(&ss);
 }

@@ -37,11 +37,9 @@
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
-#include "boomerang/visitor/expmodifier/SizeStripper.h"
 #include "boomerang/visitor/expvisitor/BadMemofFinder.h"
 #include "boomerang/visitor/expvisitor/ComplexityFinder.h"
 #include "boomerang/visitor/expvisitor/FlagsFinder.h"
-#include "boomerang/visitor/expvisitor/MemDepthFinder.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 
 #include <QRegularExpression>
@@ -78,6 +76,80 @@ SharedExp &Exp::refSubExp3()
 }
 
 
+Exp::Exp(OPER oper)
+    : m_oper(oper)
+{
+}
+
+
+int Exp::getArity() const
+{
+    return 0;
+}
+
+
+bool Exp::isWildcard() const
+{
+    return m_oper == opWild || m_oper == opWildIntConst || m_oper == opWildStrConst ||
+           m_oper == opWildMemOf || m_oper == opWildRegOf || m_oper == opWildAddrOf;
+}
+
+
+bool Exp::isFloatExp() const
+{
+    return m_oper == opFPlus || m_oper == opFMinus || m_oper == opFMult || m_oper == opFDiv ||
+           m_oper == opFNeg || m_oper == opFabs || m_oper == opSin || m_oper == opCos ||
+           m_oper == opTan || m_oper == opArcTan || m_oper == opLog2 || m_oper == opLog10 ||
+           m_oper == opLoge || m_oper == opPow || m_oper == opSqrt || m_oper == opFround ||
+           m_oper == opFtrunc || m_oper == opFsize || m_oper == opItof || m_oper == opFtoi;
+}
+
+
+bool Exp::isLogExp() const
+{
+    return isAnd() || isOr() || isComparison() || m_oper == opLNot ||
+           (m_oper == opBitXor && getSubExp1()->isLogExp() && getSubExp2()->isLogExp());
+}
+
+
+bool Exp::isBitwise() const
+{
+    return m_oper == opBitNot || m_oper == opBitAnd || m_oper == opBitOr ||
+           (m_oper == opBitXor && (!getSubExp1()->isLogExp() || !!getSubExp2()->isLogExp())) ||
+           m_oper == opShL || m_oper == opShR || m_oper == opShRA || m_oper == opRotL ||
+           m_oper == opRotLC || m_oper == opRotR || m_oper == opRotRC;
+}
+
+
+bool Exp::isComparison() const
+{
+    return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
+           m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq || m_oper == opLessEq ||
+           m_oper == opGtrEqUns || m_oper == opLessEqUns;
+}
+
+
+bool Exp::isLocation() const
+{
+    return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
+           m_oper == opParam;
+}
+
+
+bool Exp::isConst() const
+{
+    return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
+}
+
+
+bool Exp::isSymmetric() const
+{
+    return m_oper == opPlus || m_oper == opMult || m_oper == opMults || m_oper == opFPlus ||
+           m_oper == opFMult || m_oper == opAnd || m_oper == opOr || m_oper == opEquals ||
+           m_oper == opNotEqual || m_oper == opBitAnd || m_oper == opBitOr || m_oper == opBitXor;
+}
+
+
 bool Exp::isRegOfConst() const
 {
     return isRegOf() && getSubExp1()->isIntConst();
@@ -90,112 +162,15 @@ bool Exp::isRegN(int N) const
 }
 
 
-bool Exp::isAfpTerm()
+bool Exp::isTrue() const
 {
-    auto cur = shared_from_this();
-
-    if (m_oper == opTypedExp) {
-        cur = getSubExp1();
-    }
-
-    if (cur->getOper() == opAddrOf) {
-        SharedExp p = cur->getSubExp1();
-
-        if (p && (p->getOper() == opMemOf)) {
-            cur = p->getSubExp1();
-        }
-    }
-
-    OPER curOp = cur->getOper();
-
-    if (curOp == opAFP) {
-        return true;
-    }
-
-    if ((curOp != opPlus) && (curOp != opMinus)) {
-        return false;
-    }
-
-    // cur must be a Binary* now
-    OPER subOp1 = cur->getSubExp1()->getOper();
-    OPER subOp2 = cur->getSubExp2()->getOper();
-    return ((subOp1 == opAFP) && (subOp2 == opIntConst));
+    return m_oper == opTrue || (isIntConst() && access<Const>()->getInt() == 1);
 }
 
 
-SharedExp Exp::getGuard()
+bool Exp::isFalse() const
 {
-    if (m_oper == opGuard) {
-        return getSubExp1();
-    }
-
-    return nullptr;
-}
-
-
-void Exp::doSearch(const Exp &pattern, SharedExp &toSearch, std::list<SharedExp *> &matches,
-                   bool once)
-{
-    bool compare;
-
-    compare = (pattern == *toSearch);
-
-    if (compare) {
-        matches.push_back(&toSearch); // Success
-
-        if (once) {
-            return; // No more to do
-        }
-    }
-
-    // Either want to find all occurrences, or did not match at this level
-    // Recurse into children, unless a matching opSubscript
-    if (!compare || (toSearch->m_oper != opSubscript)) {
-        toSearch->doSearchChildren(pattern, matches, once);
-    }
-}
-
-
-void Exp::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &matches, bool once)
-{
-    Q_UNUSED(pattern);
-    Q_UNUSED(matches);
-    Q_UNUSED(once);
-    // Const and Terminal do not override this
-}
-
-
-SharedExp Exp::searchReplace(const Exp &pattern, const SharedExp &replace, bool &change)
-{
-    return searchReplaceAll(pattern, replace, change, true);
-}
-
-
-SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bool &change,
-                                bool once /* = false */)
-{
-    // TODO: consider working on base object, and only in case when we find the search, use clone
-    // call to return the new object ?
-    if (*this == pattern) {
-        change = true;
-        return replace->clone();
-    }
-
-    std::list<SharedExp *> matches;
-    SharedExp top = shared_from_this(); // top may change; that's why we have to return it
-    doSearch(pattern, top, matches, false);
-
-    for (SharedExp *pexp : matches) {
-        *pexp = replace->clone(); // Do the replacement
-
-        if (once) {
-            change = true;
-            return top;
-        }
-    }
-
-    change = !matches.empty();
-    return top;
+    return m_oper == opFalse || (isIntConst() && access<Const>()->getInt() == 0);
 }
 
 
@@ -236,6 +211,70 @@ bool Exp::searchAll(const Exp &pattern, std::list<SharedExp> &result)
 }
 
 
+SharedExp Exp::searchReplace(const Exp &pattern, const SharedExp &replace, bool &change)
+{
+    return searchReplaceAll(pattern, replace, change, true);
+}
+
+
+SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bool &change,
+                                bool once /* = false */)
+{
+    // TODO: consider working on base object, and only in case when we find the search, use clone
+    // call to return the new object ?
+    if (*this == pattern) {
+        change = true;
+        return replace->clone();
+    }
+
+    std::list<SharedExp *> matches;
+    SharedExp top = shared_from_this(); // top may change; that's why we have to return it
+    doSearch(pattern, top, matches, false);
+
+    for (SharedExp *pexp : matches) {
+        *pexp = replace->clone(); // Do the replacement
+
+        if (once) {
+            change = true;
+            return top;
+        }
+    }
+
+    change = !matches.empty();
+    return top;
+}
+
+
+void Exp::doSearch(const Exp &pattern, SharedExp &toSearch, std::list<SharedExp *> &matches,
+                   bool once)
+{
+    const bool compare = (pattern == *toSearch);
+
+    if (compare) {
+        matches.push_back(&toSearch); // Success
+
+        if (once) {
+            return; // No more to do
+        }
+    }
+
+    // Either want to find all occurrences, or did not match at this level
+    // Recurse into children, unless a matching opSubscript
+    if (!compare || (toSearch->m_oper != opSubscript)) {
+        toSearch->doSearchChildren(pattern, matches, once);
+    }
+}
+
+
+void Exp::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &matches, bool once)
+{
+    Q_UNUSED(pattern);
+    Q_UNUSED(matches);
+    Q_UNUSED(once);
+    // Const and Terminal do not override this
+}
+
+
 void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &negatives,
                          std::vector<int> &integers, bool negate)
 {
@@ -262,7 +301,7 @@ void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &
         break;
 
     case opIntConst: {
-        int k = access<Const>()->getInt();
+        const int k = access<Const>()->getInt();
 
         if (negate) {
             integers.push_back(-k);
@@ -275,7 +314,6 @@ void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &
     }
 
     default:
-
         // These can be any other expression tree
         if (negate) {
             negatives.push_back(shared_from_this());
@@ -298,10 +336,7 @@ SharedExp Exp::accumulate(std::list<SharedExp> &exprs)
     }
 
     std::list<SharedExp> cloned_list;
-
-    for (const SharedExp &v : exprs) {
-        cloned_list.push_back(v->clone());
-    }
+    Util::clone(exprs, cloned_list);
 
     SharedExp last_val = cloned_list.back();
     cloned_list.pop_back();
@@ -319,9 +354,6 @@ SharedExp Exp::accumulate(std::list<SharedExp> &exprs)
 
 SharedExp Exp::simplify()
 {
-#if DEBUG_SIMP
-    SharedExp save = clone();
-#endif
     bool changed  = false; // True if simplified at this or lower level
     SharedExp res = shared_from_this();
 
@@ -331,16 +363,6 @@ SharedExp Exp::simplify()
         changed = es.isModified();
     } while (changed); // If modified at this (or a lower) level, redo
 
-    // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is
-    // the same as a + b + K No! This slows everything down, and it's slow enough as it is. Call
-    // only where needed:
-    //    res = res->simplifyArith();
-
-#if DEBUG_SIMP
-    if (!(*res == *save)) {
-        LOG_MSG("Simplified %1 to %2", save, res);
-    }
-#endif
     return res;
 }
 
@@ -356,12 +378,6 @@ SharedExp Exp::simplifyArith()
 {
     ExpArithSimplifier eas;
     return this->acceptModifier(&eas);
-}
-
-
-const char *Exp::getOperName() const
-{
-    return operToString(m_oper);
 }
 
 
@@ -394,24 +410,18 @@ SharedType Exp::ascendType()
 }
 
 
-void Exp::descendType(SharedType, bool &, Statement *)
-{
-    assert(false);
-}
-
-
 SharedExp Exp::fixSuccessor()
 {
     SharedExp result;
-    UniqExp search_expression(new Unary(opSuccessor, Location::regOf(Terminal::get(opWild))));
+    UniqExp search_expression(new Unary(opSuccessor, Terminal::get(opWildRegOf)));
 
     // Assume only one successor function in any 1 expression
     if (search(*search_expression, result)) {
         // Result has the matching expression, i.e. succ(r[K])
         SharedExp sub1 = result->getSubExp1();
-        assert(sub1->getOper() == opRegOf);
+        assert(sub1->isRegOf());
         SharedExp sub2 = sub1->getSubExp1();
-        assert(sub2->getOper() == opIntConst);
+        assert(sub2->isIntConst());
         // result     sub1    sub2
         // succ(      r[   Const K    ])
         // Note: we need to clone the r[K] part, since it will be deleted as
@@ -434,13 +444,8 @@ bool Exp::isTemp() const
         return true;
     }
 
-    if (m_oper != opRegOf) {
-        return false;
-    }
-
     // Some old code has r[tmpb] instead of just tmpb
-    SharedConstExp sub = getSubExp1();
-    return sub->m_oper == opTemp;
+    return isRegOf() && getSubExp1()->getOper() == opTemp;
 }
 
 
@@ -453,17 +458,17 @@ SharedExp Exp::removeSubscripts(bool &allZero)
     allZero = true;
 
     for (const SharedExp &loc : locs) {
-        if (loc->getOper() == opSubscript) {
-            auto r1              = std::static_pointer_cast<RefExp>(loc);
+        if (loc->isSubscript()) {
+            auto r1              = loc->access<RefExp>();
             const Statement *def = r1->getDef();
 
-            if (!((def == nullptr) || (def->getNumber() == 0))) {
+            if (def && def->getNumber() != 0) {
                 allZero = false;
             }
 
             bool change;
-            e = e->searchReplaceAll(*loc, r1->getSubExp1() /*->clone()*/,
-                                    change); // TODO: what happens when clone is restored here ?
+            // TODO: what happens when clone is restored here ?
+            e = e->searchReplaceAll(*loc, r1->getSubExp1() /*->clone()*/, change);
         }
     }
 
@@ -478,13 +483,6 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
     ExpSSAXformer xformer(proc);
     SharedExp result = r->acceptModifier(&xformer);
     return result;
-}
-
-
-SharedExp Exp::stripSizes()
-{
-    SizeStripper ss;
-    return this->acceptModifier(&ss);
 }
 
 
@@ -530,15 +528,6 @@ int Exp::getComplexityDepth(UserProc *proc)
 
     acceptVisitor(&cf);
     return cf.getDepth();
-}
-
-
-int Exp::getMemDepth()
-{
-    MemDepthFinder mdf;
-
-    acceptVisitor(&mdf);
-    return mdf.getDepth();
 }
 
 

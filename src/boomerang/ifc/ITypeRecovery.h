@@ -10,8 +10,12 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class Function;
 class Prog;
+class Project;
 
 class QString;
 
@@ -19,10 +23,10 @@ class QString;
 /**
  * Base class for type recovery engines.
  */
-class ITypeRecovery
+class BOOMERANG_API ITypeRecovery
 {
 public:
-    ITypeRecovery() = default;
+    ITypeRecovery(Project *) {}
 
     ITypeRecovery(const ITypeRecovery &other) = delete;
     ITypeRecovery(ITypeRecovery &&other)      = default;

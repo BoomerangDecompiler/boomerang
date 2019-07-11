@@ -1,48 +1,49 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x00001b24 */
 int main(int argc, char *argv[])
 {
     int local0; 		// m[g1 - 28]
     unsigned int local1; 		// m[g1 - 20]
 
-    scanf(/* machine specific */ (int) LR + 1052);
-    scanf(/* machine specific */ (int) LR + 1052);
+    scanf("%d", &local0);
+    scanf("%d", &local1);
     if (local0 == 5) {
-        printf(/* machine specific */ (int) LR + 1056);
+        printf("Equal\n");
     }
     if (local0 != 5) {
-        printf(/* machine specific */ (int) LR + 1064);
+        printf("Not Equal\n");
     }
     if (5 > local0) {
-        printf(/* machine specific */ (int) LR + 1076);
+        printf("Greater\n");
     }
     if (5 <= local0) {
-        printf(/* machine specific */ (int) LR + 1088);
+        printf("Less or Equal\n");
     }
     if (5 >= local0) {
-        printf(/* machine specific */ (int) LR + 1104);
+        printf("Greater or Equal\n");
     }
     if (5 < local0) {
-        printf(/* machine specific */ (int) LR + 1124);
+        printf("Less\n");
     }
     if (5 > local1) {
-        printf(/* machine specific */ (int) LR + 1132);
+        printf("Greater Unsigned\n");
     }
     if (5 <= local1) {
-        printf(/* machine specific */ (int) LR + 1152);
+        printf("Less or Equal Unsigned\n");
     }
     if (5 >= local1) {
-        printf(/* machine specific */ (int) LR + 1176);
+        printf("Carry Clear\n");
     }
     if (5 < local1) {
-        printf(/* machine specific */ (int) LR + 1192);
+        printf("Carry Set\n");
     }
     if (5 >= local0) {
-        printf(/* machine specific */ (int) LR + 1204);
+        printf("Minus\n");
     }
     if (5 < local0) {
-        printf(/* machine specific */ (int) LR + 1212);
+        printf("Plus\n");
     }
     return 5 - local0;
 }

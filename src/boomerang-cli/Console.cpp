@@ -708,8 +708,8 @@ CommandStatus Console::handlePrint(const QStringList &args)
                 return CommandStatus::Failure;
             }
 
-            UserProc *userProc = dynamic_cast<UserProc *>(proc);
-            assert(userProc != nullptr);
+            assert(dynamic_cast<UserProc *>(proc) != nullptr);
+            UserProc *userProc = static_cast<UserProc *>(proc);
 
             OStream outStream(stdout);
             userProc->print(outStream);

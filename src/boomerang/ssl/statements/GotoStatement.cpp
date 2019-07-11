@@ -83,7 +83,7 @@ void GotoStatement::adjustFixedDest(int delta)
         return;
     }
 
-    auto theConst = std::static_pointer_cast<Const>(m_dest);
+    auto theConst = m_dest->access<Const>();
     theConst->setAddr(theConst->getAddr() + delta);
 }
 
@@ -130,7 +130,7 @@ void GotoStatement::print(OStream &os) const
     if (m_dest == nullptr) {
         os << "*no dest*";
     }
-    else if (m_dest->getOper() != opIntConst) {
+    else if (!m_dest->isIntConst()) {
         m_dest->print(os);
     }
     else {
@@ -171,26 +171,12 @@ bool GotoStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void GotoStatement::generateCode(ICodeGenerator *) const
-{
-    // don't generate any code for jumps, they will be handled by the BB
-}
-
-
 void GotoStatement::simplify()
 {
     if (isComputed()) {
         m_dest = m_dest->simplifyArith();
         m_dest = m_dest->simplify();
     }
-}
-
-
-bool GotoStatement::usesExp(const Exp &e) const
-{
-    SharedExp where;
-
-    return m_dest->search(e, where);
 }
 
 

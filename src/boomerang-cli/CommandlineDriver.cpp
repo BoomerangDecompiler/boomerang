@@ -53,6 +53,7 @@ static void help()
 "\n"
 "Decoding/decompilation options\n"
 "  --decode-only    : Decode only, do not decompile\n"
+"  --ssl <file>     : Use <file> as SSL specification file\n"
 "  -e <addr>        : Decode or decompile the procedure beginning at addr, and callees\n"
 "  -E <addr>        : Equivalent to -nc -e <addr>\n"
 "  -ic              : Decode through type 0 Indirect Calls\n"
@@ -66,16 +67,15 @@ static void help()
 "  -v               : Verbose decompilation output\n"
 "  -o <output_path> : Where to generate output (defaults to ./output/)\n"
 "  -r               : Print RTL for each proc to log before code generation\n"
-"  -gd <dot_file>   : Generate a dotty graph of the program's CFG\n"
+"  -gd <dot_file>   : Generate a dotty graph of the program's CFG(s)\n"
 "  -gc              : Generate a call graph to callgraph.dot\n"
-"  -gs              : Generate a symbol file (symbols.h)\n"
-"  -iw              : Write indirect call report to output/indirect.txt\n"
+"  -gs              : Generate a symbol file (symbols.h). Implies --decode-only.\n"
 "\n"
 "Misc.\n"
 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
 "  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
 "  -X               : activate eXperimental code; errors likely\n"
-"  --               : No effect (used for testing)\n"
+"  --               : Terminates argument processing\n"
 "\n"
 "Debug\n"
 "  -dc              : Debug Switch/Case Analysis\n"
@@ -104,252 +104,353 @@ static void help()
 }
 
 
-/**
- * Prints a short usage statement.
- */
-static void usage()
-{
-    // clang-format off
-    std::cout <<
-"Usage:\n"
-"  boomerang-cli [ switches ] [ -- ] program\n"
-"  boomerang-cli -i [ command_file ]\n"
-"  boomerang-cli ( -h | --help | --version )\n";
-    // clang-format on
-}
-
-
 int CommandlineDriver::applyCommandline(const QStringList &args)
 {
     bool interactiveMode = false;
 
     if (args.size() < 2) {
-        usage();
-        return 1;
-    }
-
-    if ((args.size() == 2) && (args[1].compare("-h") == 0)) {
         help();
         return 1;
     }
 
-    for (int i = 1; i < args.size(); ++i) {
-        QString arg = args[i];
+    QString binaryPath;
 
-        if (arg[0] != '-') {
-            if (i == args.size() - 1) {
+    for (int i = 1; i < args.size(); ++i) {
+        const QString arg = args[i];
+
+        if (!arg.startsWith('-') || arg == "-") {
+            // every argument but last must begin with '-'
+            if (i + 1 == args.size()) {
+                binaryPath = arg;
                 break;
             }
 
-            // every argument but last must begin with '-'
-            usage();
+            help();
             return 1;
         }
 
-        switch (arg[1].toLatin1()) {
-        case 'E':
-            m_project->getSettings()->decodeChildren = false;
-            // Fall through
-
-        case 'e': {
-            Address addr;
-            m_project->getSettings()->decodeMain = false;
-
-            if (++i == args.size()) {
-                usage();
-                return 1;
-            }
-
-            bool converted = false;
-            addr           = Address(args[i].toLongLong(&converted, 0));
-
-            if (!converted) {
-                LOG_ERROR("Bad address: %1", args[i]);
-                return 2;
-            }
-
-            m_project->getSettings()->m_entryPoints.push_back(addr);
-        } break;
-
-        case 'h': help(); break;
-
-        case 'v': m_project->getSettings()->verboseOutput = true; break;
-
-        case 'X':
-            m_project->getSettings()->experimental = true;
-            LOG_WARN("Activating experimental code!");
-            break;
-
-        case 'r': m_project->getSettings()->printRTLs = true; break;
-
-        case 't': m_project->getSettings()->traceDecoder = true; break;
-
-        case 'g':
-
-            if (arg[2] == 'd') {
-                m_project->getSettings()->dotFile = args[++i];
-            }
-            else if (arg[2] == 'c') {
-                m_project->getSettings()->generateCallGraph = true;
-            }
-            else if (arg[2] == 's') {
-                m_project->getSettings()->generateSymbols     = true;
-                m_project->getSettings()->stopBeforeDecompile = true;
-            }
-
-            break;
-
-        case 'o': {
-            QString o_path = args[++i];
-
-            if (!o_path.endsWith('/') && !o_path.endsWith('\\')) {
-                o_path += '/'; // Maintain the convention of a trailing slash
-            }
-
-            m_project->getSettings()->setOutputDirectory(o_path);
-            break;
+        if (arg == "-h" || arg == "--help") {
+            help();
+            return 2;
         }
-
-        case '-':
-            if (arg == "--version") {
-                std::cout << "boomerang-cli " << m_project->getVersionStr() << std::endl;
-                return 1;
-            }
-            else if (arg == "--help") {
+        else if (arg == "--version") {
+            std::cout << "boomerang-cli " << m_project->getVersionStr() << std::endl;
+            return 2;
+        }
+        else if (arg == "-v") {
+            m_project->getSettings()->verboseOutput = true;
+            continue;
+        }
+        else if (arg == "-X") {
+            m_project->getSettings()->experimental = true;
+            continue;
+        }
+        else if (arg == "-r") {
+            m_project->getSettings()->printRTLs = true;
+            continue;
+        }
+        else if (arg == "-t") {
+            m_project->getSettings()->traceDecoder = true;
+            continue;
+        }
+        else if (arg == "-gd") {
+            if (++i == args.size()) {
                 help();
                 return 1;
             }
-            else if (arg == "--decode-only") {
-                m_project->getSettings()->stopBeforeDecompile = true;
-                break;
-            }
-            break;
 
-        case 'i':
-            if (arg[2] == 'c') {
-                m_project->getSettings()->decodeThruIndCall = true; // -ic;
-                break;
+            m_project->getSettings()->dotFile = args[i];
+            continue;
+        }
+        else if (arg == "-gc") {
+            m_project->getSettings()->generateCallGraph = true;
+            continue;
+        }
+        else if (arg == "-gs") {
+            m_project->getSettings()->generateSymbols     = true;
+            m_project->getSettings()->stopBeforeDecompile = true;
+            continue;
+        }
+        else if (arg == "--decode-only") {
+            m_project->getSettings()->stopBeforeDecompile = true;
+            continue;
+        }
+        else if (arg == "--ssl") {
+            if (++i == args.size()) {
+                help();
+                return 1;
             }
-            else if (arg.size() > 2) {
-                // unknown command
-                break;
-            }
-            else { // -i
-                interactiveMode = true;
 
-                if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
-                    m_project->getSettings()->replayFile = args[++i];
-                }
+            m_project->getSettings()->sslFileName = args[i];
+            continue;
+        }
+        else if (arg == "-o") {
+            if (++i == args.size()) {
+                help();
+                return 1;
             }
-            break;
 
-        case 'P': {
+            QString outPath = args[i];
+
+            if (!outPath.endsWith('/') && !outPath.endsWith('\\')) {
+                outPath += '/'; // Maintain the convention of a trailing slash
+            }
+
+            m_project->getSettings()->setOutputDirectory(outPath);
+            continue;
+        }
+        else if (arg == "-P") {
             QDir wd(args[++i] + "/");
 
             if (!wd.exists()) {
-                LOG_WARN("Working directory '%1' does not exist!", wd.path());
-            }
-            else {
-                LOG_MSG("Working directory now '%1'", wd.path());
+                std::cerr << "Working directory '" << wd.path().toStdString()
+                          << "' does not exist!";
             }
 
             m_project->getSettings()->setWorkingDirectory(wd.path());
             m_project->getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
             m_project->getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
             m_project->getSettings()->setOutputDirectory(wd.path() + "/./output/");
-        } break;
+            continue;
+        }
+        else if (arg == "-ic") {
+            m_project->getSettings()->decodeThruIndCall = true;
+            continue;
+        }
+        else if (arg == "-i") {
+            interactiveMode = true;
 
-        case 'n':
-            switch (arg[2].toLatin1()) {
-            case 'c': m_project->getSettings()->decodeChildren = false; break;
-            case 'd': m_project->getSettings()->useDataflow = false; break;
-            case 'g': m_project->getSettings()->useGlobals = false; break;
-            case 'l': m_project->getSettings()->useLocals = false; break;
-            case 'n': m_project->getSettings()->removeNull = false; break;
-            case 'p': m_project->getSettings()->nameParameters = false; break;
-            case 'P': m_project->getSettings()->usePromotion = false; break;
-            case 'r': m_project->getSettings()->removeLabels = false; break;
-            case 'R': m_project->getSettings()->removeReturns = false; break;
-            case 'T': m_project->getSettings()->useTypeAnalysis = false; break;
-            default: help();
+            if (i + 2 != args.size() && i + 1 != args.size()) {
+                help();
+                return 1;
+            }
+            else if (i + 2 == args.size()) {
+                m_project->getSettings()->replayFile = args[++i];
             }
 
             break;
-
-        case 'p':
-            if (arg[2] == 'a') {
-                m_project->getSettings()->propOnlyToAll = true;
-                LOG_WARN(" * * Warning! -pa is not implemented yet!");
+        }
+        else if (arg == "-nc") {
+            m_project->getSettings()->decodeChildren = false;
+            continue;
+        }
+        else if (arg == "-nd") {
+            m_project->getSettings()->useDataflow = false;
+            continue;
+        }
+        else if (arg == "-ng") {
+            m_project->getSettings()->useGlobals = false;
+            continue;
+        }
+        else if (arg == "-nl") {
+            m_project->getSettings()->useLocals = false;
+            continue;
+        }
+        else if (arg == "-nn") {
+            m_project->getSettings()->removeNull = false;
+            continue;
+        }
+        else if (arg == "-np") {
+            m_project->getSettings()->nameParameters = false;
+            continue;
+        }
+        else if (arg == "-nP") {
+            m_project->getSettings()->usePromotion = false;
+            continue;
+        }
+        else if (arg == "-nr") {
+            m_project->getSettings()->removeLabels = false;
+            continue;
+        }
+        else if (arg == "-nR") {
+            m_project->getSettings()->removeReturns = false;
+            continue;
+        }
+        else if (arg == "-nT") {
+            m_project->getSettings()->useTypeAnalysis = false;
+            continue;
+        }
+        else if (arg == "-pa") {
+            m_project->getSettings()->propOnlyToAll = true;
+            std::cerr << "Warning! -pa is not implemented yet!" << std::endl;
+            continue;
+        }
+        else if (arg == "-p") {
+            if (++i == args.size()) {
+                help();
+                return 1;
             }
-            else {
+
+            bool converted                           = false;
+            m_project->getSettings()->numToPropagate = args[i].toInt(&converted, 0);
+            if (!converted) {
+                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                          << std::endl;
+                return 1;
+            }
+
+            continue;
+        }
+        else if (arg == "-sf") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            m_project->getSettings()->m_symbolFiles.push_back(args[i]);
+            continue;
+        }
+        else if (arg == "-s") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            const QString addrStr = args[i];
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            bool converted     = false;
+            const Address addr = Address(addrStr.toLongLong(&converted, 0));
+
+            if (!converted) {
+                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)"
+                          << std::endl;
+                return 1;
+            }
+
+            m_project->getSettings()->m_symbolMap[addr] = args[i];
+            continue;
+        }
+        else if (arg == "-dc") {
+            m_project->getSettings()->debugSwitch = true;
+            continue;
+        }
+        else if (arg == "-dd") {
+            m_project->getSettings()->debugDecoder = true;
+            continue;
+        }
+        else if (arg == "-dg") {
+            m_project->getSettings()->debugGen = true;
+            continue;
+        }
+        else if (arg == "-dl") {
+            m_project->getSettings()->debugLiveness = true;
+            continue;
+        }
+        else if (arg == "-dp") {
+            m_project->getSettings()->debugProof = true;
+            continue;
+        }
+        else if (arg == "-ds") {
+            m_project->getSettings()->stopAtDebugPoints = true;
+            continue;
+        }
+        else if (arg == "-dt") {
+            m_project->getSettings()->debugTA = true;
+            continue;
+        }
+        else if (arg == "-du") {
+            m_project->getSettings()->debugUnused = true;
+            continue;
+        }
+        else if (arg == "-a") {
+            m_project->getSettings()->assumeABI = true;
+            continue;
+        }
+        else if (arg == "-l") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            bool converted                         = false;
+            m_project->getSettings()->propMaxDepth = args[i].toInt(&converted, 0);
+
+            if (!converted) {
+                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                          << std::endl;
+                return 1;
+            }
+
+            continue;
+        }
+        else if (arg == "-S") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            bool converted  = false;
+            minsToStopAfter = args[i].toInt(&converted, 0);
+
+            if (!converted) {
+                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                          << std::endl;
+                return 1;
+            }
+
+            continue;
+        }
+        else if (arg == "--") {
+            if (i + 2 != args.size()) {
+                help();
+                return 1;
+            }
+
+            binaryPath = args[i + 1];
+            break;
+        }
+        else if (arg.size() == 2) {
+            switch (arg[1].toLatin1()) {
+            case 'E':
+                m_project->getSettings()->decodeChildren = false;
+                // Fall through
+
+            case 'e': {
+                Address addr;
+                m_project->getSettings()->decodeMain = false;
+
                 if (++i == args.size()) {
-                    usage();
+                    help();
                     return 1;
                 }
 
-                m_project->getSettings()->numToPropagate = args[i].toInt();
+                bool converted = false;
+                addr           = Address(args[i].toLongLong(&converted, 0));
+
+                if (!converted) {
+                    std::cerr << "'" << arg.toStdString()
+                              << "' Bad address: " << args[i].toStdString() << " (try --help)";
+                    return 1;
+                }
+
+                m_project->getSettings()->m_entryPoints.push_back(addr);
+                continue;
             }
-            break;
-
-        case 's': {
-            if (arg[2] == 'f') {
-                m_project->getSettings()->m_symbolFiles.push_back(args[i + 1]);
-                i++;
-                break;
+            default: help(); return 1;
             }
+        }
 
-            Address addr;
 
-            if (++i == args.size()) {
-                usage();
-                return 1;
-            }
-
-            bool converted = false;
-            addr           = Address(args[i].toLongLong(&converted, 0));
-
-            if (!converted) {
-                LOG_FATAL("Bad address: %1", args[i + 1]);
-            }
-
-            m_project->getSettings()->m_symbolMap[addr] = args[++i];
-        } break;
-
-        case 'd':
-
-            switch (arg[2].toLatin1()) {
-            case 'c': m_project->getSettings()->debugSwitch = true; break;
-            case 'd': m_project->getSettings()->debugDecoder = true; break;
-            case 'g': m_project->getSettings()->debugGen = true; break;
-            case 'l': m_project->getSettings()->debugLiveness = true; break;
-            case 'p': m_project->getSettings()->debugProof = true; break;
-            case 's': m_project->getSettings()->stopAtDebugPoints = true; break;
-            case 't': m_project->getSettings()->debugTA = true; break;
-            case 'u': m_project->getSettings()->debugUnused = true; break;
-            default: help();
-            }
-
-            break;
-
-        case 'a': m_project->getSettings()->assumeABI = true; break;
-
-        case 'l':
-            if (++i == args.size()) {
-                usage();
-                return 1;
-            }
-
-            m_project->getSettings()->propMaxDepth = args[i].toInt();
-            break;
-
-        case 'S': minsToStopAfter = args[++i].toInt(); break;
-
-        default: help();
+        if (i + 1 != args.size()) {
+            // switch not recognized
+            help();
+            return false;
+        }
+        else {
+            binaryPath = arg;
         }
     }
 
     if (interactiveMode) {
         return interactiveMain();
+    }
+    else if (binaryPath == "") {
+        help();
+        return 1;
     }
 
     if (minsToStopAfter > 0) {
@@ -358,7 +459,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
 
-    m_pathToBinary = args.last();
+    m_pathToBinary = binaryPath;
     return 0;
 }
 

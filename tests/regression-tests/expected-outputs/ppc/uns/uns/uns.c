@@ -1,7 +1,8 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
+
 
 /** address: 0x10000418 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     if ((unsigned int)argc > (unsigned int)0xee6b27ff) {
         printf("Population exceeds %u\n", (unsigned int)0xee6b2800);

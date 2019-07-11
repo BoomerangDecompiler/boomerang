@@ -13,9 +13,7 @@
 #include "boomerang/ssl/exp/Binary.h"
 
 
-/**
- * Ternary is a subclass of Binary, holding three subexpressions
- */
+/// Ternary is a non-terminal expression holding three subexpressions.
 class BOOMERANG_API Ternary : public Binary
 {
 public:
@@ -32,11 +30,7 @@ public:
     /// \copydoc Binary::clone
     virtual SharedExp clone() const override;
 
-    template<typename Ty, typename Arg1, typename Arg2, typename Arg3>
-    static std::shared_ptr<Ternary> get(Ty ty, Arg1 arg1, Arg2 arg2, Arg3 arg3)
-    {
-        return std::make_shared<Ternary>(ty, arg1, arg2, arg3);
-    }
+    static std::shared_ptr<Ternary> get(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
 
     /// \copydoc Binary::operator==
     bool operator==(const Exp &o) const override;
@@ -44,8 +38,8 @@ public:
     /// \copydoc Binary::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Binary::operator*=
-    bool operator*=(const Exp &o) const override;
+    /// \copydoc Binary::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Binary::getArity
     int getArity() const override { return 3; }
@@ -69,7 +63,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Binary::descendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Binary::acceptVisitor
@@ -86,5 +80,5 @@ protected:
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
-    SharedExp subExp3; ///< Third subexpression pointer
+    SharedExp m_subExp3; ///< Third subexpression pointer
 };

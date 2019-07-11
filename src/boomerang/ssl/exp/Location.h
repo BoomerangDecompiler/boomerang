@@ -10,9 +10,18 @@
 #pragma once
 
 
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Unary.h"
 
 
+/// Location encompasses two kinds of expressions:
+///  - Register or memory accesses before transforming out of SSA form
+///  - Local and global variables in the IR.
+/// In all cases, Location is a non-terminal expression.
+/// The following subexpressions are used:
+///  - For register accesses (opRegOf), the ID of the register (not necessarily constant)
+///  - For memory accesses (opMemOf), the address expression
+///  - For all others (e.g. global, local, temporary variables), the name of the variable.
 class BOOMERANG_API Location : public Unary
 {
 public:
@@ -36,16 +45,16 @@ public:
 
     static SharedExp get(OPER op, SharedExp childExp, UserProc *proc);
 
-    static SharedExp regOf(int regID);
+    static SharedExp regOf(RegNum regNum);
     static SharedExp regOf(SharedExp exp);
     static SharedExp memOf(SharedExp exp, UserProc *proc = nullptr);
 
-    static std::shared_ptr<Location> tempOf(SharedExp e);
+    static SharedExp tempOf(SharedExp e);
 
     static SharedExp global(const char *name, UserProc *proc);
     static SharedExp global(const QString &name, UserProc *proc);
 
-    static std::shared_ptr<Location> local(const QString &name, UserProc *proc);
+    static SharedExp local(const QString &name, UserProc *proc);
 
     static SharedExp param(const char *name, UserProc *proc = nullptr);
     static SharedExp param(const QString &name, UserProc *proc = nullptr);
@@ -53,8 +62,6 @@ public:
     void setProc(UserProc *p) { m_proc = p; }
     const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
-
-    void getDefinitions(LocationSet &defs);
 
 public:
     /// \copydoc Unary::acceptVisitor

@@ -13,10 +13,9 @@
 #include "boomerang/ssl/exp/Exp.h"
 
 
-/**
- * Terminal holds special zero arity items
- * such as opFlags (abstract flags register)
- */
+/// Terminal holds special zero arity items
+/// such as opFlags (abstract flags register)
+/// These are always terminal expressions.
 class BOOMERANG_API Terminal : public Exp
 {
 public:
@@ -34,7 +33,7 @@ public:
     virtual SharedExp clone() const override;
 
     /// \copydoc Exp::get
-    static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
+    static SharedExp get(OPER op);
 
     /// \copydoc Exp::operator==
     bool operator==(const Exp &o) const override;
@@ -42,17 +41,14 @@ public:
     /// \copydoc Exp::operator<
     bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator*=
-    bool operator*=(const Exp &o) const override;
-
-    /// \copydoc Exp::isTerminal
-    bool isTerminal() const override { return true; }
+    /// \copydoc Exp::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Exp::ascendType
     SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor

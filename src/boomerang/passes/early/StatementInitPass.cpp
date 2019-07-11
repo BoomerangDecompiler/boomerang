@@ -11,6 +11,7 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 
 
@@ -28,6 +29,7 @@ bool StatementInitPass::execute(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
              stmt            = bb->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);
             CallStatement *call = dynamic_cast<CallStatement *>(stmt);
@@ -36,8 +38,8 @@ bool StatementInitPass::execute(UserProc *proc)
                 call->setSigArguments();
 
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() &&
-                    (bb->getNumSuccessors() == 1)) {
+                if ((bb->getNumSuccessors() == 1) && call->getDestProc() &&
+                    call->getDestProc()->isNoReturn()) {
                     BasicBlock *nextBB = bb->getSuccessor(0);
 
                     if ((nextBB != proc->getCFG()->getExitBB()) ||
@@ -49,6 +51,12 @@ bool StatementInitPass::execute(UserProc *proc)
             }
         }
     }
+
+    // Removing out edges of noreturn calls might sever paths between
+    // the entry BB and other (now orphaned) BBs. We have to remove these BBs
+    // since all BBs must be reachable from the entry BB for data-flow analysis
+    // to work.
+    CFGCompressor().compressCFG(proc->getCFG());
 
     return true;
 }

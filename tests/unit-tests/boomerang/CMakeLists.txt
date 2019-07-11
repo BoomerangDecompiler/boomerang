@@ -8,7 +8,6 @@
 
 
 # add submodlules for testing
-add_subdirectory(c)
 add_subdirectory(core)
 add_subdirectory(db)
 add_subdirectory(frontend)

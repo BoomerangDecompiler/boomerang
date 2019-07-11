@@ -15,14 +15,14 @@
 
 SizeType::SizeType()
     : Type(TypeClass::Size)
-    , size(0)
+    , m_size(0)
 {
 }
 
 
-SizeType::SizeType(unsigned sz)
+SizeType::SizeType(Type::Size sz)
     : Type(TypeClass::Size)
-    , size(sz)
+    , m_size(sz)
 {
 }
 
@@ -34,33 +34,33 @@ SizeType::~SizeType()
 
 SharedType SizeType::clone() const
 {
-    return SizeType::get(size);
+    return SizeType::get(m_size);
 }
 
 
-size_t SizeType::getSize() const
+Type::Size SizeType::getSize() const
 {
-    return size;
+    return m_size;
 }
 
 
 bool SizeType::operator==(const Type &other) const
 {
-    return other.isSize() && (size == static_cast<const SizeType &>(other).size);
+    return other.isSize() && (m_size == static_cast<const SizeType &>(other).m_size);
 }
 
 
 bool SizeType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (getId() != other.getId()) {
+        return getId() < other.getId();
     }
 
-    return size < static_cast<const SizeType &>(other).size;
+    return m_size < static_cast<const SizeType &>(other).m_size;
 }
 
 
-std::shared_ptr<SizeType> SizeType::get(unsigned int sz)
+std::shared_ptr<SizeType> SizeType::get(Type::Size sz)
 {
     return std::make_shared<SizeType>(sz);
 }
@@ -72,15 +72,9 @@ std::shared_ptr<SizeType> SizeType::get()
 }
 
 
-void SizeType::setSize(size_t sz)
+void SizeType::setSize(Size sz)
 {
-    size = sz;
-}
-
-
-bool SizeType::isSize() const
-{
-    return true;
+    m_size = sz;
 }
 
 
@@ -96,7 +90,7 @@ QString SizeType::getCtype(bool /*final*/) const
     QString res;
     OStream ost(&res);
 
-    ost << "__size" << size;
+    ost << "__size" << m_size;
     return res;
 }
 
@@ -106,16 +100,22 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
     if (other->resolvesToVoid()) {
         return const_cast<SizeType *>(this)->shared_from_this();
     }
+    else if (other->resolvesToPointer() && other->getSize() == getSize()) {
+        // e.g. size32 meet void *
+        changed = true;
+        return other->clone();
+    }
 
     if (other->resolvesToSize()) {
         SharedType result = this->clone();
 
-        if (other->as<SizeType>()->size != size) {
-            LOG_VERBOSE("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
+        if (other->as<SizeType>()->m_size != m_size) {
+            LOG_VERBOSE("Size %1 meet with size %2!", m_size, other->as<SizeType>()->m_size);
         }
 
-        result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
-
+        const Size newSize = std::max(result->getSize(), other->as<SizeType>()->getSize());
+        changed |= (newSize != result->getSize());
+        result->setSize(newSize);
         return result;
     }
 
@@ -123,14 +123,22 @@ SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPt
 
     if (other->resolvesToInteger()) {
         if (other->getSize() == 0) {
-            other->setSize(size);
+            other->setSize(m_size);
             return other->clone();
         }
 
-        if (other->getSize() != size) {
-            LOG_VERBOSE("Size %1 meet with %2; allowing temporarily", size, other->getCtype());
+        if (other->getSize() != m_size) {
+            LOG_VERBOSE("Size %1 meet with %2; allowing temporarily", m_size, other->getCtype());
         }
 
+        return other->clone();
+    }
+    else if (other->resolvesToChar() && other->getSize() <= getSize()) {
+        changed = true;
+        return other->clone();
+    }
+    else if (other->resolvesToFloat() && getSize() == other->getSize()) {
+        changed = true;
         return other->clone();
     }
 
@@ -144,7 +152,7 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const
         return true;
     }
 
-    size_t otherSize = other.getSize();
+    const Size otherSize = other.getSize();
 
     if (other.resolvesToFunc()) {
         return false;
@@ -153,7 +161,7 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const
     // FIXME: why is there a test for size 0 here?
     // This is because some signatures leave us with 0-sized NamedType -> using GLEnum when it was
     // not defined.
-    if (otherSize == size) {
+    if (otherSize == m_size) {
         return true;
     }
 

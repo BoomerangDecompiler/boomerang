@@ -1,5 +1,6 @@
 int main(int argc, char *argv[]);
 
+
 /** address: 0x00001b78 */
 int main(int argc, char *argv[])
 {
@@ -7,44 +8,44 @@ int main(int argc, char *argv[])
     int local0; 		// m[g1 - 32]
     unsigned int local1; 		// m[g1 - 28]
 
-    scanf(/* machine specific */ (int) LR + 988);
-    scanf(/* machine specific */ (int) LR + 988);
+    scanf("%d", &local0);
+    scanf("%d", &local1);
     if (local0 == 5) {
-        puts(/* machine specific */ (int) LR + 992);
+        puts("Equal");
     }
     if (local0 != 5) {
-        puts(/* machine specific */ (int) LR + 1000);
+        puts("Not Equal");
     }
     if (5 > local0) {
-        puts(/* machine specific */ (int) LR + 1012);
+        puts("Greater");
     }
     if (5 <= local0) {
-        puts(/* machine specific */ (int) LR + 1020);
+        puts("Less or Equal");
     }
     if (5 >= local0) {
-        puts(/* machine specific */ (int) LR + 1036);
+        puts("Greater or Equal");
     }
     if (5 < local0) {
-        puts(/* machine specific */ (int) LR + 1056);
+        puts("Less");
     }
     if (5 > local1) {
-        puts(/* machine specific */ (int) LR + 1064);
+        puts("Greater Unsigned");
     }
     if (5 <= local1) {
-        puts(/* machine specific */ (int) LR + 1084);
+        puts("Less or Equal Unsigned");
     }
     if (5 >= local1) {
-        puts(/* machine specific */ (int) LR + 1108);
+        puts("Carry Clear");
     }
     if (5 < local1) {
-        puts(/* machine specific */ (int) LR + 1120);
+        puts("Carry Set");
     }
     if (5 >= local0) {
-        puts(/* machine specific */ (int) LR + 1132);
+        puts("Minus");
     }
     g3 = 5 - local0;
     if (5 < local0) {
-        g3 = puts(/* machine specific */ (int) LR + 1140);
+        g3 = puts("Plus");
     }
     return g3;
 }

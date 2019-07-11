@@ -19,5 +19,4 @@ class ParserTest : public BoomerangTest
 
 private slots:
     void testRead();
-    void testExp();
 };

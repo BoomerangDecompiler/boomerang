@@ -1,6 +1,7 @@
 int main(int argc, char *argv[]);
 __size32 fib(int param1);
 
+
 /** address: 0x100004e0 */
 int main(int argc, char *argv[])
 {
@@ -22,7 +23,7 @@ __size32 fib(int param1)
     int local2; 		// m[g1 - 32]
     int local3; 		// m[g1 - 28]
     int local4; 		// m[g1 - 32]{10}
-    int local5; 		// m[g1 - 32]{14}
+    int local5; 		// m[g1 - 32]{13}
     int local9; 		// local4{10}
 
     if (param1 > 1) {

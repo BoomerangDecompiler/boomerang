@@ -1,12 +1,11 @@
 int main(int argc, char *argv[]);
 
+float global_0x0001078c = 3.1415925;
+
 /** address: 0x00010684 */
 int main(int argc, char *argv[])
 {
-    union { __size32; float; } f2; 		// r34
-
-    f2 = *0x1078c;
-    printf("Pi is about %.5f\n", f2);
+    printf("Pi is about %.5f\n", global_0x0001078c);
     return 0;
 }
 

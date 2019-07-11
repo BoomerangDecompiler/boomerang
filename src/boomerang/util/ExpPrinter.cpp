@@ -35,22 +35,25 @@ struct FixSyntax
 // ordered by OPER value
 // clang-format off
 static const QMap<OPER, FixSyntax> g_syntaxTable = {
+    { opWild,           { "WILD",       "",         "",         ""      } },
+    { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
+    { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPlus,           { "",           " + ",      "",         ""      } },
     { opMinus,          { "",           " - ",      "",         ""      } },
     { opMult,           { "",           " * ",      "",         ""      } },
-    { opDiv,            { "",           " / ",      "",         ""      } },
-    { opFPlus,          { "",           " +f ",     "",         ""      } },
-    { opFMinus,         { "",           " -f ",     "",         ""      } },
-    { opFMult,          { "",           " *f ",     "",         ""      } },
-    { opFDiv,           { "",           " /f ",     "",         ""      } },
-    { opFNeg,           { "",           " -f ",     "",         ""      } },
     { opMults,          { "",           " *! ",     "",         ""      } },
+    { opDiv,            { "",           " / ",      "",         ""      } },
     { opDivs,           { "",           " /! ",     "",         ""      } },
     { opMod,            { "",           " % ",      "",         ""      } },
     { opMods,           { "",           " %! ",     "",         ""      } },
     { opNeg,            { "-",          "",         "",         ""      } },
-    { opAnd,            { "",           " and ",    "",         ""      } },
-    { opOr,             { "",           " or ",     "",         ""      } },
+    { opFPlus,          { "",           " +f ",     "",         ""      } },
+    { opFMinus,         { "",           " -f ",     "",         ""      } },
+    { opFMult,          { "",           " *f ",     "",         ""      } },
+    { opFDiv,           { "",           " /f ",     "",         ""      } },
+    { opFNeg,           { "-",          "",         "",         ""      } },
+    { opAnd,            { "",           " && ",     "",         ""      } },
+    { opOr,             { "",           " || ",     "",         ""      } },
     { opEquals,         { "",           " = ",      "",         ""      } },
     { opNotEqual,       { "",           " ~= ",     "",         ""      } },
     { opLess,           { "",           " < ",      "",         ""      } },
@@ -61,24 +64,21 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opGtrUns,         { "",           " >u ",     "",         ""      } },
     { opLessEqUns,      { "",           " <=u ",    "",         ""      } },
     { opGtrEqUns,       { "",           " >=u ",    "",         ""      } },
-    { opNot,            { "~",          "",         "",         ""      } },
-    { opLNot,           { "L~",         "",         "",         ""      } },
-    { opSignExt,        { "",           "",         "",         "! "    } },
+    { opLNot,           { "!",          "",         "",         ""      } },
+    { opBitNot,         { "~",          "",         "",         ""      } },
     { opBitAnd,         { "",           " & ",      "",         ""      } },
     { opBitOr,          { "",           " | ",      "",         ""      } },
     { opBitXor,         { "",           " ^ ",      "",         ""      } },
-    { opShiftL,         { "",           " << ",     "",         ""      } },
-    { opShiftR,         { "",           " >> ",     "",         ""      } },
-    { opShiftRA,        { "",           " >>A ",    "",         ""      } },
-    { opRotateL,        { "",           " rl ",     "",         ""      } },
-    { opRotateR,        { "",           " rr ",     "",         ""      } },
-    { opRotateLC,       { "",           " rlc ",    "",         ""      } },
-    { opRotateRC,       { "",           " rrc ",    "",         ""      } },
-    { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
-    { opOpTable,        { "optable(",   ", ",       ", ",       ")"     } },
+    { opShL,            { "",           " << ",     "",         ""      } },
+    { opShR,            { "",           " >> ",     "",         ""      } },
+    { opShRA,           { "",           " >>A ",    "",         ""      } },
+    { opRotL,           { "",           " rl ",     "",         ""      } },
+    { opRotR,           { "",           " rr ",     "",         ""      } },
+    { opRotLC,          { "",           " rlc ",    "",         ""      } },
+    { opRotRC,          { "",           " rrc ",    "",         ""      } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
-    { opAt,             { "",           "@",        ":",        ""      } },
+    { opAt,             { "",           "@[",       ":",        "]"     } },
     { opRegOf,          { "r[",         "",         "",         "]"     } },
     { opMemOf,          { "m[",         "",         "",         "]"     } },
     { opAddrOf,         { "a[",         "",         "",         "]"     } },
@@ -86,7 +86,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opWildRegOf,      { "r[wild]",    "",         "",         ""      } },
     { opWildAddrOf,     { "a[wild]",    "",         "",         ""      } },
     { opDefineAll,      { "<all>",      "",         "",         ""      } },
-    { opPhi,            { "phi(",       "",         "",         ")"     } },
     { opArrayIndex,     { "",           "[",        "",         "]"     } },
     { opMachFtr,        { "machine(",   "",         "",         ")"     } },
     { opTruncu,         { "truncu(",    ", ",       ", ",       ")"     } },
@@ -99,8 +98,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opFround,         { "fround(",    ", ",       ", ",       ")"     } },
     { opFtrunc,         { "ftrunc(",    ", ",       ", ",       ")"     } },
     { opFabs,           { "fabs(",      "",         "",         ")"     } },
-    { opFpush,          { "FPUSH",      "",         "",         ""      } },
-    { opFpop,           { "FPOP",       "",         "",         ""      } },
     { opSin,            { "sin(",       "",         "",         ")"     } },
     { opCos,            { "cos(",       "",         "",         ")"     } },
     { opTan,            { "tan(",       "",         "",         ")"     } },
@@ -111,19 +108,12 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLoge,           { "loge(",      "",         "",         ")"     } },
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
-    { opExecute,        { "execute(",   "",         "",         ")"     } },
-    { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
-    { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPC,             { "%pc",        "",         "",         ""      } },
-    { opAFP,            { "%afp",       "",         "",         ""      } },
-    { opAGP,            { "%agp",       "",         "",         ""      } },
     { opNil,            { "",           "",         "",         ""      } },
     { opFlags,          { "%flags",     "",         "",         ""      } },
     { opFflags,         { "%fflags",    "",         "",         ""      } },
-    { opAnull,          { "%anul",      "",         "",         ""      } },
     { opTrue,           { "true",       "",         "",         ""      } },
     { opFalse,          { "false",      "",         "",         ""      } },
-    { opTypeOf,         { "T[",         "",         "",         "]"     } },
     { opZF,             { "%ZF",        "",         "",         ""      } },
     { opCF,             { "%CF",        "",         "",         ""      } },
     { opNF,             { "%NF",        "",         "",         ""      } },
@@ -162,17 +152,8 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         os << " )";
         return;
 
-    case opSize:
-        // This can still be seen after decoding and before type analysis after m[...]
-        // *size* is printed after the expression, even though it comes from the first subexpression
-        print(os, exp->getSubExp2());
-        os << "*";
-        print(os, exp->getSubExp1());
-        os << "*";
-        return;
     case opTemp:
         if (exp->getSubExp1()->getOper() == opWildStrConst) {
-            assert(exp->getSubExp1()->isTerminal());
             os << "t[";
             exp->access<const Terminal, 1>()->print(os);
             os << "]";
@@ -220,6 +201,8 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
 
     case opStrConst: os << "\"" << exp->access<const Const>()->getStr() << "\""; return;
 
+    case opFuncConst: os << exp->access<const Const>()->getFuncName(); return;
+
     case opRegOf:
         if (exp->getSubExp1()->isIntConst()) {
             os << "r" << exp->access<const Const, 1>()->getInt();
@@ -251,8 +234,10 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         return;
 
     case opTypedExp: {
-        SharedConstType ty = std::static_pointer_cast<const TypedExp>(exp)->getType();
-        os << "<" << ty->getSize() << ">";
+        SharedConstType ty = exp->access<const TypedExp>()->getType();
+        os << "(" << *ty << ")(";
+        print(os, exp->getSubExp1());
+        os << ")";
         return;
     }
 
@@ -321,8 +306,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }
@@ -337,8 +321,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }
@@ -348,11 +331,13 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
             return true;
         }
 
+        return exp->getOper() != opList;
+    }
+    else if (exp->getArity() == 1) {
         switch (exp->getOper()) {
-        case opSize:
-        case opList: return false;
-
-        default: return true;
+        case opBitNot: return true;
+        case opLNot: return true;
+        default: return false;
         }
     }
 

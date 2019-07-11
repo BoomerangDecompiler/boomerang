@@ -14,11 +14,12 @@
 
 
 /// Remove all liveness info in UseCollectors in calls
-class CallLivenessRemovalPass : public IPass
+class CallLivenessRemovalPass final : public IPass
 {
 public:
     CallLivenessRemovalPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

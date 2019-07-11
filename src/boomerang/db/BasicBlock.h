@@ -223,7 +223,19 @@ public:
     /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
     PhiAssign *addPhi(const SharedExp &usedExp);
 
+    // Remove all refs from phis in this BB
+    void clearPhis();
+
     bool hasStatement(const Statement *stmt) const;
+
+    /// \returns true iff the BB does not contain any statements.
+    /// \note This is different from a BB that does not contain
+    /// any RTLs, since all RTLs could be empty.
+    bool isEmpty() const;
+
+    /// \returns true iff the BB only contains an unconditional jump statement.
+    /// \note this disregards the type of the BB (e.g. Oneway)
+    bool isEmptyJump() const;
 
 public:
     /// \returns the destination procedure of the call if this is a call BB.
@@ -269,7 +281,7 @@ public:
      */
     void print(OStream &os) const;
 
-    QString prints() const;
+    QString toString() const;
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.

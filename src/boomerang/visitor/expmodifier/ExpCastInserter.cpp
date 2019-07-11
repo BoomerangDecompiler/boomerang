@@ -33,10 +33,10 @@ static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
     if (isInt && (currSignedness != reqSignedness)) {
         // Transfer size
         std::shared_ptr<IntegerType> newtype = IntegerType::get(
-            std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
+            ty->as<const IntegerType>()->getSize(), reqSignedness);
 
         newtype->setSignedness(reqSignedness);
-        return std::make_shared<TypedExp>(newtype, e);
+        return TypedExp::get(newtype, e);
     }
 
     return e;
@@ -55,11 +55,11 @@ void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofTyp
 
     if (addr->isSubscript()) {
         SharedExp addrBase      = addr->getSubExp1();
-        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeFor(addrBase);
+        SharedType actType      = addr->access<RefExp>()->getDef()->getTypeForExp(addrBase);
         SharedType expectedType = PointerType::get(memofType);
 
         if (!actType->isCompatibleWith(*expectedType)) {
-            memof->setSubExp1(std::make_shared<TypedExp>(expectedType, addrBase));
+            memof->setSubExp1(TypedExp::get(expectedType, addrBase));
         }
     }
 }
@@ -78,7 +78,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp> &exp)
             return exp;
         }
 
-        SharedType memofType = def->getTypeFor(base);
+        SharedType memofType = def->getTypeForExp(base);
         checkMemofType(base, memofType);
     }
 
@@ -96,10 +96,10 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
     case opGtrUns:
     case opLessEqUns:
     case opGtrEqUns:
-    case opShiftR:
+    case opShR:
         exp->setSubExp1(checkSignedness(exp->getSubExp1(), Sign::Unsigned));
 
-        if (op != opShiftR) { // The shift amount (second operand) is sign agnostic
+        if (op != opShR) { // The shift amount (second operand) is sign agnostic
             exp->setSubExp2(checkSignedness(exp->getSubExp2(), Sign::Unsigned));
         }
 
@@ -110,10 +110,10 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
     case opGtr:
     case opLessEq:
     case opGtrEq:
-    case opShiftRA:
+    case opShRA:
         exp->setSubExp1(checkSignedness(exp->getSubExp1(), Sign::Signed));
 
-        if (op != opShiftRA) {
+        if (op != opShRA) {
             exp->setSubExp2(checkSignedness(exp->getSubExp2(), Sign::Signed));
         }
 
@@ -133,8 +133,8 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const> &exp)
         SharedType ty              = exp->getType();
 
         if (naturallySigned && ty->isInteger() && ty->as<IntegerType>()->isUnsigned()) {
-            return std::make_shared<TypedExp>(
-                IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned), exp);
+            return TypedExp::get(IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned),
+                                 exp);
         }
     }
 

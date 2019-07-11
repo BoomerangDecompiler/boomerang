@@ -14,11 +14,12 @@
 
 
 /// Perform call and phi statement bypassing at all depths
-class CallAndPhiFixPass : public IPass
+class CallAndPhiFixPass final : public IPass
 {
 public:
     CallAndPhiFixPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

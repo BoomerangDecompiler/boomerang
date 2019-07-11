@@ -12,6 +12,7 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -108,16 +109,24 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
         return;
     }
 
+    bool firstRTL = true;
+
     for (auto &rtl : *m_listOfRTLs) {
         for (Statement *stmt : *rtl) {
             assert(stmt != nullptr);
             stmt->setBB(this);
         }
+
+        if (!firstRTL) {
+            assert(rtl->getAddress() != Address::ZERO);
+        }
+
+        firstRTL = false;
     }
 }
 
 
-QString BasicBlock::prints() const
+QString BasicBlock::toString() const
 {
     QString tgt;
     OStream ost(&tgt);
@@ -263,15 +272,25 @@ void BasicBlock::addSuccessor(BasicBlock *successor)
 
 void BasicBlock::removePredecessor(BasicBlock *pred)
 {
-    m_predecessors.erase(std::remove(m_predecessors.begin(), m_predecessors.end(), pred),
-                         m_predecessors.end());
+    // Only remove a single predecessor (prevents issues with double edges)
+    for (auto it = m_predecessors.begin(); it != m_predecessors.end(); ++it) {
+        if (*it == pred) {
+            m_predecessors.erase(it);
+            return;
+        }
+    }
 }
 
 
 void BasicBlock::removeSuccessor(BasicBlock *succ)
 {
-    m_successors.erase(std::remove(m_successors.begin(), m_successors.end(), succ),
-                       m_successors.end());
+    // Only remove a single successor (prevents issues with double edges)
+    for (auto it = m_successors.begin(); it != m_successors.end(); ++it) {
+        if (*it == succ) {
+            m_successors.erase(it);
+            return;
+        }
+    }
 }
 
 
@@ -496,11 +515,20 @@ SharedExp BasicBlock::getDest() const
 
     // It should contain a GotoStatement or derived class
     Statement *lastStmt = lastRTL->getHlStmt();
-    CaseStatement *cs   = dynamic_cast<CaseStatement *>(lastStmt);
+    if (!lastStmt) {
+        if (getNumSuccessors() > 0) {
+            return Const::get(getSuccessor(BTHEN)->getLowAddr());
+        }
+        else {
+            return nullptr;
+        }
+    }
 
-    if (cs) {
+
+    if (lastStmt->isCase()) {
+        CaseStatement *cs = static_cast<CaseStatement *>(lastStmt);
         // Get the expression from the switch info
-        SwitchInfo *si = cs->getSwitchInfo();
+        const SwitchInfo *si = cs->getSwitchInfo();
 
         if (si) {
             return si->switchExp;
@@ -565,62 +593,23 @@ void BasicBlock::simplify()
             else if (!last->back()->isBranch()) {
                 setType(BBType::Fall);
             }
+            else if (getNumSuccessors() == 2 && getSuccessor(BTHEN) == getSuccessor(BELSE)) {
+                setType(BBType::Oneway);
+            }
         }
 
         if (isType(BBType::Fall)) {
-            // set out edges to be the second one
-            LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_successors[0]->getLowAddr(),
-                        m_successors[1]->getLowAddr());
-
-            BasicBlock *redundant = getSuccessor(0);
-            m_successors[0]       = m_successors[1];
-            m_successors.resize(1);
-            LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
-            LOG_VERBOSE("  inedges:");
-
-            std::vector<BasicBlock *> rinedges = redundant->m_predecessors;
-            redundant->m_predecessors.clear();
-
-            for (BasicBlock *redundant_edge : rinedges) {
-                if (redundant_edge != this) {
-                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
-                    redundant->m_predecessors.push_back(redundant_edge);
-                }
-                else {
-                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
-                }
-            }
-
-            // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE("  after: %1", m_successors[0]->getLowAddr());
+            BasicBlock *redundant = getSuccessor(BTHEN);
+            this->removeSuccessor(redundant);
+            redundant->removePredecessor(this);
+        }
+        else if (isType(BBType::Oneway)) {
+            BasicBlock *redundant = getSuccessor(BELSE);
+            this->removeSuccessor(redundant);
+            redundant->removePredecessor(this);
         }
 
-        if (isType(BBType::Oneway)) {
-            // set out edges to be the first one
-            LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_successors[0]->getLowAddr(),
-                        m_successors[1]->getLowAddr());
-
-            BasicBlock *redundant = m_successors[BELSE];
-            m_successors.resize(1);
-            LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
-            LOG_VERBOSE("  inedges:");
-
-            std::vector<BasicBlock *> rinedges = redundant->m_predecessors;
-            redundant->m_predecessors.clear();
-
-            for (BasicBlock *redundant_edge : rinedges) {
-                if (redundant_edge != this) {
-                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
-                    redundant->m_predecessors.push_back(redundant_edge);
-                }
-                else {
-                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
-                }
-            }
-
-            // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE("  after: %1", m_successors[0]->getLowAddr());
-        }
+        assert(static_cast<UserProc *>(m_function)->getCFG()->isWellFormed());
     }
 }
 
@@ -707,6 +696,21 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
 }
 
 
+void BasicBlock::clearPhis()
+{
+    RTLIterator rit;
+    StatementList::iterator sit;
+    for (Statement *s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+        if (!s->isPhi()) {
+            continue;
+        }
+
+        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        phi->getDefs().clear();
+    }
+}
+
+
 void BasicBlock::updateBBAddresses()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
@@ -772,4 +776,43 @@ void BasicBlock::removeRTL(RTL *rtl)
         m_listOfRTLs->erase(it);
         updateBBAddresses();
     }
+}
+
+
+bool BasicBlock::isEmpty() const
+{
+    if (getRTLs() == nullptr) {
+        return true;
+    }
+
+    for (const auto &rtl : *getRTLs()) {
+        if (!rtl->empty()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool BasicBlock::isEmptyJump() const
+{
+    if (m_listOfRTLs == nullptr || m_listOfRTLs->empty()) {
+        return false;
+    }
+    else if (m_listOfRTLs->back()->size() != 1) {
+        return false;
+    }
+    else if (!m_listOfRTLs->back()->back()->isGoto()) {
+        return false;
+    }
+    else {
+        for (auto it = m_listOfRTLs->begin(); it != std::prev(m_listOfRTLs->end()); ++it) {
+            if (!(*it)->empty()) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

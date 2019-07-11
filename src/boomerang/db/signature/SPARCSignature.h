@@ -11,11 +11,10 @@
 
 
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 class BOOMERANG_API SPARCSignature : public Signature
 {
@@ -48,7 +47,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override { return 14; }
+    virtual RegNum getStackRegister() const override { return REG_SPARC_SP; }
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
@@ -66,7 +65,7 @@ public:
     ///
     /// An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively),
     /// but [sp + >=92] are memory parameters
-    virtual bool isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const override;
+    virtual bool isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const override;
 
     /// \copydoc Signature::isPromoted
     virtual bool isPromoted() const override { return true; }
@@ -96,5 +95,5 @@ public:
     /// \copydoc SPARCSignature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
 };
-}
+
 }

@@ -11,17 +11,74 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
-#include <cstdint>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 
 class Type;
 
 typedef std::shared_ptr<Type> SharedType;
+
+typedef uint16 RegNum;
+
+enum class RegType
+{
+    Invalid = 0,
+    Int     = 1,
+    Float   = 2,
+    Flags   = 3
+};
+
+
+class BOOMERANG_API RegID
+{
+public:
+    constexpr RegID(RegType regType, RegNum num, uint16 sizeInBits)
+        : m_num(num)
+        , m_regType((uint16)regType)
+        , m_size(sizeInBits)
+        , m_reserved(0)
+    {
+    }
+
+    bool operator==(const RegID &rhs) const { return getNum() == rhs.getNum(); }
+    bool operator!=(const RegID &rhs) const { return getNum() != rhs.getNum(); }
+
+    bool operator<(const RegID &rhs) const { return getNum() < rhs.getNum(); }
+
+public:
+    RegNum getNum() const { return m_num; }
+    RegType getRegType() const { return (RegType)m_regType; }
+    uint16 getSize() const { return m_size; }
+
+public:
+    uint16 m_num;
+    uint16 m_regType : 3;
+    uint16 m_size : 10;
+    uint16 m_reserved : 3;
+};
+
+
+// clang-format off
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator==(const RegID &lhs, T rhs) { return lhs.getNum() == rhs; }
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator!=(const RegID &lhs, T rhs) { return lhs.getNum() != rhs; }
+
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator==(T lhs, const RegID &rhs) { return lhs == rhs.getNum(); }
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator!=(T lhs, const RegID &rhs) { return lhs != rhs.getNum(); }
+// clang-format on
+
+
+static constexpr const RegNum RegNumSpecial = 0xFFFF;
+static constexpr const RegID RegIDSpecial   = RegID(RegType::Invalid, RegNumSpecial, 0);
 
 
 /**
@@ -31,7 +88,7 @@ typedef std::shared_ptr<Type> SharedType;
 class BOOMERANG_API Register
 {
 public:
-    Register(const QString &name = "", uint16_t sizeInBits = 0, bool isFloatReg = false);
+    Register(RegID id, const QString &name);
     Register(const Register &);
     Register(Register &&) = default;
 
@@ -45,46 +102,15 @@ public:
     bool operator<(const Register &other) const;
 
     const QString &getName() const;
+    uint16 getSize() const;
 
-    uint16_t getSize() const;
-
-    /// \returns true if this is a floating point register
-    bool isFloat() const { return m_fltRegister; }
-
-    /// \returns the type of this register
+    /// \returns the type of the content of this register
     SharedType getType() const;
 
-    /// Get the mapped offset (see above)
-    int getMappedOffset() const { return m_mappedOffset; }
-
-    /// Get the mapped index (see above)
-    int getMappedIndex() const { return m_mappedIndex; }
-
-    void setName(const QString &name);
-
-    void setSize(uint16_t newSize) { m_size = newSize; }
-
-    void setIsFloat(bool isFloatReg) { m_fltRegister = isFloatReg; }
-
-    /**
-     * Set the mapped offset. This is the bit number where this register starts,
-     * e.g. for register %ah, this is 8. For COVERS regisers, this is 0
-     */
-    void setMappedOffset(int i) { m_mappedOffset = i; }
-
-    /**
-     * Set the mapped index. For COVERS registers, this is the lower register
-     * of the set that this register covers. For example, if the current register
-     * is f28to31, i would be the index for register f28
-     * For SHARES registers, this is the "parent" register, e.g. if the current
-     * register is %al, the parent is %ax (note: not %eax)
-     */
-    void setMappedIndex(int i) { m_mappedIndex = i; }
+    /// \returns the type of the register(int, float, flags)
+    RegType getRegType() const { return m_id.getRegType(); }
 
 private:
+    RegID m_id;
     QString m_name;
-    uint16_t m_size;
-    bool m_fltRegister; ///< True if this is a floating point register
-    int m_mappedIndex;
-    int m_mappedOffset;
 };

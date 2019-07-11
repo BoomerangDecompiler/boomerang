@@ -14,7 +14,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/type/TypeRecovery.h"
+#include "boomerang/ifc/ITypeRecovery.h"
 #include "boomerang/util/log/Log.h"
 
 

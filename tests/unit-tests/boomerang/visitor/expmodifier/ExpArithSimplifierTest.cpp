@@ -91,15 +91,15 @@ void ExpArithSimplifierTest::testSimplifyBinary()
                               Const::get(5)));
 
 
-    // afp + 108 + n - (afp + 92)
+    // pc + 108 + n - (pc + 92)
     TEST_SIMPLIFY(Binary::get(opMinus,
                               Binary::get(opPlus,
                                           Binary::get(opPlus,
-                                                      Terminal::get(opAFP),
+                                                      Terminal::get(opPC),
                                                       Const::get(108)),
                                           Unary::get(opParam, Const::get("n"))),
                               Binary::get(opPlus,
-                                          Terminal::get(opAFP),
+                                          Terminal::get(opPC),
                                           Const::get(92))),
                   Binary::get(opPlus,
                               Unary::get(opParam, Const::get("n")),

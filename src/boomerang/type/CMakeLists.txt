@@ -9,11 +9,6 @@
 
 list(APPEND boomerang-type-sources
     type/DataIntervalMap
-    type/TypeRecovery
-
-    # DFA type recovery
-    type/dfa/DFATypeRecovery
-    type/dfa/DFATypeAnalyzer
 )
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-type-sources ".cpp")

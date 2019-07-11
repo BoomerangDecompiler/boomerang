@@ -24,12 +24,7 @@ regression_tests = [
     "elf32-ppc/minmax",
     "elf32-ppc/switch",
     "elf/hello-clang4-dynamic",
-    "mips/bcd",
-    "mipsel/bcd",
-    "mipsel/rain",
-    "mipsel/worms",
-    "mips/rain",
-    "mips/worms",
+
     "OSX/banner",
     "OSX/branch",
     "OSX/condcodexform",
@@ -76,19 +71,18 @@ regression_tests = [
     "OSX/twoproc",
     "OSX/twoproc2",
     "OSX/uns",
+
     "pentium/asgngoto",
     "pentium/branch",
     "pentium/branch-linux",
     "pentium/bswap",
     "pentium/callchain",
     "pentium/chararray",
-    "pentium/daysofxmas",
     "pentium/encrypt",
     "pentium/fbranch",
     "pentium/fbranch2",
-    "pentium/fedora3_true",
+    "pentium/fbranch_sahf",
     "pentium/fib",
-    "pentium/fibo2",
     "pentium/fibo3",
     "pentium/fibo4",
     "pentium/fibo_iter",
@@ -126,18 +120,16 @@ regression_tests = [
     "pentium/twofib",
     "pentium/twoproc",
     "pentium/twoproc2",
-    "pentium/uns",
+
     "ppc/banner",
     "ppc/branch",
     "ppc/condcodexform",
     "ppc/daysofxmas",
     "ppc/fbranch",
     "ppc/fib",
-    "ppc/fibo",
     "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
-    "ppc/funcptr",
     "ppc/global1",
     "ppc/global3",
     "ppc/hello",
@@ -163,7 +155,6 @@ regression_tests = [
     "ppc/o4/printpi",
     "ppc/o4/set",
     "ppc/o4/stattest",
-    "ppc/o4/sumarray",
     "ppc/o4/superstat",
     "ppc/o4/switch",
     "ppc/o4/twoproc",
@@ -181,6 +172,7 @@ regression_tests = [
     "ppc/twoproc",
     "ppc/twoproc2",
     "ppc/uns",
+
     "sparc/andn",
     "sparc/banner",
     "sparc/bcd",
@@ -210,7 +202,6 @@ regression_tests = [
     "sparc/phi",
     "sparc/phi2",
     "sparc/printpi",
-    "sparc/shared2",
     "sparc/short1",
     "sparc/short2",
     "sparc/stattest",
@@ -223,7 +214,7 @@ regression_tests = [
     "sparc/testarray2",
     "sparc/twoproc2",
     "sparc/uns",
-    "sparc/worms",
+
     "windows/typetest.exe"
 ]
 
@@ -231,6 +222,22 @@ regression_tests = [
 smoke_tests = [
     # These files cannot be checked for regressions
     # because they have non-deterministic output
+    "dos/BENCHFN.EXE",
+    "dos/BENCHLNG.EXE",
+    "dos/BENCHMUL.EXE",
+    "dos/BENCHMUS.EXE",
+    "dos/BENCHSHO.EXE",
+    "dos/BYTEOPS.EXE",
+    "dos/DHAMP.EXE",
+    "dos/FIBOL.EXE",
+    "dos/FIBOS.EXE",
+    "dos/INTOPS.EXE",
+    "dos/LONGOPS.EXE",
+    "dos/MATRIXMU.EXE",
+    "dos/MAX.EXE",
+    "dos/STRLEN.EXE",
+    "dos/TESTLONG.EXE",
+
     "OSX/daysofxmas",
     "OSX/fib",
     "OSX/fibo2",
@@ -239,19 +246,31 @@ smoke_tests = [
     "OSX/global1",
     "OSX/global2",
     "OSX/global3",
-    "OSX/semi",
+    "OSX/o4/banner",
+    "OSX/o4/condcodexform",
+    "OSX/o4/daysofxmas",
     "OSX/o4/fib",
     "OSX/o4/fibo",
     "OSX/o4/fibo2",
+    "OSX/o4/fibo_iter",
     "OSX/o4/frontier",
     "OSX/o4/phi",
+    "OSX/o4/semi",
+    "OSX/o4/sumarray",
+    "OSX/o4/switch",
+    "OSX/semi",
+    "OSX/switch",
+
     "pentium/ass2.Linux",
     "pentium/ass3.Linux",
     "pentium/banner",
     "pentium/chararray-O4",
+    "pentium/daysofxmas",
     "pentium/fedora2_true",
-    "pentium/frontier",
+    "pentium/fedora3_true",
+    "pentium/fibo2",
     "pentium/fromssa2",
+    "pentium/frontier",
     "pentium/global1",
     "pentium/global2",
     "pentium/global3",
@@ -265,26 +284,45 @@ smoke_tests = [
     "pentium/sumarray-O4",
     "pentium/suse_true",
     "pentium/twoproc3",
+    "pentium/uns",
+
+    "ppc/fibo",
     "ppc/frontier",
+    "ppc/funcptr",
     "ppc/global2",
+    "ppc/o4/banner",
     "ppc/o4/branch",
+    "ppc/o4/condcodexform",
+    "ppc/o4/daysofxmas",
     "ppc/o4/fbranch",
     "ppc/o4/fib",
+    "ppc/o4/fibo_iter",
     "ppc/o4/fromssa2",
     "ppc/o4/frontier",
     "ppc/o4/phi",
+    "ppc/o4/semi",
+    "ppc/o4/sumarray",
     "ppc/semi",
+
     "sparc/asgngoto",
     "sparc/ass2.SunOS",
     "sparc/ass3.SunOS",
     "sparc/condcodexform_cc",
+    "sparc/daysofxmas",
+    "sparc/fibo_iter",
     "sparc/fromssa2",
     "sparc/mutual_recurse",
+    "sparc/RayTracer",
     "sparc/recursion",
+    "sparc/shared2",
     "sparc/sumarray-O4",
     "sparc/switchAnd_gcc",
     "sparc/switch_epc2",
+    "sparc/switch_gpc",
+    "sparc/twofib",
     "sparc/twoproc",
+    "sparc/worms",
+
     "windows/fbranch.exe",
     "windows/hello.exe",
     "windows/hello_release.exe",
@@ -295,30 +333,7 @@ smoke_tests = [
 
 # These files are disabled explicitly because decompilation fails for them.
 disabled_tests = [
-    "elf/hello-clang4-static",
-    "hppa/hello",
-    "m68k/bcd",
-    "m68k/rain",
-    "m68k/worms",
-    "mc68328/Starter.prc",
-    "OSX/o4/banner",
-    "OSX/o4/condcodexform",
-    "OSX/o4/daysofxmas",
-    "OSX/o4/fibo_iter",
-    "OSX/o4/semi",
-    "OSX/o4/sumarray",
-    "OSX/o4/switch",
-    "OSX/switch",
-    "ppc/o4/banner",
-    "ppc/o4/condcodexform",
-    "ppc/o4/daysofxmas",
-    "ppc/o4/fibo_iter",
-    "ppc/o4/semi",
-    "sparc/daysofxmas",
-    "sparc/fibo_iter",
-    "sparc/RayTracer",
-    "sparc/switch_gpc",
-    "sparc/twofib"
+    "elf/hello-clang4-static"
 ]
 
 
@@ -347,9 +362,12 @@ def compare_directories(dir_expected, dir_actual):
                     tofile  =file_expected.name)
 
                 print("")
+                sys.stdout.flush()
                 for line in diff:
                     sys.stderr.write(line)
+                sys.stderr.flush()
                 print("")
+                sys.stdout.flush();
 
         for sub_dcmp in dcmp.subdirs.values():
             directories_equal &= compare_directories_internal(sub_dcmp)
@@ -428,6 +446,8 @@ def perform_smoke_tests(base_dir, test_input_base, test_list):
     test_results = defaultdict();
 
     sys.stdout.write("Testing for crashes ")
+    sys.stdout.flush()
+
     for test_file in test_list:
         input_file = os.path.join(test_input_base, test_file)
         output_dir = os.path.join(base_dir, "outputs", test_file)

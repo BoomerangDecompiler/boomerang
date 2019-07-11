@@ -10,6 +10,7 @@
 #pragma once
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
@@ -61,10 +62,13 @@ enum class Sign : int8_t
  * Base class for all types.
  * Types contain low level type information.
  * Note that we may have a completely different system for
- * recording high level types
+ * recording high level types (i.e. class hierachy)
  */
 class BOOMERANG_API Type : public std::enable_shared_from_this<Type>
 {
+public:
+    typedef uint64 Size;
+
 public:
     // Constructors
     Type(TypeClass id);
@@ -77,56 +81,30 @@ public:
     Type &operator=(Type &&other) = default;
 
 public:
+    // Comparisons
+    virtual bool operator==(const Type &other) const = 0; ///< Considers sign
+    virtual bool operator!=(const Type &other) const;     ///< Considers sign
+    virtual bool operator<(const Type &other) const = 0;  ///< Considers sign
+
+public:
     /// \returns the type class of this type.
-    TypeClass getId() const { return id; }
-
-    /// Add a named ("typedef'd") type to the global type list.
-    static void addNamedType(const QString &name, SharedType type);
-
-    /// \returns the actual type of the named type with name \p name
-    static SharedType getNamedType(const QString &name);
-
-    /**
-     * Given the name of a temporary variable, return its Type
-     * \param   name reference to a string (e.g. "tmp", "tmpd")
-     * \returns Ptr to a new Type object
-     */
-    static SharedType getTempType(const QString &name);
-
-    /**
-     * parse a C type from a string.
-     * \param        str string to parse
-     * \returns      constructed type.
-     */
-    static SharedType parseType(const char *str);
-
-    /// \returns true if this type is a (const) char* pointer or char array.
-    bool isCString() const;
+    inline TypeClass getId() const { return m_id; }
 
     // runtime type information. Deprecated for most situations; use resolvesToTYPE()
-    virtual bool isVoid() const { return false; }
-    virtual bool isFunc() const { return false; }
-    virtual bool isBoolean() const { return false; }
-    virtual bool isChar() const { return false; }
-    virtual bool isInteger() const { return false; }
-    virtual bool isFloat() const { return false; }
-    virtual bool isPointer() const { return false; }
-    virtual bool isArray() const { return false; }
-    virtual bool isNamed() const { return false; }
-    virtual bool isCompound() const { return false; }
-    virtual bool isUnion() const { return false; }
-    virtual bool isSize() const { return false; }
-
-    /// \returns false if some info is missing, e.g. unknown sign, size or basic type
-    virtual bool isComplete() { return true; }
-
-    /// Typecast this type to another type.
-    template<class T>
-    std::shared_ptr<T> as();
-
-    template<class T>
-    std::shared_ptr<const T> as() const;
-
+    // clang-format off
+    inline bool isVoid()     const { return getId() == TypeClass::Void;     }
+    inline bool isFunc()     const { return getId() == TypeClass::Func;     }
+    inline bool isBoolean()  const { return getId() == TypeClass::Boolean;  }
+    inline bool isChar()     const { return getId() == TypeClass::Char;     }
+    inline bool isInteger()  const { return getId() == TypeClass::Integer;  }
+    inline bool isFloat()    const { return getId() == TypeClass::Float;    }
+    inline bool isPointer()  const { return getId() == TypeClass::Pointer;  }
+    inline bool isArray()    const { return getId() == TypeClass::Array;    }
+    inline bool isNamed()    const { return getId() == TypeClass::Named;    }
+    inline bool isCompound() const { return getId() == TypeClass::Compound; }
+    inline bool isUnion()    const { return getId() == TypeClass::Union;    }
+    inline bool isSize()     const { return getId() == TypeClass::Size;     }
+    // clang-format on
 
     // These replace calls to isNamed() and resolvesTo()
     bool resolvesToVoid() const;
@@ -140,54 +118,78 @@ public:
     bool resolvesToCompound() const;
     bool resolvesToUnion() const;
     bool resolvesToSize() const;
+    bool resolvesToFuncPtr() const;
 
+    /// \returns false if some info is missing, e.g. unknown sign, size or basic type
+    virtual bool isComplete() { return true; }
+
+    /// \returns true if this type is a (const) char* pointer or char array.
+    bool isCString() const;
+
+    /**
+     * When all=false (default), return true if can use this and other interchangeably; in
+     * particular, if at most one of the types is compound and the first element is compatible with
+     * the other, then the types are considered compatible. With all set to true, if one or both
+     * types is compound, all corresponding elements must be compatible
+     */
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const;
+
+    /// Return true if this is a subset or equal to other
+    bool isSubTypeOrEqual(SharedType other) const;
+
+public:
+    /// Typecast this type to another type.
+    template<class T>
+    typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<T>>::type as();
+
+    template<class T>
+    typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<const T>>::type
+    as() const;
+
+public:
+    /// Clone this type
+    virtual SharedType clone() const = 0;
+
+    /// \returns the size (in bits) of this type.
+    virtual Size getSize() const = 0;
+
+    /// \returns the size (in bytes) of this type.
+    /// Does not include struct padding.
+    Size getSizeInBytes() const { return (getSize() + 7) / 8; }
+
+    /// Changes the bit size of this type.
+    virtual void setSize(Size newSize);
+
+public:
     /// Resolve the original type across named types.
     /// If the type is not named, return this.
     SharedType resolveNamedType();
     SharedConstType resolveNamedType() const;
 
-    // cloning
-    virtual SharedType clone() const = 0;
+    /// Add a named ("typedef'd") type to the global type list.
+    static void addNamedType(const QString &name, SharedType type);
 
-    // Comparisons
-    virtual bool operator==(const Type &other) const = 0; ///< Considers sign
-    virtual bool operator!=(const Type &other) const;     ///< Considers sign
-    virtual bool operator<(const Type &other) const = 0;  ///< Considers sign
-
-
-    // Acccess functions
-
-    /// \returns the size (in bits) of this type.
-    virtual size_t getSize() const = 0;
-
-    /// Changes the bit size of this type.
-    virtual void setSize(size_t /*sz*/) { assert(false); /* Redefined in subclasses. */ }
-
-    /// \returns the size (in bytes) of this type.
-    /// Does not include struct padding.
-    size_t getSizeInBytes() const { return (getSize() + 7) / 8; }
-
-    QString toString() const;
-
-    /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
-    /// information. When final, choose a signedness etc
-    virtual QString getCtype(bool final = false) const = 0;
-
-    QString prints(); // For debugging
-
-    /**
-     * Return a minimal temporary name for this type. It'd be even
-     * nicer to return a unique name, but we don't know scope at
-     * this point, and even so we could still clash with a user-defined
-     * name later on. :(
-     */
-    virtual QString getTempName() const; // Get a temporary name for the type
+    /// \returns the actual type of the named type with name \p name
+    static SharedType getNamedType(const QString &name);
 
     /**
      * Clear the named type map. This is necessary when testing; the
      * type for the first parameter to 'main' is different for SPARC and Pentium
      */
     static void clearNamedTypes();
+
+    /// Create a union of this Type and other. Set \p changed to true if any change
+    SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
+
+    /// \returns a new Bool/Char/Int
+    static SharedType newIntegerLikeType(Size sizeInBits, Sign signedness);
+
+public:
+    QString toString() const;
+
+    /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
+    /// information. When final, choose a signedness etc
+    virtual QString getCtype(bool final = false) const = 0;
 
     /**
      * For data-flow-based type analysis only: implement the meet operator.
@@ -199,34 +201,15 @@ public:
     virtual SharedType meetWith(SharedType other, bool &changed,
                                 bool useHighestPtr = false) const = 0;
 
-    /**
-     * When all=false (default), return true if can use this and other interchangeably; in
-     * particular, if at most one of the types is compound and the first element is compatible with
-     * the other, then the types are considered compatible. With all set to true, if one or both
-     * types is compound, all corresponding elements must be compatible
-     */
-    virtual bool isCompatibleWith(const Type &other, bool all = false) const;
-
+protected:
     /**
      * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if
      * so reverses the parameters (this and other) to prevent many tedious repetitions
      */
     virtual bool isCompatible(const Type &other, bool all) const = 0;
 
-    /// Return true if this is a subset or equal to other
-    bool isSubTypeOrEqual(SharedType other);
-
-    /// Create a union of this Type and other. Set ch true if any change
-    SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
-
-    static SharedType newIntegerLikeType(int size, Sign signedness); // Return a new Bool/Char/Int
-
-    /// Dereference this type. For most cases, return null unless you are a pointer type. But for a
-    /// union of pointers, return a new union with the dereference of all members. In dfa.cpp
-    SharedType dereference();
-
 protected:
-    TypeClass id;
+    TypeClass m_id;
 };
 
 
@@ -236,7 +219,7 @@ OStream &operator<<(OStream &os, const Type &ty);            ///< Print the Type
 
 
 template<class T>
-inline std::shared_ptr<T> Type::as()
+inline typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<T>>::type Type::as()
 {
     SharedType ty = resolveNamedType();
     assert(std::dynamic_pointer_cast<T>(ty) != nullptr);
@@ -245,7 +228,8 @@ inline std::shared_ptr<T> Type::as()
 
 
 template<class T>
-inline std::shared_ptr<const T> Type::as() const
+inline typename std::enable_if<std::is_base_of<Type, T>::value, std::shared_ptr<const T>>::type
+Type::as() const
 {
     SharedConstType ty = resolveNamedType();
     assert(std::dynamic_pointer_cast<const T>(ty) != nullptr);

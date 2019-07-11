@@ -140,17 +140,6 @@ bool BoolAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void BoolAssign::generateCode(ICodeGenerator *gen) const
-{
-    assert(m_lhs);
-    assert(m_cond);
-    // lhs := (m_cond) ? 1 : 0
-    Assign as(m_lhs->clone(),
-              std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
-    gen->addAssignmentStatement(&as);
-}
-
-
 void BoolAssign::simplify()
 {
     if (m_cond) {
@@ -162,15 +151,6 @@ void BoolAssign::simplify()
 void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 {
     defs.insert(getLeft());
-}
-
-
-bool BoolAssign::usesExp(const Exp &e) const
-{
-    assert(m_lhs && m_cond);
-    SharedExp where = nullptr;
-    return (m_cond->search(e, where) ||
-            (m_lhs->isMemOf() && m_lhs->getSubExp1()->search(e, where)));
 }
 
 

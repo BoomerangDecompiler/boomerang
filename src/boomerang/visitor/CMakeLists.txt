@@ -15,11 +15,8 @@ list(APPEND boomerang-visitor-sources
     visitor/expvisitor/ExpRegMapper
     visitor/expvisitor/ExpVisitor
     visitor/expvisitor/FlagsFinder
-    visitor/expvisitor/MemDepthFinder
-    visitor/expvisitor/PrimitiveTester
     visitor/expvisitor/UsedLocalFinder
     visitor/expvisitor/UsedLocsFinder
-    visitor/expvisitor/TempToLocalMapper
 
     visitor/expmodifier/CallBypasser
     visitor/expmodifier/ConstGlobalConverter
@@ -35,12 +32,10 @@ list(APPEND boomerang-visitor-sources
     visitor/expmodifier/ImplicitConverter
     visitor/expmodifier/Localiser
     visitor/expmodifier/SimpExpModifier
-    visitor/expmodifier/SizeStripper
 
     visitor/stmtvisitor/StmtCastInserter
     visitor/stmtvisitor/StmtVisitor
 
-    visitor/stmtmodifier/PhiStripper
     visitor/stmtmodifier/StmtImplicitConverter
     visitor/stmtmodifier/StmtModifier
     visitor/stmtmodifier/StmtPartModifier

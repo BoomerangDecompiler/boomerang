@@ -15,8 +15,11 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/StatementList.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expvisitor/UsedLocalFinder.h"
+#include "boomerang/visitor/stmtexpvisitor/UsedLocsVisitor.h"
 
 #include <QSet>
 
@@ -38,7 +41,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
 
     for (Statement *s : stmts) {
         LocationSet locs;
-        all |= s->addUsedLocals(locs);
+        all |= addUsedLocalsForStmt(s, locs);
 
         for (SharedExp u : locs) {
             // Must be a real symbol, and not defined in this statement, unless it is a return
@@ -102,7 +105,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         s->getDefinitions(ls, assumeABICompliance);
 
         for (const SharedExp &loc : ls) {
-            SharedType ty = s->getTypeFor(loc);
+            SharedType ty = s->getTypeForExp(loc);
             QString name  = proc->findLocal(loc, ty);
 
             if (name.isEmpty()) {
@@ -150,4 +153,14 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
 
     proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After removing unused locals");
     return true;
+}
+
+
+bool UnusedLocalRemovalPass::addUsedLocalsForStmt(Statement *stmt, LocationSet &used)
+{
+    UsedLocalFinder ulf(used, stmt->getProc());
+    UsedLocsVisitor ulv(&ulf, false);
+
+    stmt->accept(&ulv);
+    return ulf.wasAllFound();
 }

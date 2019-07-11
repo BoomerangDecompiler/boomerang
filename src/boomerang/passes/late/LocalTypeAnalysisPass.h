@@ -14,11 +14,12 @@
 
 
 /// Executes type analysis on a function.
-class LocalTypeAnalysisPass : public IPass
+class LocalTypeAnalysisPass final : public IPass
 {
 public:
     LocalTypeAnalysisPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

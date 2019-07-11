@@ -13,11 +13,12 @@
 #include "boomerang/passes/Pass.h"
 
 
-class PreservationAnalysisPass : public IPass
+class PreservationAnalysisPass final : public IPass
 {
 public:
     PreservationAnalysisPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

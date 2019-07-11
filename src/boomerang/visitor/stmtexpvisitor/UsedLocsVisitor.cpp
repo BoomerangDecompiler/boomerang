@@ -49,7 +49,7 @@ bool UsedLocsVisitor::visit(Assign *stmt, bool &visitChildren)
             ulf->setMemOnly(wasMemOnly);
         }
     }
-    else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
+    else if (lhs->isArrayIndex() || lhs->isMemberOf()) {
         SharedExp subExp1 = lhs->getSubExp1(); // array(base, index) and member(base, offset)?? use
         subExp1->acceptVisitor(ev);            // base and index
         SharedExp subExp2 = lhs->getSubExp2();
@@ -85,20 +85,20 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool &visitChildren)
             ulf->setMemOnly(wasMemOnly);
         }
     }
-    else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
+    else if (lhs->isArrayIndex() || lhs->isMemberOf()) {
         SharedExp subExp1 = lhs->getSubExp1();
         subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
         subExp2->acceptVisitor(ev);
     }
 
-    for (RefExp &refExp : *stmt) {
+    for (const std::shared_ptr<RefExp> &refExp : *stmt) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed
         // in fromSSA() Use the actual expression in the PhiAssign Also note that it's possible for
         // uu->e to be nullptr. Suppose variable a can be assigned to along in-edges 0, 1, and 3;
         // inserting the phi parameter at index 3 will cause a null entry at 2
-        assert(refExp.getSubExp1());
-        auto temp = RefExp::get(refExp.getSubExp1(), refExp.getDef());
+        assert(refExp->getSubExp1());
+        auto temp = RefExp::get(refExp->getSubExp1(), refExp->getDef());
         temp->acceptVisitor(ev);
     }
 
@@ -123,7 +123,7 @@ bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool &visitChildren)
             ulf->setMemOnly(wasMemOnly);
         }
     }
-    else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
+    else if (lhs->isArrayIndex() || lhs->isMemberOf()) {
         SharedExp subExp1 = lhs->getSubExp1();
         subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
@@ -216,7 +216,7 @@ bool UsedLocsVisitor::visit(BoolAssign *stmt, bool &visitChildren)
             ulf->setMemOnly(wasMemOnly);
         }
     }
-    else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
+    else if (lhs->isArrayIndex() || lhs->isMemberOf()) {
         SharedExp subExp1 = lhs->getSubExp1();
         subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();

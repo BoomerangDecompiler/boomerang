@@ -12,9 +12,9 @@
 #include "boomerang/util/log/Log.h"
 
 
-NamedType::NamedType(const QString &_name)
+NamedType::NamedType(const QString &name)
     : Type(TypeClass::Named)
-    , name(_name)
+    , m_name(name)
 {
 }
 
@@ -24,13 +24,19 @@ NamedType::~NamedType()
 }
 
 
-SharedType NamedType::clone() const
+std::shared_ptr<NamedType> NamedType::get(const QString &name)
 {
-    return NamedType::get(name);
+    return std::make_shared<NamedType>(name);
 }
 
 
-size_t NamedType::getSize() const
+SharedType NamedType::clone() const
+{
+    return NamedType::get(m_name);
+}
+
+
+Type::Size NamedType::getSize() const
 {
     SharedType ty = resolvesTo();
 
@@ -38,42 +44,42 @@ size_t NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_WARN("Unknown size for named type '%1'", name);
+    LOG_VERBOSE("Unknown size for named type '%1'", m_name);
     return 0; // don't know
 }
 
 
 bool NamedType::operator==(const Type &other) const
 {
-    return other.isNamed() && name == static_cast<const NamedType &>(other).name;
+    return other.isNamed() && m_name == static_cast<const NamedType &>(other).m_name;
+}
+
+
+bool NamedType::operator<(const Type &other) const
+{
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
+    }
+
+    return m_name < static_cast<const NamedType &>(other).m_name;
 }
 
 
 SharedType NamedType::resolvesTo() const
 {
-    SharedType ty = getNamedType(name);
+    SharedType ty = getNamedType(m_name);
 
     if (ty && ty->isNamed()) {
-        return std::static_pointer_cast<NamedType>(ty)->resolvesTo();
+        return ty->as<NamedType>()->resolvesTo();
     }
 
     return ty;
 }
 
 
-bool NamedType::operator<(const Type &other) const
-{
-    if (id != other.getId()) {
-        return id < other.getId();
-    }
-
-    return name < static_cast<const NamedType &>(other).name;
-}
-
-
 QString NamedType::getCtype(bool /*final*/) const
 {
-    return name;
+    return m_name;
 }
 
 
@@ -105,19 +111,19 @@ SharedType NamedType::meetWith(SharedType other, bool &changed, bool useHighestP
 
 bool NamedType::isCompatible(const Type &other, bool /*all*/) const
 {
-    if (other.isNamed() && (name == static_cast<const NamedType &>(other).getName())) {
+    if (*this == other) {
         return true;
     }
 
     SharedType resTo = resolvesTo();
 
     if (resTo) {
-        return resolvesTo()->isCompatibleWith(other);
+        return resTo->isCompatibleWith(other);
     }
 
     if (other.resolvesToVoid()) {
         return true;
     }
 
-    return *this == other;
+    return false; // was *this == other, but this case is already handled above
 }

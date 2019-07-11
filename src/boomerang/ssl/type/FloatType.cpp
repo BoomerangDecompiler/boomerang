@@ -13,14 +13,14 @@
 #include "boomerang/ssl/type/SizeType.h"
 
 
-FloatType::FloatType(int sz)
+FloatType::FloatType(Size sz)
     : Type(TypeClass::Float)
-    , size(sz)
+    , m_size(sz)
 {
 }
 
 
-std::shared_ptr<FloatType> FloatType::get(int sz)
+std::shared_ptr<FloatType> FloatType::get(Size sz)
 {
     return std::make_shared<FloatType>(sz);
 }
@@ -33,13 +33,19 @@ FloatType::~FloatType()
 
 SharedType FloatType::clone() const
 {
-    return FloatType::get(size);
+    return FloatType::get(m_size);
 }
 
 
-size_t FloatType::getSize() const
+Type::Size FloatType::getSize() const
 {
-    return size;
+    return m_size;
+}
+
+
+void FloatType::setSize(Type::Size sz)
+{
+    m_size = sz;
 }
 
 
@@ -48,44 +54,32 @@ bool FloatType::operator==(const Type &other) const
     if (!other.isFloat()) {
         return false;
     }
-    else if (size == 0 || static_cast<const FloatType &>(other).size == 0) {
+    else if (m_size == 0 || static_cast<const FloatType &>(other).m_size == 0) {
         return true;
     }
 
-    return size == static_cast<const FloatType &>(other).size;
+    return m_size == static_cast<const FloatType &>(other).m_size;
 }
 
 
 bool FloatType::operator<(const Type &other) const
 {
-    if (id != other.getId()) {
-        return id < other.getId();
+    if (m_id != other.getId()) {
+        return m_id < other.getId();
     }
 
-    return size < static_cast<const FloatType &>(other).size;
+    return m_size < static_cast<const FloatType &>(other).m_size;
 }
 
 
 QString FloatType::getCtype(bool /*final*/) const
 {
-    switch (size) {
+    switch (m_size) {
     case 32: return "float";
     case 64: return "double";
-    default: return "double";
+    case 80: return "long double";
+    default: return QString("__float%1").arg(m_size);
     }
-}
-
-
-QString FloatType::getTempName() const
-{
-    switch (size) {
-    case 32: return "tmpf";
-    case 64: return "tmpd";
-    case 80: return "tmpF";
-    case 128: return "tmpD";
-    }
-
-    return "tmp";
 }
 
 
@@ -94,29 +88,39 @@ SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestP
     if (other->resolvesToVoid()) {
         return const_cast<FloatType *>(this)->shared_from_this();
     }
-
-    if (other->resolvesToFloat() || other->resolvesToSize()) {
-        const size_t newSize = std::max(size, other->getSize());
-        changed |= (newSize != size);
-        return FloatType::get(newSize);
+    else if (other->resolvesToFloat()) {
+        const Size newSize = std::max(getSize(), other->getSize());
+        if (newSize != getSize()) {
+            changed = true;
+            return FloatType::get(newSize);
+        }
+        else {
+            return const_cast<FloatType *>(this)->shared_from_this();
+        }
+    }
+    else if (other->resolvesToSize() && other->getSize() == getSize()) {
+        return const_cast<FloatType *>(this)->shared_from_this();
     }
 
     return createUnion(other, changed, useHighestPtr);
 }
 
 
-bool FloatType::isCompatible(const Type &other, bool /*all*/) const
+bool FloatType::isCompatible(const Type &other, bool all) const
 {
-    if (other.resolvesToVoid() || other.resolvesToFloat()) {
+    if (other.resolvesToVoid()) {
         return true;
+    }
+    else if (other.resolvesToFloat()) {
+        return getSize() == other.getSize();
     }
     else if (other.resolvesToUnion()) {
         return other.isCompatibleWith(*this);
     }
-    else if (other.resolvesToArray()) {
+    else if (!all && other.resolvesToArray()) {
         return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
-    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == size) {
+    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == m_size) {
         return true;
     }
 

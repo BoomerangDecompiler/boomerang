@@ -14,11 +14,12 @@
 
 
 /// Initializes statements before decompilation.
-class StatementInitPass : public IPass
+class StatementInitPass final : public IPass
 {
 public:
     StatementInitPass();
 
-private:
+public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 };

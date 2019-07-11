@@ -31,7 +31,7 @@ namespace Util
  * Turns things like newline, return, tab into \n, \r, \t etc
  * \note Assumes a C or C++ back end
  */
-QString BOOMERANG_API escapeStr(const QString &str);
+QString BOOMERANG_API escapeStr(const char *str);
 
 OStream &alignStream(OStream &str, int align);
 
@@ -61,9 +61,8 @@ void clone(const Container &from, Container &to)
 
     to.resize(from.size());
 
-    for (typename Container::size_type i = 0; i < from.size(); i++) {
-        to[i] = from[i]->clone();
-    }
+    std::transform(from.begin(), from.end(), to.begin(),
+                   [](typename Container::value_type val) { return val->clone(); });
 }
 
 
@@ -75,5 +74,5 @@ int getStackOffset(SharedConstExp e, int sp);
  * Return the internal index of the stack register
  * of an architecture, or -1 if the architecture does not have a stack register.
  */
-int getStackRegisterIndex(const Prog *prog);
+BOOMERANG_API int getStackRegisterIndex(const Prog *prog);
 }

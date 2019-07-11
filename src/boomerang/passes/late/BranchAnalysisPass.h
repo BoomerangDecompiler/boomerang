@@ -12,26 +12,27 @@
 
 #include "boomerang/passes/Pass.h"
 
+class BasicBlock;
 
-/**
- * Simplifies branch condions.
- * Example:
- * if (cond1) {
- *   if (cond2) {
- *     ...
- *   }
- * }
- *  ->
- * if (cond1 && cond2) {
- *   ...
- * }
- */
-class BranchAnalysisPass : public IPass
+
+/// Simplifies branch condions.
+/// Example:
+///   if (cond1) {
+///     if (cond2) {
+///       ...
+///     }
+///   }
+/// ->
+///   if (cond1 && cond2) {
+///     ...
+///   }
+class BranchAnalysisPass final : public IPass
 {
 public:
     BranchAnalysisPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:
@@ -41,4 +42,7 @@ private:
 
     /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches(UserProc *proc);
+
+    /// \returns true if the BB only contains a branch statement
+    bool isOnlyBranch(BasicBlock *bb) const;
 };

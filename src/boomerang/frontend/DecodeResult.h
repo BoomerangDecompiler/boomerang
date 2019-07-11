@@ -13,6 +13,8 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Types.h"
 
+#include <cstddef>
+#include <list>
 #include <memory>
 
 
@@ -23,7 +25,7 @@ class RTL;
  * These are the instruction classes defined in
  * "A Transformational Approach to Binary Translation of Delayed Branches"
  * for SPARC instructions.
- * Extended for HPPA. Ignored by machines with no delay slots
+ * Ignored by machines with no delay slots.
  */
 enum ICLASS : uint8
 {
@@ -35,11 +37,7 @@ enum ICLASS : uint8
     SCDAT, ///< Static Conditional Delayed, Anulled if Taken
     SU,    ///< Static Unconditional (not delayed)
     SKIP,  ///< Skip successor
-    // TRAP, ///< Trap
-    NOP, ///< No operation (e.g. SPARC BN,A)
-    // HPPA only
-    DU,  ///< Dynamic Unconditional (not delayed)
-    NCTA ///< Non Control Transfer, with following instr Anulled
+    NOP    ///< No operation (e.g. SPARC BN,A)
 };
 
 
@@ -57,8 +55,10 @@ public:
 
     ~DecodeResult();
 
+    // clang-format off
     DecodeResult &operator=(const DecodeResult &) = delete;
-    DecodeResult &operator                        =(DecodeResult &&);
+    DecodeResult &operator=(DecodeResult &&);
+    // clang-fomat on
 
     /// Resets all the fields to their default values.
     void reset();
@@ -67,9 +67,9 @@ public:
     bool valid; ///< Indicates whether or not a valid instruction was decoded.
 
     /**
-     * The class of the instruction decoded. Will be one of the classes described in "A
-     * Transformational Approach to Binary Translation of Delayed Branches" (plus two more HPPA
-     * specific entries). Ignored by machines with no delay slots
+     * The class of the instruction decoded. Will be one of the classes described in
+     * "A Transformational Approach to Binary Translation of Delayed Branches".
+     * Ignored by machines with no delay slots.
      */
     ICLASS type;
 

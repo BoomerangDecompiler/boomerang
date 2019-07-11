@@ -36,9 +36,21 @@ TypedExp::TypedExp(const TypedExp &o)
 }
 
 
+std::shared_ptr<TypedExp> TypedExp::get(SharedExp exp)
+{
+    return std::make_shared<TypedExp>(exp);
+}
+
+
+std::shared_ptr<TypedExp> TypedExp::get(SharedType ty, SharedExp exp)
+{
+    return std::make_shared<TypedExp>(ty, exp);
+}
+
+
 SharedExp TypedExp::clone() const
 {
-    return std::make_shared<TypedExp>(m_type, subExp1->clone());
+    return std::make_shared<TypedExp>(m_type, m_subExp1->clone());
 }
 
 
@@ -61,20 +73,6 @@ bool TypedExp::operator==(const Exp &o) const
 }
 
 
-bool TypedExp::operator<<(const Exp &o) const // Type insensitive
-{
-    if (m_oper < o.getOper()) {
-        return true;
-    }
-
-    if (m_oper > o.getOper()) {
-        return false;
-    }
-
-    return *subExp1 << *o.getSubExp1();
-}
-
-
 bool TypedExp::operator<(const Exp &o) const // Type sensitive
 {
     if (m_oper < o.getOper()) {
@@ -93,11 +91,11 @@ bool TypedExp::operator<(const Exp &o) const // Type sensitive
         return false;
     }
 
-    return *subExp1 < *o.getSubExp1();
+    return *m_subExp1 < *o.getSubExp1();
 }
 
 
-bool TypedExp::operator*=(const Exp &o) const
+bool TypedExp::equalNoSubscript(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -118,7 +116,7 @@ bool TypedExp::operator*=(const Exp &o) const
         return false;
     }
 
-    return *getSubExp1() *= *other->getSubExp1();
+    return getSubExp1()->equalNoSubscript(*other->getSubExp1());
 }
 
 
@@ -145,8 +143,9 @@ SharedType TypedExp::ascendType()
 }
 
 
-void TypedExp::descendType(SharedType, bool &, Statement *)
+bool TypedExp::descendType(SharedType)
 {
+    return false;
 }
 
 

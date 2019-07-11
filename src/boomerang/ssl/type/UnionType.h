@@ -12,37 +12,37 @@
 
 #include "boomerang/ssl/type/Type.h"
 
-#include <unordered_set>
+#include <map>
 
 
-// The union type represents the union of any number of any other types
-struct BOOMERANG_API UnionElement
+struct BOOMERANG_API lessType
 {
-    SharedType type;
-    QString name;
-
-    bool operator==(const UnionElement &other) const { return *type == *other.type; }
+    bool operator()(const SharedConstType &lhs, const SharedConstType &rhs) const;
 };
 
 
-struct BOOMERANG_API hashUnionElem
-{
-    size_t operator()(const UnionElement &e) const;
-};
-
-
+/// UnionTypes represent the union construct of C/C++, where different types
+/// share the same memory location.
+/// During decompilation, UnionTypes are also used to resolve type conflicts
+/// between unrelated types.
 class BOOMERANG_API UnionType : public Type
 {
 public:
-    typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
-    typedef UnionEntrySet::iterator ilUnionElement;
+    typedef std::pair<SharedType, QString> Member;
+
+public:
+    /// Maps the type of a union member to its name.
+    typedef std::map<SharedType, QString, lessType> UnionEntries;
 
 public:
     /// Create a new empty union type.
     UnionType();
 
     /// Create a new union type with unnamed members.
-    UnionType(const std::initializer_list<SharedType> &members);
+    UnionType(const std::initializer_list<SharedType> members);
+
+    /// Create a new union type with named members.
+    UnionType(const std::initializer_list<Member> members);
 
     UnionType(const UnionType &other) = default;
     UnionType(UnionType &&other)      = default;
@@ -53,58 +53,55 @@ public:
     UnionType &operator=(UnionType &&other) = default;
 
 public:
-    /// \copydoc Type::isUnion
-    virtual bool isUnion() const override { return true; }
+    static std::shared_ptr<UnionType> get();
+    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> members);
+    static std::shared_ptr<UnionType> get(const std::initializer_list<Member> members);
 
-    static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
-    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> &members)
-    {
-        return std::make_shared<UnionType>(members);
-    }
-
-    /**
-     * Add a new type to this union
-     * \param type the type of the new member
-     * \param name the name of the new member
-     */
-    void addType(SharedType type, const QString &name = "");
-
-    size_t getNumTypes() const { return li.size(); }
-
-    // Return true if this type is already in the union. Note: linear search, but number of types is
-    // usually small
-    bool findType(SharedType ty); // Return true if ty is already in the union
-
-    ilUnionElement begin() { return li.begin(); }
-    ilUnionElement end() { return li.end(); }
-    // Type        *getType(const char *name);
-    // const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
-
-    virtual SharedType clone() const override;
-
+    /// \copydoc Type::operator==
     virtual bool operator==(const Type &other) const override;
 
-    // virtual bool        operator-=(const Type& other) const;
+    /// \copydoc Type::operator<
     virtual bool operator<(const Type &other) const override;
 
-    virtual size_t getSize() const override;
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
 
+    /// \copydoc Type::getSize
+    virtual Size getSize() const override;
+
+    /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
-    virtual bool isCompatibleWith(const Type &other, bool all) const override
-    {
-        return isCompatible(other, all);
-    }
+    /// \copydoc Type::isCompatibleWith
+    virtual bool isCompatibleWith(const Type &other, bool all) const override;
+
+public:
+    /// \returns the number of distinct types in this union.
+    size_t getNumTypes() const;
+
+    /// \returns true if this type is already in the union.
+    bool hasType(SharedType ty);
+
+    /// If this union contains only 1 type, return the one and only member type.
+    /// If this union has no types, return VoidType.
+    /// Otherwise, return this.
+    SharedType simplify(bool &changed) const;
+
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
 
-    // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
-    SharedType dereferenceUnion();
+private:
+    /**
+     * Add a new type to this union.
+     * \param type the type of the new member
+     * \param name the name of the new member
+     */
+    void addType(SharedType type, const QString &name = "");
 
 private:
-    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting
-    // iterators (e.g. meetWith(another Union))
-    UnionEntrySet li;
+    UnionEntries m_entries;
 };

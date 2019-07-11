@@ -11,7 +11,6 @@
 
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/FlagDef.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -52,14 +51,6 @@ SharedExp SimpExpModifier::preModify(const std::shared_ptr<Ternary> &exp, bool &
 
 
 SharedExp SimpExpModifier::preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren)
-{
-    visitChildren = true;
-    m_mask <<= 1;
-    return exp;
-}
-
-
-SharedExp SimpExpModifier::preModify(const std::shared_ptr<FlagDef> &exp, bool &visitChildren)
 {
     visitChildren = true;
     m_mask <<= 1;
@@ -165,19 +156,6 @@ SharedExp SimpExpModifier::postModify(const std::shared_ptr<Ternary> &exp)
 
 
 SharedExp SimpExpModifier::postModify(const std::shared_ptr<TypedExp> &exp)
-{
-    SharedExp ret = exp;
-
-    if (!(m_unchanged & m_mask)) {
-        ret = exp->simplify();
-    }
-
-    m_mask >>= 1;
-    return ret;
-}
-
-
-SharedExp SimpExpModifier::postModify(const std::shared_ptr<FlagDef> &exp)
 {
     SharedExp ret = exp;
 

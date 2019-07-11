@@ -13,6 +13,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/DFALocalMapper.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 
 
 LocalAndParamMapPass::LocalAndParamMapPass()
@@ -32,7 +34,14 @@ bool LocalAndParamMapPass::execute(UserProc *proc)
     proc->getStatements(stmts);
 
     for (Statement *s : stmts) {
-        s->dfaMapLocals();
+        DfaLocalMapper dlm(proc);
+        StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
+
+        s->accept(&sm);
+
+        if (dlm.change) {
+            LOG_VERBOSE2("Statement '%1' mapped with new local(s)", s);
+        }
     }
 
     LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", proc->getName());

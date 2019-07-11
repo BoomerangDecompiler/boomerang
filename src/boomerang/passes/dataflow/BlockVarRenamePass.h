@@ -20,10 +20,8 @@
 class Statement;
 
 
-/**
- * Rewrites Statements in BasicBlocks into SSA form.
- */
-class BlockVarRenamePass : public IPass
+/// Rewrites Statements in BasicBlocks into SSA form.
+class BlockVarRenamePass final : public IPass
 {
 public:
     BlockVarRenamePass();
@@ -35,4 +33,7 @@ public:
 private:
     bool renameBlockVars(UserProc *proc, int n,
                          std::map<SharedExp, std::deque<Statement *>, lessExpStar> &stacks);
+
+    /// For all expressions in \p stmt, replace \p var with var{varDef}
+    void subscriptVar(Statement *stmt, SharedExp var, Statement *varDef);
 };

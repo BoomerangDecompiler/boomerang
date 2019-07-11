@@ -19,12 +19,9 @@ class ConstFinder;
 /**
  *
  */
-class StmtConstFinder : public StmtExpVisitor
+class BOOMERANG_API StmtConstFinder : public StmtExpVisitor
 {
 public:
-    StmtConstFinder()          = default;
-    virtual ~StmtConstFinder() = default;
-
-public:
     StmtConstFinder(ConstFinder *v);
+    virtual ~StmtConstFinder() = default;
 };

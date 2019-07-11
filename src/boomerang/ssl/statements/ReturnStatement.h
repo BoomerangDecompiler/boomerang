@@ -26,12 +26,12 @@ public:
 
 public:
     ReturnStatement();
-    ReturnStatement(const ReturnStatement &other) = default;
+    ReturnStatement(const ReturnStatement &other) = delete;
     ReturnStatement(ReturnStatement &&other)      = default;
 
     virtual ~ReturnStatement() override;
 
-    ReturnStatement &operator=(const ReturnStatement &other) = default;
+    ReturnStatement &operator=(const ReturnStatement &other) = delete;
     ReturnStatement &operator=(ReturnStatement &&other) = default;
 
 public:
@@ -73,9 +73,6 @@ public:
     /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
-    /// \copydoc Statement::usesExp
-    virtual bool usesExp(const Exp &e) const override;
-
     /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
@@ -85,14 +82,14 @@ public:
     /// For testing only
     void addReturn(Assignment *a);
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;
 
-    /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) override;
+    /// \copydoc Statement::getTypeForExp
+    virtual SharedType getTypeForExp(SharedExp exp) override;
 
-    /// \copydoc Statement::setTypeFor
-    virtual void setTypeFor(SharedExp e, SharedType ty) override;
+    /// \copydoc Statement::setTypeForExp
+    virtual void setTypeForExp(SharedExp exp, SharedType ty) override;
 
     /// \copydoc Statement::simplify
     virtual void simplify() override;
@@ -111,9 +108,6 @@ public:
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override;
-
-    /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen) const override;
 
     /// \returns pointer to the collector object
     DefCollector *getCollector() { return &m_col; }

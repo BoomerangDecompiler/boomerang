@@ -18,7 +18,7 @@
 
 
 Location::Location(const Location &other)
-    : Unary(other.m_oper, other.subExp1->clone())
+    : Unary(other.m_oper, other.m_subExp1->clone())
     , m_proc(other.m_proc)
 {
 }
@@ -46,7 +46,7 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
                 case opLocal:
                 case opGlobal:
                 case opParam:
-                    this->m_proc = std::static_pointer_cast<Location>(e)->getProc();
+                    this->m_proc = e->access<Location>()->getProc();
                     giveUp       = true;
                     break;
 
@@ -62,7 +62,7 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
 
 SharedExp Location::clone() const
 {
-    return std::make_shared<Location>(m_oper, subExp1->clone(), m_proc);
+    return std::make_shared<Location>(m_oper, m_subExp1->clone(), m_proc);
 }
 
 
@@ -72,9 +72,9 @@ SharedExp Location::get(OPER op, SharedExp childExp, UserProc *proc)
 }
 
 
-SharedExp Location::regOf(int regID)
+SharedExp Location::regOf(RegNum regNum)
 {
-    return get(opRegOf, Const::get(regID), nullptr);
+    return get(opRegOf, Const::get(regNum), nullptr);
 }
 
 
@@ -90,9 +90,9 @@ SharedExp Location::memOf(SharedExp exp, UserProc *proc)
 }
 
 
-std::shared_ptr<Location> Location::tempOf(SharedExp e)
+SharedExp Location::tempOf(SharedExp e)
 {
-    return std::make_shared<Location>(opTemp, e, nullptr);
+    return get(opTemp, e, nullptr);
 }
 
 
@@ -120,17 +120,6 @@ SharedExp Location::param(const QString &name, UserProc *proc)
 }
 
 
-void Location::getDefinitions(LocationSet &defs)
-{
-    // This is a hack to fix aliasing (replace with something general)
-    // FIXME! This is x86 specific too. Use -O for overlapped registers!
-    if ((m_oper == opRegOf) &&
-        (std::static_pointer_cast<const Const>(subExp1)->getInt() == REG_PENT_EAX)) {
-        defs.insert(Location::regOf(REG_PENT_AX));
-    }
-}
-
-
 bool Location::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
@@ -139,7 +128,7 @@ bool Location::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v)) {
+        if (!m_subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -148,9 +137,9 @@ bool Location::acceptVisitor(ExpVisitor *v)
 }
 
 
-std::shared_ptr<Location> Location::local(const QString &name, UserProc *p)
+SharedExp Location::local(const QString &name, UserProc *p)
 {
-    return std::make_shared<Location>(opLocal, Const::get(name), p);
+    return get(opLocal, Const::get(name), p);
 }
 
 

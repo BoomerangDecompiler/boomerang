@@ -55,18 +55,14 @@ typedef std::shared_ptr<const Type> SharedConstType;
  *                   /       |      \
  *                Unary     Const   Terminal
  *   TypedExp____/  |   \
- *    FlagDef___/ Binary Location
- *     RefExp__/    |
+ *    RefExp____/ Binary Location
+ *                  |
  *               Ternary
  */
 class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 {
 public:
-    Exp(OPER oper)
-        : m_oper(oper)
-    {
-    }
-
+    Exp(OPER oper);
     Exp(const Exp &other) = default;
     Exp(Exp &&other)      = default;
 
@@ -86,30 +82,47 @@ public:
     /// Type sensitive less than
     virtual bool operator<(const Exp &o) const = 0;
 
-    /// Type insensitive less than. Class TypedExp overrides
-    virtual bool operator<<(const Exp &o) const { return (*this < o); }
-
     /// Comparison ignoring subscripts
-    virtual bool operator*=(const Exp &o) const = 0;
+    virtual bool equalNoSubscript(const Exp &o) const = 0;
 
+public:
     /// Return the operator.
     /// \note I'd like to make this protected, but then subclasses
     /// don't seem to be able to use it (at least, for subexpressions)
     OPER getOper() const { return m_oper; }
-    const char *getOperName() const;
 
     /// A few simplifications use this
-    void setOper(OPER x) { m_oper = x; }
-
-    /// \returns this expression as a string
-    QString toString() const;
-
-    /// Print the expression to the given stream
-    void print(OStream &os) const;
+    void setOper(OPER oper) { m_oper = oper; }
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
-    virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
+    virtual int getArity() const;
+
+    // Checks for broad type of expression operator
+
+    /// \returns true if this is a wildcard expression (used for searching)
+    bool isWildcard() const;
+
+    /// \returns true if this is a floating point expression (e.g. a +f b)
+    bool isFloatExp() const;
+
+    /// \returns true if this is a logical expression (e.g. comparison, && or ||)
+    bool isLogExp() const;
+
+    /// \returns true if this is a comparison
+    bool isComparison() const;
+
+    /// \returns true if this is a bitwise operation (e.g. & or |)
+    bool isBitwise() const;
+
+    /// \returns True if this is a location
+    bool isLocation() const;
+
+    /// True if integer const, float const or string const
+    bool isConst() const;
+
+    /// \returns true if the operator is symmetric (i.e. a && b <-> b && a)
+    bool isSymmetric() const;
 
     /// True if this is a call to a flag function
     bool isFlagCall() const { return m_oper == opFlagCall; }
@@ -137,47 +150,33 @@ public:
     /// True if this is a temporary. Note some old code still has r[tmp]
     bool isTemp() const;
 
-    /// True if this is the anull Terminal (anulls next instruction)
-    bool isAnull() const { return m_oper == opAnull; }
     /// True if this is the Nil Terminal (terminates lists; "NOP" expression)
     bool isNil() const { return m_oper == opNil; }
     /// True if this is %pc
     bool isPC() const { return m_oper == opPC; }
 
-    /// Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
-    bool isAfpTerm();
-
     /// True if is int const
     bool isIntConst() const { return m_oper == opIntConst; }
+    /// True if is long (address) const
+    bool isLongConst() const { return m_oper == opLongConst; }
     /// True if is string const
     bool isStrConst() const { return m_oper == opStrConst; }
-
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
-    /// True if integer const, float const or string const
-    bool isConst() const
-    {
-        return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
-    }
-    /// True if this is an opSize (size case; deprecated)
-    bool isSizeCast() const { return m_oper == opSize; }
+    /// True if is function pointer const
+    bool isFuncPtrConst() const { return m_oper == opFuncConst; }
+
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }
-    // True if this is a phi assignmnet (SSA)
-    //        bool        isPhi() {return op == opPhi;}
     /// True if this is a local variable
     bool isLocal() const { return m_oper == opLocal; }
     /// True if this is a global variable
     bool isGlobal() const { return m_oper == opGlobal; }
-    /// True if this is a typeof
-    bool isTypeOf() const { return m_oper == opTypeOf; }
 
-    /// \returns true if this is a terminal
-    virtual bool isTerminal() const { return false; }
     /// \returns true if this is the constant "true"
-    bool isTrue() const { return m_oper == opTrue; }
+    bool isTrue() const;
     /// \returns true if this is the constant "false"
-    bool isFalse() const { return m_oper == opFalse; }
+    bool isFalse() const;
     /// \returns true if this is a disjunction, i.e. x or y
     bool isOr() const { return m_oper == opOr; }
     /// \returns true if this is a conjunction, i.e. x and y
@@ -189,29 +188,83 @@ public:
     /// \returns true if this is an equality comparison using !=
     bool isNotEquality() const { return m_oper == opNotEqual; }
 
-    /// \returns true if this is a comparison
-    bool isComparison() const
-    {
-        return m_oper == opEquals || m_oper == opNotEqual || m_oper == opGtr || m_oper == opLess ||
-               m_oper == opGtrUns || m_oper == opLessUns || m_oper == opGtrEq ||
-               m_oper == opLessEq || m_oper == opGtrEqUns || m_oper == opLessEqUns;
-    }
-
     /// \returns true if this is a machine feature
     bool isMachFtr() const { return m_oper == opMachFtr; }
     /// \returns true if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a
     /// function parameter
     bool isParam() const { return m_oper == opParam; }
 
-    /// \returns True if this is a location
-    bool isLocation() const
-    {
-        return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal ||
-               m_oper == opParam;
-    }
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }
 
+public:
+    // subexpression access / modification
+
+    /**
+     * These are here so we can (optionally) prevent code clutter.
+     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
+     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
+     */
+    template<class T>
+    inline std::shared_ptr<T> access()
+    {
+        return shared_from_base<T>();
+    }
+
+    template<class T>
+    inline std::shared_ptr<const T> access() const
+    {
+        return shared_from_base<const T>();
+    }
+
+    /// Access sub-expressions recursively
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<T> access()
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+        case 1: return getSubExp1()->access<T, Path...>();
+        case 2: return getSubExp2()->access<T, Path...>();
+        case 3: return getSubExp3()->access<T, Path...>();
+        default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    template<class T, int SUB_IDX, int... Path>
+    std::shared_ptr<const T> access() const
+    {
+        // clang-format off
+        switch (SUB_IDX) {
+            case 1: return getSubExp1()->access<T, Path...>();
+            case 2: return getSubExp2()->access<T, Path...>();
+            case 3: return getSubExp3()->access<T, Path...>();
+            default: assert(false);
+        }
+        // clang-format on
+
+        return nullptr;
+    }
+
+    /// \returns  Pointer to the requested subexpression
+    virtual SharedExp getSubExp1() { return nullptr; }
+    virtual SharedConstExp getSubExp1() const { return nullptr; }
+    virtual SharedExp getSubExp2() { return nullptr; }
+    virtual SharedConstExp getSubExp2() const { return nullptr; }
+    virtual SharedExp getSubExp3() { return nullptr; }
+    virtual SharedConstExp getSubExp3() const { return nullptr; }
+    virtual SharedExp &refSubExp1();
+    virtual SharedExp &refSubExp2();
+    virtual SharedExp &refSubExp3();
+
+    /// Update a sub-expression
+    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
+
+public:
     /**
      * Search this expression for the given subexpression, and if found,
      * return true and return a pointer to the matched expression in result.
@@ -294,81 +347,8 @@ public:
     SharedExp propagateAllRpt(bool &changed);
 
 
-    /**
-     * These are here so we can (optionally) prevent code clutter.
-     * Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2
-     * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
-     */
-    template<class T>
-    inline std::shared_ptr<T> access()
-    {
-        return shared_from_base<T>();
-    }
-
-    template<class T>
-    inline std::shared_ptr<const T> access() const
-    {
-        return shared_from_base<const T>();
-    }
-
-    /// Access sub-expressions recursively
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<T> access()
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    template<class T, int SUB_IDX, int... Path>
-    std::shared_ptr<const T> access() const
-    {
-        switch (SUB_IDX) {
-        case 1: return getSubExp1()->access<T, Path...>();
-
-        case 2: return getSubExp2()->access<T, Path...>();
-
-        case 3: return getSubExp3()->access<T, Path...>();
-
-        default: assert(false);
-        }
-
-        return nullptr;
-    }
-
-    /// \returns  Pointer to the requested subexpression
-    virtual SharedExp getSubExp1() { return nullptr; }
-    virtual SharedConstExp getSubExp1() const { return nullptr; }
-    virtual SharedExp getSubExp2() { return nullptr; }
-    virtual SharedConstExp getSubExp2() const { return nullptr; }
-    virtual SharedExp getSubExp3() { return nullptr; }
-    virtual SharedConstExp getSubExp3() const { return nullptr; }
-    virtual SharedExp &refSubExp1();
-    virtual SharedExp &refSubExp2();
-    virtual SharedExp &refSubExp3();
-
-    /// Update a sub-expression
-    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
-    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
-
     // Get the complexity depth. Basically, add one for each unary, binary, or ternary
     int getComplexityDepth(UserProc *proc);
-
-    // Get memory depth. Add one for each m[]
-    int getMemDepth();
-
-    /// \returns a ptr to the guard expression, or 0 if none
-    SharedExp getGuard();
-
 
     // These simplifying functions don't really belong in class Exp,
     // but they know too much about how Exps work
@@ -468,9 +448,6 @@ public:
     // which is probably not what is wanted!
     SharedExp fromSSAleft(UserProc *proc, Statement *d);
 
-    /// Strip size casts from an Exp
-    SharedExp stripSizes();
-
     /// Subscript all e in this Exp with statement def
     /// Subscript any occurrences of e with e{def} in this expression
     SharedExp expSubscriptVar(const SharedExp &e, Statement *def);
@@ -498,8 +475,17 @@ public:
     // Pull type information up the expression tree
     virtual SharedType ascendType();
 
-    /// Push type information down the expression tree
-    virtual void descendType(SharedType /*parentType*/, bool & /*ch*/, Statement * /*s*/);
+    /// Push type information down the expression tree.
+    /// \param newType new type of the expression.
+    /// \returns true if any change.
+    virtual bool descendType(SharedType newType) = 0;
+
+public:
+    /// \returns this expression as a string
+    QString toString() const;
+
+    /// Print the expression to the given stream
+    void print(OStream &os) const;
 
 public:
     /// Accept an expression visitor to visit this expression.
@@ -544,130 +530,136 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 
 // Hard-coded numbers of register indices.
 
-// Pentium
-#define REG_PENT_AX (0)
-#define REG_PENT_CX (1)
-#define REG_PENT_DX (2)
-#define REG_PENT_BX (3)
-#define REG_PENT_SP (4)
-#define REG_PENT_BP (5)
-#define REG_PENT_SI (6)
-#define REG_PENT_DI (7)
-#define REG_PENT_AL (8)
-#define REG_PENT_CL (9)
-#define REG_PENT_DL (10)
-#define REG_PENT_BL (11)
-#define REG_PENT_AH (12)
-#define REG_PENT_CH (13)
-#define REG_PENT_DH (14)
-#define REG_PENT_BH (15)
-#define REG_PENT_ES (16)
-#define REG_PENT_CS (17)
-#define REG_PENT_SS (18)
-#define REG_PENT_DS (19)
+// Pentium (x86)
+#define REG_PENT_AX RegNum(0)
+#define REG_PENT_CX RegNum(1)
+#define REG_PENT_DX RegNum(2)
+#define REG_PENT_BX RegNum(3)
+#define REG_PENT_SP RegNum(4)
+#define REG_PENT_BP RegNum(5)
+#define REG_PENT_SI RegNum(6)
+#define REG_PENT_DI RegNum(7)
+#define REG_PENT_AL RegNum(8)
+#define REG_PENT_CL RegNum(9)
+#define REG_PENT_DL RegNum(10)
+#define REG_PENT_BL RegNum(11)
+#define REG_PENT_AH RegNum(12)
+#define REG_PENT_CH RegNum(13)
+#define REG_PENT_DH RegNum(14)
+#define REG_PENT_BH RegNum(15)
 
-#define REG_PENT_EAX (24)
-#define REG_PENT_ECX (25)
-#define REG_PENT_EDX (26)
-#define REG_PENT_EBX (27)
-#define REG_PENT_ESP (28)
-#define REG_PENT_EBP (29)
-#define REG_PENT_ESI (30)
-#define REG_PENT_EDI (31)
+#define REG_PENT_SS RegNum(16)
+#define REG_PENT_CS RegNum(17)
+#define REG_PENT_DS RegNum(18)
+#define REG_PENT_ES RegNum(19)
+#define REG_PENT_FS RegNum(20)
+#define REG_PENT_GS RegNum(21)
 
-#define REG_PENT_ST0 (32) // FP st register
-#define REG_PENT_ST1 (33)
-#define REG_PENT_ST2 (34)
-#define REG_PENT_ST3 (35)
-#define REG_PENT_ST4 (36)
-#define REG_PENT_ST5 (37)
-#define REG_PENT_ST6 (38)
-#define REG_PENT_ST7 (39)
-#define REG_PENT_FSW (40)
-#define REG_PENT_FSTP (41)
-#define REG_PENT_FCW (42)
+#define REG_PENT_EAX RegNum(24)
+#define REG_PENT_ECX RegNum(25)
+#define REG_PENT_EDX RegNum(26)
+#define REG_PENT_EBX RegNum(27)
+#define REG_PENT_ESP RegNum(28)
+#define REG_PENT_EBP RegNum(29)
+#define REG_PENT_ESI RegNum(30)
+#define REG_PENT_EDI RegNum(31)
+
+#define REG_PENT_ST0 RegNum(32) // FP st register
+#define REG_PENT_ST1 RegNum(33)
+#define REG_PENT_ST2 RegNum(34)
+#define REG_PENT_ST3 RegNum(35)
+#define REG_PENT_ST4 RegNum(36)
+#define REG_PENT_ST5 RegNum(37)
+#define REG_PENT_ST6 RegNum(38)
+#define REG_PENT_ST7 RegNum(39)
+#define REG_PENT_FSW RegNum(40)
+#define REG_PENT_FSTP RegNum(41)
+#define REG_PENT_FCW RegNum(42)
 
 
 // SPARC
-#define REG_SPARC_G0 (0)
-#define REG_SPARC_G1 (1)
-#define REG_SPARC_G2 (2)
-#define REG_SPARC_G3 (3)
-#define REG_SPARC_G4 (4)
-#define REG_SPARC_G5 (5)
-#define REG_SPARC_G6 (6)
-#define REG_SPARC_G7 (7)
-#define REG_SPARC_O0 (8)
-#define REG_SPARC_O1 (9)
-#define REG_SPARC_O2 (10)
-#define REG_SPARC_O3 (11)
-#define REG_SPARC_O4 (12)
-#define REG_SPARC_O5 (13)
-#define REG_SPARC_O6 (14)
-#define REG_SPARC_O7 (15)
-#define REG_SPARC_L0 (16)
-#define REG_SPARC_L1 (17)
-#define REG_SPARC_L2 (18)
-#define REG_SPARC_L3 (19)
-#define REG_SPARC_L4 (20)
-#define REG_SPARC_L5 (21)
-#define REG_SPARC_L6 (22)
-#define REG_SPARC_L7 (23)
-#define REG_SPARC_I0 (24)
-#define REG_SPARC_I1 (25)
-#define REG_SPARC_I2 (26)
-#define REG_SPARC_I3 (27)
-#define REG_SPARC_I4 (28)
-#define REG_SPARC_I5 (29)
-#define REG_SPARC_I6 (30)
-#define REG_SPARC_I7 (31)
+#define REG_SPARC_G0 RegNum(0)
+#define REG_SPARC_G1 RegNum(1)
+#define REG_SPARC_G2 RegNum(2)
+#define REG_SPARC_G3 RegNum(3)
+#define REG_SPARC_G4 RegNum(4)
+#define REG_SPARC_G5 RegNum(5)
+#define REG_SPARC_G6 RegNum(6)
+#define REG_SPARC_G7 RegNum(7)
+#define REG_SPARC_O0 RegNum(8)
+#define REG_SPARC_O1 RegNum(9)
+#define REG_SPARC_O2 RegNum(10)
+#define REG_SPARC_O3 RegNum(11)
+#define REG_SPARC_O4 RegNum(12)
+#define REG_SPARC_O5 RegNum(13)
+#define REG_SPARC_O6 RegNum(14)
+#define REG_SPARC_O7 RegNum(15)
+#define REG_SPARC_L0 RegNum(16)
+#define REG_SPARC_L1 RegNum(17)
+#define REG_SPARC_L2 RegNum(18)
+#define REG_SPARC_L3 RegNum(19)
+#define REG_SPARC_L4 RegNum(20)
+#define REG_SPARC_L5 RegNum(21)
+#define REG_SPARC_L6 RegNum(22)
+#define REG_SPARC_L7 RegNum(23)
+#define REG_SPARC_I0 RegNum(24)
+#define REG_SPARC_I1 RegNum(25)
+#define REG_SPARC_I2 RegNum(26)
+#define REG_SPARC_I3 RegNum(27)
+#define REG_SPARC_I4 RegNum(28)
+#define REG_SPARC_I5 RegNum(29)
+#define REG_SPARC_I6 RegNum(30)
+#define REG_SPARC_I7 RegNum(31)
 
+#define REG_SPARC_SP RegNum(14) // stack pointer
+#define REG_SPARC_FP RegNum(30) // frame pointer
 
-#define REG_SPARC_SP (14) // stack pointer
-#define REG_SPARC_FP (30) // frame pointer
+#define REG_SPARC_F0 RegNum(32)
+#define REG_SPARC_F31 RegNum(63)
+#define REG_SPARC_F0TO1 RegNum(64)
+#define REG_SPARC_F28TO31 RegNum(87)
+#define REG_SPARC_F0TO3 RegNum(80)
 
-#define REG_SPARC_F0 (32)
-#define REG_SPARC_F31 (63)
-#define REG_SPARC_F0TO1 (64)
-#define REG_SPARC_F28TO31 (87)
+#define REG_SPARC_Y RegNum(100)
+#define REG_SPARC_CWP RegNum(101)
+#define REG_SPARC_TBR RegNum(102)
+#define REG_SPARC_WIM RegNum(103)
+#define REG_SPARC_PSR RegNum(104)
+#define REG_SPARC_FSR RegNum(105)
 
-// mips
-#define REG_MIPS_ZERO (0)
-#define REG_MIPS_AT (1)
-#define REG_MIPS_V0 (2)
-#define REG_MIPS_V1 (3)
-
-#define REG_MIPS_T0 (8)
-
-#define REG_MIPS_SP (29)
-#define REG_MIPS_FP (30)
-#define REG_MIPS_RA (31)
-#define REG_MIPS_F0 (32)
-
+#define REG_SPARC_ICC RegNum(200)
 
 // PPC
-#define REG_PPC_SP (1)
+#define REG_PPC_SP RegNum(1)
 
-#define REG_PPC_G0 (0)
-#define REG_PPC_G1 (1)
-#define REG_PPC_G2 (2)
-#define REG_PPC_G3 (3)
-#define REG_PPC_G4 (4)
-#define REG_PPC_G5 (5)
-#define REG_PPC_G6 (6)
-#define REG_PPC_G7 (7)
-#define REG_PPC_G8 (8)
-#define REG_PPC_G9 (9)
-#define REG_PPC_G10 (10)
-#define REG_PPC_G11 (11)
-#define REG_PPC_G12 (12)
-#define REG_PPC_G13 (13)
-#define REG_PPC_G31 (31)
-#define REG_PPC_CR0 (64) // Control register
+#define REG_PPC_G0 RegNum(0)
+#define REG_PPC_G1 RegNum(1)
+#define REG_PPC_G2 RegNum(2)
+#define REG_PPC_G3 RegNum(3)
+#define REG_PPC_G4 RegNum(4)
+#define REG_PPC_G5 RegNum(5)
+#define REG_PPC_G6 RegNum(6)
+#define REG_PPC_G7 RegNum(7)
+#define REG_PPC_G8 RegNum(8)
+#define REG_PPC_G9 RegNum(9)
+#define REG_PPC_G10 RegNum(10)
+#define REG_PPC_G11 RegNum(11)
+#define REG_PPC_G12 RegNum(12)
+#define REG_PPC_G13 RegNum(13)
+#define REG_PPC_G31 RegNum(31)
+
+#define REG_PPC_F0 RegNum(32)
+
+#define REG_PPC_VR0 RegNum(64)
+
+#define REG_PPC_CR0 RegNum(100) // Control register
+
+#define REG_PPC_LR RegNum(300)  // Link register
+#define REG_PPC_CTR RegNum(301) // Counter register
 
 
 // ST20
-#define REG_ST20_A (0)
-#define REG_ST20_B (1)
-#define REG_ST20_C (2)
-#define REG_ST20_SP (3)
+#define REG_ST20_A RegNum(0)
+#define REG_ST20_B RegNum(1)
+#define REG_ST20_C RegNum(2)
+#define REG_ST20_SP RegNum(3)

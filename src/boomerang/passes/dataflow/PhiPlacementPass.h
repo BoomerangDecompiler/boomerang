@@ -13,7 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
-class PhiPlacementPass : public IPass
+class PhiPlacementPass final : public IPass
 {
 public:
     PhiPlacementPass();

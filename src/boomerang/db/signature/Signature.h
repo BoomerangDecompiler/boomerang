@@ -14,6 +14,7 @@
 #include "boomerang/db/signature/Parameter.h"
 #include "boomerang/db/signature/Return.h"
 #include "boomerang/frontend/SigEnum.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/statements/Assignment.h"
 #include "boomerang/ssl/type/VoidType.h"
@@ -49,12 +50,14 @@ public:
 
 public:
     /// Create a new signature for a function named \p name
-    static std::shared_ptr<Signature> instantiate(Machine machine, CallConv cc,
+    static std::unique_ptr<Signature> instantiate(Machine machine, CallConv cc,
                                                   const QString &name);
 
     /// Check if parameters, returns and name match
     virtual bool operator==(const Signature &other) const;
     bool operator!=(const Signature &other) const { return !(*this == other); }
+
+    bool operator<(const Signature &other) const;
 
     /// clone this signature
     virtual std::shared_ptr<Signature> clone() const;
@@ -153,7 +156,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *p);
 
     /// Needed before the signature is promoted
-    virtual int getStackRegister() const;
+    virtual RegNum getStackRegister() const;
 
     /**
      * Does expression e represent a local stack-based variable?
@@ -161,10 +164,10 @@ public:
      * offsets from the stack pointer register Also, I believe that the PA/RISC stack grows away
      * from 0
      */
-    bool isStackLocal(int spIndex, SharedConstExp e) const;
+    bool isStackLocal(RegNum spIndex, SharedConstExp e) const;
 
     // Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
-    virtual bool isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const;
+    virtual bool isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const;
 
     // For most machines, local variables are always NEGATIVE offsets from sp
     virtual bool isLocalOffsetNegative() const { return true; }

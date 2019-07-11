@@ -23,10 +23,10 @@
 
 namespace Util
 {
-QString escapeStr(const QString &inp)
+QString escapeStr(const char *inp)
 {
     // clang-format off
-    static const QMap<char, QString> replacements{
+    static const std::map<char, QString> replacements{
         { '\n', "\\n" },
         { '\t', "\\t" },
         { '\v', "\\v" },
@@ -38,23 +38,25 @@ QString escapeStr(const QString &inp)
     };
     // clang-format on
 
-    QString res;
+    QString result;
 
-    for (char c : inp.toLocal8Bit()) {
-        if (isprint(c) && (c != '\"')) {
-            res += QChar(c);
+    for (char c : std::string(inp)) {
+        if (isprint(c) && c != '\"') {
+            result += c;
             continue;
         }
 
-        if (replacements.contains(c)) {
-            res += replacements[c];
+        auto it = replacements.find(c);
+        if (it != replacements.end()) {
+            result += it->second;
         }
         else {
-            res += "\\" + QString::number(c, 16);
+            result += '\\';
+            result += QString::number(c & 0xFF, 8);
         }
     }
 
-    return res;
+    return result;
 }
 
 
@@ -105,7 +107,6 @@ int getStackRegisterIndex(const Prog *prog)
     case Machine::PENTIUM: return REG_PENT_ESP;
     case Machine::PPC: return REG_PPC_G1;
     case Machine::ST20: return REG_ST20_SP;
-    case Machine::MIPS: return REG_MIPS_SP;
     default: return -1;
     }
 }

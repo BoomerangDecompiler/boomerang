@@ -105,16 +105,9 @@ void Assign::simplify()
         m_guard = nullptr; // No longer a guarded assignment
     }
 
-    if (m_lhs->getOper() == opMemOf) {
+    if (m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->simplifyArith());
     }
-}
-
-
-void Assign::fixSuccessor()
-{
-    m_lhs = m_lhs->fixSuccessor();
-    m_rhs = m_rhs->fixSuccessor();
 }
 
 
@@ -184,27 +177,6 @@ bool Assign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/
     }
 
     return chl || chr || chg;
-}
-
-
-void Assign::generateCode(ICodeGenerator *gen) const
-{
-    gen->addAssignmentStatement(this);
-}
-
-
-int Assign::getMemDepth() const
-{
-    return std::max(m_lhs->getMemDepth(), m_rhs->getMemDepth());
-}
-
-
-bool Assign::usesExp(const Exp &e) const
-{
-    SharedExp where = nullptr;
-
-    return (m_rhs->search(e, where) ||
-            ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where)));
 }
 
 

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DefaultFrontEnd.h"
 
-#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
@@ -34,16 +33,30 @@
 #include "boomerang/util/log/Log.h"
 
 
-DefaultFrontEnd::DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : m_binaryFile(binaryFile)
-    , m_program(prog)
-    , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
+DefaultFrontEnd::DefaultFrontEnd(Project *project)
+    : IFrontEnd(project)
+    , m_binaryFile(project->getLoadedBinaryFile())
+    , m_program(project->getProg())
+    , m_targetQueue(project->getSettings()->traceDecoder)
 {
 }
 
 
 DefaultFrontEnd::~DefaultFrontEnd()
 {
+}
+
+
+bool DefaultFrontEnd::initialize(Project *project)
+{
+    m_program    = project->getProg();
+    m_binaryFile = project->getLoadedBinaryFile();
+
+    if (!m_decoder) {
+        return false;
+    }
+
+    return m_decoder->initialize(project);
 }
 
 
@@ -247,18 +260,44 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             if (!decodeSingleInstruction(addr, inst)) {
+                // Do not throw away previously decoded instrucions before the invalid one
+                if (BB_rtls && !BB_rtls->empty()) {
+                    cfg->createBB(BBType::Fall, std::move(BB_rtls));
+                }
+
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
-                                "0x%02X 0x%02X 0x%02X 0x%02X",
-                                qPrintable(addr.toString()), image->readNative1(addr + 0),
-                                image->readNative1(addr + 1), image->readNative1(addr + 2),
-                                image->readNative1(addr + 3));
-                LOG_WARN(message);
+
+                Byte insnData[4] = { 0 };
+                bool print       = true;
+                for (int i = 0; i < 4; i++) {
+                    if (!image->readNative1(addr + i, insnData[i])) {
+                        print = false;
+                        break;
+                    }
+                }
+
+                if (print) {
+                    // clang-format off
+                    message.sprintf("Encountered invalid instruction at address %s: "
+                                    "0x%02X 0x%02X 0x%02X 0x%02X",
+                                    qPrintable(addr.toString()),
+                                    insnData[0],
+                                    insnData[1],
+                                    insnData[2],
+                                    insnData[3]);
+                    // clang-format on
+                    LOG_WARN(message);
+                }
+
                 assert(!inst.valid);
+                break; // try next instruction in queue
             }
-            else if (inst.rtl->empty()) {
+            else if (!inst.rtl || inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
+                if (!inst.rtl) {
+                    inst.rtl.reset(new RTL(addr));
+                }
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
@@ -382,12 +421,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     if (jumpDest == nullptr) { // Happens if already analysed (now redecoding)
                         BB_rtls->push_back(std::move(inst.rtl));
-                        currentBB = cfg->createBB(
-                            BBType::Nway,
-                            std::move(BB_rtls)); // processSwitch will update num outedges
-                        BB_rtls = nullptr;       // New RTLList for next BB
-                        IndirectJumpAnalyzer().processSwitch(
-                            currentBB, proc);     // decode arms, set out edges, etc
+
+                        // processSwitch will update num outedges
+                        currentBB = cfg->createBB(BBType::Nway, std::move(BB_rtls));
+
+                        // decode arms, set out edges, etc
+                        IndirectJumpAnalyzer().processSwitch(currentBB, proc);
                         sequentialDecode = false; // Don't decode after the jump
                         break;                    // Just leave it alone
                     }
@@ -452,9 +491,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     BB_rtls->push_back(std::move(inst.rtl));
 
                     currentBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
-                    // Create the list of RTLs for the next basic block and continue with the next
-                    // instruction.
-                    BB_rtls = nullptr;
 
                     // Stop decoding sequentially if the basic block already existed otherwise
                     // complete the basic block
@@ -471,7 +507,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             LOG_WARN("Branch instruction at address %1 branches beyond end of "
                                      "section, to %2",
                                      addr, jumpDest);
-                            cfg->addEdge(currentBB, Address::INVALID);
+                            currentBB->setType(BBType::Oneway);
                         }
 
                         // Add the fall-through outedge
@@ -490,6 +526,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                            ->getSymbols()
                                            ->findSymbolByAddress(linkedAddr)
                                            ->getName();
+
                         Function *function = proc->getProg()->getOrCreateLibraryProc(name);
                         call->setDestProc(function);
                         call->setIsComputed(false);
@@ -499,66 +536,28 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                     }
 
-                    // Is the called function a thunk calling a library function?
-                    // A "thunk" is a function which only consists of: "GOTO library_function"
-                    if (call && (call->getFixedDest() != Address::INVALID)) {
-                        // Get the address of the called function.
-                        Address callAddr = call->getFixedDest();
+                    Address functionAddr = getAddrOfLibraryThunk(call, proc);
+                    if (functionAddr != Address::INVALID) {
+                        // Yes, it's a library function. Look up its name.
+                        QString name = m_program->getBinaryFile()
+                                           ->getSymbols()
+                                           ->findSymbolByAddress(functionAddr)
+                                           ->getName();
 
-                        // It should not be in the PLT either, but getLimitTextHigh() takes this
-                        // into account
-                        if (Util::inRange(
-                                callAddr, m_program->getBinaryFile()->getImage()->getLimitTextLow(),
-                                m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-                            DecodeResult decoded;
+                        // Assign the proc to the call
+                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
 
-                            // Decode it.
-                            if (decodeSingleInstruction(callAddr, decoded) &&
-                                !decoded.rtl->empty()) {
-                                // Decoded successfully. Create a Statement from it.
-                                Statement *firstStmt = decoded.rtl->front();
+                        if (call->getDestProc()) {
+                            // prevent unnecessary __imp procs
+                            m_program->removeFunction(call->getDestProc()->getName());
+                        }
 
-                                if (firstStmt) {
-                                    firstStmt->setProc(proc);
-                                    firstStmt->simplify();
+                        call->setDestProc(p);
+                        call->setIsComputed(false);
+                        call->setDest(Location::memOf(Const::get(functionAddr)));
 
-                                    GotoStatement *jmpStatement = dynamic_cast<GotoStatement *>(
-                                        firstStmt);
-
-                                    // This is a direct jump (x86 opcode FF 25)
-                                    // The imported function is at the jump destination.
-                                    if (jmpStatement &&
-                                        refersToImportedFunction(jmpStatement->getDest())) {
-                                        // Yes, it's a library function. Look up it's name.
-                                        Address functionAddr = jmpStatement->getDest()
-                                                                   ->access<Const, 1>()
-                                                                   ->getAddr();
-
-                                        QString name = m_program->getBinaryFile()
-                                                           ->getSymbols()
-                                                           ->findSymbolByAddress(functionAddr)
-                                                           ->getName();
-                                        // Assign the proc to the call
-                                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
-
-                                        if (call->getDestProc()) {
-                                            // prevent unnecessary __imp procs
-                                            m_program->removeFunction(
-                                                call->getDestProc()->getName());
-                                        }
-
-                                        call->setDestProc(p);
-                                        call->setIsComputed(false);
-                                        call->setDest(Location::memOf(Const::get(functionAddr)));
-
-                                        if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
-                                            sequentialDecode = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            decoded.rtl.reset();
+                        if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
+                            sequentialDecode = false;
                         }
                     }
 
@@ -580,19 +579,19 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         // be able to analyse it's callee(s), of course.
                         callList.push_back(call);
                     }
-                    else { // Static call
-                           // Find the address of the callee.
+                    else {
+                        // Static call
                         Address callAddr = call->getFixedDest();
 
-                        // Calls with 0 offset (i.e. call the next instruction) are simply pushing
-                        // the PC to the stack. Treat these as non-control flow instructions and
-                        // continue.
+                        // Calls with 0 offset (i.e. call the next instruction) are simply
+                        // pushing the PC to the stack. Treat these as non-control flow
+                        // instructions and continue.
                         if (callAddr == addr + inst.numBytes) {
                             break;
                         }
 
-                        // Call the virtual helper function. If implemented, will check for machine
-                        // specific funcion calls
+                        // Call the virtual helper function. If implemented, will check for
+                        // machine specific funcion calls
                         if (isHelperFunc(callAddr, addr, *BB_rtls)) {
                             // We have already added to BB_rtls
                             inst.rtl.reset(); // Discard the call semantics
@@ -602,12 +601,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         RTL *rtl = inst.rtl.get();
                         BB_rtls->push_back(std::move(inst.rtl));
 
-                        // Add this non computed call site to the set of call sites which need to be
-                        // analysed later.
+                        // Add this non computed call site to the set of call sites which need
+                        // to be analysed later.
                         callList.push_back(call);
 
-                        // Record the called address as the start of a new procedure if it didn't
-                        // already exist.
+                        // Record the called address as the start of a new procedure if it
+                        // didn't already exist.
                         if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
                             (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
                             callList.push_back(call);
@@ -631,9 +630,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
 
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
-                            // Make sure it has a return appended (so there is only one exit from
-                            // the function) call->setReturnAfterCall(true);        // I think only
-                            // the SPARC frontend cares Create the new basic block
+                            // Make sure it has a return appended (so there is only one exit
+                            // from the function)
                             currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                             appendSyntheticReturn(currentBB, proc, rtl);
 
@@ -698,15 +696,22 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     break;
                 case StmtType::INVALID: assert(false); break;
                 }
+
+                // This can happen if a high-level statement (e.g. a return)
+                // is not the last statement in a rtl. Ignore the following statements.
+                if (!sequentialDecode) {
+                    break;
+                }
             }
 
-            if (BB_rtls && inst.rtl) {
+            if (BB_rtls != nullptr && inst.rtl != nullptr) {
                 // If non null, we haven't put this RTL into a the current BB as yet
                 BB_rtls->push_back(std::move(inst.rtl));
             }
 
             if (inst.reDecode) {
-                // Special case: redecode the last instruction, without advancing addr by numBytes
+                // Special case: redecode the last instruction, without advancing addr by
+                // numBytes
                 continue;
             }
 
@@ -717,16 +722,15 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             // If sequentially decoding, check if the next address happens to be the start of an
-            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and no
-            // need to decode again (unless it's an incomplete BB, then we do decode it). In fact,
-            // mustn't decode twice, because it will muck up the coverage, but also will cause
-            // subtle problems like add a call to the list of calls to be processed, then delete the
-            // call RTL (e.g. Pentium 134.perl benchmark)
+            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and
+            // no need to decode again (unless it's an incomplete BB, then we do decode it). In
+            // fact, mustn't decode twice, because it will muck up the coverage, but also will
+            // cause subtle problems like add a call to the list of calls to be processed, then
+            // delete the call RTL (e.g. Pentium 134.perl benchmark)
             if (sequentialDecode && cfg->isStartOfBB(addr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     BasicBlock *bb = cfg->createBB(BBType::Fall, std::move(BB_rtls));
-                    BB_rtls        = nullptr; // Need new list of RTLs
 
                     // Add an out edge to this address
                     if (bb) {
@@ -829,22 +833,30 @@ std::vector<Address> DefaultFrontEnd::findEntryPoints()
 
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
-                    Address setup, teardown;
+
 
                     BinaryImage *image = m_program->getBinaryFile()->getImage();
-                    /*uint32_t vers = */ image->readNative4(tmpaddr); // TODO: find use for vers ?
-                    setup    = Address(image->readNative4(tmpaddr + 4));
-                    teardown = Address(image->readNative4(tmpaddr + 8));
+                    DWord vers = 0, setup = 0, teardown = 0;
+                    bool ok = true;
+                    ok &= image->readNative4(tmpaddr, vers);
+                    ok &= image->readNative4(tmpaddr, setup);
+                    ok &= image->readNative4(tmpaddr, teardown);
 
-                    if (!setup.isZero()) {
-                        if (createFunctionForEntryPoint(setup, "ModuleSetupProc")) {
-                            entrypoints.push_back(setup);
+                    // TODO: find use for vers ?
+                    const Address setupAddr    = Address(setup);
+                    const Address teardownAddr = Address(teardown);
+
+                    if (ok) {
+                        if (!setupAddr.isZero()) {
+                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
+                                entrypoints.push_back(setupAddr);
+                            }
                         }
-                    }
 
-                    if (!teardown.isZero()) {
-                        if (createFunctionForEntryPoint(teardown, "ModuleTearDownProc")) {
-                            entrypoints.push_back(teardown);
+                        if (!teardownAddr.isZero()) {
+                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
+                                entrypoints.push_back(teardownAddr);
+                            }
                         }
                     }
                 }
@@ -916,18 +928,20 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
-        newBB        = cfg->createBB(BBType::Ret, std::move(BB_rtls));
-        Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
+        if (newBB) {
+            Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
+            proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        }
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
-        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to the
-        // stack pointer before setting %pc and branching). Other semantics (e.g. SPARC returning a
-        // value as part of the restore instruction) are assumed to appear in a previous RTL. It is
-        // assumed that THE return statement will have the same semantics (NOTE: may not always be
-        // valid). To avoid this assumption, we need branches to statements, not just to native
-        // addresses (RTLs).
+        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to
+        // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
+        // returning a value as part of the restore instruction) are assumed to appear in a
+        // previous RTL. It is assumed that THE return statement will have the same semantics
+        // (NOTE: may not always be valid). To avoid this assumption, we need branches to
+        // statements, not just to native addresses (RTLs).
         BasicBlock *retBB = proc->getCFG()->findRetNode();
         assert(retBB);
 
@@ -947,8 +961,8 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
             cfg->ensureBBExists(retAddr, retBB);
             cfg->addEdge(newBB, retBB);
 
-            // Visit the return instruction. This will be needed in most cases to split the return
-            // BB (if it has other instructions before the return instruction).
+            // Visit the return instruction. This will be needed in most cases to split the
+            // return BB (if it has other instructions before the return instruction).
             m_targetQueue.visit(cfg, retAddr, newBB);
         }
     }
@@ -967,7 +981,7 @@ bool DefaultFrontEnd::isHelperFunc(Address, Address, RTLList &)
 
 bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 {
-    if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
+    if (exp && exp->isMemOf() && exp->access<Exp, 1>()->isIntConst()) {
         const BinarySymbol *symbol = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
             exp->access<Const, 1>()->getAddr());
 
@@ -983,7 +997,7 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));
+    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { new ReturnStatement }));
     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
     assert(callBB->getNumSuccessors() == 0);
@@ -1056,4 +1070,55 @@ UserProc *DefaultFrontEnd::createFunctionForEntryPoint(Address entryAddr,
     sig->setForced(true);
     func->setSignature(sig);
     return static_cast<UserProc *>(func);
+}
+
+
+Address DefaultFrontEnd::getAddrOfLibraryThunk(CallStatement *call, UserProc *proc)
+{
+    if (!call || call->getFixedDest() == Address::INVALID) {
+        return Address::INVALID;
+    }
+
+    Address callAddr         = call->getFixedDest();
+    const BinaryImage *image = m_program->getBinaryFile()->getImage();
+    if (!Util::inRange(callAddr, image->getLimitTextLow(), image->getLimitTextHigh())) {
+        return Address::INVALID;
+    }
+
+    DecodeResult decoded;
+    if (!decodeSingleInstruction(callAddr, decoded)) {
+        return Address::INVALID;
+    }
+
+    // Make sure to re-decode the instruction as often as necessary, but throw away the results.
+    // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
+    if (decoded.reDecode) {
+        DecodeResult dummy;
+        do {
+            decodeSingleInstruction(callAddr, dummy);
+            dummy.rtl.reset();
+        } while (dummy.reDecode);
+    }
+
+    if (decoded.rtl->empty()) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    Statement *firstStmt = decoded.rtl->front();
+    if (!firstStmt) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    firstStmt->setProc(proc);
+    firstStmt->simplify();
+
+    GotoStatement *jmpStmt = dynamic_cast<GotoStatement *>(firstStmt);
+    if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    return jmpStmt->getDest()->access<Const, 1>()->getAddr();
 }

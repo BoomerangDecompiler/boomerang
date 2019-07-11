@@ -1,3 +1,11 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
 version: "Build {build}"
 
 os:
@@ -17,9 +25,6 @@ branches:
 skip_commits:
   message: /\[[aA]ppveyor [sS]kip\]/
 
-pull_requests:
-  do_not_increment_build_number: true
-
 clone_folder: C:\projects\boomerang
 
 build:
@@ -29,9 +34,18 @@ build:
 matrix:
   fast_finish: true
 
+pull_requests:
+  do_not_increment_build_number: true
+
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
+
+install:
+  - cd C:\Tools\vcpkg
+  - git fetch
+  - git checkout 06d5d393b962604ae0a0f8fa6cfd1a89d0627e83
+  - cd %APPVEYOR_BUILD_FOLDER%
 
 before_build:
   - ps: cd C:\projects\boomerang
@@ -52,4 +66,3 @@ artifacts:
   - path: 'build\boomerang-*.zip'
     name: Portable ZIP
     type: File
-

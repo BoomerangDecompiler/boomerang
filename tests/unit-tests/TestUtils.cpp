@@ -75,3 +75,41 @@ char *toString(const LocationSet& locSet)
 
     return QTest::toString(tgt);
 }
+
+
+#define HANDLE_ENUM_VAL(x) case x: return QTest::toString(#x)
+
+
+char *toString(ICLASS type)
+{
+    switch (type) {
+    HANDLE_ENUM_VAL(ICLASS::NCT);
+    HANDLE_ENUM_VAL(ICLASS::SD);
+    HANDLE_ENUM_VAL(ICLASS::DD);
+    HANDLE_ENUM_VAL(ICLASS::SCD);
+    HANDLE_ENUM_VAL(ICLASS::SCDAN);
+    HANDLE_ENUM_VAL(ICLASS::SCDAT);
+    HANDLE_ENUM_VAL(ICLASS::SU);
+    HANDLE_ENUM_VAL(ICLASS::SKIP);
+    HANDLE_ENUM_VAL(ICLASS::NOP);
+    }
+
+    return QTest::toString("<unknown>");
+}
+
+char *toString(BBType type)
+{
+    switch (type) {
+    HANDLE_ENUM_VAL(BBType::Invalid);
+    HANDLE_ENUM_VAL(BBType::Fall);
+    HANDLE_ENUM_VAL(BBType::Oneway);
+    HANDLE_ENUM_VAL(BBType::Twoway);
+    HANDLE_ENUM_VAL(BBType::Nway);
+    HANDLE_ENUM_VAL(BBType::Ret);
+    HANDLE_ENUM_VAL(BBType::Call);
+    HANDLE_ENUM_VAL(BBType::CompJump);
+    HANDLE_ENUM_VAL(BBType::CompCall);
+    }
+
+    return QTest::toString("<unknown>");
+}

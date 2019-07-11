@@ -139,23 +139,29 @@ void BinaryImageTest::testRead()
 {
     char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
 
+    Byte byteVal;
+    SWord wordVal;
+    DWord dwordVal;
+    QWord qwordVal;
+
     float floatVal;
     double doubleVal;
 
     BinaryImage img(QByteArray{});
-    QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0xFF));
-    QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x0000));
-    QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x00000000));
-    QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x0000000000000000));
+
+    QVERIFY(!img.readNative1(Address(0x1000), byteVal));
+    QVERIFY(!img.readNative2(Address(0x1000), wordVal));
+    QVERIFY(!img.readNative4(Address(0x1000), dwordVal));
+    QVERIFY(!img.readNative8(Address(0x1000), qwordVal));
     QVERIFY(!img.readNativeFloat4(Address(0x1000), floatVal));
     QVERIFY(!img.readNativeFloat8(Address(0x1000), doubleVal));
 
     // section not mapped to data. Verify no AV occurs.
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x1008));
-    QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0xFF));
-    QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x0000));
-    QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x00000000));
-    QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x0000000000000000));
+    QVERIFY(!img.readNative1(Address(0x1000), byteVal));
+    QVERIFY(!img.readNative2(Address(0x1000), wordVal));
+    QVERIFY(!img.readNative4(Address(0x1000), dwordVal));
+    QVERIFY(!img.readNative8(Address(0x1000), qwordVal));
     QVERIFY(!img.readNativeFloat4(Address(0x1000), floatVal));
     QVERIFY(!img.readNativeFloat8(Address(0x1000), doubleVal));
 
@@ -163,19 +169,24 @@ void BinaryImageTest::testRead()
     sect1->setHostAddr(HostAddress(sectionData));
     sect1->addDefinedArea(Address(0x1000), Address(0x1000) + sizeof(sectionData));
 
-    QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0x00));
-    QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x1100));
-    QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x33221100));
-    QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x7766554433221100));
+    QVERIFY(img.readNative1(Address(0x1000), byteVal));
+    QVERIFY(img.readNative2(Address(0x1000), wordVal));
+    QVERIFY(img.readNative4(Address(0x1000), dwordVal));
+    QVERIFY(img.readNative8(Address(0x1000), qwordVal));
+    QCOMPARE(byteVal, static_cast<Byte>(0x00));
+    QCOMPARE(wordVal, static_cast<SWord>(0x1100));
+    QCOMPARE(dwordVal, static_cast<DWord>(0x33221100));
+    QCOMPARE(qwordVal, static_cast<QWord>(0x7766554433221100));
+
     QVERIFY(img.readNativeFloat4(Address(0x1000), floatVal));
     QVERIFY(memcmp(&floatVal, sectionData, 4) == 0);
     QVERIFY(img.readNativeFloat8(Address(0x1000), doubleVal));
     QVERIFY(memcmp(&doubleVal, sectionData, 8) == 0);
 
     // read crosses section boundary (makes no sense for readNative1)
-    QCOMPARE(img.readNative2(Address(0x1007)), static_cast<SWord>(0x0000));
-    QCOMPARE(img.readNative4(Address(0x1005)), static_cast<DWord>(0x00000000));
-    QCOMPARE(img.readNative8(Address(0x1001)), static_cast<QWord>(0x0000000000000000));
+    QVERIFY(!img.readNative2(Address(0x1007), wordVal));
+    QVERIFY(!img.readNative4(Address(0x1005), dwordVal));
+    QVERIFY(!img.readNative8(Address(0x1001), qwordVal));
     QVERIFY(!img.readNativeFloat4(Address(0x1005), floatVal));
     QVERIFY(!img.readNativeFloat8(Address(0x1001), doubleVal));
 }
@@ -197,7 +208,10 @@ void BinaryImageTest::testWrite()
 
     // note that this line will change \ref sectionData!
     QVERIFY(img.writeNative4(Address(0x1000), static_cast<DWord>(0xBADCAB1E)));
-    QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0xBADCAB1E));
+
+    DWord value = 0;
+    QVERIFY(img.readNative4(Address(0x1000), value));
+    QCOMPARE(value, static_cast<DWord>(0xBADCAB1E));
 
     // write crosses section boundary
     QVERIFY(!img.writeNative4(Address(0x1005), static_cast<DWord>(0x1BADCA11)));

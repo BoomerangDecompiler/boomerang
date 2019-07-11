@@ -13,10 +13,7 @@
 #include "boomerang/ssl/exp/Exp.h"
 
 
-/**
- * Unary is a subclass of Exp,
- * holding one subexpression
- */
+/// Unary is a non-terminal expression holding a single subexpression.
 class BOOMERANG_API Unary : public Exp
 {
 public:
@@ -34,7 +31,7 @@ public:
     virtual SharedExp clone() const override;
 
     /// \copydoc Exp::get
-    static SharedExp get(OPER op, SharedExp e1) { return std::make_shared<Unary>(op, e1); }
+    static SharedExp get(OPER op, SharedExp e1);
 
     /// \copydoc Exp::operator==
     virtual bool operator==(const Exp &o) const override;
@@ -42,8 +39,8 @@ public:
     /// \copydoc Exp::operator<
     virtual bool operator<(const Exp &o) const override;
 
-    /// \copydoc Exp::operator*=
-    bool operator*=(const Exp &o) const override;
+    /// \copydoc Exp::equalNoSubscript
+    bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Exp::getArity
     virtual int getArity() const override { return 1; }
@@ -67,7 +64,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
@@ -84,5 +81,5 @@ protected:
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
-    SharedExp subExp1; ///< One subexpression pointer
+    SharedExp m_subExp1; ///< One subexpression pointer
 };

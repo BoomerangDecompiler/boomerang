@@ -50,5 +50,8 @@ private slots:
     void testSetCond();
     void testGetDest();
     void testHasStatement();
+    void testSimplify();
     void testUpdateBBAddresses();
+    void testIsEmpty();
+    void testIsEmptyJump();
 };

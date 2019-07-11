@@ -54,6 +54,8 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL interface to be used by clients
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4005) # Macro redifinition
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4065) # switch statement only contains default but no case labels
 
     set(DEBUG_LIB dbghelp.lib)
 
@@ -92,6 +94,7 @@ else () # GCC / Clang
         )
     endif ()
 
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=zero-as-null-pointer-constant)
 
     # Other warnings
 #    BOOMERANG_ADD_COMPILE_FLAGS(-Wcast-qual)
@@ -118,3 +121,10 @@ if (NOT MSVC)
     endif (BOOMERANG_ENABLE_COVERAGE)
 endif (NOT MSVC)
 
+if (CMAKE_C_COMPILER MATCHES "[Cc]lang")
+    option(BOOMERANG_USE_ASAN "Use Clang address sanitizer (-fsanitize=address)" OFF)
+    if (BOOMERANG_USE_ASAN)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+    endif ()
+endif ()

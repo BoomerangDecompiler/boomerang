@@ -40,7 +40,6 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
         }
 
         c->updateArguments(experimental);
-        // c->bypass();
         LOG_VERBOSE2("Updated call statement to %1", c);
     }
 

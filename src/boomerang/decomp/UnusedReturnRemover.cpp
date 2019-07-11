@@ -144,15 +144,14 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         }
     }
     else {
-        // For each caller
         for (CallStatement *cc : proc->getCallers()) {
-#if RECURSION_WIP
-            // TODO: prevent function from blocking it's own removals, needs more work
-            if (cc->getProc()->doesRecurseTo(this)) {
+            // Prevent function from blocking its own removals
+            // TODO This only handles self-recursion. More analysis and testing is necessary
+            // for mutual recursion. (-> cc->getProc()->doesRecurseTo(proc))
+            if (cc->getProc() == proc) {
                 continue;
             }
-#endif
-            // Union in the set of locations live at this call
+
             UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
         }
@@ -187,7 +186,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         unionOfCallerLiveLocs.print(ost);
         LOG_MSG("%%%  union of caller live locations for %1: %2", proc->getName(), tgt);
         LOG_MSG("%%%  final returns for %1: %2", proc->getName(),
-                proc->getRetStmt()->getReturns().prints());
+                proc->getRetStmt()->getReturns().toString());
     }
 
     // removing returns might result in params that can be removed, might as well do it now.
@@ -256,15 +255,14 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     }
 
     // Have to redo dataflow to get the liveness at the calls correct
-    PassManager::get()->executePass(PassID::CallLivenessRemoval,
-                                    proc); // Want to recompute the call livenesses
+    PassManager::get()->executePass(PassID::CallLivenessRemoval, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis
     // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
     // additional parameters to printf/scanf), and removing unused statements is unsafe without full
     // use information
-    if (proc->getStatus() < PROC_FINAL) {
+    if (proc->getStatus() < ProcStatus::FinalDone) {
         PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
 
         // Now that locals are identified, redo the dataflow

@@ -13,6 +13,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
@@ -69,10 +70,9 @@ void BasicBlockTest::testAssign()
     BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
 
     BasicBlock bb4 = bb3;
-    QCOMPARE(bb4.prints(), bb3.prints());
+    QCOMPARE(bb4.toString(), bb3.toString());
 
     BasicBlock bb5 = bb2;
-    bb5 = bb5;
 
     QVERIFY(bb5.getLowAddr() == Address(0x1000));
     QVERIFY(bb5.getFunction() == &proc);
@@ -362,12 +362,12 @@ void BasicBlockTest::testAddImplicit()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
     bb1.addImplicitAssign(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -391,12 +391,12 @@ void BasicBlockTest::testAddPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
     bb1.addPhi(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -418,7 +418,7 @@ void BasicBlockTest::testAddImplicitOverPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -440,7 +440,7 @@ void BasicBlockTest::testAddPhiOverImplict()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), expected);
+    QCOMPARE(bb1.toString(), expected);
 }
 
 
@@ -529,6 +529,29 @@ void BasicBlockTest::testHasStatement()
 }
 
 
+void BasicBlockTest::testSimplify()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    BasicBlock *bb1 = proc.getCFG()->createBB(BBType::Twoway, std::move(rtls));
+
+    rtls.reset(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { new CallStatement() })));
+    BasicBlock *bb2 = proc.getCFG()->createBB(BBType::Twoway, std::move(rtls));
+
+    proc.getCFG()->addEdge(bb1, bb2);
+    proc.getCFG()->addEdge(bb1, bb2);
+
+    bb1->simplify();
+    QCOMPARE(bb1->getType(), BBType::Oneway);
+    QCOMPARE(bb1->getNumSuccessors(), 1);
+    QVERIFY(bb1->isPredecessorOf(bb2));
+    QVERIFY(bb2->isSuccessorOf(bb1));
+}
+
+
 void BasicBlockTest::testUpdateBBAddresses()
 {
     BasicBlock bb1(Address(0x1000), nullptr);
@@ -546,6 +569,48 @@ void BasicBlockTest::testUpdateBBAddresses()
 
     QVERIFY(bb1.getLowAddr() == Address(0x2000));
     QVERIFY(bb1.getHiAddr()  == Address(0x2000));
+}
+
+
+void BasicBlockTest::testIsEmpty()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.isEmpty());
+
+    bb1.setRTLs(std::unique_ptr<RTLList>(new RTLList));
+    QVERIFY(bb1.isEmpty());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000))));
+    QVERIFY(bb1.isEmpty());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001))));
+    QVERIFY(bb1.isEmpty());
+
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { jump })));
+
+    QVERIFY(!bb1.isEmpty());
+}
+
+
+void BasicBlockTest::testIsEmptyJump()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(!bb1.isEmptyJump());
+
+    bb1.setRTLs(std::unique_ptr<RTLList>(new RTLList));
+    QVERIFY(!bb1.isEmptyJump());
+
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000))));
+    QVERIFY(!bb1.isEmptyJump());
+
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+    bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
+    QVERIFY(bb1.isEmptyJump());
+
+    Assign *asgn = new Assign(Terminal::get(opNil), Terminal::get(opNil));
+    bb1.getRTLs()->back()->push_front(asgn);
+    QVERIFY(!bb1.isEmptyJump());
 }
 
 

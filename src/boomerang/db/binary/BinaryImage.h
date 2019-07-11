@@ -104,11 +104,13 @@ public:
 
     ptrdiff_t getTextDelta() const { return m_textDelta; }
 
+    bool readNative1(Address addr, Byte &value) const;
+    bool readNative2(Address addr, SWord &value) const;
+    bool readNative4(Address addr, DWord &value) const;
+    bool readNative8(Address addr, QWord &value) const;
 
-    Byte readNative1(Address addr) const;
-    SWord readNative2(Address addr) const;
-    DWord readNative4(Address addr) const;
-    QWord readNative8(Address addr) const;
+    bool readNativeAddr4(Address addr, Address &value) const;
+    bool readNativeAddr8(Address addr, Address &value) const;
 
     bool readNativeFloat4(Address addr, float &value) const;
     bool readNativeFloat8(Address addr, double &value) const;

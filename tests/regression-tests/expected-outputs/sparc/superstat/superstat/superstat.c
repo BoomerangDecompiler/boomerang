@@ -1,7 +1,8 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
+
 
 /** address: 0x000106a8 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     struct stat local0; 		// m[o6 - 152]
     int local1; 		// m[o6 - 136]
@@ -17,10 +18,11 @@ int main(int argc, union { __size32; char *[] *; } argv)
     int local8; 		// m[o6 - 72]
     int local9; 		// m[o6 - 68]
     int o0; 		// r8
+    int o0_1; 		// r8
 
     o0 = *(argv + 4);
-    o0 = stat(o0, &local0);
-    printf("res: %i\n", o0);
+    o0_1 = stat(o0, &local0);
+    printf("res: %i\n", o0_1);
     printf("dev: %i\n", local0);
     printf("ino: %i\n", local1);
     printf("mode: %i\n", local2);

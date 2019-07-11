@@ -21,7 +21,12 @@
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpCastInserter.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expvisitor/ExpRegMapper.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtRegMapper.h"
+#include "boomerang/visitor/stmtmodifier/StmtSSAXFormer.h"
+#include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
 
 
 FromSSAFormPass::FromSSAFormPass()
@@ -39,9 +44,10 @@ bool FromSSAFormPass::execute(UserProc *proc)
 
     for (Statement *s : stmts) {
         // Map registers to initial local variables
-        s->mapRegistersToLocals();
+        mapRegistersToLocals(s);
+
         // Insert casts where needed, as types are about to become inaccessible
-        s->insertCasts();
+        insertCastsForStmt(s);
     }
 
     // First split the live ranges where needed by reason of type incompatibility, i.e. when the
@@ -51,7 +57,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     typedef std::map<SharedExp, FirstTypeEnt, lessExpStar> FirstTypesMap;
 
     FirstTypesMap firstTypes;
-    FirstTypesMap::iterator ff;
+
     ConnectionGraph ig; // The interference graph; these can't have the same local variable
     ConnectionGraph pu; // The Phi Unites: these need the same local variable or copies
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
@@ -60,34 +66,34 @@ bool FromSSAFormPass::execute(UserProc *proc)
         LocationSet defs;
         s->getDefinitions(defs, assumeABICompliance);
 
-        for (SharedExp base : defs) {
-            SharedType ty = s->getTypeFor(base);
+        for (SharedExp defdByS : defs) {
+            SharedType ty = s->getTypeForExp(defdByS);
 
             if (ty == nullptr) { // Can happen e.g. when getting the type for %flags
                 ty = VoidType::get();
             }
 
-            LOG_VERBOSE2("Got type %1 for %2 from %3", ty->prints(), base, s);
-            ff            = firstTypes.find(base);
-            SharedExp ref = RefExp::get(base, s);
+            if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
+                LOG_MSG("Got type %1 for %2 from %3", ty->getCtype(), defdByS, s);
+            }
+
+            FirstTypesMap::iterator ff = firstTypes.find(defdByS);
+            SharedExp ref              = RefExp::get(defdByS, s);
 
             if (ff == firstTypes.end()) {
                 // There is no first type yet. Record it.
-                FirstTypeEnt fte;
-                fte.first        = ty;
-                fte.second       = ref;
-                firstTypes[base] = fte;
+                firstTypes[defdByS] = { ty, ref };
             }
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
                 if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
-                    LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.", base,
-                            s->getNumber(), ty, ff->second.first);
+                    LOG_WARN("Def of %1 at '%2' is not compatible with first type %3.", defdByS,
+                             s->toString(), ff->second.first);
                 }
 
-                // There already is a type for base, and it is different to the type for this
+                // There already is a type for defdByS, and it is different to the type for this
                 // definition. Record an "interference" so it will get a new variable
                 if (!ty->isVoid()) { // just ignore void interferences ??!!
-                    ig.connect(ref, ff->second.second);
+                    ig.add(ref, ff->second.second);
                 }
             }
         }
@@ -142,9 +148,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         }
 
         if (rename == nullptr) {
-            Statement *def2 = ref2->getDef();
-
-            if (def2->isPhi()) { // Prefer the destinations of phis
+            if (ref2->getDef()->isPhi()) { // Prefer the destinations of phis
                 rename = ref2;
             }
             else {
@@ -152,7 +156,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
             }
         }
 
-        SharedType ty   = rename->getDef()->getTypeFor(rename->getSubExp1());
+        SharedType ty   = rename->getDef()->getTypeForExp(rename->getSubExp1());
         SharedExp local = proc->createLocal(ty, rename);
 
         if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
@@ -188,8 +192,8 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 QString firstName;
                 PhiAssign *pa = static_cast<PhiAssign *>(def1);
 
-                for (RefExp &refExp : *pa) {
-                    auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
+                for (const std::shared_ptr<RefExp> &refExp : *pa) {
+                    auto re(RefExp::get(refExp->getSubExp1(), refExp->getDef()));
 
                     if (*re == *ref2) {
                         r2IsOperand = true;
@@ -218,17 +222,19 @@ bool FromSSAFormPass::execute(UserProc *proc)
         }
     }
 
-    /*    *    *    *    *    *    *    *    *    *    *    *    *    *    *\
-    *                                                        *
-    *     IR gets changed with hard locals and params here    *
-    *                                                        *
-    \*    *    *    *    *    *    *    *    *    *    *    *    *    *    */
+    /*   *   *   *   *   *   *   *   *   *   *   *   *   *   *\
+     *                                                       *
+     *     IR gets changed with hard locals and params here  *
+     *                                                       *
+    \*   *   *   *   *   *   *   *   *   *   *   *   *   *   */
 
     // First rename the variables (including phi's, but don't remove).
     // NOTE: it is not possible to postpone renaming these locals till the back end, since the same
     // base location may require different names at different locations, e.g. r28{0} is local0,
-    // r28{16} is local1 Update symbols and parameters, particularly for the stack pointer inside
-    // memofs. NOTE: the ordering of the below operations is critical! Re-ordering may well prevent
+    // r28{16} is local1
+    // Update symbols and parameters, particularly for the stack pointer inside
+    // memofs.
+    // NOTE: the ordering of the below operations is critical! Re-ordering may well prevent
     // e.g. parameters from renaming successfully.
     assert(proc->allPhisHaveDefs());
     nameParameterPhis(proc);
@@ -238,7 +244,12 @@ bool FromSSAFormPass::execute(UserProc *proc)
     removeSubscriptsFromParameters(proc);
 
     for (Statement *s : stmts) {
-        s->replaceSubscriptsWithLocals();
+        // The last part of the fromSSA logic:
+        // replace subscripted locations with suitable local variables
+        ExpSSAXformer esx(proc);
+        StmtSSAXformer ssx(&esx, proc);
+
+        s->accept(&ssx);
     }
 
     // Now remove the phis
@@ -264,17 +275,17 @@ bool FromSSAFormPass::execute(UserProc *proc)
         SharedExp first    = nullptr;
 
         if (phi->getNumDefs() > 1) {
-            for (RefExp &pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
+            for (const std::shared_ptr<RefExp> &pi : *phi) {
+                if (pi->getSubExp1() == nullptr) {
                     continue;
                 }
 
                 if (first == nullptr) {
-                    first = pi.getSubExp1();
+                    first = pi->getSubExp1();
                     continue;
                 }
 
-                if (!(*(pi.getSubExp1()) == *first)) {
+                if (!(*(pi->getSubExp1()) == *first)) {
                     phiParamsSame = false;
                     break;
                 }
@@ -313,12 +324,12 @@ bool FromSSAFormPass::execute(UserProc *proc)
             }
 
             // For each definition ref'd in the phi
-            for (RefExp &pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
+            for (const std::shared_ptr<RefExp> &pi : *phi) {
+                if (pi->getSubExp1() == nullptr) {
                     continue;
                 }
 
-                proc->insertAssignAfter(pi.getDef(), tempLoc, pi.getSubExp1());
+                proc->insertAssignAfter(pi->getDef(), tempLoc, pi->getSubExp1());
             }
 
             // Replace the RHS of the phi with tempLoc
@@ -353,9 +364,9 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
         QString firstName;     // The name for the first parameter found
         SharedType ty = pi->getType();
 
-        for (RefExp &v : *pi) {
-            if (v.getDef()->isImplicit()) {
-                QString name = proc->lookupSym(RefExp::get(v.getSubExp1(), v.getDef()), ty);
+        for (const std::shared_ptr<RefExp> &v : *pi) {
+            if (v->getDef()->isImplicit()) {
+                QString name = proc->lookupSym(RefExp::get(v->getSubExp1(), v->getDef()), ty);
 
                 if (!name.isEmpty()) {
                     if (!firstName.isEmpty() && (firstName != name)) {
@@ -375,6 +386,7 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
         proc->mapSymbolTo(lhsRef, Location::param(firstName, proc));
     }
 }
+
 
 void FromSSAFormPass::mapParameters(UserProc *proc)
 {
@@ -457,10 +469,32 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
         SharedExp lhs = pa->getLeft();
         auto reLhs    = RefExp::get(lhs, pa);
 
-        for (RefExp &v : *pa) {
-            assert(v.getSubExp1());
-            auto re = RefExp::get(v.getSubExp1(), v.getDef());
+        for (const std::shared_ptr<RefExp> &v : *pa) {
+            assert(v->getSubExp1());
+            auto re = RefExp::get(v->getSubExp1(), v->getDef());
             pu.connect(reLhs, re);
         }
     }
+}
+
+
+void FromSSAFormPass::insertCastsForStmt(Statement *stmt)
+{
+    // First we postvisit expressions using a StmtModifier and an ExpCastInserter
+    ExpCastInserter eci;
+    StmtModifier sm(&eci, true); // True to ignore collectors
+    stmt->accept(&sm);
+
+    // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
+    StmtCastInserter sci;
+    stmt->accept(&sci);
+}
+
+
+void FromSSAFormPass::mapRegistersToLocals(Statement *stmt)
+{
+    ExpRegMapper erm(stmt->getProc());
+    StmtRegMapper srm(&erm);
+
+    stmt->accept(&srm);
 }

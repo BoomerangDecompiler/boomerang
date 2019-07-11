@@ -9,18 +9,11 @@
 #pragma endregion License
 #include "Project.h"
 
-#include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/mips/MIPSFrontEnd.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
-#include "boomerang/frontend/ppc/PPCFrontEnd.h"
-#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
-#include "boomerang/frontend/st20/ST20FrontEnd.h"
-#include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/log/Log.h"
@@ -28,14 +21,17 @@
 
 Project::Project()
     : m_settings(new Settings())
-    , m_typeRecovery(new DFATypeRecovery())
-    , m_codeGenerator(new CCodeGenerator())
+    , m_pluginManager(new PluginManager(this))
 {
 }
 
 
 Project::~Project()
 {
+    // Named types need to be unloaded before Symbol Provider plugins are unloaded.
+    // This ensures that no library function signatures held by FuncTypes remain
+    // in the main program when unloading Symbol Provider plugins.
+    Type::clearNamedTypes();
 }
 
 
@@ -77,13 +73,27 @@ const Prog *Project::getProg() const
 
 ITypeRecovery *Project::getTypeRecoveryEngine()
 {
-    return m_typeRecovery.get();
+    const auto &plugins = m_pluginManager->getPluginsByType(PluginType::TypeRecovery);
+    return !plugins.empty() ? plugins.front()->getIfc<ITypeRecovery>() : nullptr;
 }
 
 
 const ITypeRecovery *Project::getTypeRecoveryEngine() const
 {
-    return m_typeRecovery.get();
+    const auto &plugins = m_pluginManager->getPluginsByType(PluginType::TypeRecovery);
+    return !plugins.empty() ? plugins.front()->getIfc<ITypeRecovery>() : nullptr;
+}
+
+
+PluginManager *Project::getPluginManager()
+{
+    return m_pluginManager.get();
+}
+
+
+const PluginManager *Project::getPluginManager() const
+{
+    return m_pluginManager.get();
 }
 
 
@@ -225,7 +235,11 @@ bool Project::generateCode(Module *module)
     }
 
     LOG_MSG("Generating code...");
-    m_codeGenerator->generateCode(getProg(), module);
+    for (auto &plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+        ICodeGenerator *gen = plugin->getIfc<ICodeGenerator>();
+        gen->generateCode(getProg(), module);
+    }
+
     return true;
 }
 
@@ -238,37 +252,48 @@ Prog *Project::createProg(BinaryFile *file, const QString &name)
     }
 
     // unload old Prog before creating a new one
-    m_fe.reset();
+    m_fe = nullptr;
     m_prog.reset();
 
     m_prog.reset(new Prog(name, this));
-    m_fe.reset(createFrontEnd());
+    m_fe = createFrontEnd();
+    m_prog->setFrontEnd(m_fe);
 
-    m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
 }
 
 
 IFrontEnd *Project::createFrontEnd()
 {
-    BinaryFile *binaryFile = getLoadedBinaryFile();
-    Prog *prog             = m_prog.get();
-
     try {
+        Plugin *plugin = nullptr;
+
         switch (getLoadedBinaryFile()->getMachine()) {
-        case Machine::PENTIUM: return new PentiumFrontEnd(binaryFile, prog);
-        case Machine::SPARC: return new SPARCFrontEnd(binaryFile, prog);
-        case Machine::PPC: return new PPCFrontEnd(binaryFile, prog);
-        case Machine::MIPS: return new MIPSFrontEnd(binaryFile, prog);
-        case Machine::ST20: return new ST20FrontEnd(binaryFile, prog);
-        case Machine::HPRISC: LOG_WARN("No frontend for HP RISC"); break;
-        case Machine::PALM: LOG_WARN("No frontend for PALM"); break;
-        case Machine::M68K: LOG_WARN("No frontend for M68K"); break;
+        case Machine::PENTIUM:
+            plugin = m_pluginManager->getPluginByName("X86 FrontEnd plugin");
+            break;
+        case Machine::SPARC:
+            plugin = m_pluginManager->getPluginByName("SPARC FrontEnd plugin");
+            break;
+        case Machine::PPC: plugin = m_pluginManager->getPluginByName("PPC FrontEnd plugin"); break;
+        case Machine::ST20:
+            plugin = m_pluginManager->getPluginByName("ST20 FrontEnd plugin");
+            break;
         default: LOG_ERROR("Machine architecture not supported!"); break;
         }
+
+        if (!plugin) {
+            throw std::runtime_error("Plugin not found.");
+        }
+
+        IFrontEnd *fe = plugin->getIfc<IFrontEnd>();
+        if (!fe->initialize(this)) {
+            throw std::runtime_error("FrontEnd initialization failed.");
+        }
+        return fe;
     }
     catch (const std::runtime_error &err) {
-        LOG_ERROR("Cannot create frontend: %1", err.what());
+        LOG_ERROR("Cannot create FrontEnd: %1", err.what());
     }
 
     return nullptr;
@@ -326,34 +351,39 @@ void Project::loadPlugins()
     LOG_MSG("Loading plugins...");
 
     QDir pluginsDir = getSettings()->getPluginDirectory();
-    if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
+    if (!pluginsDir.exists()) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
         return;
     }
 
-    for (QString fileName : pluginsDir.entryList(QDir::Files)) {
-        const QString sofilename = pluginsDir.absoluteFilePath(fileName);
+    m_pluginManager->loadPluginsFromDir(pluginsDir.absolutePath(), 1);
 
-#ifdef _WIN32
-        if (!sofilename.endsWith(".dll")) {
-            continue;
-        }
-#endif
-        try {
-            std::unique_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
-            m_loaderPlugins.push_back(std::move(loaderPlugin));
-        }
-        catch (const char *errmsg) {
-            LOG_WARN("Unable to load plugin: %1", errmsg);
-        }
-    }
-
-    if (m_loaderPlugins.empty()) {
+    if (m_pluginManager->getPluginsByType(PluginType::FileLoader).empty()) {
         LOG_ERROR("No loader plugins found, unable to load any binaries.");
     }
     else {
         LOG_MSG("Loaded plugins:");
-        for (const auto &plugin : m_loaderPlugins) {
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::Decoder)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FrontEnd)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::SymbolProvider)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::TypeRecovery)) {
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);
         }
@@ -500,9 +530,9 @@ IFileLoader *Project::getBestLoader(const QString &filePath) const
     int bestScore           = 0;
 
     // get the best plugin for loading this file
-    for (const std::unique_ptr<LoaderPlugin> &p : m_loaderPlugins) {
+    for (Plugin *p : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
         inputBinary.seek(0); // reset the file offset for the next plugin
-        IFileLoader *loader = p->get();
+        IFileLoader *loader = p->getIfc<IFileLoader>();
 
         int score = loader->canLoad(inputBinary);
 

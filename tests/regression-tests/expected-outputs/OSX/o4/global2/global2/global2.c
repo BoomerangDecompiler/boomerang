@@ -1,11 +1,16 @@
 int main(int argc, char *argv[]);
 
+int b;
+
 /** address: 0x00001ca4 */
 int main(int argc, char *argv[])
 {
-    *(__size32*)(/* machine specific */ (int) LR + 888) = 12;
-    printf(/* machine specific */ (int) LR + 832);
-    printf(/* machine specific */ (int) LR + 840);
+    int g4; 		// r4
+
+    g4 = *0x2020;
+    b = 12;
+    printf("a = %f\n", g4);
+    printf("b = %i\n", b);
     return 0;
 }
 

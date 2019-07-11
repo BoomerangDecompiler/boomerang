@@ -19,14 +19,6 @@
 class Exp;
 using SharedExp = std::shared_ptr<Exp>;
 
-// Kinds of SSL specification tables
-enum TABLE_TYPE
-{
-    NAMETABLE,
-    OPTABLE,
-    EXPRTABLE
-};
-
 
 /**
  * Provides the definition of class Table used by the SSL parser
@@ -36,8 +28,9 @@ class Table
     typedef std::deque<QString> StringQueue;
 
 public:
-    Table(const std::deque<QString> &recs, TABLE_TYPE t = NAMETABLE);
-    Table(TABLE_TYPE t);
+    Table(const std::deque<QString> &recs);
+    Table() = default;
+
     Table(const Table &other) = delete;
     Table(Table &&other)      = default;
 
@@ -47,29 +40,8 @@ public:
     Table &operator=(Table &&other) = default;
 
 public:
-    TABLE_TYPE getType() const;
-
     const StringQueue &getRecords() const { return Records; }
 
 private:
-    TABLE_TYPE TableType;
     StringQueue Records;
-};
-
-
-class OpTable : public Table
-{
-public:
-    OpTable(const std::deque<QString> &ops);
-};
-
-
-class ExprTable : public Table
-{
-public:
-    ExprTable(const std::deque<SharedExp> &exprs);
-    ~ExprTable() = default;
-
-public:
-    std::deque<SharedExp> expressions;
 };

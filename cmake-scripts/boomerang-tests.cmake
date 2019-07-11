@@ -9,10 +9,10 @@
 
 if (BOOMERANG_BUILD_UNIT_TESTS)
     enable_testing()
-    find_package(Qt5Test REQUIRED HINTS $ENV{QTDIR})
-    if (Qt5Test_FOUND)
-        mark_as_advanced(Qt5Test_DIR)
-    endif (Qt5Test_FOUND)
+    find_package(Qt5 COMPONENTS Test REQUIRED HINTS $ENV{QTDIR})
+    if (Qt5_FOUND)
+        mark_as_advanced(Qt5_DIR Qt5Test_DIR)
+    endif (Qt5_FOUND)
 
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
     add_subdirectory(${CMAKE_SOURCE_DIR}/tests/unit-tests)

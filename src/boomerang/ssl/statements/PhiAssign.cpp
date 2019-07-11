@@ -42,15 +42,11 @@ Statement *PhiAssign::clone() const
 {
     PhiAssign *pa = new PhiAssign(m_type, m_lhs);
 
-    for (const PhiDefs::value_type &val : m_defs) {
-        BasicBlock *bb   = val.first;
-        const RefExp &pi = val.second;
-        assert(pi.getSubExp1());
+    for (const auto &[bb, ref] : m_defs) {
+        assert(ref->getSubExp1());
 
-        RefExp clone(pi.getSubExp1()->clone(), // Do clone the expression pointer
-                     pi.getDef());             // Don't clone the Statement pointer (never moves)
-
-        pa->m_defs.insert({ bb, RefExp(pi.getSubExp1()->clone(), pi.getDef()) });
+        // Clone the expression pointer, but not the statement pointer (never moves)
+        pa->m_defs.insert({ bb, RefExp::get(ref->getSubExp1()->clone(), ref->getDef()) });
     }
 
     return pa;
@@ -72,69 +68,29 @@ void PhiAssign::printCompact(OStream &os) const
     }
 
     os << " := phi";
-    // Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the
-    // referenced locations. When not, print as local4 := phi(r24{9} argc{17})
-    bool simple = true;
+    for (const auto &[bb, ref] : m_defs) {
+        Q_UNUSED(bb);
+        Q_UNUSED(ref);
 
-    for (const auto &v : m_defs) {
-        assert(v.second.getSubExp1() != nullptr);
+        assert(ref->getSubExp1() != nullptr);
+        assert(*ref->getSubExp1() == *m_lhs);
+    }
+    os << "{";
 
-        // If e is nullptr assume it is meant to match lhs
-        if (!(*v.second.getSubExp1() == *m_lhs)) {
-            // One of the phi parameters has a different base expression to lhs. Use non-simple
-            // print.
-            simple = false;
-            break;
+    for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
+        if (it->second->getDef()) {
+            os << it->second->getDef()->getNumber();
+        }
+        else {
+            os << "-";
+        }
+
+        if (++it != m_defs.end()) {
+            os << " ";
         }
     }
 
-    if (simple) {
-        os << "{";
-
-        for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-            if (it->second.getDef()) {
-                os << it->second.getDef()->getNumber();
-            }
-            else {
-                os << "-";
-            }
-
-            if (++it != m_defs.end()) {
-                os << " ";
-            }
-        }
-
-        os << "}";
-    }
-    else {
-        os << "(";
-
-        for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-            SharedConstExp e = it->second.getSubExp1();
-
-            if (e == nullptr) {
-                os << "nullptr{";
-            }
-            else {
-                os << e << "{";
-            }
-
-            if (it->second.getDef()) {
-                os << it->second.getDef()->getNumber();
-            }
-            else {
-                os << "-";
-            }
-
-            os << "}";
-
-            if (++it != m_defs.end()) {
-                os << " ";
-            }
-        }
-
-        os << ")";
-    }
+    os << "}";
 }
 
 
@@ -144,13 +100,10 @@ bool PhiAssign::search(const Exp &pattern, SharedExp &result) const
         return true;
     }
 
-    for (RefExp exp : *this) {
-        assert(exp.getSubExp1() != nullptr);
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        assert(ref->getSubExp1() != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(exp.getSubExp1(),
-                  const_cast<Statement *>(exp.getDef())); ///< \todo remove const_cast
-
-        if (re.search(pattern, result)) {
+        if (ref->search(pattern, result)) {
             return true;
         }
     }
@@ -169,16 +122,17 @@ bool PhiAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) cons
 
 bool PhiAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
-    bool change;
+    bool change = false;
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 
-    for (auto &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
+    for (const std::shared_ptr<RefExp> &refExp : *this) {
+        assert(refExp->getSubExp1() != nullptr);
         bool ch;
+
         // Assume that the definitions will also be replaced
-        refExp.setSubExp1(refExp.getSubExp1()->searchReplaceAll(pattern, replace, ch));
-        assert(refExp.getSubExp1());
+        refExp->setSubExp1(refExp->getSubExp1()->searchReplaceAll(pattern, replace, ch));
+        assert(refExp->getSubExp1());
         change |= ch;
     }
 
@@ -199,9 +153,9 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
         return false;
     }
 
-    for (RefExp &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
-        if (!RefExp::get(refExp.getSubExp1(), refExp.getDef())->acceptVisitor(visitor->ev)) {
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        assert(ref->getSubExp1() != nullptr);
+        if (!ref->acceptVisitor(visitor->ev)) {
             return false;
         }
     }
@@ -279,10 +233,10 @@ void PhiAssign::simplify()
     }
 
     bool allSame        = true;
-    Statement *firstDef = begin()->getDef();
+    Statement *firstDef = (*begin())->getDef();
 
     for (auto &refExp : *this) {
-        if (refExp.getDef() != firstDef) {
+        if (refExp->getDef() != firstDef) {
             allSame = false;
             break;
         }
@@ -297,13 +251,13 @@ void PhiAssign::simplify()
     bool onlyOneNotThis = true;
     Statement *notthis  = STMT_WILD;
 
-    for (auto &refExp : *this) {
-        if (refExp.getDef() && !refExp.getDef()->isImplicit() && refExp.getDef()->isPhi() &&
-            refExp.getDef() == this) {
+    for (const std::shared_ptr<RefExp> &ref : *this) {
+        Statement *def = ref->getDef();
+        if (def == this) {
             continue; // ok
         }
         else if (notthis == STMT_WILD) {
-            notthis = refExp.getDef();
+            notthis = def;
         }
         else {
             onlyOneNotThis = false;
@@ -327,21 +281,11 @@ void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
     // Can't use operator[] here since PhiInfo is not default-constructible
     PhiDefs::iterator it = m_defs.find(bb);
     if (it == m_defs.end()) {
-        m_defs.insert({ bb, RefExp(e, def) });
+        m_defs.insert({ bb, RefExp::get(e, def) });
     }
     else {
-        it->second.setDef(def);
-        it->second.setSubExp1(e);
-    }
-}
-
-
-void PhiAssign::enumerateParams(std::list<SharedExp> &le)
-{
-    for (RefExp &refExp : *this) {
-        assert(refExp.getSubExp1() != nullptr);
-        auto r = RefExp::get(refExp.getSubExp1(), refExp.getDef());
-        le.push_back(r);
+        it->second->setDef(def);
+        it->second->setSubExp1(e);
     }
 }
 
@@ -349,30 +293,30 @@ void PhiAssign::enumerateParams(std::list<SharedExp> &le)
 const Statement *PhiAssign::getStmtAt(BasicBlock *idx) const
 {
     PhiDefs::const_iterator it = m_defs.find(idx);
-    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+    return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
 Statement *PhiAssign::getStmtAt(BasicBlock *idx)
 {
     PhiDefs::iterator it = m_defs.find(idx);
-    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+    return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
 void PhiAssign::removeAllReferences(const std::shared_ptr<RefExp> &refExp)
 {
     for (PhiDefs::iterator pi = m_defs.begin(); pi != m_defs.end();) {
-        RefExp &p = pi->second;
-        assert(p.getSubExp1());
+        std::shared_ptr<RefExp> &p = pi->second;
+        assert(p->getSubExp1());
 
-        if (p == *refExp) {        // Will we ever see this?
+        if (*p == *refExp) {       // Will we ever see this?
             pi = m_defs.erase(pi); // Erase this phi parameter
             continue;
         }
 
         // Chase the definition
-        Statement *def = p.getDef();
+        Statement *def = p->getDef();
         if (def && def->isAssign()) {
             SharedExp rhs = static_cast<Assign *>(def)->getRight();
 

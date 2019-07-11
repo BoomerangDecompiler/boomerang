@@ -23,16 +23,16 @@ class Assign;
 class ReturnStatement;
 
 
-enum ProcStatus : uint8_t
+enum class ProcStatus : uint8_t
 {
-    PROC_UNDECODED,     ///< Has not even been decoded
-    PROC_DECODED,       ///< Decoded, no attempt at decompiling
-    PROC_VISITED,       ///< Has been visited on the way down in decompile()
-    PROC_INCYCLE,       ///< Is involved in cycles, has not completed early decompilation as yet
-    PROC_PRESERVEDS,    ///< Has had preservation analysis done
-    PROC_EARLYDONE,     ///< Has completed everything except the global analyses
-    PROC_FINAL,         ///< Has had final decompilation
-    PROC_CODE_GENERATED ///< Has had code generated
+    Undecoded,  ///< Has not even been decoded
+    Decoded,    ///< Decoded, no attempt at decompiling
+    Visited,    ///< Has been visited on the way down in decompile()
+    InCycle,    ///< Is involved in cycles, has not completed early decompilation as yet
+    Preserveds, ///< Has had preservation analysis done
+    MiddleDone, ///< Has completed everything except the global analyses
+    FinalDone,  ///< Has had final decompilation
+    CodegenDone ///< Has had code generated
 };
 
 
@@ -108,15 +108,15 @@ public:
     void setStatus(ProcStatus s);
 
     /// Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
-    bool isDecoded() const { return m_status >= PROC_DECODED; }
-    bool isDecompiled() const { return m_status >= PROC_FINAL; }
+    bool isDecoded() const { return m_status >= ProcStatus::Decoded; }
+    bool isDecompiled() const { return m_status >= ProcStatus::FinalDone; }
 
     /// Records that this procedure has been decoded.
     void setDecoded();
 
     bool isEarlyRecursive() const
     {
-        return m_recursionGroup != nullptr && m_status <= PROC_INCYCLE;
+        return m_recursionGroup != nullptr && m_status <= ProcStatus::InCycle;
     }
 
     bool doesRecurseTo(UserProc *proc) const
@@ -295,8 +295,8 @@ public:
     /// or saves and restores the value of \p exp.
     bool preservesExp(const SharedExp &exp);
 
-    /// Same as \ref preservesExp, but \p exp is restored tp \p exp + \p offset
-    /// (e.g. x86 esp is restored to esp+4)
+    /// Same as \ref preservesExp, but \p exp is preserved to \p exp + \p offset
+    /// (e.g. x86 esp is preserved to esp+4)
     bool preservesExpWithOffset(const SharedExp &exp, int offset);
 
 public:
@@ -377,14 +377,15 @@ private:
 
     void killPremise(const SharedExp &e);
 
+    bool isNoReturnInternal(std::set<const Function *> &visited) const;
+
 private:
-    /**
-     * The status of this user procedure.
-     * Status: undecoded .. final decompiled
-     */
-    ProcStatus m_status = PROC_UNDECODED;
-    int m_nextLocal     = 0; ///< Number of the next local. Can't use locals.size() because some get
-                             ///< deleted
+    /// The status of this user procedure.
+    /// Status: undecoded .. final decompiled
+    ProcStatus m_status = ProcStatus::Undecoded;
+
+    /// Number of the next local. Can't use locals.size() because some get deleted
+    int m_nextLocal = 0;
 
     std::unique_ptr<ProcCFG> m_cfg; ///< The control flow graph.
 

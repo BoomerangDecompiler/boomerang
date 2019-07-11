@@ -39,8 +39,8 @@ void SignatureTest::testClone()
 
 void SignatureTest::testCompare()
 {
-    Signature sig1("test1");
-    Signature sig2("test2");
+    Signature sig1("test");
+    Signature sig2("test");
     QVERIFY(sig1 == sig2);
 
     sig1.addParameter(Location::regOf(REG_PENT_EDX));
@@ -303,7 +303,7 @@ void SignatureTest::testPromote()
 void SignatureTest::testGetStackRegister()
 {
     Signature sig("test");
-    QCOMPARE(sig.getStackRegister(), -1);
+    QCOMPARE(sig.getStackRegister(), RegNumSpecial);
 }
 
 

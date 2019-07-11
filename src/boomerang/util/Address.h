@@ -84,7 +84,7 @@ public:
     Address operator--(int)
     {
         Address addr(*this);
-        m_value = (m_value + 1) & getSourceMask();
+        m_value = (m_value - 1) & getSourceMask();
         return addr;
     }
 

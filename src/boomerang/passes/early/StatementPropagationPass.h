@@ -17,17 +17,18 @@ class LocationSet;
 class UseCollector;
 
 
-class StatementPropagationPass : public IPass
+class StatementPropagationPass final : public IPass
 {
 public:
     StatementPropagationPass();
 
 public:
+    /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
 
 private:
     /// Find the locations that are used by a live, dominating phi-function
-    void findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi);
+    bool findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi);
 
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of \p proc)
     void propagateToCollector(UseCollector *collector);

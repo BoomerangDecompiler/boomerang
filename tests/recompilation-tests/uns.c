@@ -1,14 +1,33 @@
-#include <stdio.h>
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
 
-int main(int argc) {
-    if (argc >= 4000000000U)
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int main(int argc, char *argv[])
+{
+    if (argc >= 4000000000U) {
         printf("Population exceeds %u\n", 4000000000U);
-    if (argc < 0xF0000000)
+    }
+
+    if (argc < 0xF0000000) {
         printf("The mask is %x\n", 0xF0000000);
-    unsigned u = (unsigned) argc;
-    if (u >= 2)
+    }
+
+    unsigned int u = (unsigned int)argc;
+    if (u >= 2) {
         printf("Arguments supplied\n");
-    if (-argc < -2)
+    }
+
+    if (-argc < -2) {
         printf("Three or more arguments\n");
-    return 0;
+    }
+
+    return EXIT_SUCCESS;
 }

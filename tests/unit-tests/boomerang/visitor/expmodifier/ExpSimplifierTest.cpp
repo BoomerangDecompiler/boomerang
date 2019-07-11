@@ -42,7 +42,7 @@ void ExpSimplifierTest::testSimplify_data()
     // Unary
     {
         TEST_SIMPLIFY("UnaryNotEqual",
-                      Unary::get(opNot,
+                      Unary::get(opBitNot,
                                  Binary::get(opEquals,
                                              Location::regOf(REG_PENT_EAX),
                                              Location::regOf(REG_PENT_EDX))),
@@ -56,7 +56,7 @@ void ExpSimplifierTest::testSimplify_data()
                       Const::get(0xFFFFFF01));
 
         TEST_SIMPLIFY("UnaryNotConst",
-                      Unary::get(opNot, Const::get(0xFF)),
+                      Unary::get(opBitNot, Const::get(0xFF)),
                       Const::get(0xFFFFFF00));
 
         TEST_SIMPLIFY("UnaryLNotConst",
@@ -76,8 +76,48 @@ void ExpSimplifierTest::testSimplify_data()
                       Location::regOf(REG_PENT_EAX));
 
         TEST_SIMPLIFY("UnaryDoubleNot",
-                      Unary::get(opNot, Unary::get(opNot, Const::get(0x1000))),
+                      Unary::get(opBitNot, Unary::get(opBitNot, Const::get(0x1000))),
                       Const::get(0x1000));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitAnd",
+                      Unary::get(opBitNot, Binary::get(opBitAnd,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opBitOr,
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitAnd",
+                      Unary::get(opBitNot, Binary::get(opBitOr,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opBitAnd,
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opBitNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganLogOr",
+                      Unary::get(opLNot, Binary::get(opOr,
+                                                     Location::regOf(REG_PENT_EAX),
+                                                     Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opAnd,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganLogAnd",
+                      Unary::get(opLNot, Binary::get(opAnd,
+                                                     Location::regOf(REG_PENT_EAX),
+                                                     Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opOr,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
+
+        TEST_SIMPLIFY("UnaryDeMorganBitNotLogOr",
+                      Unary::get(opBitNot, Binary::get(opOr,
+                                                       Location::regOf(REG_PENT_EAX),
+                                                       Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opAnd,
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EAX)),
+                                  Unary::get(opLNot, Location::regOf(REG_PENT_EDX))));
     }
 
     // Binary
@@ -219,6 +259,12 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinaryXxorNull",
+                      Binary::get(opBitXor,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)),
+                      Location::regOf(REG_PENT_EAX));
+
         TEST_SIMPLIFY("BinaryXandFalse",
                       Binary::get(opAnd,
                                   Location::regOf(REG_PENT_EAX),
@@ -230,6 +276,14 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(REG_PENT_EAX),
                                   Const::get(0)),
                       Const::get(0));
+
+        TEST_SIMPLIFY("BinaryXdivNull",
+                      Binary::get(opDiv,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)),
+                      Binary::get(opDiv,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Const::get(0)));
 
         TEST_SIMPLIFY("BinaryXmult1",
                       Binary::get(opMult,
@@ -295,35 +349,211 @@ void ExpSimplifierTest::testSimplify_data()
                                   Terminal::get(opTrue)),
                       Terminal::get(opTrue));
 
-        TEST_SIMPLIFY("BinaryConstShrConst",
-                      Binary::get(opShiftR,
-                                  Const::get(0x100),
-                                  Const::get(4)),
-                      Const::get(0x010));
+        TEST_SIMPLIFY("BinaryConstPlusConst",
+                      Binary::get(opPlus,
+                                  Const::get(10),
+                                  Const::get(3)),
+                      Const::get(13));
 
-        TEST_SIMPLIFY("BinaryConstShr32",
-                      Binary::get(opShiftR,
-                                  Const::get(0x100),
-                                  Const::get(32)),
-                      Const::get(0));
+        TEST_SIMPLIFY("BinaryConstMinusConst",
+                      Binary::get(opMinus,
+                                  Const::get(10),
+                                  Const::get(3)),
+                      Const::get(7));
+
+        TEST_SIMPLIFY("BinaryConstMultsConst",
+                      Binary::get(opMults,
+                                  Const::get(10),
+                                  Const::get(-3)),
+                      Const::get(-30));
 
         TEST_SIMPLIFY("BinaryConstShlConst",
-                      Binary::get(opShiftL,
+                      Binary::get(opShL,
                                   Const::get(0x100),
                                   Const::get(4)),
                       Const::get(0x1000));
 
         TEST_SIMPLIFY("BinaryConstShl32",
-                      Binary::get(opShiftL,
+                      Binary::get(opShL,
                                   Const::get(0x100),
                                   Const::get(32)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinaryConstShrConst",
+                      Binary::get(opShR,
+                                  Const::get(0x100),
+                                  Const::get(4)),
+                      Const::get(0x010));
+
+        TEST_SIMPLIFY("BinaryConstShr32",
+                      Binary::get(opShR,
+                                  Const::get(0x100),
+                                  Const::get(32)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstAndConst",
+                      Binary::get(opBitAnd,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(2));
+
+        TEST_SIMPLIFY("BinaryConstOrConst",
+                      Binary::get(opBitOr,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(7));
+
+        TEST_SIMPLIFY("BinaryConstXorConst",
+                      Binary::get(opBitXor,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(5));
+
+        TEST_SIMPLIFY("BinaryConstEqualsConst",
+                      Binary::get(opEquals,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstNotEqualConst",
+                      Binary::get(opNotEqual,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstLessConst",
+                      Binary::get(opLess,
+                                  Const::get(-3),
+                                  Const::get(6)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstGtrConst",
+                      Binary::get(opGtr,
+                                  Const::get(-3),
+                                  Const::get(6)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstLeqConst",
+                      Binary::get(opLessEq,
+                                  Const::get(-3),
+                                  Const::get(6)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstGeqConst",
+                      Binary::get(opGtrEq,
+                                  Const::get(-3),
+                                  Const::get(6)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstLessUnsConst",
+                      Binary::get(opLessUns,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstGtrUnsConst",
+                      Binary::get(opGtrUns,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstLeqUnsConst",
+                      Binary::get(opLessEqUns,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstGeqUnsConst",
+                      Binary::get(opGtrEqUns,
+                                  Const::get(3),
+                                  Const::get(6)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("BinaryConstSar0",
+                      Binary::get(opShRA,
+                                  Const::get(5),
+                                  Const::get(0)),
+                      Const::get(5));
+
+        TEST_SIMPLIFY("BinaryConstSar32",
+                      Binary::get(opShRA,
+                                  Const::get(-1),
+                                  Const::get(32)),
+                      Const::get(-1));
+
         TEST_SIMPLIFY("BinaryConstSarConst",
-                      Binary::get(opShiftRA,
+                      Binary::get(opShRA,
                                   Const::get(-256),
                                   Const::get(5)),
                       Const::get(-8));
+
+        TEST_SIMPLIFY("BinaryPosConstSarConst",
+                      Binary::get(opShRA,
+                                  Const::get(256),
+                                  Const::get(5)),
+                      Const::get(8));
+
+        TEST_SIMPLIFY("BinaryMinus1SarConst",
+                      Binary::get(opShRA,
+                                  Const::get(-1),
+                                  Const::get(1)),
+                      Const::get(-1));
+
+        TEST_SIMPLIFY("BinaryConstDivsConst",
+                      Binary::get(opDivs,
+                                  Const::get(-3),
+                                  Const::get(2)),
+                      Const::get(-1));
+
+        TEST_SIMPLIFY("BinaryConstDivs0",
+                      Binary::get(opDivs,
+                                  Const::get(-10),
+                                  Const::get(0)),
+                      Binary::get(opDivs,
+                                  Const::get(-10),
+                                  Const::get(0)));
+
+        TEST_SIMPLIFY("BinaryConstModsConst",
+                      Binary::get(opMods,
+                                  Const::get(-3),
+                                  Const::get(2)),
+                      Const::get(-1));
+
+        TEST_SIMPLIFY("BinaryConstMods0",
+                      Binary::get(opMods,
+                                  Const::get(-10),
+                                  Const::get(0)),
+                      Binary::get(opMods,
+                                  Const::get(-10),
+                                  Const::get(0)));
+
+        TEST_SIMPLIFY("BinaryConstDivConst",
+                      Binary::get(opDiv,
+                                  Const::get(3),
+                                  Const::get(2)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstDiv0",
+                      Binary::get(opDiv,
+                                  Const::get(10),
+                                  Const::get(0)),
+                      Binary::get(opDiv,
+                                  Const::get(10),
+                                  Const::get(0)));
+
+        TEST_SIMPLIFY("BinaryConstModConst",
+                      Binary::get(opMod,
+                                  Const::get(3),
+                                  Const::get(2)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryConstMod0",
+                      Binary::get(opMod,
+                                  Const::get(10),
+                                  Const::get(0)),
+                      Binary::get(opMod,
+                                  Const::get(10),
+                                  Const::get(0)));
 
         TEST_SIMPLIFY("BinaryNegCmpPos",
                       Binary::get(opLess,
@@ -571,6 +801,31 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0x40)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual1",
+                      Binary::get(opOr,
+                                  Binary::get(opNotEqual,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX))),
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
+
+        TEST_SIMPLIFY("BinarySimplifyOrNotEqual2",
+                      Binary::get(opOr,
+                                  Binary::get(opLess,
+                                              Location::regOf(REG_PENT_EAX),
+                                              Location::regOf(REG_PENT_EDX)),
+                                  Binary::get(opNotEqual,
+                                            Location::regOf(REG_PENT_EAX),
+                                            Location::regOf(REG_PENT_EDX))),
+
+                      Binary::get(opLess,
+                                  Location::regOf(REG_PENT_EAX),
+                                  Location::regOf(REG_PENT_EDX)));
+
         TEST_SIMPLIFY("BinaryComplexBitAnd",
                       Binary::get(opBitAnd,
                                   Binary::get(opMinus,
@@ -633,12 +888,55 @@ void ExpSimplifierTest::testSimplify_data()
                                    Location::regOf(REG_PENT_EAX)),
                       Location::regOf(REG_PENT_EAX));
 
-        TEST_SIMPLIFY("SgnExConst",
+
+        TEST_SIMPLIFY("SgnExConst0To32",
+                      Ternary::get(opSgnEx,
+                                   Const::get(0),
+                                   Const::get(32),
+                                   Const::get(-10)),
+                      Const::get(0));
+
+        TEST_SIMPLIFY("SgnExConst8To32",
                       Ternary::get(opSgnEx,
                                    Const::get(8),
                                    Const::get(32),
                                    Const::get(-10)),
                       Const::get(-10));
+
+        TEST_SIMPLIFY("SgnExConst8To32_16",
+                      Ternary::get(opSgnEx,
+                                   Const::get(8),
+                                   Const::get(32),
+                                   Const::get(0xFF7F)),
+                      Const::get(0x7F));
+
+        TEST_SIMPLIFY("SgnExConst16To32Pos",
+                      Ternary::get(opSgnEx,
+                                   Const::get(16),
+                                   Const::get(32),
+                                   Const::get(10)),
+                      Const::get(10));
+
+        TEST_SIMPLIFY("SgnExConst16To32Neg",
+                      Ternary::get(opSgnEx,
+                                   Const::get(16),
+                                   Const::get(32),
+                                   Const::get(0xFFFE)),
+                      Const::get(-2));
+
+        TEST_SIMPLIFY("SgnExConst32To16Neg",
+                      Ternary::get(opSgnEx,
+                                   Const::get(32),
+                                   Const::get(16),
+                                   Const::get(-1)),
+                      Const::get(-1));
+
+        TEST_SIMPLIFY("SgnExConst32To64Neg",
+                      Ternary::get(opSgnEx,
+                                   Const::get(32),
+                                   Const::get(64),
+                                   Const::get(-1)),
+                      Const::get((uint64_t)-1));
 
 
         /// TODO What about zfill(8, 32, -10) ?
@@ -669,16 +967,23 @@ void ExpSimplifierTest::testSimplify_data()
                                    Const::get(16),
                                    Const::get((int)0xF000F)),
                       Const::get(15));
+
+        TEST_SIMPLIFY("AtConst",
+                      Ternary::get(opAt,
+                                   Const::get(5),
+                                   Const::get(1),
+                                   Const::get(2)),
+                      Const::get(4));
     }
 
     // TypedExp
     {
         TEST_SIMPLIFY("TypedExp",
-                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)),
-                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)));
+                      TypedExp::get(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)),
+                      TypedExp::get(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)));
 
         TEST_SIMPLIFY("TypedExpRegOf",
-                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX)),
+                      TypedExp::get(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX)),
                       Location::regOf(REG_PENT_EAX));
     }
 

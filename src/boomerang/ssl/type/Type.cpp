@@ -44,7 +44,7 @@ static QMap<QString, SharedType> g_namedTypes;
 
 
 Type::Type(TypeClass _class)
-    : id(_class)
+    : m_id(_class)
 {
 }
 
@@ -54,31 +54,16 @@ Type::~Type()
 }
 
 
-bool Type::isCString() const
+void Type::setSize(Type::Size)
 {
-    if (!resolvesToPointer()) {
-        return false;
-    }
-
-    SharedType p = as<PointerType>()->getPointsTo();
-
-    if (p->resolvesToChar()) {
-        return true;
-    }
-
-    if (!p->resolvesToArray()) {
-        return false;
-    }
-
-    p = p->as<ArrayType>()->getBaseType();
-    return p->resolvesToChar();
+    assert(false); /* Redefined in subclasses. */
 }
 
 
-SharedType Type::parseType(const char *)
+bool Type::isCString() const
 {
-    assert(!"Not implemented");
-    return nullptr;
+    return (resolvesToPointer() && this->as<PointerType>()->getPointsTo()->resolvesToChar()) ||
+           (resolvesToArray() && this->as<ArrayType>()->getBaseType()->resolvesToChar());
 }
 
 
@@ -88,19 +73,13 @@ bool Type::operator!=(const Type &other) const
 }
 
 
-QString Type::prints()
-{
-    return getCtype(false); // For debugging
-}
-
-
 void Type::addNamedType(const QString &name, SharedType type)
 {
     if (g_namedTypes.find(name) != g_namedTypes.end()) {
         if (!(*type == *g_namedTypes[name])) {
             LOG_WARN("Redefinition of type %1", name);
-            LOG_WARN(" type     = %1", type->prints());
-            LOG_WARN(" previous = %1", g_namedTypes[name]->prints());
+            LOG_WARN(" type     = %1", type->getCtype());
+            LOG_WARN(" previous = %1", g_namedTypes[name]->getCtype());
             g_namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     }
@@ -128,37 +107,6 @@ SharedType Type::getNamedType(const QString &name)
 }
 
 
-SharedType Type::getTempType(const QString &name)
-{
-    SharedType ty;
-    QChar ctype = ' ';
-
-    if (name.size() > 3) {
-        ctype = name[3];
-    }
-
-    switch (ctype.toLatin1()) {
-    // They are all int32, except for a few specials
-    case 'f': ty = FloatType::get(32); break;
-    case 'd': ty = FloatType::get(64); break;
-    case 'F': ty = FloatType::get(80); break;
-    case 'D': ty = FloatType::get(128); break;
-    case 'l': ty = IntegerType::get(64); break;
-    case 'h': ty = IntegerType::get(16); break;
-    case 'b': ty = IntegerType::get(8); break;
-    default: ty = IntegerType::get(32); break;
-    }
-
-    return ty;
-}
-
-
-QString Type::getTempName() const
-{
-    return "tmp"; // what else can we do? (besides panic)
-}
-
-
 void Type::clearNamedTypes()
 {
     g_namedTypes.clear();
@@ -170,11 +118,13 @@ void Type::clearNamedTypes()
 #define RESOLVES_TO_TYPE(x)                                                                        \
     bool Type::resolvesTo##x() const                                                               \
     {                                                                                              \
-        auto ty = shared_from_this();                                                              \
-        if (ty->isNamed()) {                                                                       \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                      \
+        if (!isNamed()) {                                                                          \
+            return this->is##x();                                                                  \
         }                                                                                          \
-        return ty && ty->is##x();                                                                  \
+        else {                                                                                     \
+            SharedType ty = this->as<NamedType>()->resolvesTo();                                   \
+            return ty && ty->is##x();                                                              \
+        }                                                                                          \
     }
 
 RESOLVES_TO_TYPE(Void)
@@ -190,10 +140,16 @@ RESOLVES_TO_TYPE(Union)
 RESOLVES_TO_TYPE(Size)
 
 
+bool Type::resolvesToFuncPtr() const
+{
+    return resolvesToPointer() && as<PointerType>()->getPointsTo()->resolvesToFunc();
+}
+
+
 SharedType Type::resolveNamedType()
 {
     if (isNamed()) {
-        return std::static_pointer_cast<NamedType>(shared_from_this())->resolvesTo();
+        return this->as<NamedType>()->resolvesTo();
     }
     else {
         return shared_from_this();
@@ -204,7 +160,7 @@ SharedType Type::resolveNamedType()
 SharedConstType Type::resolveNamedType() const
 {
     if (isNamed()) {
-        return std::static_pointer_cast<const NamedType>(shared_from_this())->resolvesTo();
+        return this->as<NamedType>()->resolvesTo();
     }
     else {
         return shared_from_this();
@@ -273,7 +229,7 @@ OStream &operator<<(OStream &os, const SharedConstType &t)
 }
 
 
-SharedType Type::newIntegerLikeType(int size, Sign signedness)
+SharedType Type::newIntegerLikeType(Size size, Sign signedness)
 {
     if (size == 1) {
         return BooleanType::get();
@@ -293,8 +249,10 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
 
     // Put all the hard union logic in one place
     if (other->resolvesToUnion()) {
-        return other->meetWith(const_cast<Type *>(this)->shared_from_this(), changed, useHighestPtr)
-            ->clone();
+        SharedType result = const_cast<Type *>(this)->shared_from_this();
+        result            = other->meetWith(result, changed, useHighestPtr)->clone();
+        changed           = true;
+        return result;
     }
 
     // Check for anytype meet compound with anytype as first element
@@ -314,17 +272,15 @@ SharedType Type::createUnion(SharedType other, bool &changed, bool useHighestPtr
         SharedType elemTy = otherArr->getBaseType();
 
         if (elemTy->isCompatibleWith(*this)) {
-            // x meet array[x] == array
+            // x meet array[x] == array[x]
             changed = true; // since 'this' type is not an array, but the returned type is
             return other->clone();
         }
     }
 
-    auto u = std::make_shared<UnionType>();
-    u->addType(this->clone());
-    u->addType(other->clone());
     changed = true;
-    return u;
+    return std::make_shared<UnionType>(
+        std::initializer_list<SharedType>{ this->clone(), other->clone() });
 }
 
 
@@ -340,34 +296,15 @@ bool Type::isCompatibleWith(const Type &other, bool all /* = false */) const
 }
 
 
-bool Type::isSubTypeOrEqual(SharedType other)
+bool Type::isSubTypeOrEqual(SharedType other) const
 {
-    if (resolvesToVoid()) {
+    if (resolvesToVoid() || *this == *other) {
         return true;
     }
-
-    if (*this == *other) {
-        return true;
-    }
-
-    if (this->resolvesToCompound() && other->resolvesToCompound()) {
+    else if (this->resolvesToCompound() && other->resolvesToCompound()) {
         return this->as<CompoundType>()->isSubStructOf(other);
     }
 
     // Not really sure here
     return false;
-}
-
-
-SharedType Type::dereference()
-{
-    if (resolvesToPointer()) {
-        return as<PointerType>()->getPointsTo();
-    }
-
-    if (resolvesToUnion()) {
-        return as<UnionType>()->dereferenceUnion();
-    }
-
-    return VoidType::get(); // Can't dereference this type. Note: should probably be bottom
 }

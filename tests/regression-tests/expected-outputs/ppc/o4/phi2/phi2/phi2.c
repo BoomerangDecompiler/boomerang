@@ -1,12 +1,13 @@
-int main(int argc, union { __size32; char *[] *; } argv);
+int main(int argc, char *argv[]);
+
 
 /** address: 0x100004f0 */
-int main(int argc, union { __size32; char *[] *; } argv)
+int main(int argc, char *argv[])
 {
     int g3; 		// r3
-    int g30; 		// r30
-    int g31; 		// r31
-    int g3_1; 		// r3
+    unsigned int g30; 		// r30
+    unsigned int g31; 		// r31
+    unsigned int g3_1; 		// r3
     int g5; 		// r5
 
     g5 = *(argv + 4);
@@ -14,7 +15,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
         g3 = strlen(g5);
         g31 = g3;
         g30 = g3;
-        printf("%d", ROTL(g3) & ~0x1);
+        printf("%d", g3 * 2);
     }
     else {
         g3_1 = strlen(g5);

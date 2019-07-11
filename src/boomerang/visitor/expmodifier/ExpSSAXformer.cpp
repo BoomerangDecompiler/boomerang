@@ -9,11 +9,13 @@
 #pragma endregion License
 #include "ExpSSAXformer.h"
 
+#include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/log/Log.h"
-
 
 ExpSSAXformer::ExpSSAXformer(UserProc *p)
     : m_proc(p)
@@ -30,6 +32,9 @@ SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp> &exp)
     }
 
     // We should not get here: all locations should be replaced with Locals or Parameters
-    LOG_ERROR("Could not find local or parameter for %1!!", exp);
+    if (m_proc->getProg()->getProject()->getSettings()->verboseOutput) {
+        LOG_ERROR("Could not find local or parameter for %1!!", exp);
+    }
+
     return exp->getSubExp1(); // At least strip off the subscript
 }

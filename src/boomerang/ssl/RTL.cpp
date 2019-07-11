@@ -131,7 +131,7 @@ void RTL::print(OStream &os) const
 }
 
 
-QString RTL::prints() const
+QString RTL::toString() const
 {
     QString tgt;
     OStream ost(&tgt);
@@ -149,7 +149,7 @@ void RTL::simplify()
         if (s->isBranch()) {
             SharedExp cond = static_cast<BranchStatement *>(s)->getCondExpr();
 
-            if (cond && (cond->getOper() == opIntConst)) {
+            if (cond && cond->isIntConst()) {
                 if (cond->access<Const>()->getInt() == 0) {
                     LOG_VERBOSE("Removing branch with false condition at %1 %2", getAddress(), *it);
                     it = this->erase(it);
@@ -166,12 +166,15 @@ void RTL::simplify()
         else if (s->isAssign()) {
             SharedExp guard = static_cast<Assign *>(s)->getGuard();
 
-            if (guard && (guard->isFalse() ||
-                          (guard->isIntConst() && (guard->access<Const>()->getInt() == 0)))) {
+            if (guard && guard->isFalse()) {
                 // This assignment statement can be deleted
                 LOG_VERBOSE("Removing assignment with false guard at %1 %2", getAddress(), *it);
                 it = erase(it);
                 continue;
+            }
+            else if (guard && guard->isTrue()) {
+                // The guard can be deleted
+                static_cast<Assign *>(s)->setGuard(nullptr);
             }
         }
 

@@ -15,6 +15,7 @@
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/module/ModuleFactory.h"
 #include "boomerang/frontend/SigEnum.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/util/Address.h"
 
@@ -135,7 +136,7 @@ public:
     /// \returns true if function was found and removed.
     bool removeFunction(const QString &name);
 
-    /// \param userOnly If true, only count user functions, not lbrary functions.
+    /// \param userOnly If true, only count user functions, not library functions.
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
@@ -145,8 +146,8 @@ public:
     /// \returns true if this program was loaded from a PE executable file.
     bool isWin32() const;
 
-    QString getRegName(int idx) const;
-    int getRegSize(int idx) const;
+    QString getRegNameByNum(RegNum regNum) const;
+    int getRegSizeByNum(RegNum regNum) const;
 
     /// Get a code for the machine e.g. MACHINE_SPARC
     Machine getMachine() const;
@@ -174,12 +175,9 @@ public:
     bool isReadOnly(Address a) const;
     bool isInStringsSection(Address a) const;
     bool isDynamicallyLinkedProcPointer(Address dest) const;
-    const QString &getDynamicProcName(Address addr) const;
 
     /// \returns the default module for a symbol with name \p name.
     Module *getOrInsertModuleForSymbol(const QString &symbolName);
-
-    int readNative4(Address a) const;
 
     void updateLibrarySignatures();
 
@@ -248,7 +246,6 @@ public:
 
 private:
     QString m_name; ///< name of the program
-    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     Project *m_project       = nullptr;
     BinaryFile *m_binaryFile = nullptr;
     IFrontEnd *m_fe          = nullptr; ///< Pointer to the FrontEnd object for the project

@@ -14,6 +14,7 @@
 #include "boomerang/db/signature/Parameter.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/log/Log.h"
 
@@ -104,11 +105,10 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             // Note: this can happen with forward jumps into the middle of a loop,
             // so not error
             if (!currentBB->isIncomplete()) {
-                // This list of RTLs is not needed now
-                bbRTLs.reset();
-
                 LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
                             currentBB->getLowAddr());
+
+                // we automatically destroy bbRTLs
                 return nullptr;
             }
             else {
@@ -283,11 +283,36 @@ void ProcCFG::removeBB(BasicBlock *bb)
         return;
     }
 
-    BBStartMap::iterator bbIt = m_bbStartMap.find(bb->getLowAddr());
-    if (bbIt != m_bbStartMap.end()) {
-        m_bbStartMap.erase(bbIt);
+    RTLList::iterator rit;
+    StatementList::iterator sit;
+
+    for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        if (s->isCall()) {
+            CallStatement *call = static_cast<CallStatement *>(s);
+            if (call->getDestProc() && !call->getDestProc()->isLib()) {
+                UserProc *callee = static_cast<UserProc *>(call->getDestProc());
+                callee->removeCaller(call);
+            }
+        }
     }
 
+    BBStartMap::iterator firstIt, lastIt;
+    std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getLowAddr());
+
+    for (auto it = firstIt; it != lastIt; ++it) {
+        if (it->second == bb) {
+            // We have to redo the data-flow now
+            for (BasicBlock *otherBB : *this) {
+                otherBB->clearPhis();
+            }
+
+            m_bbStartMap.erase(it);
+            delete bb;
+            return;
+        }
+    }
+
+    LOG_WARN("Tried to remove BB at address %1; does not exist in CFG", bb->getLowAddr());
     delete bb;
 }
 
@@ -448,7 +473,7 @@ Statement *ProcCFG::findImplicitParamAssign(Parameter *param)
     ExpStatementMap::iterator it = std::find_if(
         m_implicitMap.begin(), m_implicitMap.end(),
         [paramExp](const std::pair<const SharedConstExp &, Statement *> &val) {
-            return *(val.first) *= *paramExp;
+            return val.first->equalNoSubscript(*paramExp);
         });
 
     if (it == m_implicitMap.end()) {
@@ -545,7 +570,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(OStream &out)
+void ProcCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
 
@@ -555,6 +580,16 @@ void ProcCFG::print(OStream &out)
 
     out << '\n';
 }
+
+
+QString ProcCFG::toString() const
+{
+    QString result;
+    OStream os(&result);
+    print(os);
+    return result;
+}
+
 
 void ProcCFG::insertBB(BasicBlock *bb)
 {

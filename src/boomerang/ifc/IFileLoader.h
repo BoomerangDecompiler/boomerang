@@ -10,10 +10,11 @@
 #pragma once
 
 
-#include "boomerang/core/Plugin.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
+
+class Project;
 
 class QIODevice;
 
@@ -23,19 +24,19 @@ class QIODevice;
  * The derived classes define the actual functionality of loading files and are
  * implemented as plugins.
  */
-class IFileLoader
+class BOOMERANG_API IFileLoader
 {
 public:
-    IFileLoader()          = default;
+    IFileLoader(Project *) {}
     virtual ~IFileLoader() = default;
 
 public:
     /**
      * Initialize this loader.
-     * \param image   Binary image to load this file into.
+     * \param image   Binary file to load this executable file into.
      * \param symbols Symbol table to fill
      */
-    virtual void initialize(BinaryImage *image, BinarySymbolTable *symbols) = 0;
+    virtual void initialize(BinaryFile *file, BinarySymbolTable *symbols) = 0;
 
     /// Checks if the file can be loaded by this loader.
     /// If the file can be loaded, the function returns a score ( > 0)
@@ -46,7 +47,7 @@ public:
     /// Load the file with path \p path into memory.
     virtual bool loadFromFile(BinaryFile *file)
     {
-        initialize(file->getImage(), file->getSymbols());
+        initialize(file, file->getSymbols());
         return loadFromMemory(file->getImage()->getRawData());
     };
 
@@ -91,5 +92,3 @@ public:
     }
     virtual bool hasDebugInfo() const { return false; }
 };
-
-typedef Plugin<IFileLoader, PluginType::Loader> LoaderPlugin;

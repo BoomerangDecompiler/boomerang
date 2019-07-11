@@ -280,4 +280,5 @@ SharedExp Win32TcSignature::getProven(SharedExp left) const
     // Else same as for standard Win32 signature
     return Win32Signature::getProven(left);
 }
+
 }

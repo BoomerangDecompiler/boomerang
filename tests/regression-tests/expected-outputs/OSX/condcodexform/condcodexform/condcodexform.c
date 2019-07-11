@@ -1,18 +1,25 @@
 int main(int argc, char *argv[]);
 
+__size32 global_0x00002020;// 4 bytes
+__size32 global_0x00002024;// 4 bytes
+__size32 global_0x00002028;// 4 bytes
+__size32 global_0x0000202c;// 4 bytes
+__size32 global_0x00002030;// 4 bytes
+__size32 global_0x00002034;// 4 bytes
+__size32 global_0x00002038;// 4 bytes
+__size32 global_0x0000203c;// 4 bytes
+
 /** address: 0x00001b70 */
 int main(int argc, char *argv[])
 {
-    int CR0; 		// r64
-    int CR1; 		// r65
-    int CR2; 		// r66
-    int CR3; 		// r67
-    int CR4; 		// r68
-    int CR5; 		// r69
-    int CR6; 		// r70
-    __size32 CR7; 		// r71
-    __size32 g0; 		// r0
-    int g9; 		// r9
+    int CR0; 		// r100
+    int CR1; 		// r101
+    int CR2; 		// r102
+    int CR3; 		// r103
+    int CR4; 		// r104
+    int CR5; 		// r105
+    int CR6; 		// r106
+    __size32 CR7; 		// r107
     __size32 local0; 		// m[g1 - 40]
     __size32 local1; 		// m[g1 - 36]
     __size32 local2; 		// m[g1 - 32]
@@ -25,75 +32,47 @@ int main(int argc, char *argv[])
         local0 = 0;
     }
     if (local0 == 0) {
-        g9 = *(/* machine specific */ (int) LR + 1200);
-        local1 = g9;
+        local1 = global_0x00002038;
     }
     else {
-        g9 = *(/* machine specific */ (int) LR + 1204);
-        local1 = g9;
+        local1 = global_0x0000203c;
     }
     if (local0 == 0) {
-        g9 = *(/* machine specific */ (int) LR + 1192);
-        local2 = g9;
+        local2 = global_0x00002030;
     }
     else {
-        g9 = *(/* machine specific */ (int) LR + 1196);
-        local2 = g9;
+        local2 = global_0x00002034;
     }
     if (local0 == 0) {
-        g9 = *(/* machine specific */ (int) LR + 1184);
-        local3 = g9;
+        local3 = global_0x00002028;
     }
     else {
-        g9 = *(/* machine specific */ (int) LR + 1188);
-        local3 = g9;
+        local3 = global_0x0000202c;
     }
     if (local0 == 0) {
-        g9 = *(/* machine specific */ (int) LR + 1176);
-        local4 = g9;
+        local4 = global_0x00002020;
     }
     else {
-        g9 = *(/* machine specific */ (int) LR + 1180);
-        local4 = g9;
+        local4 = global_0x00002024;
     }
     if (argc <= 1) {
         local5 = 0;
-        g0 = *(/* machine specific */ (int) LR + 1200);
-        if (local1 == g0) {
-            g0 = *(/* machine specific */ (int) LR + 1192);
-            if (local2 == g0) {
-                g0 = *(/* machine specific */ (int) LR + 1184);
-                if (local3 == g0) {
-                    g0 = *(/* machine specific */ (int) LR + 1176);
-                    if (local4 == g0) {
-                        local5 = 1;
-                    }
-                }
-            }
+        if (local1 == global_0x00002038 && local2 == global_0x00002030 && local3 == global_0x00002028 && local4 == global_0x00002020) {
+            local5 = 1;
         }
     }
     else {
         local5 = 0;
-        g0 = *(/* machine specific */ (int) LR + 1204);
-        if (local1 == g0) {
-            g0 = *(/* machine specific */ (int) LR + 1196);
-            if (local2 == g0) {
-                g0 = *(/* machine specific */ (int) LR + 1188);
-                if (local3 == g0) {
-                    g0 = *(/* machine specific */ (int) LR + 1180);
-                    if (local4 == g0) {
-                        local5 = 1;
-                    }
-                }
-            }
+        if (local1 == global_0x0000203c && local2 == global_0x00002034 && local3 == global_0x0000202c && local4 == global_0x00002024) {
+            local5 = 1;
         }
     }
     if (local5 == 0) {
-        printf(/* machine specific */ (int) LR + 1132);
+        printf("Failed!\n");
     }
     else {
-        printf(/* machine specific */ (int) LR + 1124);
+        printf("Pass\n");
     }
-    return ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7)) & 0x1;
+    return ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7), 31) & 0x1;
 }
 

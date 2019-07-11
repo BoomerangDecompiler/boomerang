@@ -16,7 +16,8 @@
 class BOOMERANG_API PointerType : public Type
 {
 public:
-    PointerType(SharedType p);
+    explicit PointerType(SharedType p);
+
     PointerType(const PointerType &other) = default;
     PointerType(PointerType &&other)      = default;
 
@@ -26,20 +27,43 @@ public:
     PointerType &operator=(PointerType &&other) = default;
 
 public:
-    virtual bool isPointer() const override { return true; }
+    static std::shared_ptr<PointerType> get(SharedType pointsTo);
 
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
+
+public:
+    /// \copydoc Type::operator==
+    virtual bool operator==(const Type &other) const override;
+
+    /// \copydoc Type::operator<
+    virtual bool operator<(const Type &other) const override;
+
+public:
+    /// \copydoc Type::getSize
+    virtual Size getSize() const override;
+
+    /// \copydoc Type::setSize
+    virtual void setSize(Size sz) override;
+
+    /// \copydoc Type::getCtype
+    virtual QString getCtype(bool final = false) const override;
+
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+
+public:
     /// Set the pointer type of this pointer.
     /// E.g. for a pointer of type 'Foo *' the pointer type is 'Foo'
     void setPointsTo(SharedType p);
 
     /// \returns the type the pointer points to (e.g. returns void* for void **x)
-    SharedType getPointsTo() { return points_to; }
-    const SharedType getPointsTo() const { return points_to; }
+    SharedType getPointsTo() { return m_pointsTo; }
+    const SharedType getPointsTo() const { return m_pointsTo; }
 
-    static std::shared_ptr<PointerType> get(SharedType t)
-    {
-        return std::make_shared<PointerType>(t);
-    }
+    /// \returns the final type at the end of the pointer chain
+    /// (e.g. returns void for void **x)
+    SharedType getFinalPointsTo() const;
 
     /// \returns true if the type is void* (pointer can morph into any other pointer type)
     bool isVoidPointer() const;
@@ -47,28 +71,10 @@ public:
     /// \returns the length of the pointer chain (e.g. returns 2 for void **x)
     int getPointerDepth() const;
 
-    /// \returns the final type at the end of the pointer chain
-    /// (e.g. returns void for void **x)
-    SharedType getFinalPointsTo() const;
-
-    virtual SharedType clone() const override;
-
-    virtual bool operator==(const Type &other) const override;
-
-    // virtual bool        operator-=(const Type& other) const;
-    virtual bool operator<(const Type &other) const override;
-
-    virtual size_t getSize() const override;
-
-    virtual void setSize(size_t sz) override;
-
-    virtual QString getCtype(bool final = false) const override;
-
-    /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
-
+protected:
+    /// \copydoc Type::isCompatible
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    SharedType points_to;
+    SharedType m_pointsTo;
 };

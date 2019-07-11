@@ -10,19 +10,7 @@
 list(APPEND boomerang-frontend-sources
     frontend/DecodeResult
     frontend/DefaultFrontEnd
-    frontend/mips/MIPSDecoder
-    frontend/mips/MIPSFrontEnd
-    frontend/NJMCDecoder
-    frontend/pentium/PentiumDecoder
-    frontend/pentium/PentiumFrontEnd
-    frontend/pentium/StringInstructionProcessor
-    frontend/ppc/PPCDecoder
-    frontend/ppc/PPCFrontEnd
     frontend/SigEnum
-    frontend/sparc/SPARCDecoder
-    frontend/sparc/SPARCFrontEnd
-    frontend/st20/ST20Decoder
-    frontend/st20/ST20FrontEnd
     frontend/TargetQueue
 )
 
