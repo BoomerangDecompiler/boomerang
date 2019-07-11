@@ -1,5 +1,5 @@
-v0.5.0 (in development)
------------------------
+v0.5.0 (2019-7-11)
+------------------
 - Fixed: Crashes when reading malformed SSL specification files.
 - Fixed: Crashes when specifying malformed command line arguments for boomerang-cli.
 - Fixed: Crashes when decoding unrecognized floating point branches on SPARC.
