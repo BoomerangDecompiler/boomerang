@@ -528,7 +528,7 @@ SharedExp BasicBlock::getDest() const
     if (lastStmt->isCase()) {
         CaseStatement *cs = static_cast<CaseStatement *>(lastStmt);
         // Get the expression from the switch info
-        SwitchInfo *si = cs->getSwitchInfo();
+        const SwitchInfo *si = cs->getSwitchInfo();
 
         if (si) {
             return si->switchExp;

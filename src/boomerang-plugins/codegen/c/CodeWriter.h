@@ -25,15 +25,27 @@ class CodeWriter
 {
     struct WriteDest
     {
+    public:
         WriteDest(const QString &outFileName);
         WriteDest(const WriteDest &) = delete;
         WriteDest(WriteDest &&)      = delete;
 
         ~WriteDest();
 
+    public:
         WriteDest &operator=(const WriteDest &) = delete;
         WriteDest &operator=(WriteDest &&) = delete;
 
+    public:
+        template<typename T>
+        OStream &operator<<(T val)
+        {
+            m_os << val;
+            m_os.flush();
+            return m_os;
+        }
+
+    private:
         QFile m_outFile;
         OStream m_os;
     };

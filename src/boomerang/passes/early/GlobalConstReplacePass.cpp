@@ -94,8 +94,6 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             case 80: continue; // can't replace float constants just yet
             default: assert(false);
             }
-
-            changed = true;
         }
     }
 

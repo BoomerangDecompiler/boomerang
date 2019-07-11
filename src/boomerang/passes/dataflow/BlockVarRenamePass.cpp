@@ -303,7 +303,10 @@ bool BlockVarRenamePass::execute(UserProc *proc)
     /// The stack which remembers the last definition of an expression.
     std::map<SharedExp, std::deque<Statement *>, lessExpStar> stacks;
     BasicBlock *entryBB = proc->getCFG()->getEntryBB();
-    assert(entryBB != nullptr);
+
+    if (entryBB == nullptr) {
+        return false;
+    }
 
     return renameBlockVars(proc, proc->getDataFlow()->pbbToNode(entryBB), stacks);
 }

@@ -29,6 +29,8 @@ FileLogSink::FileLogSink(const QString &filename, bool append)
         // Parent directory might not exist. Create directories and try again.
         QFileInfo(m_logFile).dir().mkpath(".");
         ok = m_logFile.open(openFlags);
+
+        Q_UNUSED(ok);
         assert(ok);
     }
 }

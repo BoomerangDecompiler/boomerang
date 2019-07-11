@@ -104,12 +104,11 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(Prog *prog, const QString &fname)
         return false;
     }
 
-    Module *targetModule = prog->getRootModule();
-
     for (std::shared_ptr<Symbol> &sym : driver.symbols) {
         if (sym->sig) {
-            QString name     = sym->sig->getName();
-            targetModule     = prog->getOrInsertModuleForSymbol(name);
+            QString name         = sym->sig->getName();
+            Module *targetModule = prog->getOrInsertModuleForSymbol(name);
+
             auto bin_sym     = prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
             const bool isLib = (bin_sym && bin_sym->isImportedFunction()) ||
                                // NODECODE isn't really the right modifier; perhaps we should have a

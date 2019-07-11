@@ -65,12 +65,7 @@ ElfBinaryLoader::~ElfBinaryLoader()
 {
     // Delete the array of import stubs
     delete[] m_importStubs;
-    delete[] m_shLink;
-    delete[] m_shInfo;
-
     m_importStubs = nullptr;
-    m_shLink      = nullptr;
-    m_shInfo      = nullptr;
 }
 
 
@@ -166,15 +161,17 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray &img)
     }
 
     // Set up the m_sh_link and m_sh_info arrays
-    if (m_shLink) {
-        delete[] m_shLink;
-    }
-    if (m_shInfo) {
-        delete[] m_shInfo;
-    }
 
-    m_shLink = new Elf32_Word[numSections];
-    m_shInfo = new Elf32_Word[numSections];
+    try {
+        m_shLink.reset(new Elf32_Word[numSections]);
+        m_shInfo.reset(new Elf32_Word[numSections]);
+    }
+    catch (const std::bad_alloc &) {
+        m_shLink.reset();
+        m_shInfo.reset();
+        LOG_ERROR("Cannot load ELF file: Not enough memory");
+        return false;
+    }
 
     // Set up section header string table pointer
     const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
@@ -602,7 +599,7 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
         translatedSym.Type       = ELF32_ST_TYPE(m_symbolSection[i].st_info);
         translatedSym.Binding    = ELF32_ST_BIND(m_symbolSection[i].st_info);
         translatedSym.Visibility = ELF32_ST_VISIBILITY(m_symbolSection[i].st_other);
-        translatedSym.SymbolSize = ELF32_ST_VISIBILITY(m_symbolSection[i].st_size);
+        translatedSym.SymbolSize = m_symbolSection[i].st_size;
         translatedSym.SectionIdx = elfRead2(&m_symbolSection[i].st_shndx);
         translatedSym.Value      = val;
 
@@ -654,8 +651,10 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
             Address symbolAddr = Address(elfRead4(&m_symbolSection[symIndex].st_value));
 
             if (m_symbolSection[symIndex].st_info & STT_SECTION) {
-                symbolAddr = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)]
-                                 .SourceAddr;
+                const Elf32_Half shndx = elfRead2(&m_symbolSection[symIndex].st_shndx);
+                if (Util::inRange(shndx, 0, m_elfSections.size())) {
+                    symbolAddr = m_elfSections[shndx].SourceAddr;
+                }
             }
 
             // Overwrite the relocation value... ?
@@ -1003,6 +1002,10 @@ void ElfBinaryLoader::applyRelocations()
                         break;
 
                     case R_386_PC32: // S + A - P
+                        if (assocSymbols == nullptr) {
+                            break; // cannot do relocation for this entry
+                        }
+
                         if (ELF32_ST_TYPE(assocSymbols[symbolIdx].st_info) == STT_SECTION) {
                             S                           = Address::ZERO;
                             const Elf32_Half sectionIdx = elfRead2(

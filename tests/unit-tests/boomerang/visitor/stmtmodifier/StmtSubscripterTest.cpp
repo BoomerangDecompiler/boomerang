@@ -96,9 +96,9 @@ void StmtSubscripterTest::testSubscriptVars()
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
     CaseStatement c1;
     c1.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    SwitchInfo si;
-    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
-    c1.setSwitchInfo(&si);
+    std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
+    c1.setSwitchInfo(std::move(si));
 
     subscriptVarForStmt(&c1, srch, &s9);
 

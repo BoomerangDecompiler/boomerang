@@ -336,9 +336,8 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
         SharedExp jumpDest = static_cast<CaseStatement *>(lastStmt)->getDest();
 
         if (jumpDest == nullptr) { // Happens if already analysed (we are now redecoding)
-            // SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
             // processSwitch will update the BB type and number of outedges, decode arms, set out
-            // edges, etc
+            // edges, etc.
             IndirectJumpAnalyzer().processSwitch(newBB, proc);
         }
 
@@ -649,7 +648,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             switch (inst.type) {
             case NCT: {
                 // Ret/restore epilogues are handled as ordinary RTLs now
-                if (last->getKind() == StmtType::Ret) {
+                if (last && last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
             }
@@ -668,7 +667,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // We can't simply ignore the skipped delay instruction as there
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
-                jumpStmt->setDest(pc + 2 * inst.numBytes);
+                if (jumpStmt) {
+                    jumpStmt->setDest(pc + 2 * inst.numBytes);
+                }
+
                 BB_rtls->push_back(std::move(inst.rtl));
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
@@ -687,8 +689,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
-                createJumpToAddress(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
-                                    m_program->getBinaryFile()->getImage()->getLimitText());
+
+                if (jumpStmt) {
+                    createJumpToAddress(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
+                                        m_program->getBinaryFile()->getImage()->getLimitText());
+                }
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -709,7 +714,13 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     LOG_MSG("*%1", pc + 4);
                 }
 
-                if (last->getKind() == StmtType::Call) {
+                if (!last) {
+                    LOG_ERROR("Cannot decode Static Delayed branch at address %1: "
+                              "semantics are empty",
+                              rtl->getAddress());
+                    break;
+                }
+                else if (last->getKind() == StmtType::Call) {
                     // Check the delay slot of this call. First case of interest is when the
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
@@ -947,7 +958,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     assert(newBB);
 
                     // Visit the destination of the branch; add "true" leg
-                    Address jumpDest = jumpStmt->getFixedDest();
+                    const Address jumpDest = jumpStmt ? jumpStmt->getFixedDest() : Address::INVALID;
                     createJumpToAddress(jumpDest, newBB, cfg, _targetQueue,
                                         m_program->getBinaryFile()->getImage()->getLimitText());
 

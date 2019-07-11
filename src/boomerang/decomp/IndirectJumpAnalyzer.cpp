@@ -331,8 +331,8 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
 
 void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 {
-    RTL *lastRTL   = bb->getLastRTL();
-    SwitchInfo *si = static_cast<CaseStatement *>(lastRTL->getHlStmt())->getSwitchInfo();
+    RTL *lastRTL         = bb->getLastRTL();
+    const SwitchInfo *si = static_cast<CaseStatement *>(lastRTL->getHlStmt())->getSwitchInfo();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
@@ -481,7 +481,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
     }
 
     if (switchType != SwitchType::Invalid) {
-        SwitchInfo *swi = new SwitchInfo;
+        std::unique_ptr<SwitchInfo> swi(new SwitchInfo);
         swi->switchType = switchType;
         Address T       = Address::INVALID;
         SharedExp expr;
@@ -521,7 +521,6 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
 
             if (swi->numTableEntries <= 0) {
                 LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
-                delete swi;
                 return false;
             }
 
@@ -537,8 +536,10 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
 
             swi->switchExp = expr;
             lastStmt->setDest(nullptr);
-            lastStmt->setSwitchInfo(swi);
-            return swi->numTableEntries != 0;
+
+            const bool hasEntries = swi->numTableEntries != 0;
+            lastStmt->setSwitchInfo(std::move(swi));
+            return hasEntries;
         }
     }
     else {
@@ -559,7 +560,8 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
                 if (num_dests > 0) {
                     int *destArray = new int[num_dests];
                     std::copy(dests.begin(), dests.end(), destArray);
-                    SwitchInfo *swi = new SwitchInfo;
+
+                    std::unique_ptr<SwitchInfo> swi(new SwitchInfo);
                     swi->switchType = SwitchType::F; // The "Fortran" form
                     swi->switchExp  = jumpDest;
                     // WARN: HACK HACK HACK Abuse the tableAddr member as a pointer
@@ -568,7 +570,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
                     swi->upperBound      = static_cast<int>(num_dests); // the number of options
                     swi->numTableEntries = static_cast<int>(num_dests);
                     lastStmt->setDest(nullptr);
-                    lastStmt->setSwitchInfo(swi);
+                    lastStmt->setSwitchInfo(std::move(swi));
                     return true;
                 }
             }

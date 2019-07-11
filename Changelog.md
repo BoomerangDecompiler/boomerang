@@ -1,8 +1,9 @@
-v0.5.0 (in development)
------------------------
+v0.5.0 (2019-7-11)
+------------------
 - Fixed: Crashes when reading malformed SSL specification files.
 - Fixed: Crashes when specifying malformed command line arguments for boomerang-cli.
 - Fixed: Crashes when decoding unrecognized floating point branches on SPARC.
+- Fixed: Crashes when loading ELF files with malformed relocation entries.
 - Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
@@ -20,10 +21,12 @@ v0.5.0 (in development)
 - Fixed: Crash when analyzing data-flow for functions where the entry BB is not the BB with the lowest address.
 - Fixed: Crash when analyzing data-flow for recursive functions after removing Basic Blocks from the same function.
 - Fixed: Crash when accessing deleted call statement via callee function.
+- Fixed: Potential crash when loading ELF files with a large number of sections.
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Potential crash when analyzing delayed branches on SPARC where the branch and the delay slot cannot be swapped.
 - Fixed: Potential crash when analyzing dataflow for functions where the entry Basic Block is not at index 0.
 - Fixed: Potential crash when simplifying expressions that divide by zero.
+- Fixed: Memory leak when analyzing switch statements.
 - Fixed: Failure to load and disassemble 16-bit DOS MZ and LE executables.
 - Fixed: Failure to load DOS4GW LX or LE executables.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
@@ -43,6 +46,7 @@ v0.5.0 (in development)
 - Fixed: High level code output for bit extraction operator on right hand side of assignments.
 - Fixed: Functions used as members in global function pointer arrays before they were declared.
 - Fixed: Memory leaks in parsers.
+- Fixed: Missing high-level code when decompiling via boomerang-gui.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
 - Feature: Added support for Code Generator plugins.
 - Feature: Added support for Type Recovery plugins.
