@@ -1,3 +1,7 @@
+v0.5.1 (in development)
+-----------------------
+- Technical: Updated minimum required version of dependencies.
+
 v0.5.0 (2019-7-11)
 ------------------
 - Fixed: Crashes when reading malformed SSL specification files.
