@@ -22,10 +22,10 @@ it is currently recommended to build the development version (`develop` branch) 
 
  - A 64 bit operating system (32 bit might or might not work, but it is not supported.)
  - A C++17 compiler (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
- - [CMake](https://cmake.org/download/) 3.8+
- - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.11+ is known to work, earlier versions should also work)
- - [Capstone](http://www.capstone-engine.org/) 3.0.5+
- - [GNU bison](https://www.gnu.org/software/bison/) 3.0+ (3.0.5+ is recommended)
+ - [CMake](https://cmake.org/download/) 3.13+
+ - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.12+ is known to work, earlier versions should also work)
+ - [Capstone](http://www.capstone-engine.org/) 4.0.1+
+ - [GNU bison](https://www.gnu.org/software/bison/) 3.3+
  - [GNU flex](https://github.com/westes/flex) 2.6+
  - [CCache](https://ccache.samba.org/download.html) 3.2+ (optional, for recompilation speed)
  - [Doxygen](http://www.doxygen.nl/) 1.8+ (optional, for documentation)

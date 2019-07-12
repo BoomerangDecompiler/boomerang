@@ -161,7 +161,6 @@ regression_tests = [
     "ppc/o4/twoproc2",
     "ppc/o4/uns",
     "ppc/paramchain",
-    "ppc/phi",
     "ppc/phi2",
     "ppc/printpi",
     "ppc/set",
@@ -302,6 +301,7 @@ smoke_tests = [
     "ppc/o4/phi",
     "ppc/o4/semi",
     "ppc/o4/sumarray",
+    "ppc/phi",
     "ppc/semi",
 
     "sparc/asgngoto",
