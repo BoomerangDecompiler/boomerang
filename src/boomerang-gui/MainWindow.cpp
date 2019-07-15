@@ -514,7 +514,7 @@ void MainWindow::showDecompilingProc(const QString &name)
 
     if (!foundit.isEmpty()) {
         ui->twProcTree->setCurrentItem(foundit.first(), 0);
-        foundit.first()->setTextColor(0, QColor("blue"));
+        foundit.first()->setForeground(0, QColor("blue"));
         m_numDecompiledProcs++;
     }
 
