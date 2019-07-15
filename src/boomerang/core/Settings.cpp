@@ -16,7 +16,7 @@
 
 Settings::Settings()
 {
-    m_workingDirectory = QDir("./").absolutePath();
+    m_workingDirectory.setPath(QDir("./").absolutePath());
 
     const QString appDirPath = QCoreApplication::applicationDirPath();
     setDataDirectory(appDirPath + "/../share/boomerang");
@@ -27,27 +27,27 @@ Settings::Settings()
 
 void Settings::setWorkingDirectory(const QString &directoryPath)
 {
-    m_workingDirectory = QDir(directoryPath);
+    m_workingDirectory.setPath(directoryPath);
     LOG_VERBOSE("wd now '%1'", m_workingDirectory.absolutePath());
 }
 
 
 void Settings::setDataDirectory(const QString &directoryPath)
 {
-    m_dataDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    m_dataDirectory.setPath(m_workingDirectory.absoluteFilePath(directoryPath));
     LOG_VERBOSE("dd now '%1'", m_dataDirectory.absolutePath());
 }
 
 
 void Settings::setPluginDirectory(const QString &directoryPath)
 {
-    m_pluginDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    m_pluginDirectory.setPath(m_workingDirectory.absoluteFilePath(directoryPath));
     LOG_VERBOSE("pd now '%1'", m_pluginDirectory.absolutePath());
 }
 
 
 void Settings::setOutputDirectory(const QString &directoryPath)
 {
-    m_outputDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    m_outputDirectory.setPath(m_workingDirectory.absoluteFilePath(directoryPath));
     LOG_VERBOSE("od now '%1'", m_outputDirectory.absolutePath());
 }
