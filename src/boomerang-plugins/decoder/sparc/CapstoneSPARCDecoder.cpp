@@ -158,11 +158,11 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         decodedInstruction.address = pc.value();
     }
 
-    result.iclass       = getInstructionType(&decodedInstruction);
-    result.numBytes     = SPARC_INSTRUCTION_LENGTH;
-    result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, &decodedInstruction);
-    result.valid        = (result.rtl != nullptr);
+    result.iclass   = getInstructionType(&decodedInstruction);
+    result.numBytes = SPARC_INSTRUCTION_LENGTH;
+    result.reDecode = false;
+    result.rtl      = createRTLForInstruction(pc, &decodedInstruction);
+    result.valid    = (result.rtl != nullptr);
 
     if (result.rtl->empty()) {
         // Force empty unrecognized instructions to have NOP type instead of NCT
@@ -269,8 +269,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
-    }
+    if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {}
     else if (insnID == "FBA" || insnID == "FBAA" || insnID == "FBN" || insnID == "FBNA") {
     }
     else if (instruction->id == cs::SPARC_INS_B) {

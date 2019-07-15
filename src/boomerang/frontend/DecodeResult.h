@@ -29,8 +29,8 @@ class RTL;
  */
 enum class IClass : uint8
 {
-    NOP,   ///< No operation (e.g. SPARC BN,A)
-    NCT,   ///< Non Control Transfer
+    NOP, ///< No operation (e.g. SPARC BN,A)
+    NCT, ///< Non Control Transfer
 
     SD,    ///< Static Delayed
     DD,    ///< Dynamic Delayed

@@ -177,11 +177,11 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return ok;
     }
 
-    result.iclass       = IClass::NOP; //< ICLASS is irrelevant for x86
-    result.numBytes     = m_insn->size;
-    result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, m_insn);
-    result.valid        = (result.rtl != nullptr);
+    result.iclass   = IClass::NOP; //< ICLASS is irrelevant for x86
+    result.numBytes = m_insn->size;
+    result.reDecode = false;
+    result.rtl      = createRTLForInstruction(pc, m_insn);
+    result.valid    = (result.rtl != nullptr);
     return true;
 }
 
@@ -248,16 +248,14 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 
     if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
         auto it = std::find_if(rtl->rbegin(), rtl->rend(),
-            [] (const Statement *stmt) {
-                return stmt->isCall();
-            });
+                               [](const Statement *stmt) { return stmt->isCall(); });
 
         if (it != rtl->rend()) {
             CallStatement *call = static_cast<CallStatement *>(*it);
 
             if (!call->isComputed()) {
                 const SharedConstExp &callDest = call->getDest();
-                const Address destAddr = callDest->access<Const>()->getAddr();
+                const Address destAddr         = callDest->access<Const>()->getAddr();
 
                 if (destAddr == pc + 5) {
                     // call to next instruction (just pushes instruction pointer to stack)
@@ -278,7 +276,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
         if (rtl->back()->isBranch()) {
-            BranchStatement *branch = static_cast<BranchStatement *>(rtl->back());
+            BranchStatement *branch   = static_cast<BranchStatement *>(rtl->back());
             const bool isComputedJump = !branch->getDest()->isIntConst();
 
             BranchType bt = BranchType::INVALID;
