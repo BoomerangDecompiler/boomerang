@@ -1,5 +1,6 @@
 v0.5.1 (in development)
 -----------------------
+- Fixed: Non-deterministic decompilation of functions containing removable return values.
 - Technical: Updated minimum required version of dependencies.
 
 v0.5.0 (2019-7-11)
