@@ -4269,4 +4269,3 @@ INSTRUCTION "XOR.rm32.reg32" (dest, src) {
     *32* dest := dest ^ src
     LOGICALFLAGS32(dest)
 };
-

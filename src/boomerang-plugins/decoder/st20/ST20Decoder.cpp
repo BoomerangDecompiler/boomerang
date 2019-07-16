@@ -200,7 +200,7 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
         case 0x1D: return "xdble";
         case 0x1E: return "ldpri";
         case 0x1F: return "rem";
-        case 0x20: return "RET";
+        case 0x20: return "ret";
         case 0x21: return "lend";
         case 0x22: return "ldtimer";
         case 0x29: return "testerr";
@@ -390,7 +390,7 @@ std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
         LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
                   "treating instruction as NOP",
                   name, pc);
-        return m_rtlDict.instantiateRTL("NOP", pc, {});
+        return m_rtlDict.instantiateRTL("nop", pc, {});
     }
 
     return rtl;
