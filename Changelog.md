@@ -1,3 +1,7 @@
+v0.6.0 (in development)
+-----------------------
+- Improved: Instruction semantics definition format.
+
 v0.5.1 (in development)
 -----------------------
 - Fixed: Non-deterministic decompilation of functions containing removable return values.
