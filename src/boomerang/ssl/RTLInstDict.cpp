@@ -16,6 +16,10 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/parser/SSL2ParserDriver.h"
 #include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
@@ -149,8 +153,39 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
     }
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
-    for (Statement *s : *newList) {
+    for (Statement *&s : *newList) {
         s->simplify();
+
+        // Fixup for goto, case, branch, and call
+        if (s->isGoto()) {
+            GotoStatement *jump = static_cast<GotoStatement *>(s);
+
+            if (jump->getDest()->isIntConst()) {
+                jump->setIsComputed(false);
+            }
+            else {
+                SharedExp dest = jump->getDest();
+                delete s;
+                CaseStatement *caseStmt = new CaseStatement();
+                caseStmt->setDest(dest);
+                caseStmt->setIsComputed(true);
+                s = caseStmt;
+            }
+        }
+        else if (s->isBranch()) {
+            BranchStatement *branch = static_cast<BranchStatement *>(s);
+            branch->setIsComputed(!branch->getDest()->isIntConst());
+        }
+        else if (s->isCall()) {
+            CallStatement *call = static_cast<CallStatement *>(s);
+            if (call->getDest()) {
+                call->setDest(call->getDest()->simplify());
+                call->setIsComputed(!call->getDest()->isIntConst());
+            }
+            else {
+                call->setIsComputed(true);
+            }
+        }
     }
 
     return newList;

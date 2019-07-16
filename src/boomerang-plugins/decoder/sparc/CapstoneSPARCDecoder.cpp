@@ -158,16 +158,15 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, Decode
         decodedInstruction.address = pc.value();
     }
 
-    result.type         = getInstructionType(&decodedInstruction);
-    result.numBytes     = SPARC_INSTRUCTION_LENGTH;
-    result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, &decodedInstruction);
-    result.forceOutEdge = Address::ZERO;
-    result.valid        = (result.rtl != nullptr);
+    result.iclass   = getInstructionType(&decodedInstruction);
+    result.numBytes = SPARC_INSTRUCTION_LENGTH;
+    result.reDecode = false;
+    result.rtl      = createRTLForInstruction(pc, &decodedInstruction);
+    result.valid    = (result.rtl != nullptr);
 
     if (result.rtl->empty()) {
         // Force empty unrecognized instructions to have NOP type instead of NCT
-        result.type = NOP;
+        result.iclass = IClass::NOP;
     }
 
     return true;
@@ -270,13 +269,8 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {
-        rtl->clear();
-        rtl->append(new GotoStatement(Address(operands[0].imm)));
-    }
+    if (insnID == "BA" || insnID == "BAA" || insnID == "BN" || insnID == "BNA") {}
     else if (insnID == "FBA" || insnID == "FBAA" || insnID == "FBN" || insnID == "FBNA") {
-        rtl->clear();
-        rtl->append(new GotoStatement(Address(operands[0].imm)));
     }
     else if (instruction->id == cs::SPARC_INS_B) {
         rtl->clear();
@@ -386,12 +380,6 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
         caseStmt->setDest(Unary::get(opAddrOf, operandToExp(instruction, 0))->simplify());
         rtl->append(caseStmt);
     }
-    else if (instruction->id == cs::SPARC_INS_RET || instruction->id == cs::SPARC_INS_RETL ||
-             instruction->id == cs::SPARC_INS_RETT) {
-        rtl->clear();
-        ReturnStatement *retStmt = new ReturnStatement;
-        rtl->append(retStmt);
-    }
 
     return rtl;
 }
@@ -426,100 +414,100 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::instantiateRTL(Address pc, const char
 
 
 // clang-format off
-static const std::map<QString, ICLASS> g_instructionTypes = {
-    { "ba",     ICLASS::SD      },
-    { "ba,a",   ICLASS::SU      },
-    { "bn",     ICLASS::NCT     },
-    { "bn,a",   ICLASS::SKIP    },
-    { "bne",    ICLASS::SCD     },
-    { "bne,a",  ICLASS::SCDAN   },
-    { "be",     ICLASS::SCD     },
-    { "be,a",   ICLASS::SCDAN   },
-    { "bg",     ICLASS::SCD     },
-    { "bg,a",   ICLASS::SCDAN   },
-    { "ble",    ICLASS::SCD     },
-    { "ble,a",  ICLASS::SCDAN   },
-    { "bge",    ICLASS::SCD     },
-    { "bge,a",  ICLASS::SCDAN   },
-    { "bl",     ICLASS::SCD     },
-    { "bl,a",   ICLASS::SCDAN   },
-    { "bgu",    ICLASS::SCD     },
-    { "bgu,a",  ICLASS::SCDAN   },
-    { "bleu",   ICLASS::SCD     },
-    { "bleu,a", ICLASS::SCDAN   },
-    { "bcc",    ICLASS::SCD     },
-    { "bcc,a",  ICLASS::SCDAN   },
-    { "bcs",    ICLASS::SCD     },
-    { "bcs,a",  ICLASS::SCDAN   },
-    { "bge",    ICLASS::SCD     },
-    { "bge,a",  ICLASS::SCDAN   },
-    { "bpos",   ICLASS::SCD     },
-    { "bpos,a", ICLASS::SCDAN   },
-    { "bneg",   ICLASS::SCD     },
-    { "bneg,a", ICLASS::SCDAN   },
-    { "call",   ICLASS::SD      },
-    { "fba",    ICLASS::SD      },
-    { "fba,a",  ICLASS::SU      },
-    { "fbn",    ICLASS::NCT     },
-    { "fbn,a",  ICLASS::SKIP    },
-    { "fbg",    ICLASS::SCD     },
-    { "fbg,a",  ICLASS::SCDAN   },
-    { "fbug",   ICLASS::SCD     },
-    { "fbug,a", ICLASS::SCDAN   },
-    { "fbl",    ICLASS::SCD     },
-    { "fbl,a",  ICLASS::SCDAN   },
-    { "fbul",   ICLASS::SCD     },
-    { "fbul,a", ICLASS::SCDAN   },
-    { "fblg",   ICLASS::SCD     },
-    { "fblg,a", ICLASS::SCDAN   },
-    { "fbne",   ICLASS::SCD     },
-    { "fbne,a", ICLASS::SCDAN   },
-    { "fbe",    ICLASS::SCD     },
-    { "fbe,a",  ICLASS::SCDAN   },
-    { "fbue",   ICLASS::SCD     },
-    { "fbue,a", ICLASS::SCDAN   },
-    { "fbge",   ICLASS::SCD     },
-    { "fbge,a", ICLASS::SCDAN   },
-    { "fbuge",  ICLASS::SCD     },
-    { "fbuge,a",ICLASS::SCDAN   },
-    { "fble",   ICLASS::SCD     },
-    { "fble,a", ICLASS::SCDAN   },
-    { "fbule",  ICLASS::SCD     },
-    { "fbule,a",ICLASS::SCDAN   },
+static const std::map<QString, IClass> g_instructionTypes = {
+    { "ba",     IClass::SD      },
+    { "ba,a",   IClass::SU      },
+    { "bn",     IClass::NCT     },
+    { "bn,a",   IClass::SKIP    },
+    { "bne",    IClass::SCD     },
+    { "bne,a",  IClass::SCDAN   },
+    { "be",     IClass::SCD     },
+    { "be,a",   IClass::SCDAN   },
+    { "bg",     IClass::SCD     },
+    { "bg,a",   IClass::SCDAN   },
+    { "ble",    IClass::SCD     },
+    { "ble,a",  IClass::SCDAN   },
+    { "bge",    IClass::SCD     },
+    { "bge,a",  IClass::SCDAN   },
+    { "bl",     IClass::SCD     },
+    { "bl,a",   IClass::SCDAN   },
+    { "bgu",    IClass::SCD     },
+    { "bgu,a",  IClass::SCDAN   },
+    { "bleu",   IClass::SCD     },
+    { "bleu,a", IClass::SCDAN   },
+    { "bcc",    IClass::SCD     },
+    { "bcc,a",  IClass::SCDAN   },
+    { "bcs",    IClass::SCD     },
+    { "bcs,a",  IClass::SCDAN   },
+    { "bge",    IClass::SCD     },
+    { "bge,a",  IClass::SCDAN   },
+    { "bpos",   IClass::SCD     },
+    { "bpos,a", IClass::SCDAN   },
+    { "bneg",   IClass::SCD     },
+    { "bneg,a", IClass::SCDAN   },
+    { "call",   IClass::SD      },
+    { "fba",    IClass::SD      },
+    { "fba,a",  IClass::SU      },
+    { "fbn",    IClass::NCT     },
+    { "fbn,a",  IClass::SKIP    },
+    { "fbg",    IClass::SCD     },
+    { "fbg,a",  IClass::SCDAN   },
+    { "fbug",   IClass::SCD     },
+    { "fbug,a", IClass::SCDAN   },
+    { "fbl",    IClass::SCD     },
+    { "fbl,a",  IClass::SCDAN   },
+    { "fbul",   IClass::SCD     },
+    { "fbul,a", IClass::SCDAN   },
+    { "fblg",   IClass::SCD     },
+    { "fblg,a", IClass::SCDAN   },
+    { "fbne",   IClass::SCD     },
+    { "fbne,a", IClass::SCDAN   },
+    { "fbe",    IClass::SCD     },
+    { "fbe,a",  IClass::SCDAN   },
+    { "fbue",   IClass::SCD     },
+    { "fbue,a", IClass::SCDAN   },
+    { "fbge",   IClass::SCD     },
+    { "fbge,a", IClass::SCDAN   },
+    { "fbuge",  IClass::SCD     },
+    { "fbuge,a",IClass::SCDAN   },
+    { "fble",   IClass::SCD     },
+    { "fble,a", IClass::SCDAN   },
+    { "fbule",  IClass::SCD     },
+    { "fbule,a",IClass::SCDAN   },
 
-    { "jmp",    ICLASS::DD      },
-    { "jmpl",   ICLASS::DD      },
-    { "ret",    ICLASS::DD      },
-    { "retl",   ICLASS::DD      },
-    { "rett",   ICLASS::DD      }
+    { "jmp",    IClass::DD      },
+    { "jmpl",   IClass::DD      },
+    { "ret",    IClass::DD      },
+    { "retl",   IClass::DD      },
+    { "rett",   IClass::DD      }
 };
 // clang-format on
 
 
-ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
+IClass CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
 {
     if (instruction->id == cs::SPARC_INS_NOP) {
-        return ICLASS::NOP;
+        return IClass::NOP;
     }
     else if (instruction->id == cs::SPARC_INS_UNIMP) {
-        return ICLASS::NOP;
+        return IClass::NOP;
     }
     else if (instruction->id == cs::SPARC_INS_CALL &&
              instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
         if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
-            return ICLASS::SD; // call %g0+foo, %o3. This is a static call
+            return IClass::SD; // call %g0+foo, %o3. This is a static call
         }
         else {
-            return ICLASS::DD; // computed call
+            return IClass::DD; // computed call
         }
     }
     else if ((instruction->id == cs::SPARC_INS_JMP || instruction->id == cs::SPARC_INS_JMPL) &&
              instruction->detail->sparc.operands[0].type == cs::SPARC_OP_MEM) {
         if (instruction->detail->sparc.operands[0].mem.base == cs::SPARC_REG_G0) {
-            return ICLASS::SD;
+            return IClass::SD;
         }
         else {
-            return ICLASS::DD;
+            return IClass::DD;
         }
     }
 
@@ -531,7 +519,7 @@ ICLASS CapstoneSPARCDecoder::getInstructionType(const cs::cs_insn *instruction)
     }
 
     const auto it = g_instructionTypes.find(insMnemonic);
-    return it != g_instructionTypes.end() ? it->second : ICLASS::NCT;
+    return it != g_instructionTypes.end() ? it->second : IClass::NCT;
 }
 
 

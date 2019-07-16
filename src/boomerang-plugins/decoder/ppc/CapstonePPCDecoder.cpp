@@ -84,12 +84,11 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     //     printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
     //            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
-    result.type         = ICLASS::NOP; // only relevant for architectures with delay slots
-    result.numBytes     = PPC_MAX_INSTRUCTION_LENGTH;
-    result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, decodedInstruction);
-    result.forceOutEdge = Address::ZERO;
-    result.valid        = (result.rtl != nullptr);
+    result.iclass   = IClass::NOP; //< only relevant for architectures with delay slots
+    result.numBytes = PPC_MAX_INSTRUCTION_LENGTH;
+    result.reDecode = false;
+    result.rtl      = createRTLForInstruction(pc, decodedInstruction);
+    result.valid    = (result.rtl != nullptr);
 
     cs_free(decodedInstruction, numInstructions);
     return true;
@@ -167,12 +166,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         return std::make_unique<RTL>(pc);
     }
 
-    if (insnID == "B" || insnID == "BA") {
-        GotoStatement *jump = new GotoStatement(Address(operands[0].imm));
-        jump->setIsComputed(false);
-        rtl->append(jump);
-    }
-    else if (insnID == "BL" || insnID == "BLA") {
+    if (insnID == "BL" || insnID == "BLA") {
         Address callDest        = Address(operands[0].imm);
         CallStatement *callStmt = new CallStatement();
         callStmt->setDest(callDest);
@@ -204,74 +198,65 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         call->setIsComputed(true);
         rtl->append(call);
     }
-    else if (insnID == "BLR") {
-        rtl->append(new ReturnStatement());
-    }
     else if (insnID == "BGT") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSG);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSG);
-        rtl->append(jump);
     }
     else if (insnID == "BGE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSGE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSGE);
-        rtl->append(jump);
     }
     else if (insnID == "BLT") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSL);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSL);
-        rtl->append(jump);
     }
     else if (insnID == "BLE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JSLE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JSLE);
-        rtl->append(jump);
     }
     else if (insnID == "BNE") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JNE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JNE);
-        rtl->append(jump);
     }
     else if (insnID == "BEQ") {
-        BranchStatement *jump = new BranchStatement();
+        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        jump->setCondType(BranchType::JE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
         }
         else {
             jump->setDest(operandToExp(operands[numOperands - 1]));
         }
-        jump->setCondType(BranchType::JE);
-        rtl->append(jump);
     }
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = operandToExp(operands[numOperands - 1])->access<Const>()->getAddr();

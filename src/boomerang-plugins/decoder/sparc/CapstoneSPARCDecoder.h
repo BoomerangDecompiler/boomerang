@@ -44,7 +44,7 @@ private:
                                         const cs::cs_insn *instruction);
 
     /// \returns the delay slot behaviour type of an instruction.
-    ICLASS getInstructionType(const cs::cs_insn *instruction);
+    IClass getInstructionType(const cs::cs_insn *instruction);
 
     /// Translate Capstone register ID to Boomerang internal register ID.
     RegNum fixRegNum(int csRegID) const;

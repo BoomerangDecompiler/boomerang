@@ -177,12 +177,11 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return ok;
     }
 
-    result.type         = ICLASS::NOP; // ICLASS is irrelevant for x86
-    result.numBytes     = m_insn->size;
-    result.reDecode     = false;
-    result.rtl          = createRTLForInstruction(pc, m_insn);
-    result.forceOutEdge = Address::ZERO;
-    result.valid        = (result.rtl != nullptr);
+    result.iclass   = IClass::NOP; //< ICLASS is irrelevant for x86
+    result.numBytes = m_insn->size;
+    result.reDecode = false;
+    result.rtl      = createRTLForInstruction(pc, m_insn);
+    result.valid    = (result.rtl != nullptr);
     return true;
 }
 
@@ -231,7 +230,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 
     std::unique_ptr<RTL> rtl;
 
-    // special hack to ignore 'and esp, 0xfffffff0 in startup code
+    // special hack to ignore 'and esp, 0xfffffff0' in startup code
     if (instruction->id == cs::X86_INS_AND && operands[0].type == cs::X86_OP_REG &&
         operands[0].reg == cs::X86_REG_ESP && operands[1].type == cs::X86_OP_IMM &&
         operands[1].imm == 0xFFFFFFF0) {
@@ -247,86 +246,38 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         }
     }
 
-    if (isInstructionInGroup(instruction, cs::CS_GRP_RET) ||
-        isInstructionInGroup(instruction, cs::CS_GRP_IRET)) {
-        rtl->append(new ReturnStatement);
-    }
-    else if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
-        Assign *last       = static_cast<Assign *>(rtl->back());
-        SharedExp callDest = last->getRight();
+    if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
+        auto it = std::find_if(rtl->rbegin(), rtl->rend(),
+                               [](const Statement *stmt) { return stmt->isCall(); });
 
-        if (callDest->isConst() && callDest->access<const Const>()->getAddr() == pc + 5) {
-            // This is a call to the next instruction
-            // Use the standard semantics, except for the last statement
-            // (just updates %pc)
-            rtl->pop_back();
-            // And don't make it a call statement
-        }
-        else {
-            // correct the assignment to %pc to be relative
-            if (!rtl->getStatements().empty() && rtl->getStatements().back()->isAssign()) {
-                Assign *asgn = static_cast<Assign *>(rtl->getStatements().back());
-                if (asgn->getLeft()->isPC() && asgn->getRight()->isConst() &&
-                    !asgn->getRight()->isStrConst()) {
-                    const Address absoluteAddr = asgn->getRight()->access<Const>()->getAddr();
-                    const int delta            = (absoluteAddr -
-                                       Address(instruction->address - instruction->size))
-                                          .value();
+        if (it != rtl->rend()) {
+            CallStatement *call = static_cast<CallStatement *>(*it);
 
-                    asgn->setRight(Binary::get(opPlus, Terminal::get(opPC), Const::get(delta)));
+            if (!call->isComputed()) {
+                const SharedConstExp &callDest = call->getDest();
+                const Address destAddr         = callDest->access<Const>()->getAddr();
+
+                if (destAddr == pc + 5) {
+                    // call to next instruction (just pushes instruction pointer to stack)
+                    // delete the call statement
+                    rtl->erase(std::next(it).base());
                 }
-            }
+                else {
+                    Function *destProc = m_prog->getOrCreateFunction(destAddr);
 
-            CallStatement *call = new CallStatement;
-            // Set the destination
-            call->setDest(callDest);
-            rtl->append(call);
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
+                        destProc = nullptr;
+                    }
 
-            if (callDest->isConst()) {
-                Function *destProc = m_prog->getOrCreateFunction(
-                    callDest->access<Const>()->getAddr());
-
-                if (destProc == reinterpret_cast<Function *>(-1)) {
-                    destProc = nullptr; // In case a deleted Proc
+                    call->setDestProc(destProc);
                 }
-
-                call->setDestProc(destProc);
-            }
-            else {
-                call->setIsComputed(true);
             }
         }
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
-        Assign *last = static_cast<Assign *>(rtl->back());
-        assert(last->getLeft()->isPC());
-        SharedExp guard = last->getGuard();
-
-        const bool isComputedJump = !last->getRight()->isConst();
-
-        if (guard == nullptr) {
-            if (isComputedJump) {
-                // unconditional computed jump (switch statement)
-                CaseStatement *cs = new CaseStatement();
-                cs->setDest(last->getRight());
-                cs->setIsComputed(true);
-                rtl->pop_back();
-                rtl->append(cs);
-            }
-            else {
-                // unconditional jump
-                GotoStatement *gs = new GotoStatement;
-                gs->setDest(last->getRight());
-                rtl->pop_back();
-                rtl->append(gs);
-            }
-        }
-        else {
-            // conditional jump
-            BranchStatement *branch = new BranchStatement();
-            branch->setDest(last->getRight());
-            branch->setCondExpr(guard);
-            branch->setIsComputed(true);
+        if (rtl->back()->isBranch()) {
+            BranchStatement *branch   = static_cast<BranchStatement *>(rtl->back());
+            const bool isComputedJump = !branch->getDest()->isIntConst();
 
             BranchType bt = BranchType::INVALID;
             switch (instruction->id) {
@@ -404,9 +355,6 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             }
             default: break;
             }
-
-            rtl->pop_back();
-            rtl->append(branch);
         }
     }
     else if (insnID.startsWith("SET")) {

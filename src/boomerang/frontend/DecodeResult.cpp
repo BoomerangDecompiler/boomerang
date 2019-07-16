@@ -20,11 +20,10 @@ DecodeResult::DecodeResult()
 
 DecodeResult::DecodeResult(DecodeResult &&other)
     : valid(std::move(other.valid))
-    , type(std::move(other.type))
+    , iclass(std::move(other.iclass))
     , reDecode(std::move(other.reDecode))
     , numBytes(std::move(other.numBytes))
     , rtl(std::move(other.rtl))
-    , forceOutEdge(other.forceOutEdge)
 {
 }
 
@@ -36,12 +35,11 @@ DecodeResult::~DecodeResult()
 
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
-    valid        = std::move(other.valid);
-    type         = std::move(other.type);
-    reDecode     = std::move(other.reDecode);
-    numBytes     = std::move(other.numBytes);
-    rtl          = std::move(other.rtl);
-    forceOutEdge = std::move(other.forceOutEdge);
+    valid    = std::move(other.valid);
+    iclass   = std::move(other.iclass);
+    reDecode = std::move(other.reDecode);
+    numBytes = std::move(other.numBytes);
+    rtl      = std::move(other.rtl);
 
     return *this;
 }
@@ -49,10 +47,9 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 
 void DecodeResult::reset()
 {
-    numBytes     = 0;
-    type         = NCT;
-    valid        = true;
-    rtl          = nullptr;
-    reDecode     = false;
-    forceOutEdge = Address::ZERO;
+    numBytes = 0;
+    iclass   = IClass::NCT;
+    valid    = true;
+    rtl      = nullptr;
+    reDecode = false;
 }

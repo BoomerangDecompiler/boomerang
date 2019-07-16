@@ -561,7 +561,7 @@ Statement *CallStatement::clone() const
 {
     CallStatement *ret = new CallStatement();
 
-    ret->m_dest       = m_dest->clone();
+    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
 
 

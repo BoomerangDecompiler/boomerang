@@ -1156,18 +1156,18 @@ void StatementTest::testBypass()
         ++it;
     }
     QVERIFY(it != stmts.end());
-    Statement *s20 = *std::next(it, 2); // Statement 20
-    QVERIFY(s20->getKind() == StmtType::Assign);
+    Statement *s19 = *std::next(it, 2);
+    QVERIFY(s19->getKind() == StmtType::Assign);
 
-    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{18} + 16");
+    QCOMPARE(s19->toString(), "  19 *32* r28 := r28{17} + 16");
 
-    s20->bypass();        // r28 should bypass the call
-    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
+    s19->bypass();        // r28 should bypass the call
+    QCOMPARE(s19->toString(), "  19 *32* r28 := r28{15} + 20");
 
     // Second pass (should do nothing because r28{15} is the only reference to r28
     // that reaches the call)
-    s20->bypass();
-    QCOMPARE(s20->toString(), "  20 *32* r28 := r28{15} + 20");
+    s19->bypass();
+    QCOMPARE(s19->toString(), "  19 *32* r28 := r28{15} + 20");
 }
 
 

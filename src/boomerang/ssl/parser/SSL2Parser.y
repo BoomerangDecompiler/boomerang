@@ -7,13 +7,13 @@
  */
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.0"
+%require "3.3"
 %defines
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
 %define api.namespace {::SSL2}
-%name-prefix "SSL2"
+%define api.prefix {SSL2}
 
 %code requires {
 
@@ -40,6 +40,10 @@ class SSL2ParserDriver;
 #include "boomerang/ssl/RTLInstDict.h"
 #include "SSL2ParserDriver.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/GotoStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
@@ -60,10 +64,11 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token KW_ENDIANNESS KW_BIG KW_LITTLE
 %token KW_COVERS KW_SHARES
 %token KW_FPUSH KW_FPOP
-%token KW_FLOAT KW_INTEGER KW_FLAGS
+%token KW_FLOAT KW_INTEGER KW_FLAGS KW_INSTRUCTION
+%token KW_RET KW_GOTO KW_CALL
 
 // identifiers
-%token <QString> IDENT REG_IDENT TEMP
+%token <QString> IDENT REG_IDENT TEMP STR_LITERAL
 %token <int>     INT_LITERAL
 %token <double>  FLOAT_LITERAL
 
@@ -84,7 +89,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 // other tokens
 %token MEMOF REGOF
 %token <int> REG_NUM
-%token THEN INDEX ASSIGN TO DOT COLON AT UNDERSCORE QUESTION COMMA SEMICOLON DOLLAR QUOTE DQUOTE
+%token THEN INDEX ASSIGN TO DOT COLON AT UNDERSCORE QUESTION COMMA SEMICOLON DOLLAR QUOTE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token <QString> ASSIGNTYPE
 
@@ -105,11 +110,10 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %nonassoc AT
 
 %type <SharedExp>    exp location exp_term
-%type <Statement *>  statement
+%type <Statement *>  statement ret_stmt goto_stmt call_stmt
 %type <Assign *>     assignment
 %type <SharedType>   assigntype
 %type <SharedRTL>    rtl nonempty_rtl rtl_part
-%type <QString>      str
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
 %type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
@@ -448,6 +452,9 @@ rtl_part:
 
 statement:
     assignment { $$ = $1; }
+  | ret_stmt   { $$ = $1; }
+  | goto_stmt  { $$ = $1; }
+  | call_stmt  { $$ = $1; }
     // example: *use* of ADDFLAGS(...)
   | NAME_CALL LPAREN arglist RPAREN {
         if (drv.m_dict->m_flagFuncs.find($1) == drv.m_dict->m_flagFuncs.end()) {
@@ -499,6 +506,34 @@ assigntype:
     }
   ;
 
+ret_stmt:
+    KW_RET {
+        $$ = new ReturnStatement;
+    }
+  ;
+
+goto_stmt:
+    KW_GOTO exp {
+        GotoStatement *jump = new GotoStatement;
+        jump->setDest($2);
+        $$ = jump;
+    }
+  | exp THEN KW_GOTO exp {
+        BranchStatement *jump = new BranchStatement;
+        jump->setDest($4);
+        jump->setCondExpr($1);
+        $$ = jump;
+    }
+  ;
+
+call_stmt:
+    KW_CALL exp {
+        CallStatement *call = new CallStatement;
+        call->setDest($2);
+        $$ = call;
+    }
+  ;
+
 table_assign:
     IDENT ASSIGN table_expr {
         if (drv.TableDict.find($1) != drv.TableDict.end()) {
@@ -539,28 +574,23 @@ str_list:
   ;
 
 str_array:
-    str_array COMMA str {
+    str_array COMMA STR_LITERAL {
         $1->push_back($3);
         $$ = std::move($1);
     }
-  | str {
+  | STR_LITERAL {
         $$.reset(new std::deque<QString>({ $1 }));
     }
   ;
 
-str:
-    DQUOTE DQUOTE       { $$ = QString(); }
-  | DQUOTE IDENT DQUOTE { $$ = std::move($2); }
-  ;
-
 instr_def:
-    instr_name {
-        $1->getRefMap(drv.indexrefmap);
-    } paramlist {
-        drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
-    } rtl {
+    KW_INSTRUCTION instr_name {
+        $2->getRefMap(drv.indexrefmap);
+    } LPAREN paramlist RPAREN LBRACE {
+        drv.m_dict->m_definedParams.insert($5->begin(), $5->end());
+    } rtl RBRACE {
         // This function expands the tables and saves the expanded RTLs to the dictionary
-        drv.expandTables($1, $3, $5, drv.m_dict);
+        drv.expandTables($2, $5, $9, drv.m_dict);
         drv.m_dict->m_definedParams.clear();
     }
   ;
@@ -572,7 +602,8 @@ instr_name:
   ;
 
 instr_name_elem:
-    IDENT {
+    // example: "foo"
+    STR_LITERAL {
         $$.reset(new InsNameElem($1));
     }
     // example: FOO[IDX] where FOO is some kind of pre-defined string table

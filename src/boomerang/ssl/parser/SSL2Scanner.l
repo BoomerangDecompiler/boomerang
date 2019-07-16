@@ -42,10 +42,10 @@ identifier      [a-zA-Z][a-zA-Z_0-9]*
 reg_id          %[a-zA-Z][a-zA-Z_0-9]*
 int_literal     [\+\-]?[0-9]+
 hex_literal     0x[0-9A-Fa-f]+
+str_literal     \"[^\"]*\"
 blank           [ \t]
 comment         \#.*
 asgntype        \*[ijufc]?[1-9][0-9]*\*
-
 %{
 #undef NULL
 #define NULL nullptr
@@ -71,6 +71,7 @@ loc.step();
 "INTEGER"       return SSL2::parser::make_KW_INTEGER(loc);
 "FLOAT"         return SSL2::parser::make_KW_FLOAT(loc);
 "FLAGS"         return SSL2::parser::make_KW_FLAGS(loc);
+"INSTRUCTION"   return SSL2::parser::make_KW_INSTRUCTION(loc);
 "ENDIANNESS"    return SSL2::parser::make_KW_ENDIANNESS(loc);
 "BIG"           return SSL2::parser::make_KW_BIG(loc);
 "LITTLE"        return SSL2::parser::make_KW_LITTLE(loc);
@@ -78,6 +79,9 @@ loc.step();
 "SHARES"        return SSL2::parser::make_KW_SHARES(loc);
 "FPUSH"         return SSL2::parser::make_KW_FPUSH(loc);
 "FPOP"          return SSL2::parser::make_KW_FPOP(loc);
+"ret"           return SSL2::parser::make_KW_RET(loc);
+"goto"          return SSL2::parser::make_KW_GOTO(loc);
+"call"          return SSL2::parser::make_KW_CALL(loc);
 
 "|"             return SSL2::parser::make_BIT_OR(loc);
 "&"             return SSL2::parser::make_BIT_AND(loc);
@@ -136,7 +140,6 @@ loc.step();
 ";"             return SSL2::parser::make_SEMICOLON(loc);
 "$"             return SSL2::parser::make_DOLLAR(loc);
 "'"             return SSL2::parser::make_QUOTE(loc);
-"\""            return SSL2::parser::make_DQUOTE(loc);
 "addr"/"("      return SSL2::parser::make_ADDROF(loc);
 "succ"/"("      return SSL2::parser::make_SUCCESSOR(loc);
 "m"/"["         return SSL2::parser::make_MEMOF(loc);
@@ -183,6 +186,12 @@ loc.step();
 _?[A-Za-z][A-Za-z0-9_]* {
                 const char *result = yytext;
                 return SSL2::parser::make_IDENT(result, loc);
+}
+{str_literal} {
+                size_t len = strlen(yytext);
+                yytext[len-1] = 0;
+                const char *result = yytext + 1;
+                return SSL2::parser::make_STR_LITERAL(result, loc);
 }
 -?[0-9]+"."[0-9]+ {
                 return SSL2::parser::make_FLOAT_LITERAL(atof(yytext), loc);

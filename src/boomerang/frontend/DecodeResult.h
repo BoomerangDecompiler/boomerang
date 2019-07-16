@@ -27,17 +27,18 @@ class RTL;
  * for SPARC instructions.
  * Ignored by machines with no delay slots.
  */
-enum ICLASS : uint8
+enum class IClass : uint8
 {
-    NCT,   ///< Non Control Transfer
+    NOP, ///< No operation (e.g. SPARC BN,A)
+    NCT, ///< Non Control Transfer
+
     SD,    ///< Static Delayed
     DD,    ///< Dynamic Delayed
     SCD,   ///< Static Conditional Delayed
     SCDAN, ///< Static Conditional Delayed, Anulled if Not taken
     SCDAT, ///< Static Conditional Delayed, Anulled if Taken
     SU,    ///< Static Unconditional (not delayed)
-    SKIP,  ///< Skip successor
-    NOP    ///< No operation (e.g. SPARC BN,A)
+    SKIP   ///< Skip successor
 };
 
 
@@ -67,11 +68,11 @@ public:
     bool valid; ///< Indicates whether or not a valid instruction was decoded.
 
     /**
-     * The class of the instruction decoded. Will be one of the classes described in
+     * The class of the decoded instruction. Will be one of the classes described in
      * "A Transformational Approach to Binary Translation of Delayed Branches".
      * Ignored by machines with no delay slots.
      */
-    ICLASS type;
+    IClass iclass;
 
     /**
      * If true, don't add numBytes and decode there; instead, re-decode the current instruction.
@@ -83,10 +84,4 @@ public:
 
     /// The RTL constructed (if any).
     std::unique_ptr<RTL> rtl;
-
-    /**
-     * If non zero, this field represents a new native address to be used as the out-edge for this
-     * instruction's BB. At present, only used for the SPARC call/add caller prologue
-     */
-    Address forceOutEdge;
 };

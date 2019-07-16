@@ -228,137 +228,144 @@ TRAP(cond, op1) {
 
 
 #synthetic instructions
-MOV src, dest           *32* dest := src;
-CMP rs1, reg_or_imm     SUBFLAGS(rs1, reg_or_imm, rs1 - reg_or_imm);
+INSTRUCTION "MOV" (src, dest) { *32* dest := src };
+INSTRUCTION "CMP" (rs1, reg_or_imm) { SUBFLAGS(rs1, reg_or_imm, rs1 - reg_or_imm) };
 
 
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd.
 
-LDD src, rd
+INSTRUCTION "LDD" (src, rd) {
     *32*    rd       := src
     *32*    succ(rd) := m[addr(src) + WORD]
-;
+};
 
-LD      src, dest       *32* dest := src;
-LDUH    src, dest       *32* dest := zfill(16, 32, src);
-LDUB    src, dest       *32* dest := zfill( 8, 32, src);
-LDSH    src, dest       *32* dest := sgnex(16, 32, src);
-LDSB    src, dest       *32* dest := sgnex( 8, 32, src);
+INSTRUCTION "LD"   (src, dest) { *32* dest := src };
+INSTRUCTION "LDUH" (src, dest) { *32* dest := zfill(16, 32, src) };
+INSTRUCTION "LDUB" (src, dest) { *32* dest := zfill( 8, 32, src) };
+INSTRUCTION "LDSH" (src, dest) { *32* dest := sgnex(16, 32, src) };
+INSTRUCTION "LDSB" (src, dest) { *32* dest := sgnex( 8, 32, src) };
 
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-STD     rd, eaddr       *32* m[eaddr] := rd
-                        *32* m[eaddr + WORD] := succ(rd)
-;
+INSTRUCTION "STD" (rd, eaddr) {
+    *32* m[eaddr] := rd
+    *32* m[eaddr + WORD] := succ(rd)
+};
 
-ST      src, dest       *32* dest := src;
-STH     src, dest       *16* dest := truncs(32, 16, src);
-STB     src, dest       *8*  dest := truncs(32, 8, src);
+INSTRUCTION "ST"  (src, dest) { *32* dest := src };
+INSTRUCTION "STH" (src, dest) { *16* dest := truncs(32, 16, src) };
+INSTRUCTION "STB" (src, dest) { *8*  dest := truncs(32, 8, src) };
 
 
 # LOad STore Unsigned Byte
 # the byte number given by address offset
 # (1st 2 bytes of addr.) is selected by a shift
 # the copied byte (in the source addr.) is replaced with 1's
-LDSTUB  eaddr, rd       *32*  rd       := zfill(8, 32, m[eaddr])
-                        *8*   m[eaddr] := m[eaddr] | MAX_BYTE;
+INSTRUCTION "LDSTUB" (eaddr, rd) {
+    *32*  rd       := zfill(8, 32, m[eaddr])
+    *8*   m[eaddr] := m[eaddr] | MAX_BYTE
+};
+
 
 # Swap using temp register
-SWAP    lhs, rhs        *32* tmp1 := rhs
-                        *32* rhs := lhs
-                        *32* lhs := tmp1
-;
+INSTRUCTION "SWAP" (lhs, rhs) {
+    *32* tmp1 := rhs
+    *32* rhs := lhs
+    *32* lhs := tmp1
+};
 
 
-AND     rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm;
-ANDCC   rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rs1 & reg_or_imm);
-OR      rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm;
-ORCC    rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rs1 | reg_or_imm);
-XOR     rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm;
-XORCC   rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rs1 ^ reg_or_imm);
+INSTRUCTION "AND"    (rs1, reg_or_imm, rd) { *32* rd := rs1 & reg_or_imm };
+INSTRUCTION "ANDCC"  (rs1, reg_or_imm, rd) { *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rs1 & reg_or_imm) };
+INSTRUCTION "OR"     (rs1, reg_or_imm, rd) { *32* rd := rs1 | reg_or_imm };
+INSTRUCTION "ORCC"   (rs1, reg_or_imm, rd) { *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rs1 | reg_or_imm) };
+INSTRUCTION "XOR"    (rs1, reg_or_imm, rd) { *32* rd := rs1 ^ reg_or_imm };
+INSTRUCTION "XORCC"  (rs1, reg_or_imm, rd) { *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rs1 ^ reg_or_imm) };
 
-ANDN    rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm);
-ANDNCC  rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rs1 & (~reg_or_imm));
-ORN     rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm);
-ORNCC   rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rs1 | (~reg_or_imm));
-XNOR    rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm);
-XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rs1 ^ (~reg_or_imm));
+INSTRUCTION "ANDN"   (rs1, reg_or_imm, rd) { *32* rd := rs1 & (~reg_or_imm) };
+INSTRUCTION "ANDNCC" (rs1, reg_or_imm, rd) { *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rs1 & (~reg_or_imm)) };
+INSTRUCTION "ORN"    (rs1, reg_or_imm, rd) { *32* rd := rs1 | (~reg_or_imm) };
+INSTRUCTION "ORNCC"  (rs1, reg_or_imm, rd) { *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rs1 | (~reg_or_imm)) };
+INSTRUCTION "XNOR"   (rs1, reg_or_imm, rd) { *32* rd := rs1 ^ (~reg_or_imm) };
+INSTRUCTION "XNORCC" (rs1, reg_or_imm, rd) { *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rs1 ^ (~reg_or_imm)) };
 
 
 # sethi instruction- puts the immediate into the top 22 bits
-SETHI val, rd           *32* rd := val << 10;
+INSTRUCTION "SETHI"  (val, rd) { *32* rd := val << 10 };
 
-NOP                     _;
+INSTRUCTION "NOP" () { _ };
 
-FLUSH  eaddr            _; # icache flush
-STBAR                   _; # store barrier
+INSTRUCTION "FLUSH" (eaddr) { _ }; # icache flush
+INSTRUCTION "STBAR" ()      { _ }; # store barrier
 
-SLL     rs1, reg_or_imm, rd     *32* rd := rs1 <<  reg_or_imm;
-SRL     rs1, reg_or_imm, rd     *32* rd := rs1 >>  reg_or_imm;
-SRA     rs1, reg_or_imm, rd     *32* rd := rs1 >>A reg_or_imm;
+INSTRUCTION "SLL" (rs1, reg_or_imm, rd) { *32* rd := rs1 <<  reg_or_imm };
+INSTRUCTION "SRL" (rs1, reg_or_imm, rd) { *32* rd := rs1 >>  reg_or_imm };
+INSTRUCTION "SRA" (rs1, reg_or_imm, rd) { *32* rd := rs1 >>A reg_or_imm };
 
 
 # NOTE: The format of these (number of RTLs, etc) must agree with the
 # isCompare function in rtl/ctisparc.cc.
-ADD     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm;
-ADDCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     ADDFLAGS(tmp, reg_or_imm, rd);
-SUB     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm;
-SUBCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, rd);
-TADDCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     TADDFLAGS(tmp, reg_or_imm, rd);
-TSUBCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     TSUBFLAGS(tmp, reg_or_imm, rd);
+INSTRUCTION "ADD"    (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 + reg_or_imm };
+INSTRUCTION "ADDCC"  (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     ADDFLAGS(tmp, reg_or_imm, rd) };
+INSTRUCTION "SUB"    (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 - reg_or_imm };
+INSTRUCTION "SUBCC"  (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, rd) };
+INSTRUCTION "TADDCC" (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     TADDFLAGS(tmp, reg_or_imm, rd) };
+INSTRUCTION "TSUBCC" (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     TSUBFLAGS(tmp, reg_or_imm, rd) };
 
-ADDX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
-ADDXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   ADDFLAGS(tmp, reg_or_imm, rd);
-SUBX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF);
-SUBXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd);
+INSTRUCTION "ADDX"   (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF) };
+INSTRUCTION "ADDXCC" (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   ADDFLAGS(tmp, reg_or_imm, rd) };
+INSTRUCTION "SUBX"   (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF) };
+INSTRUCTION "SUBXCC" (rs1, reg_or_imm, rd) { *32* tmp := rs1     *32* rd := (rs1 - reg_or_imm) - zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd) };
 
 
 # Unsigned Multiplication - uses the Y register to store top 32 bits
 # treats Y and rd as 64 bit register
 UMULT   := { "UMUL", "UMULCC" };
 
-UMULT[idx]  rs1, reg_or_imm, rd
+INSTRUCTION UMULT[idx]  (rs1, reg_or_imm, rd) {
     *32* tmp := rs1
     *64* tmpl := zfill(32, 64, rs1) * zfill(32, 64, reg_or_imm)
     *32* rd := truncs(64, 32, tmpl)
     *32* %Y := tmpl@[32:63]
-;
+};
 
-UMULCC rs1, reg_or_imm, rd     MULTFLAGS(tmp, reg_or_imm, rd);
+INSTRUCTION "UMULCC" (rs1, reg_or_imm, rd) { MULTFLAGS(tmp, reg_or_imm, rd) };
 
-MULSCC rs1, reg_or_imm, rd
+INSTRUCTION "MULSCC" (rs1, reg_or_imm, rd) {
     *32* tmp := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
     *32* tmp2 := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
     *32* %Y := %Y >> 1 | (rs1 << 31)
     *32* rd := tmp + tmp2
     ADDFLAGS( tmp, tmp2, rd )
-;
+};
 
 
 # Signed Multiplication - uses the Y register to store top 32 bits
 # treats Y and rd as 64 bit register
 SMULT   := { "SMUL", "SMULCC" };
-SMULT[idx]  rs1, reg_or_imm, rd
+
+INSTRUCTION SMULT[idx]  (rs1, reg_or_imm, rd) {
     *32* tmp := rs1
     *64* tmpl := sgnex(32, 64, rs1) *! sgnex(32, 64, reg_or_imm)
     *32* rd := truncs(64, 32, tmpl)
     *32* %Y := tmpl@[32:63]
-;
-SMULCC rs1, reg_or_imm, rd
+};
+
+INSTRUCTION "SMULCC" (rs1, reg_or_imm, rd) {
     MULTFLAGS(tmp, reg_or_imm, rd)
-;
+};
 
 # Unsigned Multiplication Quick - 32 x 32 -> 32 bits
 UMULTQ  := { "UMULQ", "UMULCCQ" };
-UMULTQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 * reg_or_imm;
-UMULCCQ     rs1, reg_or_imm, rd     MULTFLAGS(rs1, reg_or_imm, rd);
+INSTRUCTION UMULTQ[idx] (rs1, reg_or_imm, rd) { *32* rd := rs1 * reg_or_imm };
+INSTRUCTION "UMULCCQ"   (rs1, reg_or_imm, rd) { MULTFLAGS(rs1, reg_or_imm, rd) };
 
 # Signed Multiplication - 32 x 32 bits -> 32 bits
 SMULTQ := { "SMULQ", "SMULCCQ" };
-SMULTQ[idx]  rs1, reg_or_imm, rd    *32* rd := rs1 *! reg_or_imm;
-SMULCCQ      rs1, reg_or_imm, rd    MULTFLAGS(rs1, reg_or_imm, rd);
+INSTRUCTION SMULTQ[idx]  (rs1, reg_or_imm, rd) { *32* rd := rs1 *! reg_or_imm };
+INSTRUCTION "SMULCCQ"    (rs1, reg_or_imm, rd) { MULTFLAGS(rs1, reg_or_imm, rd) };
 
 
 # Unsigned Division
@@ -367,18 +374,18 @@ SMULCCQ      rs1, reg_or_imm, rd    MULTFLAGS(rs1, reg_or_imm, rd);
 # and the divisor is -1
 # For now, we don't model the behaviour with these inputs (too expensive)
 UDIVS := { "UDIV", "UDIVCC" };
-UDIVS[idx]  rs1, reg_or_imm, rd
+INSTRUCTION UDIVS[idx] (rs1, reg_or_imm, rd) {
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncu(64, 32, tmpl / zfill(32, 64, reg_or_imm))
-;
-UDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(tmpl, reg_or_imm, rd);
+};
+INSTRUCTION "UDIVCC" (rs1, reg_or_imm, rd) { DIVFLAGS(tmpl, reg_or_imm, rd) };
 
 #
 # Unsigned division: 32 / 32 bits -> 32 bits
 #
 UDIVSQ := { "UDIVQ", "UDIVCCQ" };
-UDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 / reg_or_imm;
-UDIVCCQ     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+INSTRUCTION UDIVSQ[idx] (rs1, reg_or_imm, rd) { *32* rd := rs1 / reg_or_imm };
+INSTRUCTION "UDIVCCQ"   (rs1, reg_or_imm, rd) { DIVFLAGS(rs1, reg_or_imm, rd) };
 
 
 # Signed Division
@@ -388,22 +395,22 @@ UDIVCCQ     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
 # and the divisor is -1
 # For now, we don't model the behaviour with these inputs (too expensive)
 SDIVS := { "SDIV", "SDIVCC" };
-SDIVS[idx]  rs1, reg_or_imm, rd
+INSTRUCTION SDIVS[idx] (rs1, reg_or_imm, rd) {
     *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
     *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm))
-;
-SDIVCC     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+};
+INSTRUCTION "SDIVCC" (rs1, reg_or_imm, rd) { DIVFLAGS(rs1, reg_or_imm, rd) };
 
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
-SDIVSQ[idx] rs1, reg_or_imm, rd     *32* rd := rs1 /! reg_or_imm;
-SDIVCCQ     rs1, reg_or_imm, rd     DIVFLAGS(rs1, reg_or_imm, rd);
+INSTRUCTION SDIVSQ[idx] (rs1, reg_or_imm, rd) { *32* rd := rs1 /! reg_or_imm  };
+INSTRUCTION "SDIVCCQ"   (rs1, reg_or_imm, rd) { DIVFLAGS(rs1, reg_or_imm, rd) };
 
 # Save instruction is machine-dependant (register windows)
 # Note that these versions of save and restore are one possible implementation
 # of the sparc spec (essentially number of windows = 1 & assume the window traps
 # do what they're supposed to do).
-SAVE  rs1, reg_or_imm, rd
+INSTRUCTION "SAVE" (rs1, reg_or_imm, rd) {
     *32* tmp := rs1 + reg_or_imm
     *32* m[%sp+0]  := %l0
     *32* m[%sp+4]  := %l1
@@ -430,10 +437,10 @@ SAVE  rs1, reg_or_imm, rd
     *32* %i6 := %o6
     *32* %i7 := %o7
     *32* rd := tmp
-;
+};
 
 # Restore instruction is machine-dependent (register windows)
-RESTORE  rs1, reg_or_imm, rd
+INSTRUCTION "RESTORE" (rs1, reg_or_imm, rd) {
     *32* tmp := rs1 + reg_or_imm
     *32* %o0 := %i0
     *32* %o1 := %i1
@@ -461,9 +468,9 @@ RESTORE  rs1, reg_or_imm, rd
     *32* %i6 := m[%sp+56]
     *32* %i7 := m[%sp+60]
     *32* rd := tmp # repeat
-;
+};
 
-RESTORE
+INSTRUCTION "RESTORE" () {
     *32* tmp := 0
     *32* %o0 := %i0
     *32* %o1 := %i1
@@ -491,9 +498,9 @@ RESTORE
     *32* %i6 := m[%sp+56]
     *32* %i7 := m[%sp+60]
     *32* %g0 := tmp
-;
+};
 
-RETURN  addr
+INSTRUCTION "RETURN" (addr) {
     *32* %o0 := %i0
     *32* %o1 := %i1
     *32* %o2 := %i2
@@ -518,93 +525,93 @@ RETURN  addr
     *32* %i5 := m[%sp+52]
     *32* %i6 := m[%sp+56]
     *32* %i7 := m[%sp+60]
-;
+};
 
-RET     _;
-RETT    _;
-RETL    _;
+INSTRUCTION "RET"  () { ret };
+INSTRUCTION "RETT" () { ret };
+INSTRUCTION "RETL" () { ret };
 
 # Jump instructions - hard-coded semantics
-BA      reloc       _;
-BA      cc, reloc   _;
-BAA     reloc       _;
-BAA     cc, reloc   _;
-BN      cc, reloc   _;
-BN      reloc       _;
-BNA     reloc       _;
-BNA     cc, reloc   _;
+INSTRUCTION "BA"      (reloc)      { goto reloc };
+INSTRUCTION "BA"      (cc, reloc)  { goto reloc };
+INSTRUCTION "BAA"     (reloc)      { goto reloc };
+INSTRUCTION "BAA"     (cc, reloc)  { goto reloc };
+INSTRUCTION "BN"      (cc, reloc)  { goto reloc };
+INSTRUCTION "BN"      (reloc)      { goto reloc };
+INSTRUCTION "BNA"     (reloc)      { goto reloc };
+INSTRUCTION "BNA"     (cc, reloc)  { goto reloc };
 
 # Conditional branches - those suffixed with 'A' have their delay slots anulled when not taken.
-BNE     reloc       _;
-BNE     cc, reloc   _;
-BNEA    reloc       _;
-BNEA    cc, reloc   _;
-BE      reloc       _;
-BE      cc, reloc   _;
-BEA     reloc       _;
-BEA     cc, reloc   _;
-BG      reloc       _;
-BG      cc, reloc   _;
-BGA     reloc       _;
-BGA     cc, reloc   _;
-BLE     reloc       _;
-BLE     cc, reloc   _;
-BLEA    reloc       _;
-BLEA    cc, reloc   _;
-BGE     reloc       _;
-BGE     cc, reloc   _;
-BGEA    reloc       _;
-BGEA    cc, reloc   _;
-BL      reloc       _;
-BL      cc, reloc   _;
-BLA     reloc       _;
-BLA     cc, reloc   _;
-BGU     reloc       _;
-BGU     cc, reloc   _;
-BGUA    reloc       _;
-BGUA    cc, reloc   _;
-BLEU    reloc       _;
-BLEU    cc, reloc   _;
-BLEUA   reloc       _;
-BLEUA   cc, reloc   _;
-BCC     reloc       _;
-BCC     cc, reloc   _;
-BCCA    reloc       _;
-BCCA    cc, reloc   _;
-BCS     reloc       _;
-BCS     cc, reloc   _;
-BCSA    reloc       _;
-BCSA    cc, reloc   _;
-BPOS    reloc       _;
-BPOS    cc, reloc   _;
-BPOSA   reloc       _;
-BPOSA   cc, reloc   _;
-BNEG    reloc       _;
-BNEG    cc, reloc   _;
-BNEGA   reloc       _;
-BNEGA   cc, reloc   _;
-BVC     reloc       _;
-BVC     cc, reloc   _;
-BVCA    reloc       _;
-BVCA    cc, reloc   _;
-BVS     reloc       _;
-BVS     cc, reloc   _;
-BVSA    reloc       _;
-BVSA    cc, reloc   _;
+INSTRUCTION "BNE"     (reloc)      { _ };
+INSTRUCTION "BNE"     (cc, reloc)  { _ };
+INSTRUCTION "BNEA"    (reloc)      { _ };
+INSTRUCTION "BNEA"    (cc, reloc)  { _ };
+INSTRUCTION "BE"      (reloc)      { _ };
+INSTRUCTION "BE"      (cc, reloc)  { _ };
+INSTRUCTION "BEA"     (reloc)      { _ };
+INSTRUCTION "BEA"     (cc, reloc)  { _ };
+INSTRUCTION "BG"      (reloc)      { _ };
+INSTRUCTION "BG"      (cc, reloc)  { _ };
+INSTRUCTION "BGA"     (reloc)      { _ };
+INSTRUCTION "BGA"     (cc, reloc)  { _ };
+INSTRUCTION "BLE"     (reloc)      { _ };
+INSTRUCTION "BLE"     (cc, reloc)  { _ };
+INSTRUCTION "BLEA"    (reloc)      { _ };
+INSTRUCTION "BLEA"    (cc, reloc)  { _ };
+INSTRUCTION "BGE"     (reloc)      { _ };
+INSTRUCTION "BGE"     (cc, reloc)  { _ };
+INSTRUCTION "BGEA"    (reloc)      { _ };
+INSTRUCTION "BGEA"    (cc, reloc)  { _ };
+INSTRUCTION "BL"      (reloc)      { _ };
+INSTRUCTION "BL"      (cc, reloc)  { _ };
+INSTRUCTION "BLA"     (reloc)      { _ };
+INSTRUCTION "BLA"     (cc, reloc)  { _ };
+INSTRUCTION "BGU"     (reloc)      { _ };
+INSTRUCTION "BGU"     (cc, reloc)  { _ };
+INSTRUCTION "BGUA"    (reloc)      { _ };
+INSTRUCTION "BGUA"    (cc, reloc)  { _ };
+INSTRUCTION "BLEU"    (reloc)      { _ };
+INSTRUCTION "BLEU"    (cc, reloc)  { _ };
+INSTRUCTION "BLEUA"   (reloc)      { _ };
+INSTRUCTION "BLEUA"   (cc, reloc)  { _ };
+INSTRUCTION "BCC"     (reloc)      { _ };
+INSTRUCTION "BCC"     (cc, reloc)  { _ };
+INSTRUCTION "BCCA"    (reloc)      { _ };
+INSTRUCTION "BCCA"    (cc, reloc)  { _ };
+INSTRUCTION "BCS"     (reloc)      { _ };
+INSTRUCTION "BCS"     (cc, reloc)  { _ };
+INSTRUCTION "BCSA"    (reloc)      { _ };
+INSTRUCTION "BCSA"    (cc, reloc)  { _ };
+INSTRUCTION "BPOS"    (reloc)      { _ };
+INSTRUCTION "BPOS"    (cc, reloc)  { _ };
+INSTRUCTION "BPOSA"   (reloc)      { _ };
+INSTRUCTION "BPOSA"   (cc, reloc)  { _ };
+INSTRUCTION "BNEG"    (reloc)      { _ };
+INSTRUCTION "BNEG"    (cc, reloc)  { _ };
+INSTRUCTION "BNEGA"   (reloc)      { _ };
+INSTRUCTION "BNEGA"   (cc, reloc)  { _ };
+INSTRUCTION "BVC"     (reloc)      { _ };
+INSTRUCTION "BVC"     (cc, reloc)  { _ };
+INSTRUCTION "BVCA"    (reloc)      { _ };
+INSTRUCTION "BVCA"    (cc, reloc)  { _ };
+INSTRUCTION "BVS"     (reloc)      { _ };
+INSTRUCTION "BVS"     (cc, reloc)  { _ };
+INSTRUCTION "BVSA"    (reloc)      { _ };
+INSTRUCTION "BVSA"    (cc, reloc)  { _ };
 
 
 # Call instruction - always executes delay instruction
-CALL    dest    _;
+INSTRUCTION "CALL"    (dest)       { _ };
 
 # Jump and Link instruction - always executes delay instruction
 # Register indirect transfer of control
 # Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
-JMPL  eaddr, rd _;
-JMP   dest      _;
+INSTRUCTION "JMPL"    (eaddr, rd)  { _ };
+INSTRUCTION "JMP"     (dest)       { _ };
 
 # Read and Write State Register Instructions
-RD src, dest            *32* dest := src;
-WR rs1, rs2, rd         *32* rd := rs1 ^ rs2;
+INSTRUCTION "RD" (src, dest)    { *32* dest := src };
+INSTRUCTION "WR" (rs1, rs2, rd) { *32* rd := rs1 ^ rs2 };
 
 
 ## Float Instructions
@@ -614,52 +621,52 @@ WR rs1, rs2, rd         *32* rd := rs1 ^ rs2;
 # destination floating point register.
 # NB: This means that 2 FMOVs statements are required to move a double and
 # 4 to move a quad.
-FMOVs      fs2s, fds        *32* fds := fs2s;
-FNEGs      fs2s, fds        *32* fds := 0.0 -f fs2s;
-FABSs      fs2s, fds        *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
+INSTRUCTION "FMOVs" (fs2s, fds) { *32* fds := fs2s };
+INSTRUCTION "FNEGs" (fs2s, fds) { *32* fds := 0.0 -f fs2s };
+INSTRUCTION "FABSs" (fs2s, fds) { *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ] };
 
 # Shamelessly borrowed from integers
-FADDs  fs1, fs2, fd  *32*  fd := fs1 +f fs2;
-FSUBs  fs1, fs2, fd  *32*  fd := fs1 -f fs2;
-FDIVs  fs1, fs2, fd  *32*  fd := fs1 /f fs2;
-FMULs  fs1, fs2, fd  *32*  fd := fs1 *f fs2;
+INSTRUCTION "FADDs" (fs1, fs2, fd)  { *32*  fd := fs1 +f fs2 };
+INSTRUCTION "FSUBs" (fs1, fs2, fd)  { *32*  fd := fs1 -f fs2 };
+INSTRUCTION "FDIVs" (fs1, fs2, fd)  { *32*  fd := fs1 /f fs2 };
+INSTRUCTION "FMULs" (fs1, fs2, fd)  { *32*  fd := fs1 *f fs2 };
 
-FADDd  fs1, fs2, fd  *64*  fd := fs1 +f fs2;
-FSUBd  fs1, fs2, fd  *64*  fd := fs1 -f fs2;
-FDIVd  fs1, fs2, fd  *64*  fd := fs1 /f fs2;
-FMULd  fs1, fs2, fd  *64*  fd := fs1 *f fs2;
-FsMULd fs1, fs2, fd  *64*  fd := fs1 *f fs2;
+INSTRUCTION "FADDd"  (fs1, fs2, fd) { *64*  fd := fs1 +f fs2 };
+INSTRUCTION "FSUBd"  (fs1, fs2, fd) { *64*  fd := fs1 -f fs2 };
+INSTRUCTION "FDIVd"  (fs1, fs2, fd) { *64*  fd := fs1 /f fs2 };
+INSTRUCTION "FMULd"  (fs1, fs2, fd) { *64*  fd := fs1 *f fs2 };
+INSTRUCTION "FsMULd" (fs1, fs2, fd) { *64*  fd := fs1 *f fs2 };
 
-FADDq  fs1, fs2, fd  *128* fd := fs1 +f fs2;
-FSUBq  fs1, fs2, fd  *128* fd := fs1 -f fs2;
-FDIVQ  fs1, fs2, fd  *128* fd := fs1 /f fs2;
-FMULq  fs1, fs2, fd  *128* fd := fs1 *f fs2;
-FdMULq fs1, fs2, fd  *128* fd := fs1 *f fs2;
+INSTRUCTION "FADDq"  (fs1, fs2, fd) { *128* fd := fs1 +f fs2 };
+INSTRUCTION "FSUBq"  (fs1, fs2, fd) { *128* fd := fs1 -f fs2 };
+INSTRUCTION "FDIVQ"  (fs1, fs2, fd) { *128* fd := fs1 /f fs2 };
+INSTRUCTION "FMULq"  (fs1, fs2, fd) { *128* fd := fs1 *f fs2 };
+INSTRUCTION "FdMULq" (fs1, fs2, fd) { *128* fd := fs1 *f fs2 };
 
 
 # FSQRTx_ assumes that SQRT can operate on a register of any size
-FSQRTs     fs2s, fds  *32*  fds := sqrt(fs2s);
-FSQRTd     fs2d, fdd  *64*  fdd := sqrt(fs2d);
-FSQRTq     fs2q, fdq  *128* fdq := sqrt(fs2q);
+INSTRUCTION "FSQRTs" (fs2s, fds) { *32*  fds := sqrt(fs2s) };
+INSTRUCTION "FSQRTd" (fs2d, fdd) { *64*  fdd := sqrt(fs2d) };
+INSTRUCTION "FSQRTq" (fs2q, fdq) { *128* fdq := sqrt(fs2q) };
 
 
 # FiTOf etc are no longer their own unique unary operators
-FiTOs      fs2s, fds     *32* fds := itof(32, 32,  fs2s);
-FiTOd      fs2s, fdd     *64* fdd := itof(32, 64,  fs2s);
-FiTOq      fs2s, fdq    *128* fdq := itof(32, 128, fs2s);
+INSTRUCTION "FiTOs"      (fs2s, fds)  {  *32* fds := itof( 32,  32,  fs2s) };
+INSTRUCTION "FiTOd"      (fs2s, fdd)  {  *64* fdd := itof( 32,  64,  fs2s) };
+INSTRUCTION "FiTOq"      (fs2s, fdq)  { *128* fdq := itof( 32, 128, fs2s) };
 
-FsTOi      fs2s, fds     *32* fds := ftoi(32,  32, fs2s);
-FdTOi      fs2d, fds     *32* fds := ftoi(64,  32, fs2d);
-FqTOi      fs2q, fds     *32* fds := ftoi(128, 32, fs2q);
+INSTRUCTION "FsTOi"      (fs2s, fds)  {  *32* fds := ftoi( 32,  32, fs2s) };
+INSTRUCTION "FdTOi"      (fs2d, fds)  {  *32* fds := ftoi( 64,  32, fs2d) };
+INSTRUCTION "FqTOi"      (fs2q, fds)  {  *32* fds := ftoi(128,  32, fs2q) };
 
-FdTOs      fs2d,  fds    *32* fds := fsize(64,  32, fs2d);
-FqTOs      fs2q,  fds    *32* fds := fsize(128, 32, fs2q);
+INSTRUCTION "FdTOs"      (fs2d,  fds) {  *32* fds := fsize( 64,  32, fs2d) };
+INSTRUCTION "FqTOs"      (fs2q,  fds) {  *32* fds := fsize(128,  32, fs2q) };
 
-FsTOd      fs2s, fdd     *64* fdd := fsize(32,  64, fs2s);
-FqTOd      fs2q, fdd     *64* fdd := fsize(128, 64, fs2q);
+INSTRUCTION "FsTOd"      (fs2s, fdd)  {  *64* fdd := fsize( 32,  64, fs2s) };
+INSTRUCTION "FqTOd"      (fs2q, fdd)  {  *64* fdd := fsize(128,  64, fs2q) };
 
-FsTOq      fs2s, fdq    *128* fdq := fsize(32, 128, fs2s);
-FdTOq      fs2d, fdq    *128* fdq := fsize(64, 128, fs2d);
+INSTRUCTION "FsTOq"      (fs2s, fdq)  { *128* fdq := fsize( 32, 128, fs2s) };
+INSTRUCTION "FdTOq"      (fs2d, fdq)  { *128* fdq := fsize( 64, 128, fs2d) };
 
 
 #FCMPx
@@ -671,12 +678,20 @@ FCOMPS := { "FCMPs", "FCMPEs" };
 FCOMPD := { "FCMPd", "FCMPEd" };
 FCOMPQ := { "FCMPq", "FCMPEq" };
 
-FCOMPS[idx] fs1s, fs2s      *32* tmpf := fs1s -f fs2s
-                            SETFFLAGS(fs1s, fs2s);
-FCOMPD[idx] fs1d, fs2d      *64* tmpd := fs1d -f fs2d
-                            SETFFLAGS(fs1d, fs2d);
-FCOMPQ[idx] fs1q, fs2q      *128* tmpD := fs1q -f fs2q
-                            SETFFLAGS(fs1q, fs2q);
+INSTRUCTION FCOMPS[idx] (fs1s, fs2s) {
+    *32* tmpf := fs1s -f fs2s
+    SETFFLAGS(fs1s, fs2s)
+};
+
+INSTRUCTION FCOMPD[idx] (fs1d, fs2d) {
+    *64* tmpd := fs1d -f fs2d
+    SETFFLAGS(fs1d, fs2d)
+};
+
+INSTRUCTION FCOMPQ[idx] (fs1q, fs2q) {
+    *128* tmpD := fs1q -f fs2q
+    SETFFLAGS(fs1q, fs2q)
+};
 
 
 # More generalised form based loosely on the 8086 architecture.
@@ -691,54 +706,54 @@ FCOMPQ[idx] fs1q, fs2q      *128* tmpD := fs1q -f fs2q
 #  %FZF is 1 iff the fcc field of the FSR = 0
 # operators exist and have been setup correctly as at 14/12/1998
 
-FBA     reloc   *32*%pc := %npc     *32* %npc := [ 1                     ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBN     reloc   *32*%pc := %npc     *32* %npc := [ 0                     ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBNE    reloc   *32*%pc := %npc     *32* %npc := [ ~%FZF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBE     reloc   *32*%pc := %npc     *32* %npc := [ %FZF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBG     reloc   *32*%pc := %npc     *32* %npc := [ %FGF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBLE    reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBUE    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FGF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBUL    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBGE    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FZF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBL     reloc   *32*%pc := %npc     *32* %npc := [ %FLF                  ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBLG    reloc   *32*%pc := %npc     *32* %npc := [ (%FGF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBUG    reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBULE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FGF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBUGE   reloc   *32*%pc := %npc     *32* %npc := [ ~%FLF                 ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBU     reloc   *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF | %FLF) ? reloc : %npc+4 ]      *1* %CTI := 1;
-FBO     reloc   *32*%pc := %npc     *32* %npc := [ (%FZF | %FGF | %FLF)  ? reloc : %npc+4 ]      *1* %CTI := 1;
+INSTRUCTION "FBA"     (reloc) { goto reloc };
+INSTRUCTION "FBN"     (reloc) { goto reloc };
+INSTRUCTION "FBNE"    (reloc) { *32*%pc := %npc     *32* %npc := [ ~%FZF                 ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBE"     (reloc) { *32*%pc := %npc     *32* %npc := [ %FZF                  ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBG"     (reloc) { *32*%pc := %npc     *32* %npc := [ %FGF                  ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBLE"    (reloc) { *32*%pc := %npc     *32* %npc := [ (%FZF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBUE"    (reloc) { *32*%pc := %npc     *32* %npc := [ ~(%FGF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBUL"    (reloc) { *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF)        ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBGE"    (reloc) { *32*%pc := %npc     *32* %npc := [ (%FGF | %FZF)         ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBL"     (reloc) { *32*%pc := %npc     *32* %npc := [ %FLF                  ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBLG"    (reloc) { *32*%pc := %npc     *32* %npc := [ (%FGF | %FLF)         ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBUG"    (reloc) { *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FLF)        ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBULE"   (reloc) { *32*%pc := %npc     *32* %npc := [ ~%FGF                 ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBUGE"   (reloc) { *32*%pc := %npc     *32* %npc := [ ~%FLF                 ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBU"     (reloc) { *32*%pc := %npc     *32* %npc := [ ~(%FZF | %FGF | %FLF) ? reloc : %npc+4 ]      *1* %CTI := 1 };
+INSTRUCTION "FBO"     (reloc) { *32*%pc := %npc     *32* %npc := [ (%FZF | %FGF | %FLF)  ? reloc : %npc+4 ]      *1* %CTI := 1 };
 
 
 # Anullable FP branches
-FBAA    reloc   *32* %pc := reloc       *32* %npc := reloc + 4      *1* %CTI := 1;
-FBNA    reloc   *32* %pc := %npc + 4    *32* %npc := %npc + 8       *1* %CTI := 1;
+INSTRUCTION "FBAA"    (reloc) { goto reloc };
+INSTRUCTION "FBNA"    (reloc) { goto reloc };
 
-FBNEA   reloc   *32* %pc := [ ~%FZF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FZF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBEA    reloc   *32* %pc := [ %FZF                  ? %npc : %npc+4 ]   *32* %npc := [ %FZF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBGA    reloc   *32* %pc := [ %FGF                  ? %npc : %npc+4 ]   *32* %npc := [ %FGF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBLEA   reloc   *32* %pc := [ (%FZF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBUEA   reloc   *32* %pc := [ ~(%FGF | %FLF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FGF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBULA   reloc   *32* %pc := [ ~(%FZF | %FGF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBGEA   reloc   *32* %pc := [ (%FGF | %FZF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FZF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBLA    reloc   *32* %pc := [ %FLF                  ? %npc : %npc+4 ]   *32* %npc := [ %FLF                   ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBLGA   reloc   *32* %pc := [ (%FGF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBUGA   reloc   *32* %pc := [  ~(%FZF | %FLF)       ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBULEA  reloc   *32* %pc := [ ~%FGF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FGF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBUGEA  reloc   *32* %pc := [ ~%FLF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FLF                  ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBUA    reloc   *32* %pc := [ ~(%FZF | %FGF | %FLF) ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF | %FLF)  ? reloc : %npc+8 ]    *1* %CTI := 1;
-FBOA    reloc   *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FGF | %FLF)   ? reloc : %npc+8 ]    *1* %CTI := 1;
+INSTRUCTION "FBNEA"   (reloc) { *32* %pc := [ ~%FZF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FZF                  ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBEA"    (reloc) { *32* %pc := [ %FZF                  ? %npc : %npc+4 ]   *32* %npc := [ %FZF                   ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBGA"    (reloc) { *32* %pc := [ %FGF                  ? %npc : %npc+4 ]   *32* %npc := [ %FGF                   ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBLEA"   (reloc) { *32* %pc := [ (%FZF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBUEA"   (reloc) { *32* %pc := [ ~(%FGF | %FLF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FGF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBULA"   (reloc) { *32* %pc := [ ~(%FZF | %FGF)        ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF)         ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBGEA"   (reloc) { *32* %pc := [ (%FGF | %FZF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FZF)          ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBLA"    (reloc) { *32* %pc := [ %FLF                  ? %npc : %npc+4 ]   *32* %npc := [ %FLF                   ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBLGA"   (reloc) { *32* %pc := [ (%FGF | %FLF)         ? %npc : %npc+4 ]   *32* %npc := [ (%FGF | %FLF)          ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBUGA"   (reloc) { *32* %pc := [  ~(%FZF | %FLF)       ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FLF)         ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBULEA"  (reloc) { *32* %pc := [ ~%FGF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FGF                  ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBUGEA"  (reloc) { *32* %pc := [ ~%FLF                 ? %npc : %npc+4 ]   *32* %npc := [ ~%FLF                  ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBUA"    (reloc) { *32* %pc := [ ~(%FZF | %FGF | %FLF) ? %npc : %npc+4 ]   *32* %npc := [ ~(%FZF | %FGF | %FLF)  ? reloc : %npc+8 ]    *1* %CTI := 1 };
+INSTRUCTION "FBOA"    (reloc) { *32* %pc := [ (%FZF | %FGF | %FLF)  ? %npc : %npc+4 ]   *32* %npc := [ (%FZF | %FGF | %FLF)   ? reloc : %npc+8 ]    *1* %CTI := 1 };
 
 
 # Loading and storing Floating point registers.
-LDFSR      eaddr       *32* %FSR := m[eaddr];
+INSTRUCTION "LDFSR"  (eaddr) { *32* %FSR := m[eaddr] };
 
-LDF  src, fds        *32* fds := src;
-LDDF src, fdd        *64* fdd := src;
+INSTRUCTION "LDF"  (src, fds) { *32* fds := src };
+INSTRUCTION "LDDF" (src, fdd) { *64* fdd := src };
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-STFSR      dest        *32* dest := %FSR;
-STF   fds, dest        *32* dest := fds;
-STDF  fdd, dest        *64* dest := fdd;
+INSTRUCTION "STFSR" (dest)      { *32* dest := %FSR };
+INSTRUCTION "STF"   (fds, dest) { *32* dest := fds  };
+INSTRUCTION "STDF"  (fdd, dest) { *64* dest := fdd  };
 
-UNIMP val   _;
+INSTRUCTION "UNIMP" (val)  { _ };
