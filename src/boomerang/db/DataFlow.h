@@ -61,30 +61,6 @@ public:
 
     void convertImplicits();
 
-    /**
-     * Find the locations in the CFG used by a live, dominating phi-function; also removes dead
-     * phi-funcions. Helper function for StatementPropagationPass.
-     *
-     * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its
-     * assignment However, it could turn out that the phi is dead, in which case we don't want to
-     * keep the associated entries in \p usedByDomPhi. So we maintain the map \p defdByPhi which
-     * maps locations defined at a phi to the phi statements. Every time we see a use of a location
-     * in \p defdByPhi, we remove that map entry. At the end of the procedure we therefore have only
-     * dead phi statements in the map, so we can delete the associated entries in \p defdByPhi and
-     * also remove the dead phi statements.
-     *
-     * We add to the set \p usedByDomPhi0 whenever we see a location referenced by a phi parameter.
-     * When we see a definition for such a location, we remove it from the usedByDomPhi0 set (to
-     * save memory) and add it to the usedByDomPhi set. For locations defined before they are used
-     * in a phi parameter, there will be no entry in usedByDomPhi, so we ignore it. Remember that
-     * each location is defined only once, so that's the time to decide if it is dominated by a phi
-     * use or not.
-     *
-     * \returns false on failure. If this happens, the state of the parameters is undefined.
-     */
-    bool findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
-                          std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi);
-
     // for testing
 public:
     /// \note can only be called after \ref calculateDominators()

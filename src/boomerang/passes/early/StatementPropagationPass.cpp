@@ -31,13 +31,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    // Find the locations that are used by a live, dominating phi-function
-    LocationSet usedByDomPhi;
-    if (!findLiveAtDomPhi(proc, usedByDomPhi)) {
-        return false;
-    }
-
-    // Next pass: count the number of times each assignment LHS would be propagated somewhere
+    // count the number of times each assignment LHS would be propagated somewhere
     std::map<SharedExp, int, lessExpStar> destCounts;
 
     // Also maintain a set of locations which are used by phi statements
@@ -69,34 +63,6 @@ bool StatementPropagationPass::execute(UserProc *proc)
     propagateToCollector(&proc->getUseCollector());
 
     return change;
-}
-
-
-bool StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi)
-{
-    LocationSet usedByDomPhi0;
-    std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
-
-    if (!proc->getDataFlow()->findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi)) {
-        return false;
-    }
-
-    // Note that the above is not the complete algorithm; it has found the dead phi-functions
-    // in the defdAtPhi
-    for (auto &def : defdByPhi) {
-        // For each phi parameter, remove from the final usedByDomPhi set
-        for (const std::shared_ptr<RefExp> &v : *def.second) {
-            assert(v->getSubExp1());
-            std::shared_ptr<RefExp> wrappedParam = RefExp::get(v->getSubExp1(), v->getDef());
-            usedByDomPhi.remove(wrappedParam);
-        }
-
-        // Ick - some problem with return statements not using their returns
-        // until more analysis is done
-        // removeStatement(it->second);
-    }
-
-    return true;
 }
 
 
