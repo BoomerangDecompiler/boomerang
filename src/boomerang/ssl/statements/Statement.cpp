@@ -121,7 +121,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 
 
 bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
-                            LocationSet *, bool force)
+                            bool force)
 {
     bool change            = false;
     int changes            = 0;

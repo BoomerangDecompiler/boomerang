@@ -61,7 +61,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
     // Finally the actual propagation
     for (Statement *s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateTo(settings, &destCounts, &usedByDomPhi);
+            change |= s->propagateTo(settings, &destCounts);
         }
     }
 

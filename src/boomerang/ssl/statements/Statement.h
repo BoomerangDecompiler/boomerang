@@ -235,11 +235,9 @@ public:
      * Propagate to this statement.
      * \param destCounts is a map that indicates how may times a statement's definition is used
      * \param force set to true to propagate even memofs (for switch analysis)
-     * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
      */
-    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr,
-                     LocationSet *usedByDomPhi = nullptr, bool force = false);
+    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
