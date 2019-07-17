@@ -82,7 +82,6 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ui->chkRemoveLabels->setChecked(m_settings->removeLabels);
     ui->chkRemoveNull->setChecked(m_settings->removeNull);
     ui->chkRemoveReturns->setChecked(m_settings->removeReturns);
-    ui->chkStopAtDebugPoints->setChecked(m_settings->stopAtDebugPoints);
     ui->chkUseDataflow->setChecked(m_settings->useDataflow);
     ui->chkUseGlobals->setChecked(m_settings->useGlobals);
     ui->chkUseLocals->setChecked(m_settings->useLocals);
@@ -144,7 +143,6 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();
     m_settings->removeNull        = ui->chkRemoveNull->isChecked();
     m_settings->removeReturns     = ui->chkRemoveReturns->isChecked();
-    m_settings->stopAtDebugPoints = ui->chkStopAtDebugPoints->isChecked();
     m_settings->useDataflow       = ui->chkUseDataflow->isChecked();
     m_settings->useGlobals        = ui->chkUseGlobals->isChecked();
     m_settings->useLocals         = ui->chkUseLocals->isChecked();

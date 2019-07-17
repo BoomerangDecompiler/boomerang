@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>617</height>
+    <height>588</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -187,16 +187,6 @@
         <layout class="QVBoxLayout" name="vLayout_4">
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabDecompile">
-           <item>
-            <widget class="QCheckBox" name="chkStopAtDebugPoints">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Activate debugger at debug points</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="chkUseDataflow">
              <property name="text">

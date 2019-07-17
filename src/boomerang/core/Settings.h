@@ -68,7 +68,6 @@ public:
     bool usePromotion      = true;
     bool debugGen          = false;
     bool nameParameters    = true;
-    bool stopAtDebugPoints = false;
 
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given

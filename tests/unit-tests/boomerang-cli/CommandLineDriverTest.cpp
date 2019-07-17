@@ -306,13 +306,6 @@ void CommandLineDriverTest::testApplyCommandline()
 
     {
         CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->stopAtDebugPoints, false);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-ds", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->stopAtDebugPoints, true);
-    }
-
-    {
-        CommandlineDriver drv;
         QCOMPARE(drv.getProject()->getSettings()->debugTA, false);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-dt", "test.exe" }), 0);
         QCOMPARE(drv.getProject()->getSettings()->debugTA, true);

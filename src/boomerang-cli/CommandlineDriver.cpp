@@ -26,11 +26,9 @@ Q_DECLARE_METATYPE(Address)
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_project(new Project())
-    , m_debugger(new MiniDebugger())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
-    m_project->addWatcher(m_debugger.get());
 }
 
 
@@ -82,7 +80,6 @@ static void help()
 "  -dg              : Debug Dode Generation\n"
 "  -dl              : Debug SSA Liveness Analysis\n"
 "  -dp              : Debug Proof Engine\n"
-"  -ds              : Stop at debug points for keypress\n"
 "  -dt              : Debug Type Analysis\n"
 "  -du              : Debug removal of unused statements etc.\n"
 "\n"
@@ -332,10 +329,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         }
         else if (arg == "-dp") {
             m_project->getSettings()->debugProof = true;
-            continue;
-        }
-        else if (arg == "-ds") {
-            m_project->getSettings()->stopAtDebugPoints = true;
             continue;
         }
         else if (arg == "-dt") {
