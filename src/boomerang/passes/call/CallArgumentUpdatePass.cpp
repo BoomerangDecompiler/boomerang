@@ -27,7 +27,6 @@ CallArgumentUpdatePass::CallArgumentUpdatePass()
 bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
     proc->getProg()->getProject()->alertDecompiling(proc);
-    const bool experimental = proc->getProg()->getProject()->getSettings()->experimental;
 
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
@@ -39,7 +38,7 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
             continue;
         }
 
-        c->updateArguments(experimental);
+        c->updateArguments();
         LOG_VERBOSE2("Updated call statement to %1", c);
     }
 

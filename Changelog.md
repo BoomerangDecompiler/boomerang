@@ -1,6 +1,9 @@
 v0.5.1 (in development)
 -----------------------
 - Fixed: Non-deterministic decompilation of functions containing removable return values.
+- Removed: Deprecated -ds switch.
+- Removed: Deprecated -pa switch.
+- Removed: Deprecated -X switch.
 - Technical: Updated minimum required version of dependencies.
 
 v0.5.0 (2019-7-11)

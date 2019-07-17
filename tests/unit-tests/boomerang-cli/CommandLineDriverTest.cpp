@@ -76,13 +76,6 @@ void CommandLineDriverTest::testApplyCommandline()
 
     {
         CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->experimental, false);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-X", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->experimental, true);
-    }
-
-    {
-        CommandlineDriver drv;
         QCOMPARE(drv.getProject()->getSettings()->printRTLs, false);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-r", "test.exe" }), 0);
         QCOMPARE(drv.getProject()->getSettings()->printRTLs, true);
@@ -233,13 +226,6 @@ void CommandLineDriverTest::testApplyCommandline()
 
     {
         CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->propOnlyToAll, false);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-pa", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->propOnlyToAll, true);
-    }
-
-    {
-        CommandlineDriver drv;
         QCOMPARE(drv.getProject()->getSettings()->numToPropagate, -1);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p", "08", "test.exe" }), 1);
         QCOMPARE(drv.getProject()->getSettings()->numToPropagate, 0);
@@ -316,13 +302,6 @@ void CommandLineDriverTest::testApplyCommandline()
         QCOMPARE(drv.getProject()->getSettings()->debugProof, false);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-dp", "test.exe" }), 0);
         QCOMPARE(drv.getProject()->getSettings()->debugProof, true);
-    }
-
-    {
-        CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->stopAtDebugPoints, false);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-ds", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->stopAtDebugPoints, true);
     }
 
     {

@@ -26,11 +26,9 @@ Q_DECLARE_METATYPE(Address)
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_project(new Project())
-    , m_debugger(new MiniDebugger())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
-    m_project->addWatcher(m_debugger.get());
 }
 
 
@@ -74,16 +72,14 @@ static void help()
 "Misc.\n"
 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
 "  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
-"  -X               : activate eXperimental code; errors likely\n"
 "  --               : Terminates argument processing\n"
 "\n"
 "Debug\n"
 "  -dc              : Debug Switch/Case Analysis\n"
 "  -dd              : Debug Instruction Decoder\n"
-"  -dg              : Debug Dode Generation\n"
+"  -dg              : Debug Code Generation\n"
 "  -dl              : Debug SSA Liveness Analysis\n"
 "  -dp              : Debug Proof Engine\n"
-"  -ds              : Stop at debug points for keypress\n"
 "  -dt              : Debug Type Analysis\n"
 "  -du              : Debug removal of unused statements etc.\n"
 "\n"
@@ -139,10 +135,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         }
         else if (arg == "-v") {
             m_project->getSettings()->verboseOutput = true;
-            continue;
-        }
-        else if (arg == "-X") {
-            m_project->getSettings()->experimental = true;
             continue;
         }
         else if (arg == "-r") {
@@ -270,11 +262,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->useTypeAnalysis = false;
             continue;
         }
-        else if (arg == "-pa") {
-            m_project->getSettings()->propOnlyToAll = true;
-            std::cerr << "Warning! -pa is not implemented yet!" << std::endl;
-            continue;
-        }
         else if (arg == "-p") {
             if (++i == args.size()) {
                 help();
@@ -342,10 +329,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         }
         else if (arg == "-dp") {
             m_project->getSettings()->debugProof = true;
-            continue;
-        }
-        else if (arg == "-ds") {
-            m_project->getSettings()->stopAtDebugPoints = true;
             continue;
         }
         else if (arg == "-dt") {
