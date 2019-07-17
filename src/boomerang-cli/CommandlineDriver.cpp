@@ -74,7 +74,6 @@ static void help()
 "Misc.\n"
 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
 "  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
-"  -X               : activate eXperimental code; errors likely\n"
 "  --               : Terminates argument processing\n"
 "\n"
 "Debug\n"
@@ -139,10 +138,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         }
         else if (arg == "-v") {
             m_project->getSettings()->verboseOutput = true;
-            continue;
-        }
-        else if (arg == "-X") {
-            m_project->getSettings()->experimental = true;
             continue;
         }
         else if (arg == "-r") {

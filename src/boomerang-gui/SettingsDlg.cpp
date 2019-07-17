@@ -77,7 +77,6 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
 
     ui->chkAssumeABI->setChecked(m_settings->assumeABI);
     ui->chkChangeSignatures->setChecked(m_settings->changeSignatures);
-    ui->chkExperimental->setChecked(m_settings->experimental);
     ui->chkGenSymbols->setChecked(m_settings->generateSymbols);
     ui->chkNameParameters->setChecked(m_settings->nameParameters);
     ui->chkRemoveLabels->setChecked(m_settings->removeLabels);
@@ -140,7 +139,6 @@ void SettingsDlg::on_btnApply_clicked()
 
     m_settings->assumeABI         = ui->chkAssumeABI->isChecked();
     m_settings->changeSignatures  = ui->chkChangeSignatures->isChecked();
-    m_settings->experimental      = ui->chkExperimental->isChecked();
     m_settings->generateSymbols   = ui->chkGenSymbols->isChecked();
     m_settings->nameParameters    = ui->chkNameParameters->isChecked();
     m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();

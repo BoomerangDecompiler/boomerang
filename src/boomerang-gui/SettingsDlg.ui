@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>646</height>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -352,13 +352,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chkExperimental">
-             <property name="text">
-              <string>Activate experimental code</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>

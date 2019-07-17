@@ -84,7 +84,6 @@ public:
     bool generateSymbols   = false;
     bool useGlobals        = true;
     bool assumeABI         = false; ///< Assume ABI compliance
-    bool experimental      = false; ///< Activate experimental code. Caution!
 
     QString replayFile;  ///< file with commands to execute in interactive mode
     QString sslFileName; ///< Use this SSL file instead of one of the hard-coded ones.

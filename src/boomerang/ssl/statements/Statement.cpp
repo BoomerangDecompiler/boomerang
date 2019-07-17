@@ -121,7 +121,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 
 
 bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
-                            LocationSet *usedByDomPhi, bool force)
+                            LocationSet *, bool force)
 {
     bool change            = false;
     int changes            = 0;
@@ -155,62 +155,6 @@ bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExp
             }
 
             SharedExp lhs = def->getLeft();
-
-            if (settings->experimental) {
-                // This is Mike's experimental propagation limiting heuristic. At present, it is:
-                // for each component of def->rhs
-                //   test if the base expression is in the set usedByDomPhi
-                //     if so, check if this statement OW overwrites a parameter (like ebx = ebx-1)
-                //     if so, check for propagating past this overwriting statement, i.e.
-                //        domNum(def) <= domNum(OW) && dimNum(OW) < domNum(def)
-                //        if so, don't propagate (heuristic takes effect)
-                if (usedByDomPhi) {
-                    LocationSet rhsComps;
-                    rhs->addUsedLocs(rhsComps);
-                    LocationSet::iterator rcit;
-
-                    for (rcit = rhsComps.begin(); rcit != rhsComps.end(); ++rcit) {
-                        if (!(*rcit)->isSubscript()) {
-                            continue; // Sometimes %pc sneaks in
-                        }
-
-                        SharedExp rhsBase = (*rcit)->getSubExp1();
-                        // We don't know the statement number for the one definition in usedInDomPhi
-                        // that might exist, so we use findNS()
-                        SharedExp OW = usedByDomPhi->findNS(rhsBase);
-
-                        if (OW) {
-                            Statement *OWdef = OW->access<RefExp>()->getDef();
-
-                            if (!OWdef->isAssign()) {
-                                continue;
-                            }
-
-                            SharedExp lhsOWdef = static_cast<Assign *>(OWdef)->getLeft();
-                            LocationSet OWcomps;
-                            def->addUsedLocs(OWcomps);
-
-                            bool isOverwrite = false;
-
-                            for (const SharedExp &loc : OWcomps) {
-                                if (loc->equalNoSubscript(*lhsOWdef)) {
-                                    isOverwrite = true;
-                                    break;
-                                }
-                            }
-
-                            if (isOverwrite) {
-                                break;
-                            }
-
-                            if (OW != nullptr) {
-                                LOG_MSG("OW is %1", OW);
-                            }
-                        }
-                    }
-                }
-            }
-
 
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
