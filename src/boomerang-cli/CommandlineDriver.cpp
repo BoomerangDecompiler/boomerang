@@ -77,7 +77,7 @@ static void help()
 "Debug\n"
 "  -dc              : Debug Switch/Case Analysis\n"
 "  -dd              : Debug Instruction Decoder\n"
-"  -dg              : Debug Dode Generation\n"
+"  -dg              : Debug Code Generation\n"
 "  -dl              : Debug SSA Liveness Analysis\n"
 "  -dp              : Debug Proof Engine\n"
 "  -dt              : Debug Type Analysis\n"
