@@ -136,18 +136,18 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->useTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
                                       .value<ITypeRecovery *>() != nullptr;
 
-    m_settings->assumeABI         = ui->chkAssumeABI->isChecked();
-    m_settings->changeSignatures  = ui->chkChangeSignatures->isChecked();
-    m_settings->generateSymbols   = ui->chkGenSymbols->isChecked();
-    m_settings->nameParameters    = ui->chkNameParameters->isChecked();
-    m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();
-    m_settings->removeNull        = ui->chkRemoveNull->isChecked();
-    m_settings->removeReturns     = ui->chkRemoveReturns->isChecked();
-    m_settings->useDataflow       = ui->chkUseDataflow->isChecked();
-    m_settings->useGlobals        = ui->chkUseGlobals->isChecked();
-    m_settings->useLocals         = ui->chkUseLocals->isChecked();
-    m_settings->usePromotion      = ui->chkUsePromotion->isChecked();
-    m_settings->useProof          = ui->chkUseProof->isChecked();
+    m_settings->assumeABI        = ui->chkAssumeABI->isChecked();
+    m_settings->changeSignatures = ui->chkChangeSignatures->isChecked();
+    m_settings->generateSymbols  = ui->chkGenSymbols->isChecked();
+    m_settings->nameParameters   = ui->chkNameParameters->isChecked();
+    m_settings->removeLabels     = ui->chkRemoveLabels->isChecked();
+    m_settings->removeNull       = ui->chkRemoveNull->isChecked();
+    m_settings->removeReturns    = ui->chkRemoveReturns->isChecked();
+    m_settings->useDataflow      = ui->chkUseDataflow->isChecked();
+    m_settings->useGlobals       = ui->chkUseGlobals->isChecked();
+    m_settings->useLocals        = ui->chkUseLocals->isChecked();
+    m_settings->usePromotion     = ui->chkUsePromotion->isChecked();
+    m_settings->useProof         = ui->chkUseProof->isChecked();
 }
 
 

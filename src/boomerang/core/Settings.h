@@ -64,10 +64,10 @@ public:
 
     /// The file in which the dotty graph is saved
     QString dotFile;
-    int numToPropagate     = -1;
-    bool usePromotion      = true;
-    bool debugGen          = false;
-    bool nameParameters    = true;
+    int numToPropagate  = -1;
+    bool usePromotion   = true;
+    bool debugGen       = false;
+    bool nameParameters = true;
 
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given
