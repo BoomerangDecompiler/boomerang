@@ -80,7 +80,6 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ui->chkExperimental->setChecked(m_settings->experimental);
     ui->chkGenSymbols->setChecked(m_settings->generateSymbols);
     ui->chkNameParameters->setChecked(m_settings->nameParameters);
-    ui->chkPropOnlyToAll->setChecked(m_settings->propOnlyToAll);
     ui->chkRemoveLabels->setChecked(m_settings->removeLabels);
     ui->chkRemoveNull->setChecked(m_settings->removeNull);
     ui->chkRemoveReturns->setChecked(m_settings->removeReturns);
@@ -144,7 +143,6 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->experimental      = ui->chkExperimental->isChecked();
     m_settings->generateSymbols   = ui->chkGenSymbols->isChecked();
     m_settings->nameParameters    = ui->chkNameParameters->isChecked();
-    m_settings->propOnlyToAll     = ui->chkPropOnlyToAll->isChecked();
     m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();
     m_settings->removeNull        = ui->chkRemoveNull->isChecked();
     m_settings->removeReturns     = ui->chkRemoveReturns->isChecked();

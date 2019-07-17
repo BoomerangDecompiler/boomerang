@@ -270,11 +270,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->useTypeAnalysis = false;
             continue;
         }
-        else if (arg == "-pa") {
-            m_project->getSettings()->propOnlyToAll = true;
-            std::cerr << "Warning! -pa is not implemented yet!" << std::endl;
-            continue;
-        }
         else if (arg == "-p") {
             if (++i == args.size()) {
                 help();

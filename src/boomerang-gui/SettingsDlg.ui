@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>675</height>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -291,13 +291,6 @@
             <widget class="QCheckBox" name="chkNameParameters">
              <property name="text">
               <string>Name signature parameters</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chkPropOnlyToAll">
-             <property name="text">
-              <string>Propagate only to all</string>
              </property>
             </widget>
            </item>

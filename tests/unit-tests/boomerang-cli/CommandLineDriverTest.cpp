@@ -233,13 +233,6 @@ void CommandLineDriverTest::testApplyCommandline()
 
     {
         CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->propOnlyToAll, false);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-pa", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->propOnlyToAll, true);
-    }
-
-    {
-        CommandlineDriver drv;
         QCOMPARE(drv.getProject()->getSettings()->numToPropagate, -1);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p", "08", "test.exe" }), 1);
         QCOMPARE(drv.getProject()->getSettings()->numToPropagate, 0);

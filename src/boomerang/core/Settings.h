@@ -66,7 +66,6 @@ public:
     QString dotFile;
     int numToPropagate     = -1;
     bool usePromotion      = true;
-    bool propOnlyToAll     = false;
     bool debugGen          = false;
     bool nameParameters    = true;
     bool stopAtDebugPoints = false;
