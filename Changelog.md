@@ -5,6 +5,11 @@ v0.6.0 (in development)
 v0.5.1 (in development)
 -----------------------
 - Fixed: Non-deterministic decompilation of functions containing removable return values.
+- Fixed: Zero return value of boomerang-cli when command-line switch processing fails.
+- Feature: Added '--log-level' switch to change log verbosity on startup.
+- Removed: Deprecated '-ds' switch.
+- Removed: Deprecated '-pa' switch.
+- Removed: Deprecated '-X' switch.
 - Technical: Updated minimum required version of dependencies.
 
 v0.5.0 (2019-7-11)

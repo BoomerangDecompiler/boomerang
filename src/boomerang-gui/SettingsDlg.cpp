@@ -77,14 +77,11 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
 
     ui->chkAssumeABI->setChecked(m_settings->assumeABI);
     ui->chkChangeSignatures->setChecked(m_settings->changeSignatures);
-    ui->chkExperimental->setChecked(m_settings->experimental);
     ui->chkGenSymbols->setChecked(m_settings->generateSymbols);
     ui->chkNameParameters->setChecked(m_settings->nameParameters);
-    ui->chkPropOnlyToAll->setChecked(m_settings->propOnlyToAll);
     ui->chkRemoveLabels->setChecked(m_settings->removeLabels);
     ui->chkRemoveNull->setChecked(m_settings->removeNull);
     ui->chkRemoveReturns->setChecked(m_settings->removeReturns);
-    ui->chkStopAtDebugPoints->setChecked(m_settings->stopAtDebugPoints);
     ui->chkUseDataflow->setChecked(m_settings->useDataflow);
     ui->chkUseGlobals->setChecked(m_settings->useGlobals);
     ui->chkUseLocals->setChecked(m_settings->useLocals);
@@ -139,21 +136,18 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->useTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
                                       .value<ITypeRecovery *>() != nullptr;
 
-    m_settings->assumeABI         = ui->chkAssumeABI->isChecked();
-    m_settings->changeSignatures  = ui->chkChangeSignatures->isChecked();
-    m_settings->experimental      = ui->chkExperimental->isChecked();
-    m_settings->generateSymbols   = ui->chkGenSymbols->isChecked();
-    m_settings->nameParameters    = ui->chkNameParameters->isChecked();
-    m_settings->propOnlyToAll     = ui->chkPropOnlyToAll->isChecked();
-    m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();
-    m_settings->removeNull        = ui->chkRemoveNull->isChecked();
-    m_settings->removeReturns     = ui->chkRemoveReturns->isChecked();
-    m_settings->stopAtDebugPoints = ui->chkStopAtDebugPoints->isChecked();
-    m_settings->useDataflow       = ui->chkUseDataflow->isChecked();
-    m_settings->useGlobals        = ui->chkUseGlobals->isChecked();
-    m_settings->useLocals         = ui->chkUseLocals->isChecked();
-    m_settings->usePromotion      = ui->chkUsePromotion->isChecked();
-    m_settings->useProof          = ui->chkUseProof->isChecked();
+    m_settings->assumeABI        = ui->chkAssumeABI->isChecked();
+    m_settings->changeSignatures = ui->chkChangeSignatures->isChecked();
+    m_settings->generateSymbols  = ui->chkGenSymbols->isChecked();
+    m_settings->nameParameters   = ui->chkNameParameters->isChecked();
+    m_settings->removeLabels     = ui->chkRemoveLabels->isChecked();
+    m_settings->removeNull       = ui->chkRemoveNull->isChecked();
+    m_settings->removeReturns    = ui->chkRemoveReturns->isChecked();
+    m_settings->useDataflow      = ui->chkUseDataflow->isChecked();
+    m_settings->useGlobals       = ui->chkUseGlobals->isChecked();
+    m_settings->useLocals        = ui->chkUseLocals->isChecked();
+    m_settings->usePromotion     = ui->chkUsePromotion->isChecked();
+    m_settings->useProof         = ui->chkUseProof->isChecked();
 }
 
 

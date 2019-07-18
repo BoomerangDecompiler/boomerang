@@ -312,10 +312,9 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
         }
 
         std::set<CallStatement *> &callers = proc->getCallers();
-        const bool experimental            = m_prog->getProject()->getSettings()->experimental;
 
         for (CallStatement *cc : callers) {
-            cc->updateArguments(experimental);
+            cc->updateArguments();
             // Schedule the callers for analysis
             m_removeRetSet.insert(cc->getProc());
         }

@@ -1253,7 +1253,7 @@ bool CallStatement::definesLoc(SharedExp loc) const
 }
 
 
-void CallStatement::updateArguments(bool experimental)
+void CallStatement::updateArguments()
 {
     /*
      * If this is a library call, source = signature
@@ -1272,31 +1272,10 @@ void CallStatement::updateArguments(bool experimental)
      *                  if filterParams(lhs) continue
      *                  insert as into arguments, considering sig->argumentCompare
      */
-    // Note that if propagations are limited, arguments and collected reaching definitions can be in
-    // terms of phi statements that have since been translated to assignments. So propagate through
-    // them now
-    // FIXME: reconsider! There are problems (e.g. with test/pentium/fromSSA2, test/pentium/fbranch)
-    // if you propagate to the expressions in the arguments (e.g. m[esp{phi1}-20]) but don't
-    // propagate into ordinary statements that define the actual argument. For example, you might
-    // have m[esp{-}-56] in the call, but the actual definition of the printf argument is still
-    // m[esp{phi1} -20] = "%d".
-    if (experimental) {
-        PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
-    }
 
     // Do not delete statements in m_arguments since they are preserved by oldArguments
     StatementList oldArguments(m_arguments);
     m_arguments.clear();
-
-    if (experimental) {
-        // I don't really know why this is needed, but I was seeing r28 :=
-        // ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
-        DefCollector::iterator dd;
-
-        for (dd = m_defCol.begin(); dd != m_defCol.end(); ++dd) {
-            (*dd)->simplify();
-        }
-    }
 
     auto sig = m_proc->getSignature();
     // Ensure everything

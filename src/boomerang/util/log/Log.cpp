@@ -68,7 +68,9 @@ void Log::log(LogLevel level, const char *file, int line, const QString &msg)
     const QStringList msgLines = msg.split('\n');
 
     for (const QString &msgLine : msgLines) {
-        logDirect(level, file, line, msgLine);
+        if (canLog(level)) {
+            logDirect(level, file, line, msgLine);
+        }
     }
 
     flush();
@@ -77,10 +79,6 @@ void Log::log(LogLevel level, const char *file, int line, const QString &msg)
 
 void Log::logDirect(LogLevel level, const char *file, int line, const QString &msg)
 {
-    if (!canLog(level)) {
-        return;
-    }
-
     char prettyFile[40]; // truncated file name
     truncateFileName(prettyFile, 40, file);
 
@@ -144,11 +142,13 @@ bool Log::canLog(LogLevel level) const
 
 void Log::writeLogHeader()
 {
-    this->write("Level | File                                    | Line | Message\n");
-    this->write(QString(100, '=') + "\n");
+    write("Level | File                                    | Line | Message\n");
+    write(QString(100, '=') + "\n");
 
-    LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
-    LOG_MSG("Log initialized.");
+    logDirect(LogLevel::Message, __FILE__, __LINE__, "This is Boomerang " BOOMERANG_VERSION);
+    logDirect(LogLevel::Message, __FILE__, __LINE__, "Log initialized.");
+    logDirect(LogLevel::Message, __FILE__, __LINE__,
+              "Log level is '" + levelToString(getLogLevel()) + "'.");
 }
 
 
