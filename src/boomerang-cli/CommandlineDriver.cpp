@@ -63,6 +63,7 @@ static void help()
 "  --version        : Print version information and exit\n"
 "  -h, --help       : Show this help and exit\n"
 "  -v               : Verbose decompilation output\n"
+"  --log-level <n>  : Set log verbosity (n=0..5, default 3)\n"
 "  -o <output_path> : Where to generate output (defaults to ./output/)\n"
 "  -r               : Print RTL for each proc to log before code generation\n"
 "  -gd <dot_file>   : Generate a dotty graph of the program's CFG(s)\n"
@@ -135,6 +136,24 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
         }
         else if (arg == "-v") {
             m_project->getSettings()->verboseOutput = true;
+            continue;
+        }
+        else if (arg == "--log-level") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            bool converted     = false;
+            const int logLevel = args[i].toInt(&converted, 0);
+            if (!converted || logLevel < (int)LogLevel::Fatal ||
+                logLevel > (int)LogLevel::Verbose2) {
+                std::cerr << "'--log-level': Bad argument '" << args[i].toStdString()
+                          << "' (try --help)." << std::endl;
+                return 1;
+            }
+
+            Log::getOrCreateLog().setLogLevel((LogLevel)logLevel);
             continue;
         }
         else if (arg == "-r") {
@@ -271,7 +290,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             bool converted                           = false;
             m_project->getSettings()->numToPropagate = args[i].toInt(&converted, 0);
             if (!converted) {
-                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -303,7 +322,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             const Address addr = Address(addrStr.toLongLong(&converted, 0));
 
             if (!converted) {
-                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)"
+                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -353,7 +372,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->propMaxDepth = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -370,7 +389,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             minsToStopAfter = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -406,7 +425,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
                 if (!converted) {
                     std::cerr << "'" << arg.toStdString()
-                              << "' Bad address: " << args[i].toStdString() << " (try --help)";
+                              << "' Bad address: " << args[i].toStdString() << " (try --help).";
                     return 1;
                 }
 

@@ -14,6 +14,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/util/log/Log.h"
 
 #include <iostream>
 
@@ -73,6 +74,28 @@ void CommandLineDriverTest::testApplyCommandline()
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-v", "test.exe" }), 0);
         QCOMPARE(drv.getProject()->getSettings()->verboseOutput, true);
     }
+
+    {
+        CommandlineDriver drv;
+        Log::getOrCreateLog().setLogLevel(LogLevel::Default);
+        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "--log-level", "5", "test.exe" }), 0);
+        QCOMPARE(Log::getOrCreateLog().getLogLevel(), LogLevel::Verbose2);
+    }
+
+    {
+        CommandlineDriver drv;
+        Log::getOrCreateLog().setLogLevel(LogLevel::Default);
+        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "--log-level", "-1", "test.exe" }), 1);
+        QCOMPARE(Log::getOrCreateLog().getLogLevel(), LogLevel::Default);
+    }
+
+    {
+        CommandlineDriver drv;
+        Log::getOrCreateLog().setLogLevel(LogLevel::Default);
+        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "--log-level", "--", "test.exe" }), 1);
+        QCOMPARE(Log::getOrCreateLog().getLogLevel(), LogLevel::Default);
+    }
+
 
     {
         CommandlineDriver drv;
