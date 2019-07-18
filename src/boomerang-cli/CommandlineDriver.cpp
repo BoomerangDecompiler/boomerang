@@ -271,7 +271,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             bool converted                           = false;
             m_project->getSettings()->numToPropagate = args[i].toInt(&converted, 0);
             if (!converted) {
-                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -303,7 +303,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             const Address addr = Address(addrStr.toLongLong(&converted, 0));
 
             if (!converted) {
-                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)"
+                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -353,7 +353,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->propMaxDepth = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -370,7 +370,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             minsToStopAfter = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -406,7 +406,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
                 if (!converted) {
                     std::cerr << "'" << arg.toStdString()
-                              << "' Bad address: " << args[i].toStdString() << " (try --help)";
+                              << "' Bad address: " << args[i].toStdString() << " (try --help).";
                     return 1;
                 }
 
