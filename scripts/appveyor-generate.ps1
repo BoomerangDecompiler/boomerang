@@ -1,5 +1,5 @@
 
-$QT_VERSION="5.11"
+$QT_VERSION="5.12"
 
 if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {
     $CMAKE_GENERATOR_NAME = "Visual Studio 15 2017 Win64"
