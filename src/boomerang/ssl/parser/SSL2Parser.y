@@ -7,14 +7,14 @@
  */
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.0"
+%require "3.3"
 
 %defines
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
 %define api.namespace {::SSL2}
-%name-prefix "SSL2"
+%define api.prefix {SSL2}
 
 %code requires {
 
