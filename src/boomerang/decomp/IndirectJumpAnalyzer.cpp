@@ -230,24 +230,24 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
 bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 {
 #if CHECK_REAL_PHI_LOOPS
-    rtlit rit;
-    StatementList::iterator sit;
-    Statement *s = getFirstStmt(rit, sit);
+    RTLList::iterator rit;
+    RTL::iterator sit;
+    Statement *s = bb->getFirstStmt(rit, sit);
 
-    for (s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+    for (s = bb->getFirstStmt(rit, sit); s != nullptr; s = bb->getNextStmt(rit, sit)) {
         if (!s->isPhi()) {
             continue;
         }
 
         Statement *originalPhi = s;
-        InstructionSet workSet, seenSet;
+        StatementSet workSet, seenSet;
         workSet.insert(s);
         seenSet.insert(s);
 
         do {
             PhiAssign *pi = (PhiAssign *)*workSet.begin();
             workSet.remove(pi);
-            PhiAssign::Definitions::iterator it;
+            PhiAssign::iterator it;
 
             for (it = pi->begin(); it != pi->end(); ++it) {
                 if (it->def == nullptr) {
@@ -258,7 +258,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                     continue;
                 }
 
-                if (seenSet.exists(it->def)) {
+                if (seenSet.contains(it->def)) {
                     LOG_VERBOSE("Real phi loop involving statements %1 and %2",
                                 originalPhi->getNumber(), pi->getNumber());
                     break;
