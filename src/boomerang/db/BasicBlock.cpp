@@ -313,7 +313,7 @@ Function *BasicBlock::getCallDestProc() const
 }
 
 
-Statement *BasicBlock::getFirstStmt(RTLIterator &rit, StatementList::iterator &sit)
+Statement *BasicBlock::getFirstStmt(RTLIterator &rit, RTL::iterator &sit)
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         return nullptr;
@@ -336,7 +336,7 @@ Statement *BasicBlock::getFirstStmt(RTLIterator &rit, StatementList::iterator &s
 }
 
 
-Statement *BasicBlock::getNextStmt(RTLIterator &rit, StatementList::iterator &sit)
+Statement *BasicBlock::getNextStmt(RTLIterator &rit, RTL::iterator &sit)
 {
     if (++sit != (*rit)->end()) {
         return *sit; // End of current RTL not reached, so return next
@@ -354,7 +354,7 @@ Statement *BasicBlock::getNextStmt(RTLIterator &rit, StatementList::iterator &si
 }
 
 
-Statement *BasicBlock::getPrevStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit)
+Statement *BasicBlock::getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
 {
     if (++sit != (*rit)->rend()) {
         return *sit; // Beginning of current RTL not reached, so return next
@@ -372,7 +372,7 @@ Statement *BasicBlock::getPrevStmt(RTLRIterator &rit, StatementList::reverse_ite
 }
 
 
-Statement *BasicBlock::getLastStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit)
+Statement *BasicBlock::getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;

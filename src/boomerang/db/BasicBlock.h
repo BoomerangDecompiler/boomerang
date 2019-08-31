@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/StatementList.h"
 
@@ -204,10 +205,10 @@ public:
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated,
      * easily-bugged code
      */
-    Statement *getFirstStmt(RTLIterator &rit, StatementList::iterator &sit);
-    Statement *getNextStmt(RTLIterator &rit, StatementList::iterator &sit);
-    Statement *getLastStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
-    Statement *getPrevStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
+    Statement *getFirstStmt(RTLIterator &rit, RTL::iterator &sit);
+    Statement *getNextStmt(RTLIterator &rit, RTL::iterator &sit);
+    Statement *getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit);
+    Statement *getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit);
 
     Statement *getFirstStmt();
     const Statement *getFirstStmt() const;
