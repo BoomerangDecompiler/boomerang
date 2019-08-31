@@ -44,7 +44,7 @@ public:
 public:
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
-    explicit RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
+    explicit RTL(Address instrAddr, const StmtList *listStmt = nullptr);
 
     /// Take ownership of the statements in the initializer list.
     explicit RTL(Address instrAddr, const std::initializer_list<Statement *> &statements);
@@ -73,10 +73,10 @@ public:
     void append(Statement *s);
 
     /// Append a deep copy of \p le to this RTL.
-    void append(const std::list<Statement *> &le);
+    void append(const StmtList &le);
 
     /// Deep copy the elements of this RTL into the given list.
-    void deepCopyList(std::list<Statement *> &dest) const;
+    void deepCopyList(StmtList &dest) const;
 
     /**
      * Prints this object to a stream in text form.
@@ -98,7 +98,7 @@ public:
     /// unnecessary statements (like branches with constant conditions)
     void simplify();
 
-    const std::list<Statement *> &getStatements() const { return m_stmts; }
+    const StmtList &getStatements() const { return m_stmts; }
 
     // delegates to std::list
 public:
@@ -132,7 +132,7 @@ public:
     iterator erase(iterator it) { return m_stmts.erase(it); }
 
 private:
-    std::list<Statement *> m_stmts;
+    StmtList m_stmts;
     Address m_nativeAddr; ///< RTL's source program instruction address
 };
 
