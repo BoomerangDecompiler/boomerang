@@ -14,6 +14,7 @@ list(APPEND boomerang-util-sources
     util/log/SeparateLogger
 
     util/Address
+    util/ArgSourceProvider
     util/ByteUtil
     util/CallGraphDotWriter
     util/CFGDotWriter
