@@ -8,15 +8,25 @@
 
 version: "Build {build}"
 
-os:
-  - Visual Studio 2017
-
 platform:
   - x64
+
+os:
+  - Visual Studio 2017
+  - Visual Studio 2019
 
 configuration:
   - Debug
   - Release
+
+# Only build VS2017 Debug and VS2019 Release builds to keep build times down
+matrix:
+  fast_finish: true
+  exclude:
+    - os: Visual Studio 2017
+      configuration: Release
+    - os: Visual Studio 2019
+      configuration: Debug
 
 branches:
   except:
@@ -30,9 +40,6 @@ clone_folder: C:\projects\boomerang
 build:
   parallel: true
   verbosity: quiet # MSBuild verbosity level (quiet|minimal|normal|detailed)
-
-matrix:
-  fast_finish: true
 
 pull_requests:
   do_not_increment_build_number: true

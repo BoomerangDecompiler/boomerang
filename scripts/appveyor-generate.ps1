@@ -1,8 +1,18 @@
 
-$QT_VERSION="5.12"
+$QT_BASE_DIR = ""
+$CMAKE_GENERATOR_NAME = ""
 
 if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {
-    $CMAKE_GENERATOR_NAME = "Visual Studio 15 2017 Win64"
+    Write-Output "Using VS2017"
+    $CMAKE_GENERATOR_NAME = "Visual Studio 15 2017"
+    $QT_VERSION = "5.12"
+    $QT_BASE_DIR = "C:\\Qt\\$QT_VERSION\\msvc2017_64\\"
+}
+
+if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019") {
+    Write-Output "Using VS2019"
+    $CMAKE_GENERATOR_NAME = "Visual Studio 16 2019"
+    $QT_VERSION = "5.13"
     $QT_BASE_DIR = "C:\\Qt\\$QT_VERSION\\msvc2017_64\\"
 }
 
@@ -34,9 +44,8 @@ vcpkg install capstone[core,sparc,x86,ppc]:x64-windows
 
 
 # Build Visual Studio solution
-cmake -G "$CMAKE_GENERATOR_NAME" `
-    -DCMAKE_TOOLCHAIN_FILE="c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-    -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" `
+cmake -G "$CMAKE_GENERATOR_NAME" -A x64 `
+    -DCMAKE_TOOLCHAIN_FILE="C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake" `
     -DBOOMERANG_BUILD_UNIT_TESTS=ON `
     -DBISON_EXECUTABLE="C:/projects/boomerang/build/winflexbison/win_bison.exe" `
     -DFLEX_EXECUTABLE="C:/projects/boomerang/build/winflexbison/win_flex.exe" ..
