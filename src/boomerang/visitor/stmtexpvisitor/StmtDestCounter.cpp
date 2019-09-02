@@ -19,7 +19,7 @@ StmtDestCounter::StmtDestCounter(ExpDestCounter *edc)
 }
 
 
-bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool &visitChildren)
+bool StmtDestCounter::visit(const std::shared_ptr<PhiAssign> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;

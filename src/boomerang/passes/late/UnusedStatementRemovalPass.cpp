@@ -49,7 +49,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter &ref
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // Don't count uses in implicit statements. There is no RHS of course,
         // but you can still have x from m[x] on the LHS and so on, but these are not real uses
         if (s->isImplicit()) {
@@ -65,7 +65,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter &ref
 
         for (const SharedExp &rr : refs) {
             if (rr->isSubscript()) {
-                Statement *def = rr->access<RefExp>()->getDef();
+                SharedStmt def = rr->access<RefExp>()->getDef();
 
                 // Used to not count implicit refs here (def->getNumber() == 0), meaning that
                 // implicit definitions get removed as dead code! But these are the ideal place to
@@ -105,7 +105,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
         StatementList::iterator ll = stmts.begin();
 
         while (ll != stmts.end()) {
-            Statement *s = *ll;
+            SharedStmt s = *ll;
 
             if (!s->isAssignment()) {
                 // Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
@@ -113,7 +113,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                 continue;
             }
 
-            const Assignment *as  = static_cast<const Assignment *>(s);
+            const std::shared_ptr<Assignment> as  = s->as<Assignment>();
             SharedConstExp asLeft = as->getLeft();
 
             if (asLeft && (asLeft->getOper() == opGlobal)) {
@@ -152,7 +152,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                     }
                 }
 
-                for (Statement *refd : stmtsRefdByUnused) {
+                for (SharedStmt refd : stmtsRefdByUnused) {
                     if (refd == nullptr) {
                         continue;
                     }
@@ -196,7 +196,7 @@ bool UnusedStatementRemovalPass::removeNullStatements(UserProc *proc)
     proc->getStatements(stmts);
 
     // remove null code
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (s->isNullStatement()) {
             // A statement of the form x := x
             LOG_VERBOSE("Removing null statement: %1 %2", s->getNumber(), s);

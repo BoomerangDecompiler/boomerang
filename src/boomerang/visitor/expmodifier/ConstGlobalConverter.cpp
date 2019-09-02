@@ -26,7 +26,7 @@ ConstGlobalConverter::ConstGlobalConverter(Prog *prog)
 
 SharedExp ConstGlobalConverter::preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren)
 {
-    Statement *def     = exp->getDef();
+    SharedStmt def     = exp->getDef();
     BinaryImage *image = m_prog->getBinaryFile()->getImage();
 
     if (def && !def->isImplicit()) {

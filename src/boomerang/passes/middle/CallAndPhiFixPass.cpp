@@ -61,15 +61,15 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
     // a[m[]] hack, aint nothing better.
     bool found = true;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isCall()) {
             continue;
         }
 
-        CallStatement *call = static_cast<CallStatement *>(s);
+        std::shared_ptr<CallStatement> call = s->as<CallStatement>();
 
         for (auto &elem : call->getArguments()) {
-            Assign *a = static_cast<Assign *>(elem);
+            std::shared_ptr<Assign> a = elem->as<Assign>();
 
             if (!a->getType()->resolvesToPointer()) {
                 continue;
@@ -102,25 +102,25 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
     // 26 r28 := r28{56}
     // So we can remove the second parameter,
     // then reduce the phi to an assignment, then propagate it
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
             continue;
         }
 
-        PhiAssign *phi                 = static_cast<PhiAssign *>(s);
+        std::shared_ptr<PhiAssign> phi = s->as<PhiAssign>();
         std::shared_ptr<RefExp> refExp = RefExp::get(phi->getLeft(), phi);
 
         phi->removeAllReferences(refExp);
     }
 
     // Second pass
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isPhi()) { // Ordinary statement
             s->bypass();
             continue;
         }
 
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        std::shared_ptr<PhiAssign> phi = s->as<PhiAssign>();
 
         if (phi->getNumDefs() == 0) {
             // Can happen e.g. for m[...] := phi {} when this proc is involved in a recursion group
@@ -214,7 +214,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
                 // if all parameters are calls
             }
 
-            Assign *asgn = proc->replacePhiByAssign(phi, best);
+            SharedStmt asgn = proc->replacePhiByAssign(phi, best);
             LOG_VERBOSE2("Redundant phi replaced with copy assign; now %1", asgn);
         }
     }

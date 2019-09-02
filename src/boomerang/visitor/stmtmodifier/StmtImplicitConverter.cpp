@@ -23,7 +23,7 @@ StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter *ic, ProcCFG *cfg
 }
 
 
-void StmtImplicitConverter::visit(PhiAssign *stmt, bool &visitChildren)
+void StmtImplicitConverter::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     // The LHS could be a m[x] where x has a null subscript; must do first
     stmt->setLeft(stmt->getLeft()->acceptModifier(m_mod));

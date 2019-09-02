@@ -16,7 +16,7 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
-RefExp::RefExp(SharedExp e, Statement *d)
+RefExp::RefExp(SharedExp e, const SharedStmt &d)
     : Unary(opSubscript, e)
     , m_def(d)
 {
@@ -24,7 +24,7 @@ RefExp::RefExp(SharedExp e, Statement *d)
 }
 
 
-std::shared_ptr<RefExp> RefExp::get(SharedExp e, Statement *def)
+std::shared_ptr<RefExp> RefExp::get(SharedExp e, const SharedStmt &def)
 {
     return std::make_shared<RefExp>(e, def);
 }
@@ -142,14 +142,14 @@ bool RefExp::isImplicitDef() const
 }
 
 
-SharedExp RefExp::addSubscript(Statement *def)
+SharedExp RefExp::addSubscript(const SharedStmt &def)
 {
     m_def = def;
     return shared_from_this();
 }
 
 
-void RefExp::setDef(Statement *def)
+void RefExp::setDef(const SharedStmt &def)
 {
     m_def = def;
 }

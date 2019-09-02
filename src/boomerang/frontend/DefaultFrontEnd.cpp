@@ -227,7 +227,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative
     // decode that fails (i.e. an illegal instruction is found). If not, this set will be used to
     // add to the set of calls to be analysed in the ProcCFG, and also to call newProc()
-    std::list<CallStatement *> callList;
+    std::list<std::shared_ptr<CallStatement>> callList;
 
     // Indicates whether or not the next instruction to be decoded is the lexical successor of the
     // current one. Will be true for all NCTs and for CTIs with a fall through branch.
@@ -359,10 +359,10 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL
             // followed by a return if it points to the start of a known procedure
-            std::list<Statement *> sl(inst.rtl->getStatements());
+            RTL::StmtList sl(inst.rtl->getStatements());
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
-                Statement *s = *ss;
+                SharedStmt s = *ss;
                 s->setProc(proc); // let's do this really early!
 
                 if (m_refHints.find(inst.rtl->getAddress()) != m_refHints.end()) {
@@ -376,7 +376,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 s->simplify();
-                GotoStatement *jumpStmt = dynamic_cast<GotoStatement *>(s);
+                std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(s);
 
                 // Check for a call to an already existing procedure (including self recursive
                 // jumps), or to the PLT (note that a LibProc entry for the PLT function may not yet
@@ -443,7 +443,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 jumpDest->access<Const, 1>()->getAddr());
                         assert(sym != nullptr);
                         QString func        = sym->getName();
-                        CallStatement *call = new CallStatement;
+                        std::shared_ptr<CallStatement> call(new CallStatement);
                         call->setDest(jumpDest->clone());
                         LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
 
@@ -516,7 +516,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 } break;
 
                 case StmtType::Call: {
-                    CallStatement *call = static_cast<CallStatement *>(s);
+                    std::shared_ptr<CallStatement> call = s->as<CallStatement>();
 
                     // Check for a dynamic linked library function
                     if (refersToImportedFunction(call->getDest())) {
@@ -647,7 +647,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 // Constuct the RTLs for the new basic block
                                 std::unique_ptr<RTLList> rtls(new RTLList);
                                 rtls->push_back(std::unique_ptr<RTL>(
-                                    new RTL(rtl->getAddress() + 1, { new ReturnStatement() })));
+                                    new RTL(rtl->getAddress() + 1, { std::make_shared<ReturnStatement>() })));
                                 BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
 
                                 // Add out edge from call to return
@@ -749,7 +749,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     } // while getNextAddress() != Address::INVALID
 
 
-    for (CallStatement *callStmt : callList) {
+    for (const std::shared_ptr<CallStatement> &callStmt : callList) {
         Address dest = callStmt->getFixedDest();
 
         // Don't visit the destination of a register call
@@ -802,7 +802,7 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
 }
 
 
-void DefaultFrontEnd::extraProcessCall(CallStatement *, const RTLList &)
+void DefaultFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &, const RTLList &)
 {
 }
 
@@ -930,8 +930,8 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         // Create the basic block
         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
         if (newBB) {
-            Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-            proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+            SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
+            proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
         }
     }
     else {
@@ -954,7 +954,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
             retRTL->clear();
         }
 
-        retRTL->append(new GotoStatement(retAddr));
+        retRTL->append(std::make_shared<GotoStatement>(retAddr));
         newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
 
         if (newBB) {
@@ -997,7 +997,7 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { new ReturnStatement }));
+    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
     assert(callBB->getNumSuccessors() == 0);
@@ -1005,8 +1005,8 @@ void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, 
 }
 
 
-void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,
-                                         const std::list<Statement *> &sl, RTL *originalRTL)
+void DefaultFrontEnd::preprocessProcGoto(RTL::StmtList::iterator ss, Address dest,
+                                         const RTL::StmtList &sl, RTL *originalRTL)
 {
     Q_UNUSED(sl);
     assert(sl.back() == *ss);
@@ -1027,7 +1027,7 @@ void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, Ad
     }
 
     if (proc != nullptr && proc != reinterpret_cast<Function *>(-1)) {
-        CallStatement *call = new CallStatement();
+        std::shared_ptr<CallStatement> call(new CallStatement);
         call->setDest(dest);
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
@@ -1073,7 +1073,7 @@ UserProc *DefaultFrontEnd::createFunctionForEntryPoint(Address entryAddr,
 }
 
 
-Address DefaultFrontEnd::getAddrOfLibraryThunk(CallStatement *call, UserProc *proc)
+Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc)
 {
     if (!call || call->getFixedDest() == Address::INVALID) {
         return Address::INVALID;
@@ -1105,7 +1105,7 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(CallStatement *call, UserProc *pr
         return Address::INVALID;
     }
 
-    Statement *firstStmt = decoded.rtl->front();
+    SharedStmt firstStmt = decoded.rtl->front();
     if (!firstStmt) {
         decoded.rtl.reset();
         return Address::INVALID;
@@ -1114,7 +1114,7 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(CallStatement *call, UserProc *pr
     firstStmt->setProc(proc);
     firstStmt->simplify();
 
-    GotoStatement *jmpStmt = dynamic_cast<GotoStatement *>(firstStmt);
+    std::shared_ptr<GotoStatement> jmpStmt = std::dynamic_pointer_cast<GotoStatement>(firstStmt);
     if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
         decoded.rtl.reset();
         return Address::INVALID;

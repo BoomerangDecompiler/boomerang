@@ -63,8 +63,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
         assert(a->getLastStmt()->isBranch());
         assert(b->getLastStmt()->isBranch());
 
-        BranchStatement *aBranch = static_cast<BranchStatement *>(a->getLastStmt());
-        BranchStatement *bBranch = static_cast<BranchStatement *>(b->getLastStmt());
+        std::shared_ptr<BranchStatement> aBranch = a->getLastStmt()->as<BranchStatement>();
+        std::shared_ptr<BranchStatement> bBranch = b->getLastStmt()->as<BranchStatement>();
 
         // A: branch to D if cond1
         // B: branch to D if cond2
@@ -148,7 +148,7 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
             continue;
         }
 
-        SharedExp hl = static_cast<BranchStatement *>(stmt)->getCondExpr();
+        SharedExp hl = stmt->as<BranchStatement>()->getCondExpr();
 
         // of the form: x{n} - 1 >= 0
         if (hl && (hl->getOper() == opGtrEq) && hl->getSubExp2()->isIntConst() &&
@@ -156,17 +156,17 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
             hl->getSubExp1()->getSubExp2()->isIntConst() &&
             (hl->access<Const, 1, 2>()->getInt() == 1) &&
             hl->getSubExp1()->getSubExp1()->isSubscript()) {
-            Statement *n = hl->access<RefExp, 1, 1>()->getDef();
+            SharedStmt n = hl->access<RefExp, 1, 1>()->getDef();
 
             if (n && n->isPhi()) {
-                PhiAssign *p = static_cast<PhiAssign *>(n);
+                std::shared_ptr<PhiAssign> p = n->as<PhiAssign>();
 
                 for (const auto &phi : *p) {
                     if (!phi->getDef()->isAssign()) {
                         continue;
                     }
 
-                    Assign *a = static_cast<Assign *>(phi->getDef());
+                    std::shared_ptr<Assign> a = phi->getDef()->as<Assign>();
 
                     if (*a->getRight() == *hl->getSubExp1()) {
                         hl->setSubExp1(RefExp::get(a->getLeft(), a));
@@ -190,7 +190,7 @@ bool BranchAnalysisPass::isOnlyBranch(BasicBlock *bb) const
     BasicBlock::RTLRIterator rIt;
     bool last = true;
 
-    for (Statement *s = bb->getLastStmt(rIt, sIt); s != nullptr; s = bb->getPrevStmt(rIt, sIt)) {
+    for (SharedStmt s = bb->getLastStmt(rIt, sIt); s != nullptr; s = bb->getPrevStmt(rIt, sIt)) {
         if (!last) {
             return false; // there are other statements beside the last branch
         }

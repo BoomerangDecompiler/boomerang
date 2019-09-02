@@ -62,7 +62,7 @@ public:
      * Takes ownership of the pointer. Deletes \p a
      * if the LHS of \p a is already present.
      */
-    void insert(Assign *a);
+    void insert(const std::shared_ptr<Assign> &a);
 
     /// Print the collected locations to stream os
     void print(OStream &os) const;
@@ -73,7 +73,7 @@ public:
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
-    void updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar> &Stacks,
+    void updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
                     UserProc *proc);
 
     /**

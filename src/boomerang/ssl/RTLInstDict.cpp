@@ -134,7 +134,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
     newList->setAddress(natPC);
 
     // Iterate through each Statement of the new list of stmts
-    for (Statement *ss : *newList) {
+    for (SharedStmt ss : *newList) {
         // Search for the formals and replace them with the actual arguments
         auto arg = args.begin();
 
@@ -153,31 +153,31 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
     }
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
-    for (Statement *&s : *newList) {
+    for (SharedStmt &s : *newList) {
         s->simplify();
 
         // Fixup for goto, case, branch, and call
         if (s->isGoto()) {
-            GotoStatement *jump = static_cast<GotoStatement *>(s);
+            std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
 
             if (jump->getDest()->isIntConst()) {
                 jump->setIsComputed(false);
             }
             else {
                 SharedExp dest = jump->getDest();
-                delete s;
-                CaseStatement *caseStmt = new CaseStatement();
+                s.reset();
+                std::shared_ptr<CaseStatement> caseStmt(new CaseStatement);
                 caseStmt->setDest(dest);
                 caseStmt->setIsComputed(true);
                 s = caseStmt;
             }
         }
         else if (s->isBranch()) {
-            BranchStatement *branch = static_cast<BranchStatement *>(s);
+            std::shared_ptr<BranchStatement> branch = s->as<BranchStatement>();
             branch->setIsComputed(!branch->getDest()->isIntConst());
         }
         else if (s->isCall()) {
-            CallStatement *call = static_cast<CallStatement *>(s);
+            std::shared_ptr<CallStatement> call = s->as<CallStatement>();
             if (call->getDest()) {
                 call->setDest(call->getDest()->simplify());
                 call->setIsComputed(!call->getDest()->isIntConst());
@@ -192,13 +192,13 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
 }
 
 
-void RTLInstDict::fixSuccessorForStmt(Statement *stmt)
+void RTLInstDict::fixSuccessorForStmt(const SharedStmt &stmt)
 {
     if (!stmt->isAssign()) {
         return;
     }
 
-    Assign *asgn = static_cast<Assign *>(stmt);
+    std::shared_ptr<Assign> asgn = stmt->as<Assign>();
     asgn->setLeft(asgn->getLeft()->fixSuccessor());
     asgn->setRight(asgn->getRight()->fixSuccessor());
 }

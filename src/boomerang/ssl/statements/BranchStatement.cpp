@@ -238,9 +238,9 @@ void BranchStatement::print(OStream &os) const
 }
 
 
-Statement *BranchStatement::clone() const
+SharedStmt BranchStatement::clone() const
 {
-    BranchStatement *ret = new BranchStatement();
+    std::shared_ptr<BranchStatement> ret(new BranchStatement);
 
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
@@ -251,6 +251,7 @@ Statement *BranchStatement::clone() const
     ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
+
     return ret;
 }
 
@@ -274,7 +275,7 @@ void BranchStatement::simplify()
 bool BranchStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -296,7 +297,7 @@ bool BranchStatement::accept(StmtExpVisitor *v)
 bool BranchStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
     if (m_dest && visitChildren) {
         m_dest = m_dest->acceptModifier(v->mod);
@@ -314,7 +315,7 @@ bool BranchStatement::accept(StmtModifier *v)
 {
     bool visitChildren;
 
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {

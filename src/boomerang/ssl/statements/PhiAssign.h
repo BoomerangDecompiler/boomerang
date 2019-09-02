@@ -76,7 +76,7 @@ public:
 
 public:
     /// \copydoc Statement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     /// \copydoc Statement::getRight
     virtual SharedExp getRight() const override { return nullptr; }
@@ -113,11 +113,11 @@ public:
     //
 
     /// Get statement at index \p idx
-    Statement *getStmtAt(BasicBlock *bb);
-    const Statement *getStmtAt(BasicBlock *bb) const;
+    SharedStmt getStmtAt(BasicBlock *bb);
+    SharedConstStmt getStmtAt(BasicBlock *bb) const;
 
     /// Update the statement at index \p idx
-    void putAt(BasicBlock *idx, Statement *d, SharedExp e);
+    void putAt(BasicBlock *idx, const SharedStmt &d, SharedExp e);
 
     size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs &getDefs() { return m_defs; }

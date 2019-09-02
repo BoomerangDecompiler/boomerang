@@ -33,7 +33,7 @@ void DFGWriter::printDFG(const UserProc *proc, const QString &fname)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (s->isPhi()) {
             out << s->getNumber() << " [shape=\"triangle\"];\n";
         }

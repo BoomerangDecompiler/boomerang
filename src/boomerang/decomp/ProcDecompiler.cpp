@@ -80,15 +80,16 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
             }
 
             // The call Statement will be in the last RTL in this BB
-            CallStatement *call = static_cast<CallStatement *>(bb->getRTLs()->back()->getHlStmt());
+            SharedStmt hl = bb->getRTLs()->back()->getHlStmt();
 
-            if (!call->isCall()) {
+            if (!hl->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
-                         bb->getLowAddr(), call);
+                         bb->getLowAddr(), hl);
                 continue;
             }
 
-            assert(call->isCall());
+            assert(hl->isCall());
+            std::shared_ptr<CallStatement> call = hl->as<CallStatement>();
             UserProc *callee = dynamic_cast<UserProc *>(call->getDestProc());
 
             if (callee == nullptr) { // not an user proc, or missing dest
@@ -638,7 +639,7 @@ void ProcDecompiler::saveDecodedICTs(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        Statement *last = bb->getLastStmt(rrit, srit);
+        SharedStmt last = bb->getLastStmt(rrit, srit);
 
         if (last == nullptr) {
             continue; // e.g. a BB with just a NOP in it
@@ -696,8 +697,8 @@ bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
     bool change = false;
     for (BasicBlock *bb : *proc->getCFG()) {
         if (bb->isType(BBType::CompCall)) {
-            CallStatement *call  = static_cast<CallStatement *>(bb->getLastStmt());
-            const bool converted = call->tryConvertToDirect();
+            std::shared_ptr<CallStatement> call = bb->getLastStmt()->as<CallStatement>();
+            const bool converted                = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();
                 if (f && !f->isLib()) {
@@ -719,9 +720,9 @@ bool ProcDecompiler::tryConvertFunctionPointerAssignments(UserProc *proc)
     StatementList statements;
     proc->getStatements(statements);
 
-    for (Statement *stmt : statements) {
+    for (SharedStmt stmt : statements) {
         if (stmt->isAssign()) {
-            Assign *asgn = static_cast<Assign *>(stmt);
+            std::shared_ptr<Assign> asgn = stmt->as<Assign>();
             if (asgn->getType()->resolvesToFuncPtr()) {
                 if (asgn->getRight()->isIntConst()) {
                     std::shared_ptr<Const> rhs = asgn->getRight()->access<Const>();

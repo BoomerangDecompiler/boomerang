@@ -118,9 +118,9 @@ void BoolAssign::printCompact(OStream &os) const
 }
 
 
-Statement *BoolAssign::clone() const
+SharedStmt BoolAssign::clone() const
 {
-    BoolAssign *ret = new BoolAssign(m_size);
+    std::shared_ptr<BoolAssign> ret(new BoolAssign(m_size));
 
     ret->m_jumpType = m_jumpType;
     ret->m_cond     = (m_cond) ? m_cond->clone() : nullptr;
@@ -130,6 +130,7 @@ Statement *BoolAssign::clone() const
     ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
+
     return ret;
 }
 
@@ -200,7 +201,7 @@ bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -217,7 +218,7 @@ bool BoolAssign::accept(StmtExpVisitor *v)
 bool BoolAssign::accept(StmtModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
     if (v->m_mod) {
         if (m_cond && visitChildren) {
@@ -237,7 +238,7 @@ bool BoolAssign::accept(StmtPartModifier *v)
 {
     bool visitChildren;
 
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
     if (m_cond && visitChildren) {
         m_cond = m_cond->acceptModifier(v->mod);

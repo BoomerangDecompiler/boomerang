@@ -168,11 +168,11 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
 
     if (insnID == "BL" || insnID == "BLA") {
         Address callDest        = Address(operands[0].imm);
-        CallStatement *callStmt = new CallStatement();
+        std::shared_ptr<CallStatement> callStmt(new CallStatement);
         callStmt->setDest(callDest);
         callStmt->setIsComputed(false);
 
-        rtl->append(new Assign(SizeType::get(32), Location::regOf(REG_PPC_LR),
+        rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
                                Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
         rtl->append(callStmt);
 
@@ -184,22 +184,22 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BCTR") {
-        CaseStatement *jump = new CaseStatement();
+        std::shared_ptr<CaseStatement> jump(new CaseStatement);
         jump->setDest(Location::regOf(REG_PPC_CTR));
         jump->setIsComputed(true);
         rtl->append(jump);
     }
     else if (insnID == "BCTRL") {
-        rtl->append(new Assign(SizeType::get(32), Location::regOf(REG_PPC_LR),
+        rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
                                Const::get(Address(pc + 4))));
 
-        CallStatement *call = new CallStatement();
+        std::shared_ptr<CallStatement> call(new CallStatement);
         call->setDest(Location::regOf(REG_PPC_CTR));
         call->setIsComputed(true);
         rtl->append(call);
     }
     else if (insnID == "BGT") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JSG);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -209,7 +209,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BGE") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JSGE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -219,7 +219,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BLT") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JSL);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -229,7 +229,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BLE") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JSLE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -239,7 +239,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BNE") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JNE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -249,7 +249,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID == "BEQ") {
-        BranchStatement *jump = static_cast<BranchStatement *>(rtl->back());
+        std::shared_ptr<BranchStatement> jump = rtl->back()->as<BranchStatement>();
         jump->setCondType(BranchType::JE);
         if (numOperands == 0 || operands[numOperands - 1].type != cs::PPC_OP_IMM) {
             jump->setDest(pc);
@@ -261,7 +261,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = operandToExp(operands[numOperands - 1])->access<Const>()->getAddr();
         if (dest != pc + PPC_MAX_INSTRUCTION_LENGTH) {
-            BranchStatement *jump = new BranchStatement();
+            std::shared_ptr<BranchStatement> jump(new BranchStatement);
             jump->setDest(dest);
             jump->setCondType(BranchType::JNE);
             rtl->append(jump);
@@ -278,8 +278,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
             const SharedExp memExp = Location::memOf(
                 Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            Assign *asgn = new Assign(SizeType::get(STD_SIZE), memExp->simplify(),
-                                      Location::regOf(reg));
+            std::shared_ptr<Assign> asgn(new Assign(SizeType::get(STD_SIZE), memExp->simplify(),
+                                      Location::regOf(reg)));
 
             rtl->append(asgn);
         }
@@ -295,8 +295,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
             const SharedExp memExp = Location::memOf(
                 Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            Assign *asgn = new Assign(SizeType::get(STD_SIZE), Location::regOf(reg),
-                                      memExp->simplify());
+            std::shared_ptr<Assign> asgn(new Assign(SizeType::get(STD_SIZE), Location::regOf(reg),
+                                      memExp->simplify()));
 
             rtl->append(asgn);
         }
@@ -306,7 +306,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         const SharedExp srcBase = Location::regOf(fixRegNum(operands[1].mem.base));
         const SharedExp offset  = Const::get(operands[1].mem.disp);
 
-        rtl->append(new Assign(SizeType::get(32), srcBase, Binary::get(opPlus, srcBase, offset)));
+        rtl->append(std::make_shared<Assign>(SizeType::get(32), srcBase, Binary::get(opPlus, srcBase, offset)));
     }
 
     return rtl;

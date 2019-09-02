@@ -94,18 +94,18 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
         // This appears to pop the top of stack, and converts the result to a 64 bit integer in
         // edx:eax. Truncates towards zero r[tmpl] = ftoi(80, 64, r[32]) r[24] = trunc(64, 32,
         // r[tmpl]) r[26] = r[tmpl] >> 32
-        Statement *a = new Assign(IntegerType::get(64),
-                                  Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
-                                  std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32),
-                                                            Location::regOf(REG_PENT_ST0)));
+        SharedStmt a(new Assign(IntegerType::get(64),
+                                Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
+                                std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32),
+                                                          Location::regOf(REG_PENT_ST0))));
         std::unique_ptr<RTL> newRTL(new RTL(addr));
         newRTL->append(a);
-        a = new Assign(
+        a = std::make_shared<Assign>(
             Location::regOf(REG_PENT_EAX),
             std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         newRTL->append(a);
-        a = new Assign(Location::regOf(REG_PENT_EDX),
+        a = std::make_shared<Assign>(Location::regOf(REG_PENT_EDX),
                        Binary::get(opShR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                    Const::get(32)));
         newRTL->append(a);
@@ -118,7 +118,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
     }
     else if (name == "__mingw_allocstack") {
         std::unique_ptr<RTL> newRTL(new RTL(addr));
-        newRTL->append(new Assign(
+        newRTL->append(std::make_shared<Assign>(
             Location::regOf(REG_PENT_ESP),
             Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX))));
         lrtl.push_back(std::move(newRTL));
@@ -198,11 +198,11 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             break;
         }
 
-        const CallStatement *call = nullptr;
+        std::shared_ptr<const CallStatement> call = nullptr;
 
         if (!inst.rtl->empty()) {
             call = (inst.rtl->back()->getKind() == StmtType::Call)
-                       ? static_cast<CallStatement *>(inst.rtl->back())
+                       ? inst.rtl->back()->as<CallStatement>()
                        : nullptr;
         }
 
@@ -216,18 +216,18 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
             if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
                 // using back instead of rtl[1], since size()==2
-                const Assign *asgn = dynamic_cast<Assign *>(inst.rtl->back());
+                std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(inst.rtl->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
                     decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
 
-                    if (!inst.rtl->empty()) {
-                        CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
+                    if (!inst.rtl->empty() && inst.rtl->back()->isCall()) {
+                        std::shared_ptr<CallStatement> main = inst.rtl->back()->as<CallStatement>();
 
-                        if (toMain && (toMain->getFixedDest() != Address::INVALID)) {
-                            symbols->createSymbol(toMain->getFixedDest(), "WinMain");
+                        if (main->getFixedDest() != Address::INVALID) {
+                            symbols->createSymbol(main->getFixedDest(), "WinMain");
                             gotMain = true;
-                            return toMain->getFixedDest();
+                            return main->getFixedDest();
                         }
                     }
                 }
@@ -247,7 +247,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
                 //   esp = esp-4
                 decodeSingleInstruction(prevAddr, inst);
                 if (inst.valid && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
-                    Assign *a     = static_cast<Assign *>(inst.rtl->front()); // Get m[esp-4] = K
+                    std::shared_ptr<Assign> a = inst.rtl->front()->as<Assign>(); // Get m[esp-4] = K
                     SharedExp rhs = a->getRight();
                     if (rhs->isIntConst()) {
                         gotMain = true;
@@ -259,7 +259,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const GotoStatement *gs = static_cast<const GotoStatement *>(call);
+        std::shared_ptr<const GotoStatement> gs = std::dynamic_pointer_cast<const GotoStatement>(inst.rtl->back());
         if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch
             // around some debug info
@@ -304,7 +304,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         LocationSet locs;
         s->addUsedLocs(locs);
 
@@ -317,7 +317,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
     std::set<BasicBlock *> bbs;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;
         }
@@ -330,10 +330,10 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
         std::unique_ptr<RTL>
             overlapResult = m_decoder->getDict()->getRegDB()->processOverlappedRegs(
-                static_cast<Assignment *>(s), usedRegs);
+                s->as<Assignment>(), usedRegs);
 
         if (overlapResult) {
-            for (Statement *res : *overlapResult) {
+            for (SharedStmt res : *overlapResult) {
                 proc->insertStatementAfter(s, res->clone());
             }
         }
@@ -344,7 +344,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList &BB_rtls)
+void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call, const RTLList &BB_rtls)
 {
     if (!call->getDestProc()) {
         return;
@@ -394,7 +394,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList &BB_rt
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
-                Statement *stmt = *rtl_iter;
+                Statement *stmt = rtl_iter->get();
 
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);
@@ -499,7 +499,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList &BB_rt
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
-                Statement *stmt = *rtl_iter;
+                Statement *stmt = rtl_iter->get();
 
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);

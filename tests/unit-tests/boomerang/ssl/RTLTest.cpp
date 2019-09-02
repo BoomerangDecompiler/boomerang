@@ -32,7 +32,7 @@
 
 void RTLTest::testAppend()
 {
-    Assign *a = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99))));
     RTL    r(Address::ZERO, { a });
 
     QString     res;

@@ -29,12 +29,12 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isAssign()) {
             continue;
         }
 
-        Assign *as = static_cast<Assign *>(s);
+        std::shared_ptr<Assign> as = s->as<Assign>();
 
         // of the form x = x{p} + c
         if ((as->getRight()->getOper() == opPlus) && as->getRight()->getSubExp1()->isSubscript() &&
@@ -44,11 +44,11 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
             auto r = as->getRight()->access<RefExp, 1>();
 
             if (r->getDef() && r->getDef()->isPhi()) {
-                PhiAssign *p = static_cast<PhiAssign *>(r->getDef());
+                std::shared_ptr<PhiAssign> p = r->getDef()->as<PhiAssign>();
 
                 if (p->getNumDefs() == 2) {
-                    Statement *first  = (*p->begin())->getDef();
-                    Statement *second = (*p->rbegin())->getDef();
+                    SharedStmt first  = (*p->begin())->getDef();
+                    SharedStmt second = (*p->rbegin())->getDef();
 
                     if (first == as) {
                         // want the increment in second
@@ -57,14 +57,14 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
 
                     // first must be of form x := 0
                     if (first && first->isAssign() &&
-                        static_cast<Assign *>(first)->getRight()->isIntConst() &&
-                        static_cast<Assign *>(first)->getRight()->access<Const>()->getInt() == 0) {
+                        first->as<Assign>()->getRight()->isIntConst() &&
+                        first->as<Assign>()->getRight()->access<Const>()->getInt() == 0) {
                         // ok, fun, now we need to find every reference to p and
                         // replace with x{p} * c
                         StatementList stmts2;
                         proc->getStatements(stmts2);
 
-                        for (Statement *stmt2 : stmts2) {
+                        for (SharedStmt stmt2 : stmts2) {
                             if (stmt2 != as) {
                                 stmt2->searchAndReplace(
                                     *r, Binary::get(opMult, r->clone(), Const::get(c)));

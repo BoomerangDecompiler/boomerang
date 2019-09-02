@@ -15,6 +15,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 
 class BasicBlock;
@@ -29,11 +30,14 @@ class StmtPartModifier;
 class LocationSet;
 class Assignment;
 class Settings;
+class Statement;
 
 
 typedef std::shared_ptr<Exp> SharedExp;
 typedef std::shared_ptr<Type> SharedType;
 typedef std::shared_ptr<const Type> SharedConstType;
+typedef std::shared_ptr<Statement> SharedStmt;
+typedef std::shared_ptr<const Statement> SharedConstStmt;
 
 
 /// Types of Statements, or high-level register transfer lists.
@@ -90,7 +94,7 @@ enum class BranchType : uint8_t
  * CallStatement_/  /   /    \ \________
  *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
-class BOOMERANG_API Statement
+class BOOMERANG_API Statement : public std::enable_shared_from_this<Statement>
 {
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
@@ -105,8 +109,20 @@ public:
     Statement &operator=(Statement &&other) = default;
 
 public:
+    /// Typecast this type to another type.
+    template<class T>
+    typename std::enable_if<std::is_base_of<Statement, T>::value, std::shared_ptr<T>>::type as();
+
+    template<class T>
+    typename std::enable_if<std::is_base_of<Statement, T>::value, std::shared_ptr<const T>>::type
+    as() const;
+
+public:
+    static SharedStmt wild;
+
+public:
     /// Make copy of self, and make the copy a derived object if needed.
-    virtual Statement *clone() const = 0;
+    virtual SharedStmt clone() const = 0;
 
     /// \returns the BB that this statement is part of.
     BasicBlock *getBB() { return m_bb; }
@@ -282,12 +298,12 @@ public:
     /// Propagate to e from definition statement def.
     /// \returns true if a change made
     /// \note this procedure does not control what part of this statement is propagated to
-    bool doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings);
+    bool doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def, Settings *settings);
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement
     /// \returns true if change
-    bool replaceRef(SharedExp e, Assignment *def);
+    bool replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def);
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
@@ -298,6 +314,26 @@ protected:
 };
 
 
+template<class T>
+inline typename std::enable_if<std::is_base_of<Statement, T>::value, std::shared_ptr<T>>::type
+Statement::as()
+{
+    SharedStmt s = shared_from_this();
+    assert(std::dynamic_pointer_cast<T>(s) != nullptr);
+    return std::static_pointer_cast<T>(s);
+}
+
+
+template<class T>
+inline typename std::enable_if<std::is_base_of<Statement, T>::value, std::shared_ptr<const T>>::type
+Statement::as() const
+{
+    SharedConstStmt s = shared_from_this();
+    assert(std::dynamic_pointer_cast<T>(s) != nullptr);
+    return std::static_pointer_cast<T>(s);
+}
+
+
 /**
  * Output operator for Statement *.
  * Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
@@ -305,7 +341,7 @@ protected:
  * \param stmt  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
  */
-BOOMERANG_API OStream &operator<<(OStream &os, const Statement *stmt);
+BOOMERANG_API OStream &operator<<(OStream &os, const SharedStmt &stmt);
 
 /// Wildcard for statment search
-#define STMT_WILD (reinterpret_cast<Statement *>(-1))
+#define STMT_WILD (Statement::wild)

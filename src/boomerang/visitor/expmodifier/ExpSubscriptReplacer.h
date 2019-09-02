@@ -11,16 +11,14 @@
 
 
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
-
-
-class Statement;
+#include "boomerang/ssl/statements/Statement.h"
 
 
 /// replaces the subscript in e{foo} -> e{bar}
 class BOOMERANG_API ExpSubscriptReplacer : public ExpModifier
 {
 public:
-    ExpSubscriptReplacer(const Statement *original, Statement *replacement);
+    ExpSubscriptReplacer(const SharedConstStmt &original, const SharedStmt &replacement);
     virtual ~ExpSubscriptReplacer() = default;
 
 public:
@@ -28,6 +26,6 @@ public:
     SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
 private:
-    const Statement *m_orig;
-    Statement *m_replacement;
+    SharedConstStmt m_orig;
+    SharedStmt m_replacement;
 };

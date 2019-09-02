@@ -23,7 +23,7 @@ StmtRegMapper::StmtRegMapper(ExpRegMapper *erm)
 }
 
 
-bool StmtRegMapper::common(Assignment *stmt, bool &visitChildren)
+bool StmtRegMapper::common(const std::shared_ptr<Assignment> &stmt, bool &visitChildren)
 {
     // In case lhs is a reg or m[reg] such that reg is otherwise unused
     SharedExp lhs = stmt->getLeft();
@@ -35,25 +35,25 @@ bool StmtRegMapper::common(Assignment *stmt, bool &visitChildren)
 }
 
 
-bool StmtRegMapper::visit(Assign *stmt, bool &visitChildren)
+bool StmtRegMapper::visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(PhiAssign *stmt, bool &visitChildren)
+bool StmtRegMapper::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(ImplicitAssign *stmt, bool &visitChildren)
+bool StmtRegMapper::visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(BoolAssign *stmt, bool &visitChildren)
+bool StmtRegMapper::visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }

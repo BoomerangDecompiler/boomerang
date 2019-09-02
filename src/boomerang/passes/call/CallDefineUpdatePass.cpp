@@ -34,20 +34,19 @@ bool CallDefineUpdatePass::execute(UserProc *proc)
 
     bool changed = false;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isCall()) {
             continue;
         }
 
-        assert(dynamic_cast<CallStatement *>(s) != nullptr);
-        changed |= updateCallDefines(proc, static_cast<CallStatement *>(s));
+        changed |= updateCallDefines(proc, s->as<CallStatement>());
     }
 
     return changed;
 }
 
 
-bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *callStmt)
+bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, const std::shared_ptr<CallStatement> &callStmt)
 {
     assert(callStmt->getProc() == proc);
     Function *callee = callStmt->getDestProc();
@@ -76,8 +75,8 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         const StatementList
             &modifieds = static_cast<UserProc *>(callee)->getRetStmt()->getModifieds();
 
-        for (Statement *mm : modifieds) {
-            Assignment *as = static_cast<Assignment *>(mm);
+        for (SharedStmt mm : modifieds) {
+            std::shared_ptr<Assignment> as = mm->as<Assignment>();
             SharedExp loc  = as->getLeft();
 
             if (proc->filterReturns(loc)) {
@@ -87,7 +86,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
             SharedType ty = as->getType();
 
             if (!newDefines.existsOnLeft(loc)) {
-                newDefines.append(new ImplicitAssign(ty, loc));
+                newDefines.append(std::make_shared<ImplicitAssign>(ty, loc));
             }
         }
     }
@@ -99,7 +98,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
             }
 
             if (!newDefines.existsOnLeft(loc)) {
-                ImplicitAssign *as = new ImplicitAssign(loc->clone());
+                std::shared_ptr<ImplicitAssign> as(new ImplicitAssign(loc->clone()));
                 as->setProc(proc);
                 as->setBB(callStmt->getBB());
                 newDefines.append(as);
@@ -107,33 +106,29 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         }
     }
 
-    for (Statement *stmt : newDefines) {
+    for (SharedStmt stmt : newDefines) {
         // Make sure the LHS is still in the return or collector
-        Assignment *as = static_cast<Assignment *>(stmt);
+        std::shared_ptr<Assignment> as = stmt->as<Assignment>();
         SharedExp lhs  = as->getLeft();
 
         if (callStmt->getCalleeReturn()) {
             if (!callStmt->getCalleeReturn()->definesLoc(lhs)) {
-                delete stmt;
-                continue; // Not in callee returns
+                continue; // Not in callee returns -> delete it
             }
         }
         else if (!callStmt->getUseCollector()->exists(lhs)) {
-            delete stmt;
             continue; // Not in collector: delete it (don't copy it)
         }
 
         if (proc->filterReturns(lhs)) {
-            delete stmt;
             continue; // Filtered out: delete it
         }
 
         callStmt->getDefines().append(stmt);
     }
 
-    callStmt->getDefines().sort([sig](Statement *left, Statement *right) {
-        return sig->returnCompare(*static_cast<Assignment *>(left),
-                                  *static_cast<Assignment *>(right));
+    callStmt->getDefines().sort([sig](SharedStmt left, SharedStmt right) {
+        return sig->returnCompare(*left->as<Assignment>(), *right->as<Assignment>());
     });
 
     return true;

@@ -659,66 +659,66 @@ void ExpTest::testAddUsedLocs_data()
                                                   Location::regOf(REG_PENT_EDX) }));
 
     SharedExp e = Location::regOf(REG_PENT_ESP);
-    Assign a(e, e);
-    a.setNumber(1);
+    std::shared_ptr<Assign> a(new Assign(e, e));
+    a->setNumber(1);
 
-    SharedExp ref = RefExp::get(e->clone(), &a);
+    SharedExp ref = RefExp::get(e->clone(), a);
     TEST_ADDUSEDLOCS("refexp",      ref, LocationSet({ ref }));
 
     SharedExp memof = Location::memOf(Binary::get(opMinus, ref, Const::get(4)));
-    Assign a2(e, e);
-    a2.setNumber(2);
+    std::shared_ptr<Assign> a2(new Assign(e, e));
+    a2->setNumber(2);
 
-    TEST_ADDUSEDLOCS("memofRef", RefExp::get(memof, &a2),
-                                 LocationSet({ ref, RefExp::get(memof, &a2)}));
+    TEST_ADDUSEDLOCS("memofRef", RefExp::get(memof, a2),
+                                 LocationSet({ ref, RefExp::get(memof, a2)}));
 }
 
 
 void ExpTest::testSubscriptVars()
 {
     // Null case: %pc
-    Assign s9(Terminal::get(opNil), Terminal::get(opNil));
+    std::shared_ptr<Assign> s9(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
 
-    s9.setNumber(9);
+    s9->setNumber(9);
     SharedExp search = Location::regOf(REG_PENT_ESP);
     SharedExp e      = Terminal::get(opPC);
-    e = e->expSubscriptVar(search, &s9);
+    e = e->expSubscriptVar(search, s9);
     QCOMPARE(e->toString(), QString("%pc"));
 
     // Simple case: r28
     e      = search->clone();
-    e      = e->expSubscriptVar(search, &s9);
+    e      = e->expSubscriptVar(search, s9);
     QCOMPARE(e->toString(), QString("r28{9}"));
 
 
     // A temp
     e      = Location::tempOf(Const::get("tmp1"));
-    e      = e->expSubscriptVar(e->clone(), &s9);
+    e      = e->expSubscriptVar(e->clone(), s9);
     QCOMPARE(e->toString(), QString("tmp1{9}"));
 
     // m[r28] + r28
     e      = Binary::get(opPlus, Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_ESP));
-    e      = e->expSubscriptVar(search, &s9);
+    e      = e->expSubscriptVar(search, s9);
     QCOMPARE(e->toString(), QString("m[r28{9}] + r28{9}"));
 
     // RefExp: r28{7} -> r28{9}
     // Again, changed behaviour: don't resubscript any location
-    Assign s7(Terminal::get(opNil), Terminal::get(opNil));
-    s7.setNumber(7);
-    e = RefExp::get(search->clone(), &s7);
-    e = e->expSubscriptVar(search, &s9);
+    std::shared_ptr<Assign> s7(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
+    s7->setNumber(7);
+    e = RefExp::get(search->clone(), s7);
+    e = e->expSubscriptVar(search, s9);
     QCOMPARE(e->toString(), QString("r28{7}"));
 
     // m[r28{7} + 4]{8}
-    Assign s8(Terminal::get(opNil), Terminal::get(opNil));
-    s8.setNumber(8);
-    e = RefExp::get(Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), &s7), Const::get(4))), &s8);
-    e = e->expSubscriptVar(search, &s9);
+    std::shared_ptr<Assign> s8(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
+    s8->setNumber(8);
+    e = RefExp::get(Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), s7), Const::get(4))), s8);
+    e = e->expSubscriptVar(search, s9);
     QCOMPARE(e->toString(), QString("m[r28{7} + 4]{8}"));
 
     // r24{7} with r24{7} and 0: should not change: RefExps should not compare
     // at the top level, only with their base expression (here r24, not r24{7})
-    e      = RefExp::get(Location::regOf(REG_PENT_EAX), &s7);
+    e      = RefExp::get(Location::regOf(REG_PENT_EAX), s7);
     e      = e->expSubscriptVar(e->clone(), nullptr);
     QCOMPARE(e->toString(), QString("r24{7}"));
 }
@@ -726,10 +726,10 @@ void ExpTest::testSubscriptVars()
 
 void ExpTest::testVisitors()
 {
-    Assign s7(Terminal::get(opNil), Terminal::get(opNil));
+    std::shared_ptr<Assign> s7(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
 
     // m[SETTFLAGS(m[1000], r8)]{7}
-    s7.setNumber(7);
+    s7->setNumber(7);
     FlagsFinder ff;
     SharedExp   e1 = RefExp::get(Location::memOf(Binary::get(opFlagCall,
                                                              Const::get("SETFFLAGS"),
@@ -737,7 +737,7 @@ void ExpTest::testVisitors()
                                                                          Location::memOf( // A bare memof
                                                                              Const::get(0x1000)),
                                                                          Binary::get(opList, Location::regOf(REG_PENT_AL), Terminal::get(opNil))))),
-                                 &s7);
+                                 s7);
 
     // m[0x2000]
     SharedExp e2 = Location::memOf(Const::get(0x2000));
@@ -745,7 +745,7 @@ void ExpTest::testVisitors()
     // r1+m[1000]{7}*4
     SharedExp e3 = Binary::get(opPlus,
                                Location::regOf(REG_PENT_AX),
-                               Binary::get(opMult, RefExp::get(Location::memOf(Const::get(1000)), &s7), Const::get(4)));
+                               Binary::get(opMult, RefExp::get(Location::memOf(Const::get(1000)), s7), Const::get(4)));
 
     QVERIFY(e1->containsFlags());
     QVERIFY(!e2->containsFlags());

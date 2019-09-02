@@ -34,7 +34,7 @@ DFATypeAnalyzer::DFATypeAnalyzer()
 }
 
 
-void DFATypeAnalyzer::visitAssignment(Assignment *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visitAssignment(const std::shared_ptr<Assignment> &stmt, bool &visitChildren)
 {
     UserProc *proc = stmt->getProc();
     assert(proc != nullptr);
@@ -72,7 +72,7 @@ void DFATypeAnalyzer::visitAssignment(Assignment *stmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     PhiAssign::PhiDefs &defs  = stmt->getDefs();
     PhiAssign::iterator defIt = defs.begin();
@@ -127,7 +127,7 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(Assign *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren)
 {
     SharedType tr = stmt->getRight()->ascendType();
 
@@ -151,14 +151,14 @@ void DFATypeAnalyzer::visit(Assign *stmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(BoolAssign *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren)
 {
     // Not properly implemented yet
     visitAssignment(stmt, visitChildren);
 }
 
 
-void DFATypeAnalyzer::visit(BranchStatement *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<BranchStatement> &stmt, bool &visitChildren)
 {
     if (stmt->getCondExpr()) {
         m_changed |= stmt->getCondExpr()->descendType(BooleanType::get());
@@ -169,16 +169,16 @@ void DFATypeAnalyzer::visit(BranchStatement *stmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<CallStatement> &callStmt, bool &visitChildren)
 {
     // Iterate through the arguments
     int n = 0;
 
     Function *callee = callStmt->getDestProc();
 
-    for (Statement *aa : callStmt->getArguments()) {
+    for (SharedStmt aa : callStmt->getArguments()) {
         assert(aa->isAssign());
-        Assign *boundArg = static_cast<Assign *>(aa);
+        std::shared_ptr<Assign> boundArg = aa->as<Assign>();
 
         // Check if we have something like
         //  memcpy(dst, src, 5);
@@ -189,9 +189,9 @@ void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
             assert(boundArg->getType()->resolvesToInteger());
 
             int nt = 0;
-            for (const Statement *arrayArg : callStmt->getArguments()) {
+            for (SharedConstStmt arrayArg : callStmt->getArguments()) {
                 if (boundmax == callStmt->getDestProc()->getSignature()->getParamName(nt++)) {
-                    SharedType tyt = static_cast<const Assign *>(arrayArg)->getType();
+                    SharedType tyt = arrayArg->as<const Assign>()->getType();
 
                     if (tyt->resolvesToPointer() &&
                         tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
@@ -225,7 +225,7 @@ void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
 
         if (callStmt->getDest()->isSubscript()) {
             std::shared_ptr<RefExp> ref = callStmt->getDest()->access<RefExp>();
-            Statement *def              = ref->getDef();
+            SharedStmt def              = ref->getDef();
             def->setTypeForExp(ref->getSubExp1(),
                                PointerType::get(FuncType::get(callStmt->getSignature())));
         }
@@ -235,30 +235,22 @@ void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(ImplicitAssign *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren)
 {
     visitAssignment(stmt, visitChildren);
 }
 
 
-void DFATypeAnalyzer::visit(ReturnStatement *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren)
 {
-    for (Statement *mm : stmt->getModifieds()) {
-        if (!mm->isAssignment()) {
-            LOG_WARN("Non assignment in modifieds of ReturnStatement");
-        }
-
-        assert(dynamic_cast<Assignment *>(mm) != nullptr);
-        visitAssignment(static_cast<Assignment *>(mm), visitChildren);
+    for (SharedStmt mm : stmt->getModifieds()) {
+        assert(mm->isAssignment());
+        visitAssignment(mm->as<Assignment>(), visitChildren);
     }
 
-    for (Statement *rr : stmt->getReturns()) {
-        if (!rr->isAssignment()) {
-            LOG_WARN("Non assignment in returns of ReturnStatement");
-        }
-
-        assert(dynamic_cast<Assignment *>(rr) != nullptr);
-        visitAssignment(static_cast<Assignment *>(rr), visitChildren);
+    for (SharedStmt rr : stmt->getReturns()) {
+        assert(rr->isAssignment());
+        visitAssignment(rr->as<Assignment>(), visitChildren);
     }
 
     visitChildren = false; // don't visit the expressions

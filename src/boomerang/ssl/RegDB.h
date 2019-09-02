@@ -97,7 +97,7 @@ public:
     ///   We do not need to generate an assignment for %al, since %al is not used in the current
     ///   procedure (This is indicated by \p usedRegs not containing %al).
     /// \returns all additional statements
-    std::unique_ptr<RTL> processOverlappedRegs(Assignment *stmt,
+    std::unique_ptr<RTL> processOverlappedRegs(const std::shared_ptr<Assignment> &stmt,
                                                const std::set<RegNum> &usedRegs) const;
 
 private:
@@ -115,8 +115,9 @@ private:
     /// \param rhs The register that is assigned from
     /// \param offsetInParent The offset in bits of the child register (for %eax -> %ah this is 8)
     /// \returns the new register content mapping assignment.
-    Assignment *emitOverlappedStmt(const Assignment *original, const Register *lhs,
-                                   const Register *rhs, int offsetInParent) const;
+    std::shared_ptr<Assignment> emitOverlappedStmt(const std::shared_ptr<Assignment> &original,
+                                                   const Register *lhs, const Register *rhs,
+                                                   int offsetInParent) const;
 
 private:
     /// A map from the symbolic representation of a register (e.g. "%g0")

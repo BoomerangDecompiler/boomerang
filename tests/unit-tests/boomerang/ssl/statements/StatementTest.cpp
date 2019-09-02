@@ -101,7 +101,7 @@ void StatementTest::testFlow()
 
     ProcCFG *cfg   = proc->getCFG();
 
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5)));
     a1->setProc(proc);
     a1->setNumber(1);
 
@@ -110,9 +110,9 @@ void StatementTest::testFlow()
 
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(2);
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5)));
     a2->setProc(proc);
     rs->addReturn(a2);
 
@@ -155,9 +155,6 @@ void StatementTest::testFlow()
         "\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete a1;
 }
 
 
@@ -174,11 +171,11 @@ void StatementTest::testKill()
     // create CFG
     ProcCFG              *cfg   = proc->getCFG();
 
-    Assign *e1     = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
     e1->setNumber(1);
     e1->setProc(proc);
 
-    Assign *e2 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(6));
+    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
     e2->setNumber(2);
     e2->setProc(proc);
 
@@ -186,10 +183,10 @@ void StatementTest::testKill()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { e1, e2 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
 
-    Assign *e = new Assign(Location::regOf(REG_PENT_EAX), Const::get(0));
+    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
     e->setProc(proc);
     rs->addReturn(e);
 
@@ -226,10 +223,6 @@ void StatementTest::testKill()
         "              Reaching definitions: r24=6\n\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete e1;
-    delete e2;
 }
 
 
@@ -243,11 +236,11 @@ void StatementTest::testUse()
 
     ProcCFG *cfg   = proc->getCFG();
 
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -255,9 +248,9 @@ void StatementTest::testUse()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
-    Assign *a = new Assign(Location::regOf(REG_PENT_ESP), Const::get(1000));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_ESP), Const::get(1000)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs.reset(new RTLList);
@@ -292,10 +285,6 @@ void StatementTest::testUse()
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete a1;
-    delete a2;
 }
 
 
@@ -308,15 +297,15 @@ void StatementTest::testUseOverKill()
     proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
     ProcCFG *cfg = proc->getCFG();
 
-    Assign *e1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
     e1->setNumber(1);
     e1->setProc(proc);
 
-    Assign *e2 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(6));
+    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
     e2->setNumber(2);
     e2->setProc(proc);
 
-    Assign *e3 = new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX));
+    std::shared_ptr<Assign> e3(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
     e3->setNumber(3);
     e3->setProc(proc);
 
@@ -324,9 +313,9 @@ void StatementTest::testUseOverKill()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { e1, e2, e3 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(4);
-    Assign *e = new Assign(Location::regOf(REG_PENT_EAX), Const::get(0));
+    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
     e->setProc(proc);
     rs->addReturn(e);
 
@@ -364,11 +353,6 @@ void StatementTest::testUseOverKill()
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete e1;
-    delete e2;
-    delete e3;
 }
 
 
@@ -381,11 +365,11 @@ void StatementTest::testUseOverBB()
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
     ProcCFG *cfg       = proc->getCFG();
 
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(6));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -393,17 +377,17 @@ void StatementTest::testUseOverBB()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    Assign *a3  = new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX));
+    std::shared_ptr<Assign> a3(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
     a3->setNumber(3);
     a3->setProc(proc);
     bbRTLs.reset(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a3 })));
 
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(4);
 
-    Assign *a = new Assign(Location::regOf(REG_PENT_EAX), Const::get(0));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00001012), { rs })));
@@ -439,11 +423,6 @@ void StatementTest::testUseOverBB()
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete a1;
-    delete a2;
-    delete a3;
 }
 
 
@@ -455,11 +434,11 @@ void StatementTest::testUseKill()
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
     ProcCFG *cfg   = proc->getCFG();
 
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Const::get(1)));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Const::get(1))));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -467,9 +446,9 @@ void StatementTest::testUseKill()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    ReturnStatement *rs = new ReturnStatement;
+    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
-    Assign *a = new Assign(Location::regOf(REG_PENT_EAX), Const::get(0));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs.reset(new RTLList);
@@ -505,10 +484,6 @@ void StatementTest::testUseKill()
         "              Reaching definitions: r24=6\n\n";
 
     compareLongStrings(actual, expected);
-
-    // clean up
-    delete a1;
-    delete a2;
 }
 
 
@@ -524,9 +499,8 @@ void StatementTest::testEndlessLoop()
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
     ProcCFG *cfg   = proc->getCFG();
 
-
     // r[24] := 5
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, Sign::Signed)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, Sign::Signed))));
     a1->setProc(proc);
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
@@ -535,9 +509,9 @@ void StatementTest::testEndlessLoop()
 
 
     // r24 := r24 + 1
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus,
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus,
                                                                        Location::regOf(REG_PENT_EAX),
-                                                                       Const::get(1, IntegerType::get(32, Sign::Signed))));
+                                                                       Const::get(1, IntegerType::get(32, Sign::Signed)))));
     a2->setProc(proc);
     bbRTLs.reset(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a2 })));
@@ -633,13 +607,13 @@ void StatementTest::testLocationSet()
     QVERIFY(rof != nullptr);
     QCOMPARE(e->toString(), rof->toString());            // ... should be r12
 
-    Assign s10(Const::get(0), Const::get(0));
-    Assign s20(Const::get(0), Const::get(0));
-    s10.setNumber(10);
-    s20.setNumber(20);
+    std::shared_ptr<Assign> s10(new Assign(Const::get(0), Const::get(0)));
+    std::shared_ptr<Assign> s20(new Assign(Const::get(0), Const::get(0)));
+    s10->setNumber(10);
+    s20->setNumber(20);
 
-    std::shared_ptr<RefExp> r1 = RefExp::get(Location::regOf(REG_SPARC_O0), &s10);
-    std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(REG_SPARC_O0), &s20);
+    std::shared_ptr<RefExp> r1 = RefExp::get(Location::regOf(REG_SPARC_O0), s10);
+    std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(REG_SPARC_O0), s20);
     ls.insert(r1); // ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
 
     QCOMPARE(ls.size(), 6);
@@ -655,8 +629,8 @@ void StatementTest::testLocationSet()
     QVERIFY(ls.containsImplicit(r8));
     ls.remove(r3);
 
-    ImplicitAssign          zero(r8);
-    std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(REG_SPARC_O0), &zero));
+    std::shared_ptr<ImplicitAssign> zero(new ImplicitAssign(r8));
+    std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(REG_SPARC_O0), zero));
     ls.insert(r4);
     QVERIFY(ls.containsImplicit(r8));
 }
@@ -666,18 +640,19 @@ void StatementTest::testWildLocationSet()
 {
     Location rof12(opRegOf, Const::get(REG_SPARC_O4), nullptr);
     Location rof13(opRegOf, Const::get(REG_SPARC_O5), nullptr);
-    Assign   a10, a20;
+    std::shared_ptr<Assign> a10(new Assign);
+    std::shared_ptr<Assign> a20(new Assign);
 
-    a10.setNumber(10);
-    a20.setNumber(20);
-    std::shared_ptr<RefExp> r12_10(new RefExp(rof12.clone(), &a10));
-    std::shared_ptr<RefExp> r12_20(new RefExp(rof12.clone(), &a20));
+    a10->setNumber(10);
+    a20->setNumber(20);
+    std::shared_ptr<RefExp> r12_10(new RefExp(rof12.clone(), a10));
+    std::shared_ptr<RefExp> r12_20(new RefExp(rof12.clone(), a20));
     std::shared_ptr<RefExp> r12_0(new RefExp(rof12.clone(), nullptr));
-    std::shared_ptr<RefExp> r13_10(new RefExp(rof13.clone(), &a10));
-    std::shared_ptr<RefExp> r13_20(new RefExp(rof13.clone(), &a20));
+    std::shared_ptr<RefExp> r13_10(new RefExp(rof13.clone(), a10));
+    std::shared_ptr<RefExp> r13_20(new RefExp(rof13.clone(), a20));
     std::shared_ptr<RefExp> r13_0(new RefExp(rof13.clone(), nullptr));
-    std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_SPARC_O3), &a10));
-    std::shared_ptr<RefExp> r22_10(new RefExp(Location::regOf(REG_SPARC_L6), &a10));
+    std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_SPARC_O3), a10));
+    std::shared_ptr<RefExp> r22_10(new RefExp(Location::regOf(REG_SPARC_L6), a10));
 
     LocationSet ls;
     ls.insert(r12_10);
@@ -727,31 +702,31 @@ void StatementTest::testRecursion()
     {
         // push bp
         // r28 := r28 + -4
-        Assign *a1 = new Assign(Location::regOf(REG_PENT_ESP),
+        std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_ESP),
                                 Binary::get(opPlus,
                                             Location::regOf(REG_PENT_ESP),
-                                            Const::get(-4)));
+                                            Const::get(-4))));
         a1->setProc(proc);
 
         // m[r28] := r29
-        Assign *a2 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP));
+        std::shared_ptr<Assign> a2(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP)));
         a2->setProc(proc);
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1004), { a1, a2 })));
 
         // push arg+1
         // r28 := r28 + -4
-        Assign *a3 = (Assign *)a1->clone();
+        std::shared_ptr<Assign> a3 = a1->clone()->as<Assign>();
         a3->setProc(proc);
 
         // Reference our parameter. At esp+0 is this arg; at esp+4 is old ebp;
         // esp+8 is return address; esp+12 is our arg
         // m[r28] := m[r28+12] + 1
-        Assign *a4 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)),
+        std::shared_ptr<Assign> a4(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)),
                                 Binary::get(opPlus,
                                             Location::memOf(Binary::get(opPlus,
                                                                         Location::regOf(REG_PENT_ESP),
                                                                         Const::get(12))),
-                                            Const::get(1)));
+                                            Const::get(1))));
 
         a4->setProc(proc);
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1006), { a3, a4 })));
@@ -763,20 +738,21 @@ void StatementTest::testRecursion()
     bbRTLs.reset(new RTLList);
     {
         // r28 := r28 + -4
-        Assign *a5 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)));
+        std::shared_ptr<Assign> a5(new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4))));
         a5->setProc(proc);
+
         // m[r28] := pc
-        Assign *a6 = new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC));
+        std::shared_ptr<Assign> a6(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC)));
         a6->setProc(proc);
 
         // %pc := (%pc + 5) + 135893848
-        Assign *a7 = new Assign(Terminal::get(opPC),
+        std::shared_ptr<Assign> a7(new Assign(Terminal::get(opPC),
                     Binary::get(opPlus,
                                 Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
-                                Const::get(0x8199358)));
+                                Const::get(0x8199358))));
         a7->setProc(proc);
 
-        CallStatement *c = new CallStatement;
+        std::shared_ptr<CallStatement> c(new CallStatement);
         c->setDestProc(proc); // Just call self
 
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1008), { a5, a6, a7, c })));
@@ -792,13 +768,13 @@ void StatementTest::testRecursion()
     // the ret bb
     bbRTLs.reset(new RTLList);
     {
-        ReturnStatement *retStmt = new ReturnStatement;
+        std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
         // This ReturnStatement requires the following two sets of semantics to pass the
         // tests for standard Pentium calling convention
         // pc = m[r28]
-        Assign *a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP)));
+        std::shared_ptr<Assign> a1(new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP))));
         // r28 = r28 + 4
-        Assign *a2 = new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)));
+        std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4))));
 
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x100C), { a1, a2, retStmt })));
     }
@@ -857,22 +833,20 @@ void StatementTest::testRecursion()
 
 void StatementTest::testClone()
 {
-    Assign *a1 = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
-    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"),
-                            Location::param("y"));
-    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"),
-                            Location::param("q"));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99))));
+    std::shared_ptr<Assign> a2(new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"), Location::param("y")));
+    std::shared_ptr<Assign> a3(new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"), Location::param("q")));
 
-    Statement *c1 = a1->clone();
-    Statement *c2 = a2->clone();
-    Statement *c3 = a3->clone();
+    SharedStmt c1 = a1->clone();
+    SharedStmt c2 = a2->clone();
+    SharedStmt c3 = a3->clone();
 
-    QString     original, clone;
+    QString original, clone;
     OStream original_st(&original);
     OStream clone_st(&clone);
 
     a1->print(original_st);
-    delete a1; // And c1 should still stand!
+    a1.reset(); // And c1 should still stand!
     c1->print(clone_st);
     a2->print(original_st);
     c2->print(clone_st);
@@ -885,12 +859,6 @@ void StatementTest::testClone()
 
     QCOMPARE(original, expected);
     QCOMPARE(clone, expected);
-
-    delete a2;
-    delete a3;
-    delete c1;
-    delete c2;
-    delete c3;
 }
 
 
@@ -899,13 +867,13 @@ void StatementTest::testIsAssign()
     QString     actual;
     OStream st(&actual);
     // r2 := 99
-    Assign a(Location::regOf(REG_SPARC_G2), Const::get(99));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_SPARC_G2), Const::get(99)));
 
-    a.print(st);
+    a->print(st);
     QString expected("   0 *v* r2 := 99");
 
     QCOMPARE(expected, actual);
-    QVERIFY(a.isAssign());
+    QVERIFY(a->isAssign());
 
     CallStatement c;
     QVERIFY(!c.isAssign());
@@ -939,18 +907,18 @@ void StatementTest::testIsFlagAssgn()
 void StatementTest::testAddUsedLocsAssign()
 {
     // m[r28-4] := m[r28-8] * r26
-    Assign a(Location::memOf(Binary::get(opMinus,
+    std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
                                          Location::regOf(REG_PENT_ESP),
                                          Const::get(4))),
              Binary::get(opMult,
                          Location::memOf(Binary::get(opMinus,
                                                      Location::regOf(REG_PENT_ESP),
                                                      Const::get(8))),
-                         Location::regOf(REG_PENT_EDX)));
-    a.setNumber(1);
+                         Location::regOf(REG_PENT_EDX))));
+    a->setNumber(1);
 
     LocationSet l;
-    a.addUsedLocs(l);
+    a->addUsedLocs(l);
 
     QString     actual;
     OStream ost(&actual);
@@ -959,10 +927,10 @@ void StatementTest::testAddUsedLocsAssign()
     QCOMPARE(expected, actual);
 
     l.clear();
-    GotoStatement g;
-    g.setNumber(55);
-    g.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    g.addUsedLocs(l);
+    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    g->setNumber(55);
+    g->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    g->addUsedLocs(l);
 
     actual   = "";
     expected = "r26,\tm[r26]";
@@ -975,15 +943,15 @@ void StatementTest::testAddUsedLocsAssign()
 void StatementTest::testAddUsedLocsBranch()
 {
     // BranchStatement with dest m[r26{99}]{55}, condition %flags
-    GotoStatement g;
-    g.setNumber(55);
+    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    g->setNumber(55);
 
     LocationSet     l;
-    BranchStatement b;
-    b.setNumber(99);
-    b.setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_PENT_EDX), &b)), &g));
-    b.setCondExpr(Terminal::get(opFlags));
-    b.addUsedLocs(l);
+    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    b->setNumber(99);
+    b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_PENT_EDX), b)), g));
+    b->setCondExpr(Terminal::get(opFlags));
+    b->addUsedLocs(l);
 
     QString     actual;
     QString     expected("r26{99},\tm[r26{99}]{55},\t%flags");
@@ -998,13 +966,13 @@ void StatementTest::testAddUsedLocsCase()
 {
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
     LocationSet   l;
-    CaseStatement c;
+    std::shared_ptr<CaseStatement> c(new CaseStatement);
 
-    c.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    c->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
     si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
-    c.setSwitchInfo(std::move(si));
-    c.addUsedLocs(l);
+    c->setSwitchInfo(std::move(si));
+    c->addUsedLocs(l);
 
     QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
     QString actual;
@@ -1019,18 +987,18 @@ void StatementTest::testAddUsedLocsCall()
 {
     // CallStatement with dest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
     LocationSet   l;
-    GotoStatement g;
+    std::shared_ptr<GotoStatement> g(new GotoStatement);
 
-    g.setNumber(55);
-    CallStatement ca;
-    ca.setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    g->setNumber(55);
+    std::shared_ptr<CallStatement> ca(new CallStatement);
+    ca->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
     StatementList argl;
-    argl.append(new Assign(Location::regOf(REG_PENT_AL), Location::memOf(Location::regOf(REG_PENT_EBX))));
-    argl.append(new Assign(Location::regOf(REG_PENT_CL), RefExp::get(Location::regOf(REG_PENT_ESP), &g)));
-    ca.setArguments(argl);
-    ca.addDefine(new ImplicitAssign(Location::regOf(REG_PENT_EDI)));
-    ca.addDefine(new ImplicitAssign(Location::regOf(REG_PENT_EAX)));
-    ca.addUsedLocs(l);
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_AL), Location::memOf(Location::regOf(REG_PENT_EBX))));
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_CL), RefExp::get(Location::regOf(REG_PENT_ESP), g)));
+    ca->setArguments(argl);
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDI)));
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EAX)));
+    ca->addUsedLocs(l);
 
     QString actual;
     OStream ost(&actual);
@@ -1043,19 +1011,19 @@ void StatementTest::testAddUsedLocsReturn()
 {
     // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
     LocationSet   l;
-    GotoStatement g;
-    g.setNumber(55);
+    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    g->setNumber(55);
 
-    BranchStatement b;
-    b.setNumber(99);
+    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    b->setNumber(99);
 
-    ReturnStatement r;
-    r.addReturn(new Assign(Location::regOf(REG_PENT_EDI), Const::get(100)));
-    r.addReturn(new Assign(Location::memOf(Location::regOf(REG_PENT_EAX)), Const::get(0)));
-    r.addReturn(new Assign(
-                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ECX), &g), RefExp::get(Location::regOf(REG_PENT_EDX), &b))),
+    std::shared_ptr<ReturnStatement> r(new ReturnStatement);
+    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_PENT_EDI), Const::get(100)));
+    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_PENT_EAX)), Const::get(0)));
+    r->addReturn(std::make_shared<Assign>(
+                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ECX), g), RefExp::get(Location::regOf(REG_PENT_EDX), b))),
                      Const::get(5)));
-    r.addUsedLocs(l);
+    r->addUsedLocs(l);
 
     QString     actual;
     OStream ost(&actual);
@@ -1068,11 +1036,11 @@ void StatementTest::testAddUsedLocsBool()
 {
     // Boolstatement with condition m[r24] = r25, dest m[r26]
     LocationSet l;
-    BoolAssign  bs(8);
+    std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
 
-    bs.setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_EAX)), Location::regOf(REG_PENT_ECX)));
-    bs.setLeft(Location::memOf(Location::regOf(REG_PENT_EDX)));
-    bs.addUsedLocs(l);
+    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_EAX)), Location::regOf(REG_PENT_ECX)));
+    bs->setLeft(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    bs->addUsedLocs(l);
 
     QString     actual;
     OStream ost(&actual);
@@ -1083,13 +1051,13 @@ void StatementTest::testAddUsedLocsBool()
 
     // m[local21 + 16] := phi{0, 372}
     SharedExp base = Location::memOf(Binary::get(opPlus, Location::local("local21", nullptr), Const::get(16)));
-    Assign    s372(base, Const::get(0));
-    s372.setNumber(372);
+    std::shared_ptr<Assign> s372(new Assign(base, Const::get(0)));
+    s372->setNumber(372);
 
-    PhiAssign pa(base);
-    pa.putAt(nullptr, nullptr, base); // 0
-    pa.putAt(nullptr, &s372, base);   // 1
-    pa.addUsedLocs(l);
+    std::shared_ptr<PhiAssign> pa(new PhiAssign(base));
+    pa->putAt(nullptr, nullptr, base); // 0
+    pa->putAt(nullptr, s372, base);    // 1
+    pa->addUsedLocs(l);
     // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
 
     actual   = "";
@@ -1098,11 +1066,11 @@ void StatementTest::testAddUsedLocsBool()
 
     // m[r28{-} - 4] := -
     l.clear();
-    ImplicitAssign ia(Location::memOf(Binary::get(opMinus,
-                                                  RefExp::get(Location::regOf(REG_PENT_ESP), nullptr),
-                                                  Const::get(4))));
+    auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
+                                               RefExp::get(Location::regOf(REG_PENT_ESP), nullptr),
+                                               Const::get(4))));
 
-    ia.addUsedLocs(l);
+    ia->addUsedLocs(l);
 
     actual   = "";
     l.print(ost);
@@ -1152,7 +1120,7 @@ void StatementTest::testBypass()
         ++it;
     }
     QVERIFY(it != stmts.end());
-    Statement *s19 = *std::next(it, 2);
+    SharedStmt s19 = *std::next(it, 2);
     QVERIFY(s19->getKind() == StmtType::Assign);
 
     QCOMPARE(s19->toString(), "  19 *32* r28 := r28{17} + 16");

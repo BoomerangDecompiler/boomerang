@@ -51,8 +51,6 @@ CallStatement::CallStatement()
 
 CallStatement::~CallStatement()
 {
-    qDeleteAll(m_defines);
-    qDeleteAll(m_arguments);
 }
 
 
@@ -97,10 +95,8 @@ SharedType CallStatement::getArgumentType(int i) const
 {
     assert(Util::inRange(i, 0, getNumArguments()));
     StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    Assign *assign                   = dynamic_cast<Assign *>(*aa);
-    assert(assign != nullptr);
-
-    return assign->getType();
+    assert((*aa)->isAssign());
+    return (*aa)->as<Assign>()->getType();
 }
 
 
@@ -109,19 +105,18 @@ void CallStatement::setArgumentType(int i, SharedType ty)
     assert(Util::inRange(i, 0, getNumArguments()));
     StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
     assert((*aa)->isAssign());
-    static_cast<Assign *>(*aa)->setType(ty);
+    (*aa)->as<Assign>()->setType(ty);
 }
 
 
 void CallStatement::setArguments(const StatementList &args)
 {
-    qDeleteAll(m_arguments);
     m_arguments.clear();
     m_arguments.append(args);
 
-    for (Statement *arg : m_arguments) {
-        Assign *asgn = dynamic_cast<Assign *>(arg);
-        if (asgn) {
+    for (SharedStmt arg : m_arguments) {
+        if (arg->isAssign()) {
+            std::shared_ptr<Assign> asgn = arg->as<Assign>();
             asgn->setProc(m_proc);
             asgn->setBB(m_bb);
         }
@@ -140,17 +135,16 @@ void CallStatement::setSigArguments()
         return;
     }
 
-    // Clone here because each call to procDest could have a different signature, modified by
-    // ellipsisProcessing
+    // Clone here because each call to procDest could have a different signature,
+    // modified by ellipsisProcessing()
     m_signature = m_procDest->getSignature()->clone();
-    m_procDest->addCaller(this);
+    m_procDest->addCaller(shared_from_this()->as<CallStatement>());
 
     if (!m_procDest->isLib()) {
         return; // Using dataflow analysis now
     }
 
 
-    qDeleteAll(m_arguments);
     m_arguments.clear();
 
     const int n = m_signature->getNumParams();
@@ -163,11 +157,13 @@ void CallStatement::setSigArguments()
             l->setProc(m_proc); // Needed?
         }
 
-        Assign *as = new Assign(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
+        std::shared_ptr<Assign> as = std::make_shared<Assign>(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
+
         as->setProc(m_proc);
         as->setBB(m_bb);
-        as->setNumber(m_number); // So fromSSAForm will work later. But note: this call is probably
-                                 // not numbered yet!
+        // So fromSSAForm will work later. But note: this call is probably not numbered yet!
+        as->setNumber(m_number);
+
         // as->setParent(this);
         m_arguments.append(as);
     }
@@ -183,13 +179,13 @@ bool CallStatement::search(const Exp &pattern, SharedExp &result) const
         return true;
     }
 
-    for (const Statement *stmt : m_defines) {
+    for (const SharedStmt stmt : m_defines) {
         if (stmt->search(pattern, result)) {
             return true;
         }
     }
 
-    for (const Statement *stmt : m_arguments) {
+    for (const SharedStmt stmt : m_arguments) {
         if (stmt->search(pattern, result)) {
             return true;
         }
@@ -204,11 +200,11 @@ bool CallStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool
     bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
     // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
-    for (Statement *ss : m_defines) {
+    for (SharedStmt ss : m_defines) {
         change |= ss->searchAndReplace(pattern, replace, cc);
     }
 
-    for (Statement *ss : m_arguments) {
+    for (SharedStmt ss : m_arguments) {
         change |= ss->searchAndReplace(pattern, replace, cc);
     }
 
@@ -228,13 +224,13 @@ bool CallStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) 
 {
     bool found = GotoStatement::searchAll(pattern, result);
 
-    for (const Statement *def : m_defines) {
+    for (const SharedStmt def : m_defines) {
         if (def->searchAll(pattern, result)) {
             found = true;
         }
     }
 
-    for (const Statement *arg : m_arguments) {
+    for (const SharedStmt arg : m_arguments) {
         if (arg->searchAll(pattern, result)) {
             found = true;
         }
@@ -256,9 +252,9 @@ void CallStatement::print(OStream &os) const
 
         bool first = true;
 
-        for (const Statement *def : m_defines) {
+        for (const SharedStmt def : m_defines) {
             assert(def->isAssignment());
-            const Assignment *as = static_cast<const Assignment *>(def);
+            std::shared_ptr<const Assignment> as = def->as<const Assignment>();
 
             if (first) {
                 first = false;
@@ -270,10 +266,7 @@ void CallStatement::print(OStream &os) const
             os << "*" << as->getType() << "* " << as->getLeft();
 
             if (as->isAssign()) {
-                const Assign *a = dynamic_cast<const Assign *>(as);
-                if (a) {
-                    os << " := " << a->getRight();
-                }
+                os << " := " << as->as<const Assign>()->getRight();
             }
         }
 
@@ -311,9 +304,9 @@ void CallStatement::print(OStream &os) const
     else {
         os << "(\n";
 
-        for (const Statement *arg : m_arguments) {
+        for (const SharedStmt arg : m_arguments) {
             os << "                ";
-            const Assignment *a = dynamic_cast<const Assignment *>(arg);
+            std::shared_ptr<const Assignment> a = std::dynamic_pointer_cast<const Assignment>(arg);
             if (a) {
                 a->printCompact(os);
             }
@@ -345,19 +338,19 @@ bool CallStatement::isReturnAfterCall() const
 }
 
 
-Statement *CallStatement::clone() const
+SharedStmt CallStatement::clone() const
 {
-    CallStatement *ret = new CallStatement();
+    std::shared_ptr<CallStatement> ret(new CallStatement);
 
     ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
 
 
-    for (const Statement *stmt : m_arguments) {
+    for (SharedStmt stmt : m_arguments) {
         ret->m_arguments.append(stmt->clone());
     }
 
-    for (const Statement *stmt : m_defines) {
+    for (SharedStmt stmt : m_defines) {
         ret->m_defines.append(stmt->clone());
     }
 
@@ -399,11 +392,11 @@ void CallStatement::simplify()
 {
     GotoStatement::simplify();
 
-    for (Statement *ss : m_arguments) {
+    for (SharedStmt ss : m_arguments) {
         ss->simplify();
     }
 
-    for (Statement *ss : m_defines) {
+    for (SharedStmt ss : m_defines) {
         ss->simplify();
     }
 }
@@ -411,8 +404,8 @@ void CallStatement::simplify()
 
 void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
 {
-    for (Statement *def : m_defines) {
-        defs.insert(static_cast<Assignment *>(def)->getLeft());
+    for (SharedStmt def : m_defines) {
+        defs.insert(def->as<Assignment>()->getLeft());
     }
 
     // Childless calls are supposed to define everything.
@@ -433,7 +426,7 @@ bool CallStatement::tryConvertToDirect()
     SharedExp e = m_dest;
 
     if (m_dest->isSubscript()) {
-        Statement *def = e->access<RefExp>()->getDef();
+        SharedStmt def = e->access<RefExp>()->getDef();
 
         if (def && !def->isImplicit()) {
             return false; // If an already defined global, don't convert
@@ -526,12 +519,11 @@ bool CallStatement::tryConvertToDirect()
 
     // 3
     // 3a Do the same with the regular arguments
-    qDeleteAll(m_arguments);
     m_arguments.clear();
 
     for (int i = 0; i < sig->getNumParams(); i++) {
         SharedExp a = sig->getParamExp(i);
-        Assign *as  = new Assign(VoidType::get(), a->clone(), a->clone());
+        std::shared_ptr<Assign> as(new Assign(VoidType::get(), a->clone(), a->clone()));
         as->setProc(m_proc);
         as->setBB(m_bb);
         m_arguments.append(as);
@@ -570,7 +562,7 @@ SharedExp CallStatement::getArgumentExp(int i) const
     assert(Util::inRange(i, 0, getNumArguments()));
 
     // stmt = m_arguments[i]
-    const Assign *asgn = dynamic_cast<const Assign *>(*std::next(m_arguments.begin(), i));
+    const Assign *asgn = dynamic_cast<const Assign *>(std::next(m_arguments.begin(), i)->get());
     return asgn ? asgn->getRight() : nullptr;
 }
 
@@ -579,7 +571,7 @@ void CallStatement::setArgumentExp(int i, SharedExp e)
 {
     assert(Util::inRange(i, 0, getNumArguments()));
 
-    Statement *stmt = *std::next(m_arguments.begin(), i);
+    Statement *stmt = std::next(m_arguments.begin(), i)->get();
     SharedExp &a    = dynamic_cast<Assign *>(stmt)->getRightRef();
     a               = e->clone();
 }
@@ -596,8 +588,6 @@ void CallStatement::setNumArguments(int n)
     const int oldSize = getNumArguments();
 
     if (oldSize > n) {
-        StatementList::iterator start = std::next(m_arguments.begin(), n);
-        qDeleteAll(start, m_arguments.end());
         m_arguments.resize(n);
     }
 
@@ -614,7 +604,7 @@ void CallStatement::setNumArguments(int n)
             ty = VoidType::get();
         }
 
-        Assign *as = new Assign(ty, a->clone(), a->clone());
+        std::shared_ptr<Assign> as(new Assign(ty, a->clone(), a->clone()));
         as->setProc(m_proc);
         as->setBB(m_bb);
         m_arguments.append(as);
@@ -625,18 +615,14 @@ void CallStatement::setNumArguments(int n)
 void CallStatement::removeArgument(int i)
 {
     assert(Util::inRange(i, 0, getNumArguments()));
-
-    StatementList::iterator aa = m_arguments.begin();
-    std::advance(aa, i);
-    delete *aa;
-    m_arguments.erase(aa);
+    m_arguments.erase(std::next(m_arguments.begin(), i));
 }
 
 
 SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 {
     // The defines "cache" what the destination proc is defining
-    const Assignment *as = m_defines.findOnLeft(e);
+    std::shared_ptr<const Assignment> as = m_defines.findOnLeft(e);
 
     if (as != nullptr) {
         return as->getType();
@@ -654,7 +640,7 @@ SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 SharedType CallStatement::getTypeForExp(SharedExp e)
 {
     // The defines "cache" what the destination proc is defining
-    Assignment *as = m_defines.findOnLeft(e);
+    std::shared_ptr<Assignment> as = m_defines.findOnLeft(e);
 
     if (as != nullptr) {
         return as->getType();
@@ -671,7 +657,7 @@ SharedType CallStatement::getTypeForExp(SharedExp e)
 
 void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
 {
-    Assignment *as = m_defines.findOnLeft(e);
+    std::shared_ptr<Assignment> as = m_defines.findOnLeft(e);
 
     if (as != nullptr) {
         return as->setType(ty);
@@ -684,7 +670,7 @@ void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
         return;
     }
 
-    Statement *def = ref->access<RefExp>()->getDef();
+    SharedStmt def = ref->access<RefExp>()->getDef();
 
     if (def == nullptr) {
         return;
@@ -722,7 +708,7 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
         }
         else {
             bool change = false;
-            LOG_MSG("%1", this);
+            LOG_MSG("%1", shared_from_this());
 
             for (int i = 0; i < getNumArguments(); i++) {
                 SharedExp e   = getArgumentExp(i);
@@ -749,15 +735,15 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
     return false;
 }
 
+
 void CallStatement::setDefines(const StatementList &defines)
 {
     if (!m_defines.empty()) {
-        for (const Statement *stmt : defines) {
+        for (SharedConstStmt stmt : defines) {
             Q_UNUSED(stmt);
             assert(std::find(m_defines.begin(), m_defines.end(), stmt) == m_defines.end());
         }
 
-        qDeleteAll(m_defines);
         m_defines.clear();
     }
     m_defines = defines;
@@ -810,7 +796,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     if (formatExp->isSubscript()) {
         // Maybe it's defined to be a Const string
-        Statement *def = formatExp->access<RefExp>()->getDef();
+        SharedStmt def = formatExp->access<RefExp>()->getDef();
 
         if (def == nullptr) {
             return false; // Not all nullptr refs get converted to implicits
@@ -818,7 +804,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
         if (def->isAssign()) {
             // This would be unusual; propagation would normally take care of this
-            SharedExp rhs = static_cast<Assign *>(def)->getRight();
+            SharedExp rhs = def->as<Assign>()->getRight();
 
             if ((rhs == nullptr) || !rhs->isStrConst()) {
                 return false;
@@ -828,7 +814,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         }
         else if (def->isPhi()) {
             // More likely. Example: switch_gcc. Only need ONE candidate format string
-            PhiAssign *pa = static_cast<PhiAssign *>(def);
+            std::shared_ptr<PhiAssign> pa = def->as<PhiAssign>();
 
             for (const std::shared_ptr<RefExp> &v : *pa) {
                 def = v->getDef();
@@ -837,7 +823,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
                     continue;
                 }
 
-                SharedExp rhs = static_cast<Assign *>(def)->getRight();
+                SharedExp rhs = def->as<Assign>()->getRight();
 
                 if (!rhs || !rhs->isStrConst()) {
                     continue;
@@ -977,7 +963,8 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
         case '%': break; // Ignore %% (emits 1 percent char)
 
-        default: LOG_WARN("Unhandled format character %1 in format string for call %2", ch, this);
+        default: LOG_WARN("Unhandled format character %1 in format string for call %2",
+            ch, shared_from_this());
         }
     }
 
@@ -987,13 +974,13 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 }
 
 
-Assign *CallStatement::makeArgAssign(SharedType ty, SharedExp e)
+std::shared_ptr<Assign> CallStatement::makeArgAssign(SharedType ty, SharedExp e)
 {
     SharedExp lhs = e->clone();
 
     localiseComp(lhs); // Localise the components of lhs (if needed)
     SharedExp rhs = localiseExp(e->clone());
-    Assign *as    = new Assign(ty, lhs, rhs);
+    std::shared_ptr<Assign> as(new Assign(ty, lhs, rhs));
     as->setProc(m_proc);
     as->setBB(m_bb);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
@@ -1021,18 +1008,15 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
     LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
 
     if (static_cast<int>(m_arguments.size()) < m_signature->getNumParams()) {
-        Assign *as = makeArgAssign(ty, paramExp);
-        m_arguments.append(as);
+        m_arguments.append(std::shared_ptr<Assign>(makeArgAssign(ty, paramExp)));
     }
 }
 
 
 bool CallStatement::definesLoc(SharedExp loc) const
 {
-    for (const Statement *def : m_defines) {
-        SharedExp lhs = static_cast<const Assign *>(def)->getLeft();
-
-        if (*lhs == *loc) {
+    for (SharedConstStmt def : m_defines) {
+        if (*def->as<const Assign>()->getLeft() == *loc) {
             return true;
         }
     }
@@ -1093,30 +1077,29 @@ void CallStatement::updateArguments()
             }
 
             SharedType ty = asp.curType(loc);
-            Assign *as    = new Assign(ty, loc->clone(), rhs);
+            std::shared_ptr<Assign> as(new Assign(ty, loc->clone(), rhs));
 
             // Give the assign the same statement number as the call (for now)
             as->setNumber(m_number);
             // as->setParent(this);
             as->setProc(m_proc);
             as->setBB(m_bb);
+
             oldArguments.append(as);
         }
     }
 
-    for (Statement *oldArg : oldArguments) {
+    for (SharedStmt oldArg : oldArguments) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        Assign *as    = static_cast<Assign *>(oldArg);
+        std::shared_ptr<Assign> as = oldArg->as<Assign>();
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
-            delete oldArg;
             continue;
         }
 
         if (m_proc->filterParams(lhs)) {
             // Filtered out: delete it
-            delete oldArg;
             continue;
         }
 
@@ -1134,8 +1117,8 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
 
         SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
 
-        for (Statement *dd : m_defines) {
-            SharedExp lhs = static_cast<Assignment *>(dd)->getLeft();
+        for (SharedStmt dd : m_defines) {
+            SharedExp lhs = dd->as<Assignment>()->getLeft();
 
             // The stack pointer is allowed as a define, so remove it here as a special case non
             // result
@@ -1162,13 +1145,11 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
                 continue; // Ignore the stack pointer
             }
 
-            ImplicitAssign *as = new ImplicitAssign(loc);
-            result->append(as);
+            result->append(std::make_shared<ImplicitAssign>(loc));
         }
 
-        result->sort([sig](const Statement *left, const Statement *right) {
-            return sig->returnCompare(*static_cast<const Assignment *>(left),
-                                      *static_cast<const Assignment *>(right));
+        result->sort([sig](const SharedConstStmt &left, const SharedConstStmt &right) {
+            return sig->returnCompare(*left->as<const Assignment>(), *right->as<const Assignment>());
         });
     }
 
@@ -1179,17 +1160,16 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
 void CallStatement::removeDefine(SharedExp e)
 {
     for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        assert((*ss)->isAssignment());
-        Assignment *as = static_cast<Assignment *>(*ss);
+        SharedStmt s = *ss;
 
-        if (*as->getLeft() == *e) {
-            delete *ss;
+        assert(s->isAssignment());
+        if (*s->as<Assignment>()->getLeft() == *e) {
             m_defines.erase(ss);
             return;
         }
     }
 
-    LOG_WARN("Could not remove define %1 from call %2", e, this);
+    LOG_WARN("Could not remove define %1 from call %2", e, shared_from_this());
 }
 
 
@@ -1270,7 +1250,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
 }
 
 
-void CallStatement::addDefine(ImplicitAssign *as)
+void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &as)
 {
     m_defines.append(as);
 }
@@ -1281,11 +1261,10 @@ void CallStatement::eliminateDuplicateArgs()
     LocationSet ls;
 
     for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
-        SharedExp lhs = static_cast<const Assignment *>(*it)->getLeft();
+        SharedExp lhs = (*it)->as<const Assignment>()->getLeft();
 
         if (ls.contains(lhs)) {
             // This is a duplicate
-            delete *it;
             it = m_arguments.erase(it);
             continue;
         }
@@ -1302,7 +1281,7 @@ void CallStatement::setNumber(int num)
     // Also number any existing arguments. Important for library procedures, since these have
     // arguments set by the front end based in their signature
 
-    for (Statement *stmt : m_arguments) {
+    for (SharedStmt stmt : m_arguments) {
         stmt->setNumber(num);
     }
 }
@@ -1311,7 +1290,7 @@ void CallStatement::setNumber(int num)
 bool CallStatement::accept(StmtModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
 
     if (!visitChildren) {
         return true;
@@ -1322,7 +1301,7 @@ bool CallStatement::accept(StmtModifier *v)
     }
 
     if (visitChildren) {
-        for (Statement *s : m_arguments) {
+        for (SharedStmt s : m_arguments) {
             s->accept(v);
         }
     }
@@ -1334,13 +1313,13 @@ bool CallStatement::accept(StmtModifier *v)
     if (!v->ignoreCollector()) {
         DefCollector::iterator cc;
 
-        for (Statement *s : m_defCol) {
+        for (SharedStmt s : m_defCol) {
             s->accept(v);
         }
     }
 
     if (visitChildren) {
-        for (Statement *s : m_defines) {
+        for (SharedStmt s : m_defines) {
             s->accept(v);
         }
     }
@@ -1351,7 +1330,7 @@ bool CallStatement::accept(StmtModifier *v)
 bool CallStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -1361,7 +1340,7 @@ bool CallStatement::accept(StmtExpVisitor *v)
         ret = m_dest->acceptVisitor(v->ev);
     }
 
-    for (Statement *s : m_arguments) {
+    for (SharedStmt s : m_arguments) {
         ret &= s->accept(v);
     }
 
@@ -1373,30 +1352,30 @@ bool CallStatement::accept(StmtExpVisitor *v)
 bool CallStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
 
     if (m_dest && visitChildren) {
         m_dest = m_dest->acceptModifier(v->mod);
     }
 
     if (visitChildren) {
-        for (Statement *s : m_arguments) {
+        for (SharedStmt s : m_arguments) {
             s->accept(v);
         }
     }
 
     // For example: needed for CallBypasser so that a collected definition that happens to be
     // another call gets adjusted But now I'm thinking no, the bypass and propagate while possible
-    // logic should take care of it. Then again, what about the use collectors in calls? Best to do
-    // it.
+    // logic should take care of it. Then again, what about the use collectors in calls?
+    // Best to do it.
     if (!v->ignoreCollector()) {
-        for (Statement *s : m_defCol) {
+        for (SharedStmt s : m_defCol) {
             s->accept(v);
         }
 
         for (SharedExp exp : m_useCol) {
-            // I believe that these should never change at the top level, e.g. m[esp{30} + 4] ->
-            // m[esp{-} - 20]
+            // I believe that these should never change at the top level,
+            // e.g. m[esp{30} + 4] -> m[esp{-} - 20]
             exp->acceptModifier(v->mod);
         }
     }
@@ -1404,7 +1383,7 @@ bool CallStatement::accept(StmtPartModifier *v)
     StatementList::iterator dd;
 
     if (visitChildren) {
-        for (Statement *s : m_defines) {
+        for (SharedStmt s : m_defines) {
             s->accept(v);
         }
     }

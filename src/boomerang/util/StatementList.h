@@ -29,7 +29,7 @@ using SharedConstExp = std::shared_ptr<const class Exp>;
  */
 class BOOMERANG_API StatementList
 {
-    typedef std::list<Statement *> List;
+    typedef std::list<SharedStmt> List;
 
     typedef List::size_type size_type;
     typedef List::reference reference;
@@ -68,7 +68,7 @@ public:
 
     iterator erase(iterator it) { return m_list.erase(it); }
 
-    iterator insert(iterator where, Statement *stmt) { return m_list.insert(where, stmt); }
+    iterator insert(iterator where, const SharedStmt &stmt) { return m_list.insert(where, stmt); }
 
     template<typename Comp = std::less<Statement *>>
     void sort(Comp comp)
@@ -85,26 +85,25 @@ public:
      */
     void makeIsect(StatementList &a, LocationSet &b);
 
-    void append(Statement *s);
+    void append(const SharedStmt &s);
     void append(const StatementList &list);
     void append(const StatementSet &set);
 
     /// \returns true if successfully removed, false if not found
-    bool remove(Statement *stmt);
+    bool remove(const SharedStmt &stmt);
 
     /// Remove the first definition where \p loc appears on the left
     /// \returns the removed statement, or nullptr if not found.
     /// \note statements in this list are assumed to be assignments
-    Statement *removeFirstDefOf(SharedExp loc);
+    SharedStmt removeFirstDefOf(SharedExp loc);
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments
-    bool existsOnLeft(const SharedExp &loc)
-        const; ///< True if loc exists on the LHS of any Assignment in this list
+    bool existsOnLeft(const SharedExp &loc) const;
 
     /// Find the first Assignment with loc on the LHS
-    const Assignment *findOnLeft(SharedConstExp loc) const;
-    Assignment *findOnLeft(SharedExp loc); ///< Return the first stmt with loc on the LHS
+    std::shared_ptr<Assignment> findOnLeft(SharedExp loc);
+    std::shared_ptr<const Assignment> findOnLeft(SharedConstExp loc) const;
 
     QString toString() const;
 

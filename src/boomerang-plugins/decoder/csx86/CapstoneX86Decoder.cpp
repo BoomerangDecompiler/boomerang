@@ -248,10 +248,10 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 
     if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
         auto it = std::find_if(rtl->rbegin(), rtl->rend(),
-                               [](const Statement *stmt) { return stmt->isCall(); });
+                               [](const SharedConstStmt &stmt) { return stmt->isCall(); });
 
         if (it != rtl->rend()) {
-            CallStatement *call = static_cast<CallStatement *>(*it);
+            std::shared_ptr<CallStatement> call = (*it)->as<CallStatement>();
 
             if (!call->isComputed()) {
                 const SharedConstExp &callDest = call->getDest();
@@ -276,7 +276,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
         if (rtl->back()->isBranch()) {
-            BranchStatement *branch   = static_cast<BranchStatement *>(rtl->back());
+            std::shared_ptr<BranchStatement> branch = rtl->back()->as<BranchStatement>();
             const bool isComputedJump = !branch->getDest()->isIntConst();
 
             BranchType bt = BranchType::INVALID;
@@ -358,9 +358,9 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         }
     }
     else if (insnID.startsWith("SET")) {
-        BoolAssign *bas = new BoolAssign(8);
-        bas->setCondExpr(static_cast<Assign *>(rtl->front())->getRight()->clone());
-        bas->setLeft(static_cast<Assign *>(rtl->front())->getLeft()->clone());
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
+        bas->setCondExpr(rtl->front()->as<Assign>()->getRight()->clone());
+        bas->setLeft(rtl->front()->as<Assign>()->getLeft()->clone());
 
         BranchType bt = BranchType::INVALID;
         switch (instruction->id) {
@@ -446,7 +446,7 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
     // exit:
     //
 
-    BranchStatement *b = nullptr;
+    std::shared_ptr<BranchStatement> b = nullptr;
     result.rtl         = std::unique_ptr<RTL>(new RTL(pc + m_bsfrState));
 
     const cs::cs_x86_op &dstOp = instruction->detail->x86.operands[0];
@@ -461,8 +461,8 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
 
     switch (m_bsfrState) {
     case 0:
-        result.rtl->append(new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
-        b = new BranchStatement;
+        result.rtl->append(std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
+        b.reset(new BranchStatement);
         b->setDest(pc + instruction->size);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
@@ -470,14 +470,14 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
         break;
 
     case 1:
-        result.rtl->append(new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.rtl->append(new Assign(IntegerType::get(size), dest->clone(), Const::get(init)));
+        result.rtl->append(std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
+        result.rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
         break;
 
     case 2:
-        result.rtl->append(new Assign(IntegerType::get(size), dest->clone(),
+        result.rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
                                       Binary::get(incdec, dest->clone(), Const::get(1))));
-        b = new BranchStatement;
+        b.reset(new BranchStatement);
         b->setDest(pc + 2);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,

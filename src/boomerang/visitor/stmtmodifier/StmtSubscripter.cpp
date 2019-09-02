@@ -23,7 +23,7 @@ StmtSubscripter::StmtSubscripter(ExpSubscripter *es)
 {
 }
 
-void StmtSubscripter::visit(Assign *stmt, bool &visitChildren)
+void StmtSubscripter::visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren)
 {
     SharedExp rhs = stmt->getRight();
 
@@ -39,7 +39,7 @@ void StmtSubscripter::visit(Assign *stmt, bool &visitChildren)
 }
 
 
-void StmtSubscripter::visit(PhiAssign *stmt, bool &visitChildren)
+void StmtSubscripter::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -51,7 +51,7 @@ void StmtSubscripter::visit(PhiAssign *stmt, bool &visitChildren)
 }
 
 
-void StmtSubscripter::visit(ImplicitAssign *stmt, bool &visitChildren)
+void StmtSubscripter::visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -63,7 +63,7 @@ void StmtSubscripter::visit(ImplicitAssign *stmt, bool &visitChildren)
 }
 
 
-void StmtSubscripter::visit(BoolAssign *stmt, bool &visitChildren)
+void StmtSubscripter::visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -77,14 +77,14 @@ void StmtSubscripter::visit(BoolAssign *stmt, bool &visitChildren)
 }
 
 
-void StmtSubscripter::visit(CallStatement *stmt, bool &visitChildren)
+void StmtSubscripter::visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren)
 {
     if (stmt->getDest()) {
         stmt->setDest(stmt->getDest()->acceptModifier(m_mod));
     }
 
     // Subscript the ordinary arguments
-    for (Statement *arg : stmt->getArguments()) {
+    for (SharedStmt arg : stmt->getArguments()) {
         arg->accept(this);
     }
 

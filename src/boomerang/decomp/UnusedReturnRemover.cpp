@@ -104,7 +104,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
         for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
             assert(*retIt != nullptr && (*retIt)->isAssign());
-            Assign *retDef = static_cast<Assign *>(*retIt);
+            std::shared_ptr<Assign> retDef = (*retIt)->as<Assign>();
             SharedExp lhs  = retDef->getLeft();
 
             // For each location in the returns, check if in the signature
@@ -156,7 +156,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         }
     }
     else {
-        for (CallStatement *cc : proc->getCallers()) {
+        for (std::shared_ptr<CallStatement> cc : proc->getCallers()) {
             // Prevent function from blocking its own removals
             // TODO This only handles self-recursion. More analysis and testing is necessary
             // for mutual recursion. (-> cc->getProc()->doesRecurseTo(proc))
@@ -173,7 +173,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     bool removedRets = false;
 
     for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
-        Assign *retDef = static_cast<Assign *>(*retIt);
+        std::shared_ptr<Assign> retDef = (*retIt)->as<Assign>();
 
         // Check if the location defined by the return is actually used by any callee.
         if (unionOfCallerLiveLocs.contains(retDef->getLeft())) {
@@ -208,7 +208,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
     if (removedParams || removedRets) {
         // Update the statements that call us
-        for (CallStatement *call : proc->getCallers()) {
+        for (std::shared_ptr<CallStatement> call : proc->getCallers()) {
             PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
             updateSet.insert(call->getProc());      // Make sure we redo the dataflow
             m_removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis
@@ -244,12 +244,12 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
 
     // Save the old parameters and call liveness
     const size_t oldNumParameters = proc->getParameters().size();
-    std::map<CallStatement *, UseCollector> callLiveness;
+    std::map<std::shared_ptr<CallStatement>, UseCollector> callLiveness;
 
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
+        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {
@@ -311,9 +311,9 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
             LOG_MSG("%%%  parameters changed for %1", proc->getName());
         }
 
-        std::set<CallStatement *> &callers = proc->getCallers();
+        std::set<std::shared_ptr<CallStatement>> &callers = proc->getCallers();
 
-        for (CallStatement *cc : callers) {
+        for (std::shared_ptr<CallStatement> cc : callers) {
             cc->updateArguments();
             // Schedule the callers for analysis
             m_removeRetSet.insert(cc->getProc());

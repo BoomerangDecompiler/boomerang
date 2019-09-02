@@ -39,7 +39,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     // First count any uses of the locals
     bool all = false;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         LocationSet locs;
         all |= addUsedLocalsForStmt(s, locs);
 
@@ -63,15 +63,14 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
             }
         }
 
-        if (s->isAssignment() && !s->isImplicit() &&
-            static_cast<Assignment *>(s)->getLeft()->isLocal()) {
-            Assignment *as = static_cast<Assignment *>(s);
-            auto c         = as->getLeft()->access<Const, 1>();
-            QString name(c->getStr());
-            usedLocals.insert(name);
+        if (s->isAssignment() && !s->isImplicit() && s->as<Assignment>()->getLeft()->isLocal()) {
+            std::shared_ptr<Assignment> as = s->as<Assignment>();
+            auto c                         = as->getLeft()->access<Const, 1>();
+
+            usedLocals.insert(c->getStr());
 
             if (proc->getProg()->getProject()->getSettings()->debugUnused) {
-                LOG_MSG("Counted local %1 on left of %2", name, s);
+                LOG_MSG("Counted local %1 on left of %2", c->getStr(), s);
             }
         }
     }
@@ -100,7 +99,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     // Remove any definitions of the removed locals
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         LocationSet ls;
         s->getDefinitions(ls, assumeABICompliance);
 
@@ -120,7 +119,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
                 }
                 else if (s->isCall()) {
                     // Remove just this define. May end up removing several defines from this call.
-                    static_cast<CallStatement *>(s)->removeDefine(loc);
+                    s->as<CallStatement>()->removeDefine(loc);
                 }
 
                 // else if a ReturnStatement, don't attempt to remove it. The definition is used
@@ -156,7 +155,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
 }
 
 
-bool UnusedLocalRemovalPass::addUsedLocalsForStmt(Statement *stmt, LocationSet &used)
+bool UnusedLocalRemovalPass::addUsedLocalsForStmt(const SharedStmt &stmt, LocationSet &used)
 {
     UsedLocalFinder ulf(used, stmt->getProc());
     UsedLocsVisitor ulv(&ulf, false);

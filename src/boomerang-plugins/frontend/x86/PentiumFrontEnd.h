@@ -43,11 +43,10 @@ public:
     /// \copydoc IFrontEnd::getMainEntryPoint
     virtual Address findMainEntryPoint(bool &gotMain) override;
 
-    /// \copydoc IFrontEnd::decodeSingleInstruction
 protected:
     /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls) override;
+    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call, const RTLList &BB_rtls) override;
 
 private:
     /**

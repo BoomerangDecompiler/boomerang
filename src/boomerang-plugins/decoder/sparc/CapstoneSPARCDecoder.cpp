@@ -274,7 +274,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
     else if (instruction->id == cs::SPARC_INS_B) {
         rtl->clear();
-        BranchStatement *branch = new BranchStatement;
+        std::shared_ptr<BranchStatement> branch(new BranchStatement);
         branch->setDest(Address(operands[numOperands - 1].imm));
         branch->setIsComputed(false);
 
@@ -301,7 +301,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
     else if (instruction->id == cs::SPARC_INS_FB) {
         rtl->clear();
-        BranchStatement *branch = new BranchStatement;
+        std::shared_ptr<BranchStatement> branch(new BranchStatement);
         branch->setDest(Address(operands[0].imm));
         branch->setIsComputed(false);
 
@@ -328,7 +328,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
     else if (instruction->id == cs::SPARC_INS_CALL) {
         rtl->clear();
-        CallStatement *call = new CallStatement;
+        std::shared_ptr<CallStatement> call(new CallStatement);
         if (operands[0].type == cs::SPARC_OP_IMM) {
             const Address callDest = Address(operands[0].imm);
 
@@ -372,7 +372,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(Address pc,
     }
     else if (instruction->id == cs::SPARC_INS_JMPL || instruction->id == cs::SPARC_INS_JMP) {
         rtl->clear();
-        CaseStatement *caseStmt = new CaseStatement;
+        std::shared_ptr<CaseStatement> caseStmt(new CaseStatement);
         caseStmt->setIsComputed(true);
 
         // Capstone returns the operand as SPARC_OP_MEM, so we have to "undo" the outermost memof

@@ -11,10 +11,10 @@
 
 
 #include "boomerang/passes/Pass.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 class ConnectionGraph;
-class Statement;
 
 
 /// Transforms the statements a proc out of SSA form
@@ -49,8 +49,8 @@ private:
     /// Find the locations united by Phi-functions
     void findPhiUnites(UserProc *proc, ConnectionGraph &pu);
 
-    void insertCastsForStmt(Statement *stmt);
+    void insertCastsForStmt(const SharedStmt &stmt);
 
     /// map registers and temporaries to local variables
-    void mapRegistersToLocals(Statement *stmt);
+    void mapRegistersToLocals(const SharedStmt &stmt);
 };

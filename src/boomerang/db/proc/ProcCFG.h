@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ssl/exp/ExpHelp.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/MapIterators.h"
 
@@ -22,7 +23,6 @@
 class Function;
 class UserProc;
 class BasicBlock;
-class Statement;
 class RTL;
 class Parameter;
 
@@ -39,7 +39,7 @@ enum class BBType;
 class BOOMERANG_API ProcCFG
 {
     typedef std::multimap<Address, BasicBlock *, std::less<Address>> BBStartMap;
-    typedef std::map<SharedConstExp, Statement *, lessExpStar> ExpStatementMap;
+    typedef std::map<SharedConstExp, SharedStmt, lessExpStar> ExpStatementMap;
 
 public:
     typedef MapValueIterator<BBStartMap> iterator;
@@ -196,16 +196,16 @@ public:
     // Implicit assignments
 
     /// Find the existing implicit assign for x (if any)
-    Statement *findTheImplicitAssign(const SharedConstExp &x) const;
+    SharedStmt findTheImplicitAssign(const SharedConstExp &x) const;
 
     /// Find exiting implicit assign for parameter p
-    Statement *findImplicitParamAssign(Parameter *p);
+    SharedStmt findImplicitParamAssign(Parameter *p);
 
     /// Remove an existing implicit assignment for x
     void removeImplicitAssign(SharedExp x);
 
     /// Find or create an implicit assign for x
-    Statement *findOrCreateImplicitAssign(SharedExp x);
+    SharedStmt findOrCreateImplicitAssign(SharedExp x);
 
     bool isImplicitsDone() const { return m_implicitsDone; }
     void setImplicitsDone() { m_implicitsDone = true; }

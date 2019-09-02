@@ -286,9 +286,9 @@ void ProcCFG::removeBB(BasicBlock *bb)
     RTLList::iterator rit;
     StatementList::iterator sit;
 
-    for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+    for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
         if (s->isCall()) {
-            CallStatement *call = static_cast<CallStatement *>(s);
+            std::shared_ptr<CallStatement> call = s->as<CallStatement>();
             if (call->getDestProc() && !call->getDestProc()->isLib()) {
                 UserProc *callee = static_cast<UserProc *>(call->getDestProc());
                 callee->removeCaller(call);
@@ -431,7 +431,7 @@ BasicBlock *ProcCFG::findRetNode()
 }
 
 
-Statement *ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
+SharedStmt ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
 {
     ExpStatementMap::iterator it = m_implicitMap.find(exp);
     if (it != m_implicitMap.end()) {
@@ -444,9 +444,11 @@ Statement *ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
         return nullptr;
     }
 
+    // In case the original gets changed
+    exp = exp->clone();
+
     // A use with no explicit definition. Create a new implicit assignment
-    exp                 = exp->clone(); // In case the original gets changed
-    ImplicitAssign *def = m_entryBB->addImplicitAssign(exp);
+    std::shared_ptr<ImplicitAssign> def = m_entryBB->addImplicitAssign(exp);
 
     // Remember it for later so we don't insert more than one implicit assignment for any one
     // location We don't clone the copy in the map. So if the location is a m[...], the same type
@@ -457,7 +459,7 @@ Statement *ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
 }
 
 
-Statement *ProcCFG::findTheImplicitAssign(const SharedConstExp &x) const
+SharedStmt ProcCFG::findTheImplicitAssign(const SharedConstExp &x) const
 {
     // As per the above, but don't create an implicit if it doesn't already exist
     ExpStatementMap::const_iterator it = m_implicitMap.find(std::const_pointer_cast<Exp>(x));
@@ -465,14 +467,14 @@ Statement *ProcCFG::findTheImplicitAssign(const SharedConstExp &x) const
 }
 
 
-Statement *ProcCFG::findImplicitParamAssign(Parameter *param)
+SharedStmt ProcCFG::findImplicitParamAssign(Parameter *param)
 {
     // As per the above, but for parameters (signatures don't get updated with opParams)
     SharedExp paramExp = param->getExp();
 
     ExpStatementMap::iterator it = std::find_if(
         m_implicitMap.begin(), m_implicitMap.end(),
-        [paramExp](const std::pair<const SharedConstExp &, Statement *> &val) {
+        [paramExp](const std::pair<const SharedConstExp &, SharedStmt> &val) {
             return val.first->equalNoSubscript(*paramExp);
         });
 
@@ -489,7 +491,7 @@ void ProcCFG::removeImplicitAssign(SharedExp x)
     auto it = m_implicitMap.find(x);
 
     assert(it != m_implicitMap.end());
-    Statement *ia = it->second;
+    SharedStmt ia = it->second;
     m_implicitMap.erase(it);       // Delete the mapping
     m_myProc->removeStatement(ia); // Remove the actual implicit assignment statement as well
 }

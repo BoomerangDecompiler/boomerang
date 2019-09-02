@@ -11,6 +11,7 @@
 
 
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 #include <map>
 #include <unordered_map>
@@ -172,7 +173,7 @@ private:
     std::set<BBIndex> m_defallsites;
 
     /// A Boomerang requirement: Statements defining particular subscripted locations
-    std::map<SharedExp, Statement *, lessExpStar> m_defStmts;
+    std::map<SharedExp, SharedStmt, lessExpStar> m_defStmts;
 
     /**
      * Initially false, meaning that locals and parameters are not renamed and hence not propagated.

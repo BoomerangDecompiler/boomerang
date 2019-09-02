@@ -17,63 +17,63 @@ StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
 }
 
 
-bool StmtExpVisitor::visit(Assign *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<Assign> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(PhiAssign *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<PhiAssign> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImplicitAssign *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<ImplicitAssign> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BoolAssign *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<BoolAssign> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(GotoStatement *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<GotoStatement> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BranchStatement *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<BranchStatement> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CaseStatement *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<CaseStatement> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CallStatement *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<CallStatement> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ReturnStatement *, bool &visitChildren)
+bool StmtExpVisitor::visit(const std::shared_ptr<ReturnStatement> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;

@@ -11,17 +11,17 @@
 
 
 #include "boomerang/passes/Pass.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 #include <map>
 
 
-class Statement;
 
 
 /// Remove unused statements
 class UnusedStatementRemovalPass final : public IPass
 {
-    typedef std::map<Statement *, int> RefCounter;
+    typedef std::map<SharedStmt, int> RefCounter;
 
 public:
     UnusedStatementRemovalPass();

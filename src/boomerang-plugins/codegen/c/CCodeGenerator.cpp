@@ -109,7 +109,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 }
 
 
-void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
+void CCodeGenerator::addAssignmentStatement(const std::shared_ptr<const Assign> &asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->isPC()) {
@@ -239,7 +239,7 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
 
     if (!results.empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
-        SharedConstExp firstRet = (static_cast<const Assignment *>(*results.begin()))->getLeft();
+        SharedConstExp firstRet = (*results.begin())->as<const Assignment>()->getLeft();
         appendExp(s, firstRet, OpPrec::Assign);
         s << " = ";
     }
@@ -256,9 +256,9 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
             s << ", ";
         }
 
-        assert((*ss)->isAssignment() && dynamic_cast<Assignment *>(*ss) != nullptr);
+        assert((*ss)->isAssignment());
 
-        Assignment *arg_assign = static_cast<Assignment *>(*ss);
+        std::shared_ptr<Assignment> arg_assign = (*ss)->as<Assignment>();
         SharedType t           = arg_assign->getType();
         SharedExp as_arg       = arg_assign->getRight();
         bool ok                = true;
@@ -292,8 +292,7 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
                 s << ", ";
             }
 
-            assert(dynamic_cast<Assignment *>(*ss) != nullptr);
-            const Assignment *assign = static_cast<const Assignment *>(*ss);
+            std::shared_ptr<const Assignment> assign = (*ss)->as<const Assignment>();
             appendExp(s, assign->getLeft(), OpPrec::Comma);
         }
 
@@ -318,9 +317,9 @@ void CCodeGenerator::addIndCallStatement(const SharedExp &exp, const StatementLi
     QStringList arg_strings;
     QString arg_tgt;
 
-    for (Statement *ss : args) {
+    for (SharedStmt ss : args) {
         OStream arg_str(&arg_tgt);
-        SharedExp arg = static_cast<Assign *>(ss)->getRight();
+        SharedExp arg = ss->as<Assign>()->getRight();
         appendExp(arg_str, arg, OpPrec::Comma);
         arg_strings << arg_tgt;
         arg_tgt.clear();
@@ -344,7 +343,7 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
 
     if (n >= 1) {
         ost << " ";
-        appendExp(ost, static_cast<Assign *>(*rets->begin())->getRight(), OpPrec::None);
+        appendExp(ost, (*rets->begin())->as<Assign>()->getRight(), OpPrec::None);
     }
 
     ost << ";";
@@ -365,9 +364,9 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
                 ost << ", ";
             }
 
-            appendExp(ost, (static_cast<Assign *>(*retIt))->getLeft(), OpPrec::None);
+            appendExp(ost, (*retIt)->as<Assign>()->getLeft(), OpPrec::None);
             ost << " := ";
-            appendExp(ost, (static_cast<Assign *>(*retIt))->getRight(), OpPrec::None);
+            appendExp(ost, (*retIt)->as<Assign>()->getRight(), OpPrec::None);
         }
 
         if (n > 1) {
@@ -485,7 +484,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
     QString tgt;
     OStream s(&tgt);
-    ReturnStatement *returns = proc->getRetStmt();
+    std::shared_ptr<ReturnStatement> returns = proc->getRetStmt();
     SharedType retType;
 
     if (proc->getSignature()->isForced()) {
@@ -513,7 +512,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         s << "void ";
     }
     else {
-        Assign *firstRet = static_cast<Assign *>(*returns->begin());
+        std::shared_ptr<Assign> firstRet = (*returns->begin())->as<Assign>();
         retType          = firstRet->getType();
 
         if ((retType == nullptr) || retType->isVoid()) {
@@ -547,7 +546,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             s << ", ";
         }
 
-        Assignment *as = static_cast<Assignment *>(parameter);
+        std::shared_ptr<Assignment> as = parameter->as<Assignment>();
         SharedExp left = as->getLeft();
         SharedType ty  = as->getType();
 
@@ -2376,9 +2375,9 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
 
     if (m_analyzer.getCondType(bb) == CondType::Case) {
         // The CaseStatement will be in the last RTL this BB
-        RTL *last         = bb->getRTLs()->back().get();
-        CaseStatement *cs = (CaseStatement *)last->getHlStmt();
-        psi               = cs->getSwitchInfo();
+        RTL *last                         = bb->getRTLs()->back().get();
+        std::shared_ptr<CaseStatement> cs = last->getHlStmt()->as<CaseStatement>();
+        psi                               = cs->getSwitchInfo();
 
         // Write the switch header (i.e. "switch (var) {")
         addCaseCondHeader(psi->switchExp);
@@ -2527,7 +2526,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
             RTL *lastRTL = bb->getRTLs()->back().get();
             assert(!lastRTL->empty());
 
-            GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
+            std::shared_ptr<GotoStatement> gs = lastRTL->back()->as<GotoStatement>();
             if (gs && gs->getDest()) {
                 addLineComment("goto " + gs->getDest()->toString());
             }
@@ -2544,7 +2543,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     if (bb->getNumSuccessors() > 1) {
         const BasicBlock *other = bb->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
-        std::shared_ptr<Const> constDest = bb->getDest()->access<Const>();
+        std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(bb->getDest());
 
         if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
             std::swap(other, succ);
@@ -2645,7 +2644,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
                 LOG_MSG("%1", rtl->getAddress());
             }
 
-            for (const Statement *st : *rtl) {
+            for (const SharedStmt st : *rtl) {
                 emitCodeForStmt(st);
             }
         }
@@ -2693,15 +2692,15 @@ bool CCodeGenerator::isGenerated(const BasicBlock *bb) const
 }
 
 
-void CCodeGenerator::emitCodeForStmt(const Statement *st)
+void CCodeGenerator::emitCodeForStmt(const SharedConstStmt &st)
 {
     switch (st->getKind()) {
     case StmtType::Assign: {
-        this->addAssignmentStatement(static_cast<const Assign *>(st));
+        this->addAssignmentStatement(st->as<const Assign>());
         break;
     }
     case StmtType::Call: {
-        const CallStatement *call = static_cast<const CallStatement *>(st);
+        std::shared_ptr<const CallStatement> call = st->as<const CallStatement>();
         const Function *dest      = call->getDestProc();
 
         if (dest == nullptr) {
@@ -2727,16 +2726,16 @@ void CCodeGenerator::emitCodeForStmt(const Statement *st)
         break;
     }
     case StmtType::Ret: {
-        addReturnStatement(&static_cast<const ReturnStatement *>(st)->getReturns());
+        addReturnStatement(&st->as<const ReturnStatement>()->getReturns());
         break;
     }
     case StmtType::BoolAssign: {
-        const BoolAssign *bas = static_cast<const BoolAssign *>(st);
+        std::shared_ptr<const BoolAssign> bas = st->as<const BoolAssign>();
 
         // lhs := (m_cond) ? 1 : 0
-        Assign as(bas->getLeft()->clone(),
+        std::shared_ptr<Assign> as = std::make_shared<Assign>(bas->getLeft()->clone(),
                   Ternary::get(opTern, bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
-        addAssignmentStatement(&as);
+        addAssignmentStatement(as);
         break;
     }
     case StmtType::Branch:

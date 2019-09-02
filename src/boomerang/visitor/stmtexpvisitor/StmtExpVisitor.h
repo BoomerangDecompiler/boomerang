@@ -13,6 +13,9 @@
 #include "boomerang/core/BoomerangAPI.h"
 
 
+#include <memory>
+
+
 class ExpVisitor;
 class Assign;
 class PhiAssign;
@@ -41,31 +44,31 @@ public:
     /// \param[in]  stmt The statement to visit.
     /// \param[out] visitChildren set to false to not visit child expressions.
     /// \returns true to continue visit
-    virtual bool visit(Assign *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(GotoStatement *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<GotoStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BranchStatement *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<BranchStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CaseStatement *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<CaseStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CallStatement *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ReturnStatement *stmt, bool &visitChildren);
+    virtual bool visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren);
 
     bool isIgnoreCol() const { return m_ignoreCol; }
 

@@ -155,7 +155,7 @@ void ProgDecompiler::removeUnusedGlobals()
             StatementList::iterator ss;
             proc->getStatements(stmts);
 
-            for (Statement *s : stmts) {
+            for (SharedStmt s : stmts) {
                 if (s->isImplicit()) {
                     continue; // Ignore the uses in ImplicitAssigns
                 }

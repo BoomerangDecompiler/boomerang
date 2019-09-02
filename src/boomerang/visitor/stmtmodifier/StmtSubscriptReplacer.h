@@ -9,19 +9,17 @@
 #pragma endregion License
 
 
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
-
-
-class Statement;
 
 
 class BOOMERANG_API StmtSubscriptReplacer : public StmtModifier
 {
 public:
-    StmtSubscriptReplacer(const Statement *original, Statement *replacement);
+    StmtSubscriptReplacer(const SharedConstStmt &original, const SharedStmt &replacement);
     virtual ~StmtSubscriptReplacer() override = default;
 
 public:
     /// \copydoc StmtModifier::visit
-    virtual void visit(PhiAssign *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 };

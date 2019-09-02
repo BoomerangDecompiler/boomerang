@@ -35,7 +35,7 @@ void UseGraphWriter::writeUseGraph(const UserProc *proc, const QString &filePath
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (s->isPhi()) {
             out << s->getNumber() << " [shape=diamond];\n";
         }

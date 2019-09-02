@@ -107,7 +107,7 @@ private:
     void print(OStream &os);
 
     /// Replace opSuccessor by real semantics in \p stmt.
-    void fixSuccessorForStmt(Statement *stmt);
+    void fixSuccessorForStmt(const SharedStmt &stmt);
 
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction

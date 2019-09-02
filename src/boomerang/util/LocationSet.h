@@ -11,8 +11,8 @@
 
 
 #include "boomerang/ssl/exp/Exp.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/ExpSet.h"
-
 
 class RefExp;
 class Statement;
@@ -55,7 +55,7 @@ public:
 
     /// Add a subscript (to definition \p def) to each element.
     /// Existing exps are not re-subscripted.
-    void addSubscript(Statement *def);
+    void addSubscript(const SharedStmt &def);
 
     QString toString() const; ///< Print to string for debugging
 };

@@ -22,7 +22,7 @@ class StmtConstFinderTest : public BoomerangTest
 {
     Q_OBJECT
 
-    void findConstants(Statement *stmt, std::list<std::shared_ptr<Const>> &constants);
+    void findConstants(const SharedStmt &stmt, std::list<std::shared_ptr<Const>> &constants);
 
 private slots:
     void testFindConstants();

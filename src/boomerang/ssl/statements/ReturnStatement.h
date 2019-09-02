@@ -43,7 +43,7 @@ public:
 
 public:
     /// \copydoc Statement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     iterator erase(iterator it);
 
@@ -80,7 +80,7 @@ public:
     void removeModified(SharedExp loc);
 
     /// For testing only
-    void addReturn(Assignment *a);
+    void addReturn(const std::shared_ptr<Assignment> &a);
 
     /// \copydoc Statement::getTypeForExp
     virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;

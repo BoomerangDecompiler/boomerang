@@ -33,7 +33,7 @@ bool LocalAndParamMapPass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         DfaLocalMapper dlm(proc);
         StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
 

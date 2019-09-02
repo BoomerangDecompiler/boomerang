@@ -43,7 +43,7 @@ void UserProcTest::testIsNoReturn()
     testProc.setStatus(ProcStatus::Decoded);
     QCOMPARE(testProc.isNoReturn(), true);
 
-    ReturnStatement *retStmt = new ReturnStatement();
+    std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { retStmt })));
     BasicBlock *retBB = testProc.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
@@ -53,7 +53,7 @@ void UserProcTest::testIsNoReturn()
     UserProc noReturnProc(Address(0x2000), "noReturn", nullptr);
     noReturnProc.setStatus(ProcStatus::Decoded);
 
-    CallStatement *call = new CallStatement();
+    std::shared_ptr<CallStatement> call(new CallStatement);
     call->setDestProc(&noReturnProc);
 
     bbRTLs.reset(new RTLList);
@@ -72,7 +72,7 @@ void UserProcTest::testRemoveStatement()
 {
     UserProc proc(Address::INVALID, "test", nullptr);
 
-    Assign *asgn = new Assign(VoidType::get(), Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
+    std::shared_ptr<Assign> asgn(new Assign(VoidType::get(), Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX)));
 
     QVERIFY(!proc.removeStatement(nullptr));
     QVERIFY(!proc.removeStatement(asgn));
@@ -95,7 +95,7 @@ void UserProcTest::testInsertAssignAfter()
     BasicBlock *entryBB = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
     proc.setEntryBB();
 
-    Assign *as = proc.insertAssignAfter(nullptr, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
+    std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
     QVERIFY(as != nullptr);
     QVERIFY(as->getProc() == &proc);
     QVERIFY(as->getBB() == entryBB);
@@ -103,7 +103,7 @@ void UserProcTest::testInsertAssignAfter()
     QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 1);
     QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
 
-    Assign *as2 = proc.insertAssignAfter(as, Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_EDX));
+    std::shared_ptr<Assign> as2 = proc.insertAssignAfter(as, Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_EDX));
     QVERIFY(as2 != nullptr);
     QVERIFY(as->getProc() == &proc);
     QVERIFY(as->getBB() == entryBB);
@@ -122,8 +122,8 @@ void UserProcTest::testInsertStatementAfter()
     BasicBlock *entryBB = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
     proc.setEntryBB();
 
-    Assign *as = proc.insertAssignAfter(nullptr, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
-    Assign *as2 = new Assign(VoidType::get(), Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX));
+    std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
+    std::shared_ptr<Assign> as2(new Assign(VoidType::get(), Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX)));
 
     proc.insertStatementAfter(as, as2);
     QVERIFY(as2->getBB() == entryBB);
@@ -210,7 +210,7 @@ void UserProcTest::testLookupParam()
     SharedExp paramExp = Location::memOf(Binary::get(opPlus,
         Location::regOf(REG_PENT_ESP), Const::get(4)), &proc);
 
-    Statement *ias = proc.getCFG()->findOrCreateImplicitAssign(paramExp->clone());
+    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(paramExp->clone());
     proc.insertParameter(RefExp::get(paramExp->clone(), ias), VoidType::get());
     proc.mapSymbolTo(RefExp::get(paramExp->clone(), ias), Location::param("param1", &proc));
     proc.addParameterToSignature(paramExp->clone(), VoidType::get());
@@ -248,9 +248,9 @@ void UserProcTest::testRetStmt()
 
     QCOMPARE(proc.getRetAddr(), Address::INVALID);
 
-    ReturnStatement retStmt;
-    proc.setRetStmt(&retStmt, Address(0x2000));
-    QVERIFY(proc.getRetStmt() == &retStmt);
+    std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
+    proc.setRetStmt(retStmt, Address(0x2000));
+    QVERIFY(proc.getRetStmt() == retStmt);
     QCOMPARE(proc.getRetAddr(), Address(0x2000));
 }
 
@@ -331,7 +331,7 @@ void UserProcTest::testEnsureExpIsMappedToLocal()
     QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString(""));
 
     // local does not exist
-    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
     QVERIFY(ias1 != nullptr);
     proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_PENT_EAX), ias1));
     QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString("eax"));
@@ -344,7 +344,7 @@ void UserProcTest::testEnsureExpIsMappedToLocal()
     SharedExp memOf = Location::memOf(Binary::get(opPlus,
                                       Location::regOf(REG_PENT_ESP),
                                       Const::get(4)));
-    Statement *ias2 = proc.getCFG()->findOrCreateImplicitAssign(memOf);
+    SharedStmt ias2 = proc.getCFG()->findOrCreateImplicitAssign(memOf);
     QVERIFY(ias2 != nullptr);
     proc.ensureExpIsMappedToLocal(RefExp::get(memOf->clone(), ias2));
     QCOMPARE(proc.findLocal(memOf->clone(), VoidType::get()), QString("local0"));
@@ -518,7 +518,7 @@ void UserProcTest::testLookupSymFromRef()
     proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
     proc.setEntryBB();
 
-    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
     QVERIFY(ias1 != nullptr);
 
     std::shared_ptr<RefExp> refEaxNull = RefExp::get(Location::regOf(REG_PENT_EAX), nullptr);
@@ -543,7 +543,7 @@ void UserProcTest::testLookupSymFromRefAny()
     proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
     proc.setEntryBB();
 
-    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
     QVERIFY(ias1 != nullptr);
 
     std::shared_ptr<RefExp> refEaxNull = RefExp::get(Location::regOf(REG_PENT_EAX), nullptr);
@@ -568,18 +568,18 @@ void UserProcTest::testMarkAsNonChildless()
     UserProc proc2(Address(0x2000), "test2", nullptr);
     UserProc proc3(Address(0x3000), "test3", nullptr);
 
-    CallStatement *call1 = new CallStatement();
+    std::shared_ptr<CallStatement> call1(new CallStatement);
     call1->setDestProc(&proc2);
 
-    CallStatement *call2 = new CallStatement();
+    std::shared_ptr<CallStatement> call2(new CallStatement);
     call2->setDestProc(&proc1);
 
-    CallStatement *call3 = new CallStatement();
+    std::shared_ptr<CallStatement> call3(new CallStatement);
     call3->setDestProc(&proc3);
 
-    ReturnStatement *ret1 = new ReturnStatement();
-    ReturnStatement *ret2 = new ReturnStatement();
-    ReturnStatement *ret3 = new ReturnStatement();
+    std::shared_ptr<ReturnStatement> ret1(new ReturnStatement);
+    std::shared_ptr<ReturnStatement> ret2(new ReturnStatement);
+    std::shared_ptr<ReturnStatement> ret3(new ReturnStatement);
 
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call1 })));
@@ -702,7 +702,7 @@ void UserProcTest::testSearchAndReplace()
     SharedExp edx = Location::regOf(REG_PENT_EDX);
     QVERIFY(proc.searchAndReplace(*eax, edx) == false);
 
-    Assign *as = new Assign(VoidType::get(), eax, edx);
+    std::shared_ptr<Assign> as(new Assign(VoidType::get(), eax, edx));
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { as })));
     proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
@@ -732,11 +732,11 @@ void UserProcTest::testAllPhisHaveDefs()
     BasicBlock *bb = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
     proc.setEntryBB();
 
-    Statement *ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
     QVERIFY(ias != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    PhiAssign *phi1 = bb->addPhi(Location::regOf(REG_PENT_EDX));
+    std::shared_ptr<PhiAssign> phi1 = bb->addPhi(Location::regOf(REG_PENT_EDX));
     QVERIFY(phi1 != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 

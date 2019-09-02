@@ -27,14 +27,14 @@ bool StatementInitPass::execute(UserProc *proc)
     StatementList::iterator sit;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
              stmt            = bb->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);
-            CallStatement *call = dynamic_cast<CallStatement *>(stmt);
 
-            if (call) {
+            if (stmt->isCall()) {
+                std::shared_ptr<CallStatement> call = stmt->as<CallStatement>();
                 call->setSigArguments();
 
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())

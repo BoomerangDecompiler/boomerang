@@ -56,21 +56,21 @@ bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t de
 }
 
 
-BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay,
+BasicBlock *SPARCFrontEnd::optimizeCallReturn(std::shared_ptr<CallStatement> call, const RTL *rtl, const RTL *delay,
                                               UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
         // The only RTL in the basic block is a ReturnStatement
-        std::list<Statement *> ls;
+        std::list<SharedStmt> ls;
 
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so
         // that preservation or otherwise of %o7 is correct
         if (delay && (delay->size() == 1) && delay->front()->isAssign() &&
-            static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
+            delay->front()->as<Assign>()->getLeft()->isRegN(REG_SPARC_O7)) {
             ls.push_back(delay->front()->clone());
         }
 
-        ls.push_back(new ReturnStatement);
+        ls.push_back(std::make_shared<ReturnStatement>());
 
         // Constuct the RTLs for the new basic block
         std::unique_ptr<RTLList> rtls(new RTLList);
@@ -136,10 +136,10 @@ void SPARCFrontEnd::case_unhandled_stub(Address addr)
 
 bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delayInst,
                               std::unique_ptr<RTLList> &BB_rtls, UserProc *proc,
-                              std::list<CallStatement *> &callList, bool isPattern /* = false*/)
+                              std::list<std::shared_ptr<CallStatement>> &callList, bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
-    CallStatement *callStmt = static_cast<CallStatement *>(inst.rtl->back());
+    std::shared_ptr<CallStatement> callStmt = inst.rtl->back()->as<CallStatement>();
     RTL *delayRTL           = delayInst.rtl.get();
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or
@@ -198,7 +198,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 
         // Add this call site to the set of call sites which need to be analysed later.
         // This set will be used later to call prog.visitProc (so the proc will get decoded)
-        callList.push_back(static_cast<CallStatement *>(rtl->back()));
+        callList.push_back(rtl->back()->as<CallStatement>());
 
         if (returnBB) {
             // Handle the call but don't add any outedges from it just yet.
@@ -251,7 +251,7 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
                             std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
     // Aliases for the SD and delay RTLs
-    GotoStatement *SD_stmt = static_cast<GotoStatement *>(inst.rtl->back());
+    std::shared_ptr<GotoStatement> SD_stmt = inst.rtl->back()->as<GotoStatement>();
     RTL *delay_rtl         = delay_inst.rtl.get();
 
     // Try the "delay instruction has been copied" optimisation,
@@ -287,7 +287,7 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
 
 bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
                             DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                            TargetQueue &, UserProc *proc, std::list<CallStatement *> &callList)
+                            TargetQueue &, UserProc *proc, std::list<std::shared_ptr<CallStatement>> &callList)
 {
     ProcCFG *cfg  = proc->getCFG();
     RTL *rtl      = inst.rtl.get();
@@ -305,7 +305,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
 
     BasicBlock *newBB;
     bool isRetOrCase    = false;
-    Statement *lastStmt = rtl->back();
+    SharedStmt lastStmt = rtl->back();
 
     switch (lastStmt->getKind()) {
     case StmtType::Call:
@@ -324,7 +324,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
         newBB              = cfg->createBB(BBType::CompJump, std::move(BB_rtls));
         BB_rtls            = nullptr;
         isRetOrCase        = true;
-        SharedExp jumpDest = static_cast<CaseStatement *>(lastStmt)->getDest();
+        SharedExp jumpDest = lastStmt->as<CaseStatement>()->getDest();
 
         if (jumpDest == nullptr) { // Happens if already analysed (we are now redecoding)
             // processSwitch will update the BB type and number of outedges, decode arms, set out
@@ -342,12 +342,12 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
         return false;
     }
 
-    Statement *last = newBB->getLastRTL()->back();
+    SharedStmt last = newBB->getLastRTL()->back();
 
     // Do extra processing for for special types of DD
     if (last->getKind() == StmtType::Call) {
         // Attempt to add a return BB if the delay instruction is a RESTORE
-        CallStatement *call_stmt = static_cast<CallStatement *>(last);
+        std::shared_ptr<CallStatement> call_stmt = last->as<CallStatement>();
         BasicBlock *returnBB     = optimizeCallReturn(call_stmt, rtl, delayRTL, proc);
 
         if (returnBB != nullptr) {
@@ -387,7 +387,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
                              DecodeResult &inst, DecodeResult &delay_inst,
                              std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
-    GotoStatement *jumpStmt = static_cast<GotoStatement *>(inst.rtl->back());
+    std::shared_ptr<GotoStatement> jumpStmt = inst.rtl->back()->as<GotoStatement>();
     Address jumpDest        = jumpStmt->getFixedDest();
 
     // Assume that if we find a call in the delay slot, it's actually a pattern such as
@@ -468,7 +468,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
         std::unique_ptr<RTLList> orphanBBRTLs(new RTLList);
 
         // Add a branch from the orphan instruction to the dest of the branch.
-        delay_inst.rtl->append(new GotoStatement(jumpDest));
+        delay_inst.rtl->append(std::make_shared<GotoStatement>(jumpDest));
         orphanBBRTLs->push_back(std::move(delay_inst.rtl));
 
         BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanBBRTLs));
@@ -499,7 +499,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
     // of the delay instruction just before the target; if so, we can branch to that and not need
     // the orphan. We do just a binary comparison; that may fail to make this optimisation if the
     // instr has relative fields.
-    GotoStatement *jumpStmt = static_cast<GotoStatement *>(inst.rtl->back());
+    std::shared_ptr<GotoStatement> jumpStmt = inst.rtl->back()->as<GotoStatement>();
     Address jumpDest        = jumpStmt->getFixedDest();
     BasicBlock *newBB       = nullptr;
 
@@ -529,7 +529,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
         std::unique_ptr<RTLList> orphanRTL(new RTLList);
 
         // Also add a branch from the orphan instruction to the dest of the branch
-        delayInst.rtl->append(new GotoStatement(jumpDest));
+        delayInst.rtl->append(std::make_shared<GotoStatement>(jumpDest));
         orphanRTL->push_back(std::move(delayInst.rtl));
 
         BasicBlock *orphanBB = cfg->createBB(BBType::Oneway, std::move(orphanRTL));
@@ -564,7 +564,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
     // disregarded if this is a speculative decode that fails (i.e. an illegal
     // instruction is found). If not, this set will be used to add to the set
     // of calls to be analysed in the cfg, and also to call prog.visitProc()
-    std::list<CallStatement *> callList;
+    std::list<std::shared_ptr<CallStatement>> callList;
 
     // Indicates whether or not the next instruction to be decoded is the
     // lexical successor of the current one. Will be true for all NCTs and for
@@ -627,13 +627,13 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
             // Define aliases to the RTLs so that they can be treated as a high level types where
             // appropriate.
-            RTL *rtl                = inst.rtl.get();
-            GotoStatement *jumpStmt = nullptr;
-            Statement *last         = nullptr;
+            RTL *rtl                                = inst.rtl.get();
+            std::shared_ptr<GotoStatement> jumpStmt = nullptr;
+            SharedStmt last                         = nullptr;
 
             if (!rtl->empty()) {
                 last     = rtl->back();
-                jumpStmt = static_cast<GotoStatement *>(last);
+                jumpStmt = std::dynamic_pointer_cast<GotoStatement>(last);
             }
 
             switch (inst.iclass) {
@@ -725,7 +725,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                         // The restore means it is effectively followed by a return (since the
                         // resore semantics chop off one level of return address)
-                        static_cast<CallStatement *>(last)->setReturnAfterCall(true);
+                        last->as<CallStatement>()->setReturnAfterCall(true);
                         sequentialDecode = false;
                         case_CALL(pc, inst, nop_inst, BB_rtls, proc, callList, true);
                         break;
@@ -742,17 +742,17 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // insert a return BB after the call Note that if an add, there may be an
                     // assignment to a temp register first. So look at last RT
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
-                    Statement *a = delayInst.rtl->empty() ? nullptr : delayInst.rtl->back();
+                    SharedStmt a = delayInst.rtl->empty() ? nullptr : delayInst.rtl->back();
 
                     if (a && a->isAssign()) {
-                        SharedExp lhs = static_cast<Assign *>(a)->getLeft();
+                        SharedExp lhs = a->as<Assign>()->getLeft();
 
                         if (lhs->isRegN(REG_SPARC_O7)) {
                             // If it's an add, this is special. Example:
                             //     call foo
                             //     add %o7, K, %o7
                             // is equivalent to call foo / ba .+K
-                            SharedExp rhs = static_cast<Assign *>(a)->getRight();
+                            SharedExp rhs = a->as<Assign>()->getRight();
                             auto o7(Location::regOf(REG_SPARC_O7));
 
                             if (rhs->getOper() == opPlus && rhs->access<Exp, 2>()->isIntConst() &&
@@ -771,7 +771,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                                 // We assume this is some sort of move/x/call/move pattern. The
                                 // overall effect is to pop one return address, we we emit a return
                                 // after this call
-                                static_cast<CallStatement *>(last)->setReturnAfterCall(true);
+                                last->as<CallStatement>()->setReturnAfterCall(true);
                                 sequentialDecode = false;
                                 case_CALL(pc, inst, delayInst, BB_rtls, proc, callList, true);
                                 break;
@@ -823,8 +823,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    const GotoStatement *delayJump = static_cast<const GotoStatement *>(
-                        delayRTL->back());
+                    std::shared_ptr<const GotoStatement> delayJump = delayRTL->back()->as<GotoStatement>();
                     const Address dest = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
@@ -839,7 +838,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                         // Add this call site to the set of call sites which need to be analyzed
                         // later.
-                        callList.push_back(static_cast<CallStatement *>(inst.rtl->back()));
+                        callList.push_back(inst.rtl->back()->as<CallStatement>());
                     }
                     else {
                         BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
@@ -1008,7 +1007,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to
     // the Prog object
-    for (CallStatement *call : callList) {
+    for (std::shared_ptr<CallStatement> call : callList) {
         Address dest = call->getFixedDest();
 
         // Don't visit the destination of a register call
@@ -1038,7 +1037,7 @@ void SPARCFrontEnd::emitNop(RTLList &rtls, Address addr)
 void SPARCFrontEnd::emitCopyPC(RTLList &rtls, Address addr)
 {
     // Emit %o7 = %pc
-    Assign *asgn = new Assign(Location::regOf(REG_SPARC_O7), Terminal::get(opPC));
+    std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_SPARC_O7), Terminal::get(opPC)));
     assert(!rtls.empty());
 
     // Add the RTL to the list of RTLs, but to the second last position
@@ -1049,7 +1048,7 @@ void SPARCFrontEnd::emitCopyPC(RTLList &rtls, Address addr)
 void SPARCFrontEnd::appendAssignment(const SharedExp &lhs, const SharedExp &rhs, SharedType type,
                                      Address addr, RTLList &lrtl)
 {
-    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { new Assign(type, lhs, rhs) })));
+    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { std::make_shared<Assign>(type, lhs, rhs) })));
 }
 
 
@@ -1134,14 +1133,14 @@ bool SPARCFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
     // Need to make an RTAssgn with %o0 = rhs
     SharedExp lhs = Location::regOf(REG_SPARC_O0);
 
-    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { new Assign(lhs, rhs) })));
+    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { std::make_shared<Assign>(lhs, rhs) })));
     return true;
 }
 
 
 void SPARCFrontEnd::gen32op32gives64(OPER op, RTLList &lrtl, Address addr)
 {
-    std::list<Statement *> *ls = new std::list<Statement *>;
+    std::unique_ptr<RTL::StmtList> ls(new RTL::StmtList);
 #if V9_ONLY
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
     Statement *a = new Assign(
@@ -1169,23 +1168,22 @@ void SPARCFrontEnd::gen32op32gives64(OPER op, RTLList &lrtl, Address addr)
     //        32 high-order bits of the 64 bit r[rd].
 
     // r[tmp] = r8 op r9
-    Assign *a = new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
+    std::shared_ptr<Assign> a(new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
                            Binary::get(op, // opMult or opMults
                                        Location::regOf(REG_SPARC_O0),
-                                       Location::regOf(REG_SPARC_O1)));
+                                       Location::regOf(REG_SPARC_O1))));
     ls->push_back(a);
     // r8 = r[tmp];     /* low-order bits */
-    a = new Assign(Location::regOf(REG_SPARC_O0),
+    a = std::make_shared<Assign>(Location::regOf(REG_SPARC_O0),
                    Location::tempOf(Const::get(const_cast<char *>("tmp"))));
     ls->push_back(a);
     // r9 = %Y;         /* high-order bits */
-    a = new Assign(Location::regOf(REG_SPARC_O0),
+    a = std::make_shared<Assign>(Location::regOf(REG_SPARC_O0),
                    Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
     ls->push_back(a);
 #endif /* V9_ONLY */
 
-    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, ls)));
-    delete ls;
+    lrtl.push_back(std::make_unique<RTL>(addr, ls.get()));
 }
 
 

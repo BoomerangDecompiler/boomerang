@@ -10,13 +10,13 @@
 #pragma once
 
 
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 
 #include <list>
 #include <memory>
 
 
-class Statement;
 class OStream;
 
 
@@ -28,7 +28,8 @@ class OStream;
  */
 class BOOMERANG_API RTL
 {
-    typedef std::list<Statement *> StmtList;
+public:
+    typedef std::list<SharedStmt> StmtList;
 
 public:
     typedef StmtList::size_type size_type;
@@ -47,7 +48,7 @@ public:
     explicit RTL(Address instrAddr, const StmtList *listStmt = nullptr);
 
     /// Take ownership of the statements in the initializer list.
-    explicit RTL(Address instrAddr, const std::initializer_list<Statement *> &statements);
+    explicit RTL(Address instrAddr, const std::initializer_list<SharedStmt> &statements);
 
     explicit RTL(const RTL &other); ///< Deep copies the content
     explicit RTL(RTL &&other) = default;
@@ -70,7 +71,7 @@ public:
      * \note Leaves any flag call at the end
      * (so may push exp to second last position, instead of last)
      */
-    void append(Statement *s);
+    void append(const SharedStmt &s);
 
     /// Append a deep copy of \p le to this RTL.
     void append(const StmtList &le);
@@ -92,7 +93,7 @@ public:
     bool isCall() const;
 
     /// Use this slow function when you can't be sure that the HL Statement is last
-    Statement *getHlStmt() const;
+    SharedStmt getHlStmt() const;
 
     /// Simplify all elements in this list and subsequently remove
     /// unnecessary statements (like branches with constant conditions)

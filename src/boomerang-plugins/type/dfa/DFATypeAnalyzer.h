@@ -36,29 +36,29 @@ public:
     /// Tx0 := Tx0 meet (Tx1 meet Tx2 meet ...)
     /// Tx1 := Tx1 meet Tx0
     /// Tx2 := Tx2 meet Tx0
-    void visit(PhiAssign *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(Assign *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(BoolAssign *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(BranchStatement *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<BranchStatement> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(CallStatement *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(ImplicitAssign *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    void visit(ReturnStatement *stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren) override;
 
 private:
     /// Code common to DFA type recovery of assignments
-    void visitAssignment(Assignment *stmt, bool &visitChildren);
+    void visitAssignment(const std::shared_ptr<Assignment> &stmt, bool &visitChildren);
 
 private:
     bool m_changed = false;

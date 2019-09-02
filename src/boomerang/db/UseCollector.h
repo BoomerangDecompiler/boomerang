@@ -11,6 +11,7 @@
 
 
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 class UserProc;
@@ -71,7 +72,7 @@ public:
 
     /// Translate out of SSA form
     /// Called from CallStatement::fromSSAForm. The UserProc is needed for the symbol map
-    void fromSSAForm(UserProc *proc, Statement *def);
+    void fromSSAForm(UserProc *proc, const SharedStmt &def);
 
 private:
     /// True if initialised. When not initialised, callees should not

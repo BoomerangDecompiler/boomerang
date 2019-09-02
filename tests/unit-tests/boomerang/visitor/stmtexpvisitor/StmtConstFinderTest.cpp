@@ -17,7 +17,7 @@
 #include "boomerang/visitor/stmtexpvisitor/StmtConstFinder.h"
 
 
-void StmtConstFinderTest::findConstants(Statement *stmt, std::list<std::shared_ptr<Const> > &constants)
+void StmtConstFinderTest::findConstants(const SharedStmt &stmt, std::list<std::shared_ptr<Const> > &constants)
 {
     ConstFinder cf(constants);
     StmtConstFinder scf(&cf);
@@ -28,10 +28,10 @@ void StmtConstFinderTest::findConstants(Statement *stmt, std::list<std::shared_p
 
 void StmtConstFinderTest::testFindConstants()
 {
-    Assign a(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
+    auto a = std::make_shared<Assign>(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
 
     std::list<std::shared_ptr<Const>> lc;
-    findConstants(&a, lc);
+    findConstants(a, lc);
 
     QString     actual;
     OStream ost(&actual);

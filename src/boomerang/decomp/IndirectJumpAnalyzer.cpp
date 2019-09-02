@@ -110,7 +110,7 @@ static const SwitchForm hlForms[] = {
 
 
 /// Find all the possible constant values that the location defined by s could be assigned with
-static void findConstantValues(const Statement *s, std::list<int> &dests)
+static void findConstantValues(const SharedConstStmt &s, std::list<int> &dests)
 {
     if (s == nullptr) {
         return;
@@ -118,12 +118,12 @@ static void findConstantValues(const Statement *s, std::list<int> &dests)
 
     if (s->isPhi()) {
         // For each definition, recurse
-        for (const auto &it : *static_cast<const PhiAssign *>(s)) {
+        for (const auto &it : *s->as<const PhiAssign>()) {
             findConstantValues(it->getDef(), dests);
         }
     }
     else if (s->isAssign()) {
-        SharedExp rhs = static_cast<const Assign *>(s)->getRight();
+        SharedExp rhs = s->as<const Assign>()->getRight();
 
         if (rhs->isIntConst()) {
             dests.push_back(rhs->access<Const>()->getInt());
@@ -294,7 +294,7 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
             continue;
         }
 
-        const BranchStatement *lastStmt = static_cast<const BranchStatement *>(pred->getLastStmt());
+        const std::shared_ptr<const BranchStatement> lastStmt = pred->getLastStmt()->as<const BranchStatement>();
         SharedConstExp lastCondition    = lastStmt->getCondExpr();
         if (lastCondition->getArity() != 2) {
             continue;
@@ -332,7 +332,7 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
 void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 {
     RTL *lastRTL         = bb->getLastRTL();
-    const SwitchInfo *si = static_cast<CaseStatement *>(lastRTL->getHlStmt())->getSwitchInfo();
+    const SwitchInfo *si = lastRTL->getHlStmt()->as<CaseStatement>()->getSwitchInfo();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
@@ -451,7 +451,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
     }
 
     assert(!lastRTL->empty());
-    CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRTL->back());
+    std::shared_ptr<CaseStatement> lastStmt = lastRTL->back()->as<CaseStatement>();
 
     // Note: some programs might not have the case expression propagated to, because of the -l
     // switch (?) We used to use ordinary propagation here to get the memory expression, but now
@@ -665,8 +665,8 @@ bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
     }
 
     assert(!lastRTL->empty());
-    CallStatement *lastStmt = static_cast<CallStatement *>(lastRTL->back());
-    SharedExp e             = lastStmt->getDest();
+    std::shared_ptr<CallStatement> lastStmt = lastRTL->back()->as<CallStatement>();
+    SharedExp e                             = lastStmt->getDest();
 
     // Indirect calls may sometimes not be propagated to, because of limited propagation
     // (-l switch). Propagate to e, but only keep the changes if the expression matches

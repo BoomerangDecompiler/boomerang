@@ -38,7 +38,7 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 
     for (int i = 0; i < numRTLs; i++) {
         rtls->push_back(std::unique_ptr<RTL>(new RTL(baseAddr + i,
-            { new Assign(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })));
+            { std::make_shared<Assign>(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })));
     }
 
     return rtls;

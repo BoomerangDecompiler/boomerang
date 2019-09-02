@@ -13,14 +13,13 @@
 #include "TypeRecovery.h"
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 #include <list>
-#include <memory>
 
 
 class ProcCFG;
 class Signature;
-class Statement;
 class StatementList;
 class UserProc;
 class Const;
@@ -54,16 +53,16 @@ public:
 private:
     void dfaTypeAnalysis(UserProc *proc);
     bool dfaTypeAnalysis(Signature *signature, ProcCFG *cfg);
-    bool dfaTypeAnalysis(Statement *stmt);
+//     bool dfaTypeAnalysis(const SharedStmt &stmt);
 
     void printResults(StatementList &stmts, int iter);
 
     /// Replace array references of the form m[idx*K1 + K2]
     /// in \p s. Create global array variables as needed.
-    void replaceArrayIndices(Statement *s);
+    void replaceArrayIndices(const SharedStmt &s);
 
     // 3) Check implicit assigns for parameter and global types.
-    void dfa_analyze_implict_assigns(Statement *s);
+    void dfa_analyze_implict_assigns(const SharedStmt &s);
 
     /**
      * Trim parameters to procedure calls with ellipsis (...).
@@ -72,5 +71,5 @@ private:
      */
     bool doEllipsisProcessing(UserProc *proc);
 
-    void findConstantsInStmt(Statement *stmt, std::list<std::shared_ptr<Const>> &constants);
+    void findConstantsInStmt(const SharedStmt &stmt, std::list<std::shared_ptr<Const>> &constants);
 };

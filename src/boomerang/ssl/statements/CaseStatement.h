@@ -56,7 +56,7 @@ public:
 
 public:
     /// \copydoc GotoStatement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtVisitor *visitor) const override;

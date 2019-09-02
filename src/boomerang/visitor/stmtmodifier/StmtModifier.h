@@ -12,6 +12,8 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 
+#include <memory>
+
 
 class ExpModifier;
 class Assign;
@@ -49,31 +51,31 @@ public:
     /// Modify a statement.
     /// \param[in] stmt Statement to modify
     /// \param[out] visitChildren set to true to visit children of this statement
-    virtual void visit(Assign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(PhiAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(ImplicitAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(BoolAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(GotoStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<GotoStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(BranchStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<BranchStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(CaseStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<CaseStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(CallStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(ReturnStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren);
 
 public:
     ExpModifier *m_mod; ///< The expression modifier object

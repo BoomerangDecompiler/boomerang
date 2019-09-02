@@ -29,22 +29,22 @@ public:
 
 public:
     /// Common code for the left hand side of assignments
-    void handleCommonLHS(Assignment *stmt);
+    void handleCommonLHS(const std::shared_ptr<Assignment> &stmt);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(Assign *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(PhiAssign *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(ImplicitAssign *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(BoolAssign *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(CallStatement *stmt, bool &visitChildren) override;
+    virtual void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren) override;
 
 private:
     UserProc *m_proc;

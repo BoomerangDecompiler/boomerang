@@ -112,7 +112,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
     bool firstRTL = true;
 
     for (auto &rtl : *m_listOfRTLs) {
-        for (Statement *stmt : *rtl) {
+        for (const SharedStmt &stmt : *rtl) {
             assert(stmt != nullptr);
             stmt->setBB(this);
         }
@@ -305,7 +305,7 @@ Function *BasicBlock::getCallDestProc() const
     // search backwards for a CallStatement
     for (auto it = lastRTL->rbegin(); it != lastRTL->rend(); ++it) {
         if ((*it)->getKind() == StmtType::Call) {
-            return static_cast<CallStatement *>(*it)->getDestProc();
+            return (*it)->as<CallStatement>()->getDestProc();
         }
     }
 
@@ -313,7 +313,7 @@ Function *BasicBlock::getCallDestProc() const
 }
 
 
-Statement *BasicBlock::getFirstStmt(RTLIterator &rit, RTL::iterator &sit)
+SharedStmt BasicBlock::getFirstStmt(RTLIterator &rit, RTL::iterator &sit)
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         return nullptr;
@@ -336,7 +336,7 @@ Statement *BasicBlock::getFirstStmt(RTLIterator &rit, RTL::iterator &sit)
 }
 
 
-Statement *BasicBlock::getNextStmt(RTLIterator &rit, RTL::iterator &sit)
+SharedStmt BasicBlock::getNextStmt(RTLIterator &rit, RTL::iterator &sit)
 {
     if (++sit != (*rit)->end()) {
         return *sit; // End of current RTL not reached, so return next
@@ -354,7 +354,7 @@ Statement *BasicBlock::getNextStmt(RTLIterator &rit, RTL::iterator &sit)
 }
 
 
-Statement *BasicBlock::getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
+SharedStmt BasicBlock::getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
 {
     if (++sit != (*rit)->rend()) {
         return *sit; // Beginning of current RTL not reached, so return next
@@ -372,7 +372,7 @@ Statement *BasicBlock::getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit
 }
 
 
-Statement *BasicBlock::getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
+SharedStmt BasicBlock::getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -395,7 +395,7 @@ Statement *BasicBlock::getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit
 }
 
 
-Statement *BasicBlock::getFirstStmt()
+SharedStmt BasicBlock::getFirstStmt()
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -410,7 +410,7 @@ Statement *BasicBlock::getFirstStmt()
     return nullptr;
 }
 
-const Statement *BasicBlock::getFirstStmt() const
+const SharedConstStmt BasicBlock::getFirstStmt() const
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -426,7 +426,7 @@ const Statement *BasicBlock::getFirstStmt() const
 }
 
 
-Statement *BasicBlock::getLastStmt()
+SharedStmt BasicBlock::getLastStmt()
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -446,7 +446,7 @@ Statement *BasicBlock::getLastStmt()
 }
 
 
-const Statement *BasicBlock::getLastStmt() const
+const SharedConstStmt BasicBlock::getLastStmt() const
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -475,7 +475,7 @@ void BasicBlock::appendStatementsTo(StatementList &stmts) const
     }
 
     for (const auto &rtl : *rtls) {
-        for (Statement *st : *rtl) {
+        for (SharedStmt &st : *rtl) {
             assert(st->getBB() == this);
             stmts.append(st);
         }
@@ -491,16 +491,11 @@ SharedExp BasicBlock::getCond() const
     }
 
     RTL *last = m_listOfRTLs->back().get();
-
-    // it should contain a BranchStatement
-    BranchStatement *branch = dynamic_cast<BranchStatement *>(last->getHlStmt());
-
-    if (branch) {
-        assert(branch->getKind() == StmtType::Branch);
-        return branch->getCondExpr();
+    if (!last->getHlStmt() || !last->getHlStmt()->isBranch()) {
+        return nullptr;
     }
 
-    return nullptr;
+    return last->getHlStmt()->as<BranchStatement>()->getCondExpr();
 }
 
 
@@ -514,7 +509,7 @@ SharedExp BasicBlock::getDest() const
     const RTL *lastRTL = getLastRTL();
 
     // It should contain a GotoStatement or derived class
-    Statement *lastStmt = lastRTL->getHlStmt();
+    SharedStmt lastStmt = lastRTL->getHlStmt();
     if (!lastStmt) {
         if (getNumSuccessors() > 0) {
             return Const::get(getSuccessor(BTHEN)->getLowAddr());
@@ -526,20 +521,15 @@ SharedExp BasicBlock::getDest() const
 
 
     if (lastStmt->isCase()) {
-        CaseStatement *cs = static_cast<CaseStatement *>(lastStmt);
         // Get the expression from the switch info
-        const SwitchInfo *si = cs->getSwitchInfo();
+        const SwitchInfo *si = lastStmt->as<CaseStatement>()->getSwitchInfo();
 
         if (si) {
             return si->switchExp;
         }
     }
-    else {
-        GotoStatement *gs = dynamic_cast<GotoStatement *>(lastStmt);
-
-        if (gs) {
-            return gs->getDest();
-        }
+    else if (lastStmt->isGoto()) {
+        return lastStmt->as<GotoStatement>()->getDest();
     }
 
     LOG_ERROR("Last statement of BB at address %1 is not a goto!", this->getLowAddr());
@@ -559,8 +549,7 @@ void BasicBlock::setCond(const SharedExp &e)
     // it should contain a BranchStatement
     for (auto it = last->rbegin(); it != last->rend(); ++it) {
         if ((*it)->getKind() == StmtType::Branch) {
-            assert(dynamic_cast<BranchStatement *>(*it) != nullptr);
-            static_cast<BranchStatement *>(*it)->setCondExpr(e);
+            (*it)->as<BranchStatement>()->setCondExpr(e);
             return;
         }
     }
@@ -626,7 +615,7 @@ bool BasicBlock::isSuccessorOf(const BasicBlock *bb) const
 }
 
 
-ImplicitAssign *BasicBlock::addImplicitAssign(const SharedExp &lhs)
+std::shared_ptr<ImplicitAssign> BasicBlock::addImplicitAssign(const SharedExp &lhs)
 {
     assert(m_listOfRTLs);
 
@@ -638,20 +627,20 @@ ImplicitAssign *BasicBlock::addImplicitAssign(const SharedExp &lhs)
     assert(m_listOfRTLs->size() < 2 ||
            (*std::next(m_listOfRTLs->begin()))->getAddress() != Address::ZERO);
 
-    for (Statement *s : *m_listOfRTLs->front()) {
-        if (s->isPhi() && *static_cast<PhiAssign *>(s)->getLeft() == *lhs) {
+    for (const SharedStmt &s : *m_listOfRTLs->front()) {
+        if (s->isPhi() && *s->as<PhiAssign>()->getLeft() == *lhs) {
             // phis kill implicits; don't add an implict assign
             // if we already have a phi assigning to the LHS
             return nullptr;
         }
-        else if (s->isImplicit() && *static_cast<ImplicitAssign *>(s)->getLeft() == *lhs) {
+        else if (s->isImplicit() && *s->as<ImplicitAssign>()->getLeft() == *lhs) {
             // already present
-            return static_cast<ImplicitAssign *>(s);
+            return s->as<ImplicitAssign>();
         }
     }
 
     // no phi or implicit assigning to the LHS already
-    ImplicitAssign *newImplicit = new ImplicitAssign(lhs);
+    std::shared_ptr<ImplicitAssign> newImplicit(new ImplicitAssign(lhs));
     newImplicit->setBB(this);
     newImplicit->setProc(static_cast<UserProc *>(m_function));
 
@@ -660,7 +649,7 @@ ImplicitAssign *BasicBlock::addImplicitAssign(const SharedExp &lhs)
 }
 
 
-PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
+std::shared_ptr<PhiAssign> BasicBlock::addPhi(const SharedExp &usedExp)
 {
     assert(m_listOfRTLs);
 
@@ -674,12 +663,12 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
 
     for (auto existingIt = m_listOfRTLs->front()->begin();
          existingIt != m_listOfRTLs->front()->end();) {
-        Statement *s = *existingIt;
-        if (s->isPhi() && *static_cast<PhiAssign *>(s)->getLeft() == *usedExp) {
+        SharedStmt s = *existingIt;
+        if (s->isPhi() && *s->as<PhiAssign>()->getLeft() == *usedExp) {
             // already present
-            return static_cast<PhiAssign *>(s);
+            return s->as<PhiAssign>();
         }
-        else if (s->isAssignment() && *static_cast<Assignment *>(s)->getLeft() == *usedExp) {
+        else if (s->isAssignment() && *s->as<Assignment>()->getLeft() == *usedExp) {
             // the LHS is already assigned to properly, don't create a second assignment
             return nullptr;
         }
@@ -687,7 +676,7 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
         ++existingIt;
     }
 
-    PhiAssign *phi = new PhiAssign(usedExp);
+    std::shared_ptr<PhiAssign> phi(new PhiAssign(usedExp));
     phi->setBB(this);
     phi->setProc(static_cast<UserProc *>(m_function));
 
@@ -700,13 +689,12 @@ void BasicBlock::clearPhis()
 {
     RTLIterator rit;
     StatementList::iterator sit;
-    for (Statement *s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+    for (SharedStmt s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
         if (!s->isPhi()) {
             continue;
         }
 
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-        phi->getDefs().clear();
+        s->as<PhiAssign>()->getDefs().clear();
     }
 }
 
@@ -744,14 +732,14 @@ void BasicBlock::updateBBAddresses()
 }
 
 
-bool BasicBlock::hasStatement(const Statement *stmt) const
+bool BasicBlock::hasStatement(const SharedStmt &stmt) const
 {
     if (!stmt || !m_listOfRTLs) {
         return false;
     }
 
     for (const auto &rtl : *m_listOfRTLs) {
-        for (const Statement *s : *rtl) {
+        for (const SharedStmt &s : *rtl) {
             if (s == stmt) {
                 return true;
             }
