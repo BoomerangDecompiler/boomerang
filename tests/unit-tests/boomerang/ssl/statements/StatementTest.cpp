@@ -1071,10 +1071,7 @@ void StatementTest::testAddUsedLocsBool()
     BoolAssign  bs(8);
 
     bs.setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_EAX)), Location::regOf(REG_PENT_ECX)));
-    std::list<Statement *> stmts;
-    stmts.push_back(new Assign(Location::memOf(Location::regOf(REG_PENT_EDX)), Terminal::get(opNil)));
-
-    bs.setLeftFromList(stmts);
+    bs.setLeft(Location::memOf(Location::regOf(REG_PENT_EDX)));
     bs.addUsedLocs(l);
 
     QString     actual;
@@ -1082,7 +1079,6 @@ void StatementTest::testAddUsedLocsBool()
     l.print(ost);
     QCOMPARE(actual, QString("r24,\tr25,\tr26,\tm[r24]"));
 
-    qDeleteAll(stmts);
     l.clear();
 
     // m[local21 + 16] := phi{0, 372}

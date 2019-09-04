@@ -197,16 +197,6 @@ bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc
 }
 
 
-void BoolAssign::setLeftFromList(const std::list<Statement *> &stmts)
-{
-    assert(stmts.size() == 1);
-    Assign *first = static_cast<Assign *>(stmts.front());
-    assert(first->getKind() == StmtType::Assign);
-
-    m_lhs = first->getLeft();
-}
-
-
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;

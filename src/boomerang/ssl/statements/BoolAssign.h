@@ -102,10 +102,6 @@ public:
     /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
-    /// a hack for the SETS macro
-    /// This is for setting up SETcc instructions; see include/decoder.h macro SETS
-    void setLeftFromList(const std::list<Statement *> &stmts);
-
 private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true
     SharedExp m_cond; ///< Exp representation of the high level condition: e.g. r[8] == 5
