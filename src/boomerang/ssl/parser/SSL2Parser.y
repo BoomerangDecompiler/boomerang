@@ -125,8 +125,8 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %printer { yyoutput << $$; } <*>;
 %printer { yyoutput << $$.toStdString(); } <QString>;
 %printer { yyoutput << $$->toString().toStdString(); } <SharedExp>;
-%printer { yyoutput << $$->toString().toStdString(); } <Statement *>;
-%printer { yyoutput << $$->toString().toStdString(); } <Assign *>;
+%printer { yyoutput << $$->toString().toStdString(); } <SharedStmt>;
+%printer { yyoutput << $$->toString().toStdString(); } <std::shared_ptr<Assign>>;
 %printer {
     yyoutput << "{ ";
     bool first = true;
