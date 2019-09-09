@@ -263,7 +263,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         const SharedConstStmt lastStmt = !inst.rtl->empty() ? inst.rtl->back() : nullptr;
 
-        if (lastStmt && lastStmt->getKind() == StmtType::Goto) {
+        if (lastStmt && lastStmt->isGoto()) {
             // Example: Borland often starts with a branch
             // around some debug info
             addr = lastStmt->as<const GotoStatement>()->getFixedDest();
