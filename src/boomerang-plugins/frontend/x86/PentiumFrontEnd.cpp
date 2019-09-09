@@ -105,9 +105,10 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
             std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         newRTL->append(a);
-        a = std::make_shared<Assign>(Location::regOf(REG_PENT_EDX),
-                       Binary::get(opShR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
-                                   Const::get(32)));
+        a = std::make_shared<Assign>(
+            Location::regOf(REG_PENT_EDX),
+            Binary::get(opShR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
+                        Const::get(32)));
         newRTL->append(a);
 
         // Append this RTL to the list of RTLs for this BB
@@ -216,7 +217,8 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
             if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
                 // using back instead of rtl[1], since size()==2
-                std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(inst.rtl->back());
+                std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(
+                    inst.rtl->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
                     decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
@@ -248,7 +250,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
                 decodeSingleInstruction(prevAddr, inst);
                 if (inst.valid && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
                     std::shared_ptr<Assign> a = inst.rtl->front()->as<Assign>(); // Get m[esp-4] = K
-                    SharedExp rhs = a->getRight();
+                    SharedExp rhs             = a->getRight();
                     if (rhs->isIntConst()) {
                         gotMain = true;
                         return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
@@ -259,7 +261,8 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        std::shared_ptr<const GotoStatement> gs = std::dynamic_pointer_cast<const GotoStatement>(inst.rtl->back());
+        std::shared_ptr<const GotoStatement> gs = std::dynamic_pointer_cast<const GotoStatement>(
+            inst.rtl->back());
         if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch
             // around some debug info
@@ -328,9 +331,10 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             continue;
         }
 
-        std::unique_ptr<RTL>
-            overlapResult = m_decoder->getDict()->getRegDB()->processOverlappedRegs(
-                s->as<Assignment>(), usedRegs);
+        std::unique_ptr<RTL> overlapResult = m_decoder->getDict()
+                                                 ->getRegDB()
+                                                 ->processOverlappedRegs(s->as<Assignment>(),
+                                                                         usedRegs);
 
         if (overlapResult) {
             for (SharedStmt res : *overlapResult) {
@@ -344,7 +348,8 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call, const RTLList &BB_rtls)
+void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
+                                       const RTLList &BB_rtls)
 {
     if (!call->getDestProc()) {
         return;

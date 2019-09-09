@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/util/LocationSet.h"
 #include "boomerang/ssl/statements/Statement.h"
+#include "boomerang/util/LocationSet.h"
 
 #include <map>
 #include <unordered_map>

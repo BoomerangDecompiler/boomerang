@@ -353,7 +353,7 @@ void ReturnStatement::print(OStream &os) const
             QString tgt2;
             OStream ost(&tgt2);
             std::shared_ptr<const Assignment> asgn = stmt->as<const Assignment>();
-            const SharedType ty  = asgn->getType();
+            const SharedType ty                    = asgn->getType();
 
             if (ty) {
                 ost << "*" << ty << "* ";
@@ -398,7 +398,8 @@ void ReturnStatement::updateModifieds()
     m_modifieds.clear();
 
     if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessors()[0]->getLastStmt()->isCall()) {
-        std::shared_ptr<CallStatement> call = m_bb->getPredecessors()[0]->getLastStmt()->as<CallStatement>();
+        std::shared_ptr<CallStatement>
+            call = m_bb->getPredecessors()[0]->getLastStmt()->as<CallStatement>();
 
         IFrontEnd *fe = m_proc->getProg()->getFrontEnd();
         if (call->getDestProc() && fe->isNoReturnCallDest(call->getDestProc()->getName())) {
@@ -411,9 +412,9 @@ void ReturnStatement::updateModifieds()
     // existing modifeds, M collected locations)
 
     for (SharedStmt stmt : m_col) {
-        bool found       = false;
+        bool found                   = false;
         std::shared_ptr<Assign> asgn = stmt->as<Assign>();
-        SharedExp colLhs = asgn->getLeft();
+        SharedExp colLhs             = asgn->getLeft();
 
         if (m_proc->filterReturns(colLhs)) {
             continue; // Filtered out
@@ -429,8 +430,8 @@ void ReturnStatement::updateModifieds()
         }
 
         if (!found) {
-            std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(asgn->getType()->clone(),
-                                                asgn->getLeft()->clone()));
+            std::shared_ptr<ImplicitAssign> ias(
+                new ImplicitAssign(asgn->getType()->clone(), asgn->getLeft()->clone()));
             ias->setProc(m_proc); // Comes from the Collector
             ias->setBB(m_bb);
             oldMods.append(ias);
@@ -443,7 +444,7 @@ void ReturnStatement::updateModifieds()
     for (auto rit = oldMods.rbegin(); rit != oldMods.rend(); ++rit) {
         // Make sure the LHS is still in the collector
         std::shared_ptr<Assignment> asgn = (*rit)->as<Assignment>();
-        SharedExp lhs  = asgn->getLeft();
+        SharedExp lhs                    = asgn->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
             continue; // Not in collector: delete it (don't copy it)

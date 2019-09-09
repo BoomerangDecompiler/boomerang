@@ -91,7 +91,7 @@ void StmtSSAXformer::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitCh
 }
 
 
-void StmtSSAXformer::visit(const std::shared_ptr<CallStatement>&stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren)
 {
     SharedExp callDest = stmt->getDest();
 

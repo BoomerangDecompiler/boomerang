@@ -59,7 +59,8 @@ private:
      * S is an RTL with 6 statements representing one string instruction (so this function is highly
      * specialised for the job of replacing the %SKIP and %RPT parts of string instructions)
      */
-    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL, std::shared_ptr<BranchStatement> skipBranch,
+    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL,
+                               std::shared_ptr<BranchStatement> skipBranch,
                                std::shared_ptr<BranchStatement> rptBranch);
 
 private:

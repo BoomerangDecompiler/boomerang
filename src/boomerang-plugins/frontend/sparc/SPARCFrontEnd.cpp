@@ -56,8 +56,8 @@ bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t de
 }
 
 
-BasicBlock *SPARCFrontEnd::optimizeCallReturn(std::shared_ptr<CallStatement> call, const RTL *rtl, const RTL *delay,
-                                              UserProc *proc)
+BasicBlock *SPARCFrontEnd::optimizeCallReturn(std::shared_ptr<CallStatement> call, const RTL *rtl,
+                                              const RTL *delay, UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
         // The only RTL in the basic block is a ReturnStatement
@@ -136,11 +136,12 @@ void SPARCFrontEnd::case_unhandled_stub(Address addr)
 
 bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delayInst,
                               std::unique_ptr<RTLList> &BB_rtls, UserProc *proc,
-                              std::list<std::shared_ptr<CallStatement>> &callList, bool isPattern /* = false*/)
+                              std::list<std::shared_ptr<CallStatement>> &callList,
+                              bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
     std::shared_ptr<CallStatement> callStmt = inst.rtl->back()->as<CallStatement>();
-    RTL *delayRTL           = delayInst.rtl.get();
+    RTL *delayRTL                           = delayInst.rtl.get();
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or
     // are followed by a restore
@@ -252,7 +253,7 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
 {
     // Aliases for the SD and delay RTLs
     std::shared_ptr<GotoStatement> SD_stmt = inst.rtl->back()->as<GotoStatement>();
-    RTL *delay_rtl         = delay_inst.rtl.get();
+    RTL *delay_rtl                         = delay_inst.rtl.get();
 
     // Try the "delay instruction has been copied" optimisation,
     // emitting the delay instruction now if the optimisation won't apply
@@ -287,7 +288,8 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
 
 bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
                             DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                            TargetQueue &, UserProc *proc, std::list<std::shared_ptr<CallStatement>> &callList)
+                            TargetQueue &, UserProc *proc,
+                            std::list<std::shared_ptr<CallStatement>> &callList)
 {
     ProcCFG *cfg  = proc->getCFG();
     RTL *rtl      = inst.rtl.get();
@@ -348,7 +350,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
     if (last->getKind() == StmtType::Call) {
         // Attempt to add a return BB if the delay instruction is a RESTORE
         std::shared_ptr<CallStatement> call_stmt = last->as<CallStatement>();
-        BasicBlock *returnBB     = optimizeCallReturn(call_stmt, rtl, delayRTL, proc);
+        BasicBlock *returnBB = optimizeCallReturn(call_stmt, rtl, delayRTL, proc);
 
         if (returnBB != nullptr) {
             cfg->addEdge(newBB, returnBB);
@@ -388,7 +390,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
                              std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
     std::shared_ptr<GotoStatement> jumpStmt = inst.rtl->back()->as<GotoStatement>();
-    Address jumpDest        = jumpStmt->getFixedDest();
+    Address jumpDest                        = jumpStmt->getFixedDest();
 
     // Assume that if we find a call in the delay slot, it's actually a pattern such as
     // move/call/move MVE: Check this! Only needed for HP PA/RISC
@@ -500,8 +502,8 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
     // the orphan. We do just a binary comparison; that may fail to make this optimisation if the
     // instr has relative fields.
     std::shared_ptr<GotoStatement> jumpStmt = inst.rtl->back()->as<GotoStatement>();
-    Address jumpDest        = jumpStmt->getFixedDest();
-    BasicBlock *newBB       = nullptr;
+    Address jumpDest                        = jumpStmt->getFixedDest();
+    BasicBlock *newBB                       = nullptr;
 
     if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
         // Adjust the destination of the branch
@@ -823,7 +825,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    std::shared_ptr<const GotoStatement> delayJump = delayRTL->back()->as<GotoStatement>();
+                    std::shared_ptr<const GotoStatement> delayJump = delayRTL->back()
+                                                                         ->as<GotoStatement>();
                     const Address dest = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
@@ -1048,7 +1051,8 @@ void SPARCFrontEnd::emitCopyPC(RTLList &rtls, Address addr)
 void SPARCFrontEnd::appendAssignment(const SharedExp &lhs, const SharedExp &rhs, SharedType type,
                                      Address addr, RTLList &lrtl)
 {
-    lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { std::make_shared<Assign>(type, lhs, rhs) })));
+    lrtl.push_back(
+        std::unique_ptr<RTL>(new RTL(addr, { std::make_shared<Assign>(type, lhs, rhs) })));
 }
 
 
@@ -1168,18 +1172,18 @@ void SPARCFrontEnd::gen32op32gives64(OPER op, RTLList &lrtl, Address addr)
     //        32 high-order bits of the 64 bit r[rd].
 
     // r[tmp] = r8 op r9
-    std::shared_ptr<Assign> a(new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
-                           Binary::get(op, // opMult or opMults
-                                       Location::regOf(REG_SPARC_O0),
-                                       Location::regOf(REG_SPARC_O1))));
+    std::shared_ptr<Assign> a(
+        new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
+                   Binary::get(op, // opMult or opMults
+                               Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1))));
     ls->push_back(a);
     // r8 = r[tmp];     /* low-order bits */
     a = std::make_shared<Assign>(Location::regOf(REG_SPARC_O0),
-                   Location::tempOf(Const::get(const_cast<char *>("tmp"))));
+                                 Location::tempOf(Const::get(const_cast<char *>("tmp"))));
     ls->push_back(a);
     // r9 = %Y;         /* high-order bits */
     a = std::make_shared<Assign>(Location::regOf(REG_SPARC_O0),
-                   Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
+                                 Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
     ls->push_back(a);
 #endif /* V9_ONLY */
 

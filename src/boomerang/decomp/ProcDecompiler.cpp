@@ -90,7 +90,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
             assert(hl->isCall());
             std::shared_ptr<CallStatement> call = hl->as<CallStatement>();
-            UserProc *callee = dynamic_cast<UserProc *>(call->getDestProc());
+            UserProc *callee                    = dynamic_cast<UserProc *>(call->getDestProc());
 
             if (callee == nullptr) { // not an user proc, or missing dest
                 continue;

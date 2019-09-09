@@ -113,8 +113,8 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                 continue;
             }
 
-            const std::shared_ptr<Assignment> as  = s->as<Assignment>();
-            SharedConstExp asLeft = as->getLeft();
+            const std::shared_ptr<Assignment> as = s->as<Assignment>();
+            SharedConstExp asLeft                = as->getLeft();
 
             if (asLeft && (asLeft->getOper() == opGlobal)) {
                 // assignments to globals must always be kept

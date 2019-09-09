@@ -13,7 +13,6 @@
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 
 
-
 class ExpRegMapper;
 class Assignment;
 

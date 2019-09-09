@@ -277,7 +277,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
         if (rtl->back()->isBranch()) {
             std::shared_ptr<BranchStatement> branch = rtl->back()->as<BranchStatement>();
-            const bool isComputedJump = !branch->getDest()->isIntConst();
+            const bool isComputedJump               = !branch->getDest()->isIntConst();
 
             BranchType bt = BranchType::INVALID;
             switch (instruction->id) {
@@ -447,7 +447,7 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
     //
 
     std::shared_ptr<BranchStatement> b = nullptr;
-    result.rtl         = std::unique_ptr<RTL>(new RTL(pc + m_bsfrState));
+    result.rtl                         = std::unique_ptr<RTL>(new RTL(pc + m_bsfrState));
 
     const cs::cs_x86_op &dstOp = instruction->detail->x86.operands[0];
     const cs::cs_x86_op &srcOp = instruction->detail->x86.operands[1];
@@ -461,7 +461,8 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
 
     switch (m_bsfrState) {
     case 0:
-        result.rtl->append(std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
+        result.rtl->append(
+            std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
         b.reset(new BranchStatement);
         b->setDest(pc + instruction->size);
         b->setCondType(BranchType::JE);
@@ -470,13 +471,16 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
         break;
 
     case 1:
-        result.rtl->append(std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
+        result.rtl->append(
+            std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
+        result.rtl->append(
+            std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
         break;
 
     case 2:
-        result.rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
-                                      Binary::get(incdec, dest->clone(), Const::get(1))));
+        result.rtl->append(
+            std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
+                                     Binary::get(incdec, dest->clone(), Const::get(1))));
         b.reset(new BranchStatement);
         b->setDest(pc + 2);
         b->setCondType(BranchType::JE);

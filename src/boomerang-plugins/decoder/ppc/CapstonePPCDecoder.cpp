@@ -167,13 +167,13 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
     }
 
     if (insnID == "BL" || insnID == "BLA") {
-        Address callDest        = Address(operands[0].imm);
+        Address callDest = Address(operands[0].imm);
         std::shared_ptr<CallStatement> callStmt(new CallStatement);
         callStmt->setDest(callDest);
         callStmt->setIsComputed(false);
 
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
-                               Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
+                                             Const::get(pc + PPC_MAX_INSTRUCTION_LENGTH)));
         rtl->append(callStmt);
 
         if (m_prog) {
@@ -191,7 +191,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
     }
     else if (insnID == "BCTRL") {
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
-                               Const::get(Address(pc + 4))));
+                                             Const::get(Address(pc + 4))));
 
         std::shared_ptr<CallStatement> call(new CallStatement);
         call->setDest(Location::regOf(REG_PPC_CTR));
@@ -278,8 +278,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
             const SharedExp memExp = Location::memOf(
                 Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            std::shared_ptr<Assign> asgn(new Assign(SizeType::get(STD_SIZE), memExp->simplify(),
-                                      Location::regOf(reg)));
+            std::shared_ptr<Assign> asgn(
+                new Assign(SizeType::get(STD_SIZE), memExp->simplify(), Location::regOf(reg)));
 
             rtl->append(asgn);
         }
@@ -295,8 +295,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
             const SharedExp memExp = Location::memOf(
                 Binary::get(opPlus, startAddrExp->clone(), Const::get(4 * i)));
 
-            std::shared_ptr<Assign> asgn(new Assign(SizeType::get(STD_SIZE), Location::regOf(reg),
-                                      memExp->simplify()));
+            std::shared_ptr<Assign> asgn(
+                new Assign(SizeType::get(STD_SIZE), Location::regOf(reg), memExp->simplify()));
 
             rtl->append(asgn);
         }
@@ -306,7 +306,8 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(Address pc,
         const SharedExp srcBase = Location::regOf(fixRegNum(operands[1].mem.base));
         const SharedExp offset  = Const::get(operands[1].mem.disp);
 
-        rtl->append(std::make_shared<Assign>(SizeType::get(32), srcBase, Binary::get(opPlus, srcBase, offset)));
+        rtl->append(std::make_shared<Assign>(SizeType::get(32), srcBase,
+                                             Binary::get(opPlus, srcBase, offset)));
     }
 
     return rtl;

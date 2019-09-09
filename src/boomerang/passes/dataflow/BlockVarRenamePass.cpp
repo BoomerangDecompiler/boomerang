@@ -312,7 +312,8 @@ bool BlockVarRenamePass::execute(UserProc *proc)
 }
 
 
-void BlockVarRenamePass::subscriptVar(const SharedStmt &stmt, SharedExp var, const SharedStmt &varDef)
+void BlockVarRenamePass::subscriptVar(const SharedStmt &stmt, SharedExp var,
+                                      const SharedStmt &varDef)
 {
     ExpSubscripter es(var, varDef);
     StmtSubscripter ss(&es);

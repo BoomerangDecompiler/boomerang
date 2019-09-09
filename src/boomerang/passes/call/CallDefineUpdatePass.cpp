@@ -46,7 +46,8 @@ bool CallDefineUpdatePass::execute(UserProc *proc)
 }
 
 
-bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, const std::shared_ptr<CallStatement> &callStmt)
+bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
+                                             const std::shared_ptr<CallStatement> &callStmt)
 {
     assert(callStmt->getProc() == proc);
     Function *callee = callStmt->getDestProc();
@@ -77,7 +78,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, const std::shared_p
 
         for (SharedStmt mm : modifieds) {
             std::shared_ptr<Assignment> as = mm->as<Assignment>();
-            SharedExp loc  = as->getLeft();
+            SharedExp loc                  = as->getLeft();
 
             if (proc->filterReturns(loc)) {
                 continue;
@@ -109,7 +110,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, const std::shared_p
     for (SharedStmt stmt : newDefines) {
         // Make sure the LHS is still in the return or collector
         std::shared_ptr<Assignment> as = stmt->as<Assignment>();
-        SharedExp lhs  = as->getLeft();
+        SharedExp lhs                  = as->getLeft();
 
         if (callStmt->getCalleeReturn()) {
             if (!callStmt->getCalleeReturn()->definesLoc(lhs)) {

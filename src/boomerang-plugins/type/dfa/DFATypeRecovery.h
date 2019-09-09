@@ -53,7 +53,7 @@ public:
 private:
     void dfaTypeAnalysis(UserProc *proc);
     bool dfaTypeAnalysis(Signature *signature, ProcCFG *cfg);
-//     bool dfaTypeAnalysis(const SharedStmt &stmt);
+    //     bool dfaTypeAnalysis(const SharedStmt &stmt);
 
     void printResults(StatementList &stmts, int iter);
 

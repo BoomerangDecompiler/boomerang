@@ -66,9 +66,7 @@ Assign::Assign(const Assign &other)
 SharedStmt Assign::clone() const
 {
     std::shared_ptr<Assign> asgn = std::make_shared<Assign>(
-        m_type == nullptr ? nullptr : m_type->clone(),
-        m_lhs->clone(),
-        m_rhs->clone(),
+        m_type == nullptr ? nullptr : m_type->clone(), m_lhs->clone(), m_rhs->clone(),
         m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members

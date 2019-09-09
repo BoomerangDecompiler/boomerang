@@ -16,8 +16,6 @@
 #include <map>
 
 
-
-
 /// Remove unused statements
 class UnusedStatementRemovalPass final : public IPass
 {

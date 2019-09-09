@@ -13,7 +13,8 @@
 #include "boomerang/visitor/expmodifier/ExpSubscriptReplacer.h"
 
 
-StmtSubscriptReplacer::StmtSubscriptReplacer(const SharedConstStmt &original, const SharedStmt &replacement)
+StmtSubscriptReplacer::StmtSubscriptReplacer(const SharedConstStmt &original,
+                                             const SharedStmt &replacement)
     : StmtModifier(new ExpSubscriptReplacer(original, replacement), false)
 {
 }

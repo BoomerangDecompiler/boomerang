@@ -30,7 +30,8 @@ template<typename T, typename Sorter = void,
          typename Enabler = std::enable_if<std::is_base_of<Statement, T>::value>>
 class StmtSet
 {
-    using Set = typename std::conditional<std::is_void<Sorter>::value, std::unordered_set<std::shared_ptr<T>>,
+    using Set = typename std::conditional<std::is_void<Sorter>::value,
+                                          std::unordered_set<std::shared_ptr<T>>,
                                           std::set<std::shared_ptr<T>, Sorter>>::type;
 
 public:

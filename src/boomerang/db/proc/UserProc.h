@@ -163,7 +163,8 @@ public:
     ///
     /// Example: (newRhs = r28{2})
     ///  r24 := phi(r25{5}, r27{6})  -> r24 := r28{2}
-    std::shared_ptr<Assign> replacePhiByAssign(const std::shared_ptr<const PhiAssign> &orig, const SharedExp &newRhs);
+    std::shared_ptr<Assign> replacePhiByAssign(const std::shared_ptr<const PhiAssign> &orig,
+                                               const SharedExp &newRhs);
 
 public:
     // parameter related
@@ -372,7 +373,8 @@ private:
 
     /// helper function for proveEqual()
     bool prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &lastPhis,
-                std::map<std::shared_ptr<PhiAssign>, SharedExp> &cache, std::shared_ptr<PhiAssign> lastPhi = nullptr);
+                std::map<std::shared_ptr<PhiAssign>, SharedExp> &cache,
+                std::shared_ptr<PhiAssign> lastPhi = nullptr);
 
     // FIXME: is this the same as lookupSym() now?
     /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use

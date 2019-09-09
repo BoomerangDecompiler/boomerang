@@ -298,7 +298,8 @@ public:
     /// Propagate to e from definition statement def.
     /// \returns true if a change made
     /// \note this procedure does not control what part of this statement is propagated to
-    bool doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def, Settings *settings);
+    bool doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def,
+                       Settings *settings);
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement

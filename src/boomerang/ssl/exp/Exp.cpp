@@ -459,7 +459,7 @@ SharedExp Exp::removeSubscripts(bool &allZero)
 
     for (const SharedExp &loc : locs) {
         if (loc->isSubscript()) {
-            auto r1              = loc->access<RefExp>();
+            auto r1             = loc->access<RefExp>();
             SharedConstStmt def = r1->getDef();
 
             if (def && def->getNumber() != 0) {

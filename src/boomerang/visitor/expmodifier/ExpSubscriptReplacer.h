@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/ssl/statements/Statement.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
 
 
 /// replaces the subscript in e{foo} -> e{bar}

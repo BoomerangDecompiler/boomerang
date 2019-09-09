@@ -376,7 +376,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 s->simplify();
-                std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(s);
+                std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(
+                    s);
 
                 // Check for a call to an already existing procedure (including self recursive
                 // jumps), or to the PLT (note that a LibProc entry for the PLT function may not yet
@@ -442,7 +443,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
                                 jumpDest->access<Const, 1>()->getAddr());
                         assert(sym != nullptr);
-                        QString func        = sym->getName();
+                        QString func = sym->getName();
                         std::shared_ptr<CallStatement> call(new CallStatement);
                         call->setDest(jumpDest->clone());
                         LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
@@ -647,7 +648,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 // Constuct the RTLs for the new basic block
                                 std::unique_ptr<RTLList> rtls(new RTLList);
                                 rtls->push_back(std::unique_ptr<RTL>(
-                                    new RTL(rtl->getAddress() + 1, { std::make_shared<ReturnStatement>() })));
+                                    new RTL(rtl->getAddress() + 1,
+                                            { std::make_shared<ReturnStatement>() })));
                                 BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
 
                                 // Add out edge from call to return
@@ -997,7 +999,8 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
+    std::unique_ptr<RTL> retRTL(
+        new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
     assert(callBB->getNumSuccessors() == 0);
@@ -1073,7 +1076,8 @@ UserProc *DefaultFrontEnd::createFunctionForEntryPoint(Address entryAddr,
 }
 
 
-Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc)
+Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call,
+                                               UserProc *proc)
 {
     if (!call || call->getFixedDest() == Address::INVALID) {
         return Address::INVALID;

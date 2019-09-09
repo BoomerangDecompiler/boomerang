@@ -150,8 +150,8 @@ void DFATypeRecovery::replaceArrayIndices(const SharedStmt &s)
         if (s->searchAndReplace(scaledArrayPat, array)) {
             if (s->isImplicit()) {
                 // Register an array of appropriate type
-                prog->markGlobalUsed(
-                    base, ArrayType::get(s->as<const ImplicitAssign>()->getType()));
+                prog->markGlobalUsed(base,
+                                     ArrayType::get(s->as<const ImplicitAssign>()->getType()));
             }
             else if (s->isCall()) {
                 // array of function pointers
@@ -349,7 +349,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                                 Binary::get(opPlus, Unary::get(opAddrOf, g), Const::get(r)), proc);
                         }
                         else {
-                            SharedType ty = _prog->getGlobalType(gloName);
+                            SharedType ty                 = _prog->getGlobalType(gloName);
                             std::shared_ptr<Assign> assgn = std::dynamic_pointer_cast<Assign>(s);
 
                             if (assgn && s->isAssign() && assgn->getType()) {
@@ -425,8 +425,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
                         if (isImplicit) {
                             // Replace the implicit assignment entry. Note that s' lhs has changed
-                            cfg->findOrCreateImplicitAssign(
-                                s->as<ImplicitAssign>()->getLeft());
+                            cfg->findOrCreateImplicitAssign(s->as<ImplicitAssign>()->getLeft());
                         }
 
                         // Ensure that the global is declared
@@ -545,7 +544,8 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(bb->getLastStmt(rrit, srit));
+        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
+            bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

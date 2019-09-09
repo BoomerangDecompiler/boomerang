@@ -466,8 +466,8 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
         }
 
         std::shared_ptr<PhiAssign> pa = stmt->as<PhiAssign>();
-        SharedExp lhs = pa->getLeft();
-        auto reLhs    = RefExp::get(lhs, pa);
+        SharedExp lhs                 = pa->getLeft();
+        auto reLhs                    = RefExp::get(lhs, pa);
 
         for (const std::shared_ptr<RefExp> &v : *pa) {
             assert(v->getSubExp1());

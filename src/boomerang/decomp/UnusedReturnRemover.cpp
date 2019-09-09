@@ -105,7 +105,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
             assert(*retIt != nullptr && (*retIt)->isAssign());
             std::shared_ptr<Assign> retDef = (*retIt)->as<Assign>();
-            SharedExp lhs  = retDef->getLeft();
+            SharedExp lhs                  = retDef->getLeft();
 
             // For each location in the returns, check if in the signature
             bool found = false;
@@ -249,7 +249,8 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(bb->getLastStmt(rrit, srit));
+        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
+            bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

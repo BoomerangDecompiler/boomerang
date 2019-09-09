@@ -113,7 +113,7 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
         // Special checking for recursive calls
         if (s->isCall()) {
             std::shared_ptr<CallStatement> c = s->as<CallStatement>();
-            UserProc *dest   = dynamic_cast<UserProc *>(c->getDestProc());
+            UserProc *dest                   = dynamic_cast<UserProc *>(c->getDestProc());
 
             if (dest && dest->doesRecurseTo(proc)) {
                 // In the destination expression?

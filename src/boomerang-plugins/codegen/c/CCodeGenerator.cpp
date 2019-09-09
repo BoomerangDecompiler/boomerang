@@ -259,9 +259,9 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
         assert((*ss)->isAssignment());
 
         std::shared_ptr<Assignment> arg_assign = (*ss)->as<Assignment>();
-        SharedType t           = arg_assign->getType();
-        SharedExp as_arg       = arg_assign->getRight();
-        bool ok                = true;
+        SharedType t                           = arg_assign->getType();
+        SharedExp as_arg                       = arg_assign->getRight();
+        bool ok                                = true;
 
         if (as_arg->isIntConst() && t && t->isPointer() &&
             t->as<PointerType>()->getPointsTo()->isFunc()) {
@@ -513,7 +513,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
     }
     else {
         std::shared_ptr<Assign> firstRet = (*returns->begin())->as<Assign>();
-        retType          = firstRet->getType();
+        retType                          = firstRet->getType();
 
         if ((retType == nullptr) || retType->isVoid()) {
             // There is a real return; make it integer (Remove with AD HOC type analysis)
@@ -547,8 +547,8 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         }
 
         std::shared_ptr<Assignment> as = parameter->as<Assignment>();
-        SharedExp left = as->getLeft();
-        SharedType ty  = as->getType();
+        SharedExp left                 = as->getLeft();
+        SharedType ty                  = as->getType();
 
         if (ty == nullptr) {
             if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
@@ -2701,7 +2701,7 @@ void CCodeGenerator::emitCodeForStmt(const SharedConstStmt &st)
     }
     case StmtType::Call: {
         std::shared_ptr<const CallStatement> call = st->as<const CallStatement>();
-        const Function *dest      = call->getDestProc();
+        const Function *dest                      = call->getDestProc();
 
         if (dest == nullptr) {
             if (call->isComputed()) {
@@ -2733,8 +2733,9 @@ void CCodeGenerator::emitCodeForStmt(const SharedConstStmt &st)
         std::shared_ptr<const BoolAssign> bas = st->as<const BoolAssign>();
 
         // lhs := (m_cond) ? 1 : 0
-        std::shared_ptr<Assign> as = std::make_shared<Assign>(bas->getLeft()->clone(),
-                  Ternary::get(opTern, bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
+        std::shared_ptr<Assign> as = std::make_shared<Assign>(
+            bas->getLeft()->clone(),
+            Ternary::get(opTern, bas->getCondExpr()->clone(), Const::get(1), Const::get(0)));
         addAssignmentStatement(as);
         break;
     }

@@ -12,7 +12,6 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 
-
 #include <memory>
 
 

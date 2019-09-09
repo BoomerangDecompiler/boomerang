@@ -157,7 +157,8 @@ void CallStatement::setSigArguments()
             l->setProc(m_proc); // Needed?
         }
 
-        std::shared_ptr<Assign> asgn = std::make_shared<Assign>(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
+        std::shared_ptr<Assign> asgn = std::make_shared<Assign>(
+            m_signature->getParamType(i)->clone(), e->clone(), e->clone());
 
         asgn->setProc(m_proc);
         asgn->setBB(m_bb);
@@ -963,8 +964,9 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
         case '%': break; // Ignore %% (emits 1 percent char)
 
-        default: LOG_WARN("Unhandled format character %1 in format string for call %2",
-            ch, shared_from_this());
+        default:
+            LOG_WARN("Unhandled format character %1 in format string for call %2", ch,
+                     shared_from_this());
         }
     }
 
@@ -1092,7 +1094,7 @@ void CallStatement::updateArguments()
     for (SharedStmt oldArg : oldArguments) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         std::shared_ptr<Assign> asgn = oldArg->as<Assign>();
-        SharedExp lhs = asgn->getLeft();
+        SharedExp lhs                = asgn->getLeft();
 
         if (!asp.exists(lhs)) {
             continue;
@@ -1149,7 +1151,8 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
         }
 
         result->sort([sig](const SharedConstStmt &left, const SharedConstStmt &right) {
-            return sig->returnCompare(*left->as<const Assignment>(), *right->as<const Assignment>());
+            return sig->returnCompare(*left->as<const Assignment>(),
+                                      *right->as<const Assignment>());
         });
     }
 

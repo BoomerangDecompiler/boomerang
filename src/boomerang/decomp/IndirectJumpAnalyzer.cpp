@@ -294,8 +294,9 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
             continue;
         }
 
-        const std::shared_ptr<const BranchStatement> lastStmt = pred->getLastStmt()->as<const BranchStatement>();
-        SharedConstExp lastCondition    = lastStmt->getCondExpr();
+        const std::shared_ptr<const BranchStatement> lastStmt = pred->getLastStmt()
+                                                                    ->as<const BranchStatement>();
+        SharedConstExp lastCondition = lastStmt->getCondExpr();
         if (lastCondition->getArity() != 2) {
             continue;
         }

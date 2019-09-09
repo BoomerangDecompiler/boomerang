@@ -91,10 +91,7 @@ public:
     SharedExp getProven(SharedExp e);
 
     std::shared_ptr<Signature> getSignature() { return m_signature; }
-    void setSignature(const std::shared_ptr<Signature> &sig)
-    {
-        m_signature = sig;
-    }
+    void setSignature(const std::shared_ptr<Signature> &sig) { m_signature = sig; }
 
     /// Localise the various components of expression e with reaching definitions to this call
     /// Note: can change e so usually need to clone the argument

@@ -12,7 +12,8 @@
 #include "boomerang/ssl/exp/RefExp.h"
 
 
-ExpSubscriptReplacer::ExpSubscriptReplacer(const SharedConstStmt &original, const SharedStmt &replacement)
+ExpSubscriptReplacer::ExpSubscriptReplacer(const SharedConstStmt &original,
+                                           const SharedStmt &replacement)
     : m_orig(original)
     , m_replacement(replacement)
 {

@@ -17,8 +17,8 @@
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
@@ -142,7 +142,7 @@ bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExp
 
             assert(e->access<RefExp>()->getDef()->isAssignment());
             std::shared_ptr<Assignment> def = e->access<RefExp>()->getDef()->as<Assignment>();
-            SharedExp rhs   = def->getRight();
+            SharedExp rhs                   = def->getRight();
 
             // If force is true, ignore the fact that a memof should not be propagated (for switch
             // analysis)
@@ -199,7 +199,8 @@ bool Statement::propagateFlagsTo(Settings *settings)
                 continue; // e.g. %pc
             }
 
-            std::shared_ptr<Assignment> def = std::dynamic_pointer_cast<Assignment>(e->access<RefExp>()->getDef());
+            std::shared_ptr<Assignment> def = std::dynamic_pointer_cast<Assignment>(
+                e->access<RefExp>()->getDef());
             if (!def || !def->getRight()) { // process only if it has definition with rhs
                 continue;
             }
@@ -223,7 +224,8 @@ void Statement::setTypeForExp(SharedExp, SharedType)
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def, Settings *settings)
+bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def,
+                              Settings *settings)
 {
     // Respect the -p N switch
     if (settings->numToPropagate >= 0) {

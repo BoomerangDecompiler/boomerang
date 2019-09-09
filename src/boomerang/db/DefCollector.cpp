@@ -37,7 +37,7 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessEx
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto re    = RefExp::get(Stack.first->clone(), Stack.second.back());
+        auto re = RefExp::get(Stack.first->clone(), Stack.second.back());
         std::shared_ptr<Assign> as(new Assign(Stack.first->clone(), re));
         as->setProc(proc); // Simplify sometimes needs this
         insert(as);

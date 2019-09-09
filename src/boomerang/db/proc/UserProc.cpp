@@ -264,7 +264,8 @@ bool UserProc::insertStatementAfter(const SharedStmt &afterThis, const SharedStm
 }
 
 
-std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const PhiAssign > &orig, const SharedExp &rhs)
+std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const PhiAssign> &orig,
+                                                     const SharedExp &rhs)
 {
     // I believe we always want to propagate to these ex-phi's; check!
     SharedExp newRhs = rhs->propagateAll();
@@ -348,11 +349,11 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
     // Wrap it in an implicit assignment; DFA based TA should update the type later
     std::shared_ptr<ImplicitAssign> as(new ImplicitAssign(ty->clone(), e->clone()));
 
-    auto it = std::lower_bound(m_parameters.begin(), m_parameters.end(), as,
-                               [this](const SharedStmt &stmt, const std::shared_ptr<Assignment> &a) {
-                                   return m_signature->argumentCompare(
-                                       *stmt->as<const Assignment>(), *a);
-                               });
+    auto it = std::lower_bound(
+        m_parameters.begin(), m_parameters.end(), as,
+        [this](const SharedStmt &stmt, const std::shared_ptr<Assignment> &a) {
+            return m_signature->argumentCompare(*stmt->as<const Assignment>(), *a);
+        });
 
     if (it == m_parameters.end() || *(*it)->as<ImplicitAssign>()->getLeft() != *as->getLeft()) {
         // not a duplicate
@@ -991,8 +992,7 @@ void UserProc::printParams(OStream &out) const
                 out << ", ";
             }
 
-            out << elem->as<Assignment>()->getType() << " "
-                << elem->as<Assignment>()->getLeft();
+            out << elem->as<Assignment>()->getType() << " " << elem->as<Assignment>()->getLeft();
         }
     }
     else {
@@ -1246,7 +1246,8 @@ bool UserProc::proveEqual(const SharedExp &queryLeft, const SharedExp &queryRigh
 
 
 bool UserProc::prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &lastPhis,
-                      std::map<std::shared_ptr<PhiAssign>, SharedExp> &cache, std::shared_ptr<PhiAssign> lastPhi /* = nullptr */)
+                      std::map<std::shared_ptr<PhiAssign>, SharedExp> &cache,
+                      std::shared_ptr<PhiAssign> lastPhi /* = nullptr */)
 {
     // A map that seems to be used to detect loops in the call graph:
     std::map<std::shared_ptr<CallStatement>, SharedExp> called;
@@ -1303,8 +1304,8 @@ bool UserProc::prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &las
 
             // substitute using a statement that has the same left as the query
             if (!change && (query->getSubExp1()->isSubscript())) {
-                auto r              = query->access<RefExp, 1>();
-                SharedStmt s        = r->getDef();
+                auto r                              = query->access<RefExp, 1>();
+                SharedStmt s                        = r->getDef();
                 std::shared_ptr<CallStatement> call = std::dynamic_pointer_cast<CallStatement>(s);
 
                 if (call) {
@@ -1424,7 +1425,7 @@ bool UserProc::prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &las
                 else if (s && s->isPhi()) {
                     // for a phi, we have to prove the query for every statement
                     std::shared_ptr<PhiAssign> pa = s->as<PhiAssign>();
-                    bool ok       = true;
+                    bool ok                       = true;
 
                     if ((lastPhis.find(pa) != lastPhis.end()) || (pa == lastPhi)) {
                         ok = (*query->getSubExp2() == *phiInd);
@@ -1625,7 +1626,7 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
         }
 
         const std::shared_ptr<const CallStatement> call = s->as<const CallStatement>();
-        const Function *callee    = call->getDestProc();
+        const Function *callee                          = call->getDestProc();
 
         if (callee) {
             visited.insert(this);
