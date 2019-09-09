@@ -261,12 +261,12 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        std::shared_ptr<const GotoStatement> gs = std::dynamic_pointer_cast<const GotoStatement>(
-            inst.rtl->back());
-        if (gs && (gs->getKind() == StmtType::Goto)) {
+        const SharedConstStmt lastStmt = !inst.rtl->empty() ? inst.rtl->back() : nullptr;
+
+        if (lastStmt && lastStmt->getKind() == StmtType::Goto) {
             // Example: Borland often starts with a branch
             // around some debug info
-            addr = gs->getFixedDest();
+            addr = lastStmt->as<const GotoStatement>()->getFixedDest();
         }
         else {
             addr += inst.numBytes;
