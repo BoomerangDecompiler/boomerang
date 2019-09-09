@@ -10,6 +10,7 @@
 #include "PhiAssign.h"
 
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Assign.h"
@@ -203,27 +204,6 @@ bool PhiAssign::accept(StmtPartModifier *v)
 }
 
 
-void PhiAssign::convertToAssign(SharedExp rhs)
-{
-    // I believe we always want to propagate to these ex-phi's; check!:
-    rhs = rhs->propagateAll();
-    // Thanks to tamlin for this cleaner way of implementing this hack
-
-    int n            = m_number; // These items disappear with the destructor below
-    BasicBlock *bb   = m_bb;
-    UserProc *p      = m_proc;
-    SharedExp lhs_   = m_lhs;
-    SharedExp rhs_   = rhs;
-    SharedType type_ = m_type;
-
-    this->~PhiAssign(); // Explicitly destroy this, but keep the memory allocated.
-    Assign *a = new (this) Assign(type_, lhs_, rhs_); // construct in-place. Note that 'a' == 'this'
-    a->setNumber(n);
-    a->setProc(p);
-    a->setBB(bb);
-}
-
-
 void PhiAssign::simplify()
 {
     m_lhs = m_lhs->simplify();
@@ -234,6 +214,7 @@ void PhiAssign::simplify()
 
     bool allSame        = true;
     Statement *firstDef = (*begin())->getDef();
+    UserProc *proc      = this->getProc();
 
     for (auto &refExp : *this) {
         if (refExp->getDef() != firstDef) {
@@ -244,7 +225,7 @@ void PhiAssign::simplify()
 
     if (allSame) {
         LOG_VERBOSE("all the same in %1", this);
-        this->convertToAssign(RefExp::get(m_lhs, firstDef));
+        proc->replacePhiByAssign(this, RefExp::get(m_lhs, firstDef));
         return;
     }
 
@@ -268,7 +249,7 @@ void PhiAssign::simplify()
     if (onlyOneNotThis && (notthis != STMT_WILD)) {
         LOG_VERBOSE("All but one not this in %1", this);
 
-        this->convertToAssign(RefExp::get(m_lhs, notthis));
+        proc->replacePhiByAssign(this, RefExp::get(m_lhs, notthis));
         return;
     }
 }
