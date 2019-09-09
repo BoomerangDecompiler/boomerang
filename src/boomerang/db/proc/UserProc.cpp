@@ -826,7 +826,7 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs)
 
     for (BasicBlock *bb : *m_cfg) {
         SharedStmt s = bb->getLastStmt(rrit, srit);
-        if (!s->isCall()) {
+        if (!s || !s->isCall()) {
             continue;
         }
 
