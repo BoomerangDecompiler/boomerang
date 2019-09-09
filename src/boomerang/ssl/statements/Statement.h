@@ -13,6 +13,7 @@
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
 
+#include <cassert>
 #include <list>
 #include <map>
 #include <memory>

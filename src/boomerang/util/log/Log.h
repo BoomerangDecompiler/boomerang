@@ -192,7 +192,8 @@ private:
 };
 
 template<>
-QString Log::collectArg<Statement>(const QString &msg, const std::shared_ptr<Statement> &s);
+BOOMERANG_API QString Log::collectArg<Statement>(const QString &msg,
+                                                 const std::shared_ptr<Statement> &s);
 
 
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
