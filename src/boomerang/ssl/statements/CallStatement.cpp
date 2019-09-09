@@ -157,15 +157,15 @@ void CallStatement::setSigArguments()
             l->setProc(m_proc); // Needed?
         }
 
-        std::shared_ptr<Assign> as = std::make_shared<Assign>(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
+        std::shared_ptr<Assign> asgn = std::make_shared<Assign>(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
 
-        as->setProc(m_proc);
-        as->setBB(m_bb);
+        asgn->setProc(m_proc);
+        asgn->setBB(m_bb);
         // So fromSSAForm will work later. But note: this call is probably not numbered yet!
-        as->setNumber(m_number);
+        asgn->setNumber(m_number);
 
         // as->setParent(this);
-        m_arguments.append(as);
+        m_arguments.append(asgn);
     }
 
     // initialize returns
@@ -254,7 +254,7 @@ void CallStatement::print(OStream &os) const
 
         for (const SharedStmt def : m_defines) {
             assert(def->isAssignment());
-            std::shared_ptr<const Assignment> as = def->as<const Assignment>();
+            std::shared_ptr<const Assignment> asgn = def->as<const Assignment>();
 
             if (first) {
                 first = false;
@@ -263,10 +263,10 @@ void CallStatement::print(OStream &os) const
                 os << ", ";
             }
 
-            os << "*" << as->getType() << "* " << as->getLeft();
+            os << "*" << asgn->getType() << "* " << asgn->getLeft();
 
-            if (as->isAssign()) {
-                os << " := " << as->as<const Assign>()->getRight();
+            if (asgn->isAssign()) {
+                os << " := " << asgn->as<const Assign>()->getRight();
             }
         }
 
@@ -523,10 +523,10 @@ bool CallStatement::tryConvertToDirect()
 
     for (int i = 0; i < sig->getNumParams(); i++) {
         SharedExp a = sig->getParamExp(i);
-        std::shared_ptr<Assign> as(new Assign(VoidType::get(), a->clone(), a->clone()));
-        as->setProc(m_proc);
-        as->setBB(m_bb);
-        m_arguments.append(as);
+        std::shared_ptr<Assign> asgn(new Assign(VoidType::get(), a->clone(), a->clone()));
+        asgn->setProc(m_proc);
+        asgn->setBB(m_bb);
+        m_arguments.append(asgn);
     }
 
     // LOG_STREAM() << "Step 3a: arguments now: ";
@@ -604,10 +604,10 @@ void CallStatement::setNumArguments(int n)
             ty = VoidType::get();
         }
 
-        std::shared_ptr<Assign> as(new Assign(ty, a->clone(), a->clone()));
-        as->setProc(m_proc);
-        as->setBB(m_bb);
-        m_arguments.append(as);
+        std::shared_ptr<Assign> asgn(new Assign(ty, a->clone(), a->clone()));
+        asgn->setProc(m_proc);
+        asgn->setBB(m_bb);
+        m_arguments.append(asgn);
     }
 }
 
@@ -622,10 +622,10 @@ void CallStatement::removeArgument(int i)
 SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 {
     // The defines "cache" what the destination proc is defining
-    std::shared_ptr<const Assignment> as = m_defines.findOnLeft(e);
+    std::shared_ptr<const Assignment> asgn = m_defines.findOnLeft(e);
 
-    if (as != nullptr) {
-        return as->getType();
+    if (asgn != nullptr) {
+        return asgn->getType();
     }
 
     if (e->isPC()) {
@@ -640,10 +640,10 @@ SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 SharedType CallStatement::getTypeForExp(SharedExp e)
 {
     // The defines "cache" what the destination proc is defining
-    std::shared_ptr<Assignment> as = m_defines.findOnLeft(e);
+    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
 
-    if (as != nullptr) {
-        return as->getType();
+    if (asgn != nullptr) {
+        return asgn->getType();
     }
 
     if (e->isPC()) {
@@ -657,10 +657,10 @@ SharedType CallStatement::getTypeForExp(SharedExp e)
 
 void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
 {
-    std::shared_ptr<Assignment> as = m_defines.findOnLeft(e);
+    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
 
-    if (as != nullptr) {
-        return as->setType(ty);
+    if (asgn != nullptr) {
+        return asgn->setType(ty);
     }
 
     // See if it is in our reaching definitions
@@ -980,19 +980,19 @@ std::shared_ptr<Assign> CallStatement::makeArgAssign(SharedType ty, SharedExp e)
 
     localiseComp(lhs); // Localise the components of lhs (if needed)
     SharedExp rhs = localiseExp(e->clone());
-    std::shared_ptr<Assign> as(new Assign(ty, lhs, rhs));
-    as->setProc(m_proc);
-    as->setBB(m_bb);
+    std::shared_ptr<Assign> asgn(new Assign(ty, lhs, rhs));
+    asgn->setProc(m_proc);
+    asgn->setBB(m_bb);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     ProcCFG *cfg = m_proc->getCFG();
 
     if (cfg->isImplicitsDone()) {
         ImplicitConverter ic(cfg);
         StmtImplicitConverter sm(&ic, cfg);
-        as->accept(&sm);
+        asgn->accept(&sm);
     }
 
-    return as;
+    return asgn;
 }
 
 
@@ -1077,22 +1077,22 @@ void CallStatement::updateArguments()
             }
 
             SharedType ty = asp.curType(loc);
-            std::shared_ptr<Assign> as(new Assign(ty, loc->clone(), rhs));
+            std::shared_ptr<Assign> asgn(new Assign(ty, loc->clone(), rhs));
 
             // Give the assign the same statement number as the call (for now)
-            as->setNumber(m_number);
+            asgn->setNumber(m_number);
             // as->setParent(this);
-            as->setProc(m_proc);
-            as->setBB(m_bb);
+            asgn->setProc(m_proc);
+            asgn->setBB(m_bb);
 
-            oldArguments.append(as);
+            oldArguments.append(asgn);
         }
     }
 
     for (SharedStmt oldArg : oldArguments) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        std::shared_ptr<Assign> as = oldArg->as<Assign>();
-        SharedExp lhs = as->getLeft();
+        std::shared_ptr<Assign> asgn = oldArg->as<Assign>();
+        SharedExp lhs = asgn->getLeft();
 
         if (!asp.exists(lhs)) {
             continue;
@@ -1103,7 +1103,7 @@ void CallStatement::updateArguments()
             continue;
         }
 
-        m_arguments.append(as);
+        m_arguments.append(asgn);
     }
 }
 
@@ -1250,9 +1250,9 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
 }
 
 
-void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &as)
+void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &asgn)
 {
-    m_defines.append(as);
+    m_defines.append(asgn);
 }
 
 

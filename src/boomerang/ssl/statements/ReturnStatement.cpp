@@ -352,14 +352,14 @@ void ReturnStatement::print(OStream &os) const
         for (const SharedConstStmt &stmt : m_modifieds) {
             QString tgt2;
             OStream ost(&tgt2);
-            std::shared_ptr<const Assignment> as = stmt->as<const Assignment>();
-            const SharedType ty  = as->getType();
+            std::shared_ptr<const Assignment> asgn = stmt->as<const Assignment>();
+            const SharedType ty  = asgn->getType();
 
             if (ty) {
                 ost << "*" << ty << "* ";
             }
 
-            ost << as->getLeft();
+            ost << asgn->getLeft();
             unsigned len = tgt2.length();
 
             if (first) {
@@ -412,8 +412,8 @@ void ReturnStatement::updateModifieds()
 
     for (SharedStmt stmt : m_col) {
         bool found       = false;
-        std::shared_ptr<Assign> as = stmt->as<Assign>();
-        SharedExp colLhs = as->getLeft();
+        std::shared_ptr<Assign> asgn = stmt->as<Assign>();
+        SharedExp colLhs = asgn->getLeft();
 
         if (m_proc->filterReturns(colLhs)) {
             continue; // Filtered out
@@ -429,8 +429,8 @@ void ReturnStatement::updateModifieds()
         }
 
         if (!found) {
-            std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(as->getType()->clone(),
-                                                as->getLeft()->clone()));
+            std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(asgn->getType()->clone(),
+                                                asgn->getLeft()->clone()));
             ias->setProc(m_proc); // Comes from the Collector
             ias->setBB(m_bb);
             oldMods.append(ias);
@@ -442,8 +442,8 @@ void ReturnStatement::updateModifieds()
     // new list. So read the old modifications in reverse order
     for (auto rit = oldMods.rbegin(); rit != oldMods.rend(); ++rit) {
         // Make sure the LHS is still in the collector
-        std::shared_ptr<Assignment> as = (*rit)->as<Assignment>();
-        SharedExp lhs  = as->getLeft();
+        std::shared_ptr<Assignment> asgn = (*rit)->as<Assignment>();
+        SharedExp lhs  = asgn->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
             continue; // Not in collector: delete it (don't copy it)
@@ -453,7 +453,7 @@ void ReturnStatement::updateModifieds()
             continue; // Filtered out: delete it
         }
 
-        m_modifieds.append(as);
+        m_modifieds.append(asgn);
     }
 
     m_modifieds.sort([&sig](const SharedConstStmt &mod1, const SharedConstStmt &mod2) {
@@ -499,18 +499,18 @@ void ReturnStatement::updateReturns()
         if (!found) {
             // Find the definition that reaches the return statement's collector
             SharedExp rhs = m_col.findDefFor(loc);
-            std::shared_ptr<Assign> as(new Assign(loc->clone(), rhs->clone()));
-            as->setProc(m_proc);
-            as->setBB(m_bb);
-            oldRets.append(as);
+            std::shared_ptr<Assign> asgn(new Assign(loc->clone(), rhs->clone()));
+            asgn->setProc(m_proc);
+            asgn->setBB(m_bb);
+            oldRets.append(asgn);
         }
     }
 
     for (SharedStmt stmt : oldRets) {
         // Make sure the LHS is still in the modifieds
         assert(stmt->isAssign());
-        std::shared_ptr<Assign> as = stmt->as<Assign>();
-        SharedExp lhs              = as->getLeft();
+        std::shared_ptr<Assign> asgn = stmt->as<Assign>();
+        SharedExp lhs                = asgn->getLeft();
 
         if (!m_modifieds.existsOnLeft(lhs)) {
             continue; // Not in modifieds: delete it (don't copy it)
@@ -522,14 +522,14 @@ void ReturnStatement::updateReturns()
 
         // Preserveds are NOT returns (nothing changes, so what are we returning?)
         // Check if it is a preserved location, e.g. r29 := r29{-}
-        SharedExp rhs = as->getRight();
+        SharedExp rhs = asgn->getRight();
 
         if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() &&
             (*rhs->getSubExp1() == *lhs)) {
             continue; // Filter out the preserveds
         }
 
-        m_returns.append(as);
+        m_returns.append(asgn);
     }
 
     m_returns.sort([&sig](const SharedConstStmt &ret1, const SharedConstStmt &ret2) {
