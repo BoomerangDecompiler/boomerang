@@ -31,6 +31,8 @@
 #include "boomerang/util/UseGraphWriter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/log/SeparateLogger.h"
+#include "boomerang/visitor/expmodifier/ExpSubscriptReplacer.h"
+#include "boomerang/visitor/stmtmodifier/StmtSubscriptReplacer.h"
 
 
 UserProc::UserProc(Address address, const QString &name, Module *module)
@@ -260,6 +262,68 @@ bool UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
     }
 
     return false;
+}
+
+
+Assign *UserProc::replacePhiByAssign(const PhiAssign *orig, const SharedExp &rhs)
+{
+    // I believe we always want to propagate to these ex-phi's; check!
+    SharedExp newRhs = rhs->propagateAll();
+
+    for (BasicBlock *bb : *m_cfg) {
+        for (const auto &rtl : *bb->getRTLs()) {
+            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
+                if (*ss == orig) {
+                    // convert *ss to an Assign
+                    Assign *asgn(new Assign(orig->getLeft()->clone(), newRhs));
+
+                    asgn->setType(orig->getType()->clone());
+                    asgn->setNumber(orig->getNumber());
+                    asgn->setProc(orig->getProc());
+                    asgn->setBB(bb);
+
+                    Statement *toDelete = *ss;
+                    *ss                 = asgn;
+
+                    StatementList stmts;
+                    getStatements(stmts);
+
+                    // replace all refs orig -> asgn
+                    for (Statement *stmt : stmts) {
+                        StmtSubscriptReplacer stmtMod(orig, asgn);
+
+                        stmt->accept(&stmtMod);
+                    }
+
+                    SymbolMap newSymbols;
+
+                    for (auto it = m_symbolMap.begin(); it != m_symbolMap.end();) {
+                        SharedExp exp = (*it).first->clone();
+                        ExpSubscriptReplacer esr(orig, asgn);
+                        exp->acceptModifier(&esr);
+
+                        if (esr.isModified()) {
+                            SharedExp local = it->second;
+                            it              = m_symbolMap.erase(it);
+                            newSymbols.insert({ exp, local });
+                        }
+                        else {
+                            ++it;
+                        }
+                    }
+
+                    for (auto elem : newSymbols) {
+                        m_symbolMap.insert(elem);
+                    }
+
+                    delete toDelete;
+                    return asgn;
+                }
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 
