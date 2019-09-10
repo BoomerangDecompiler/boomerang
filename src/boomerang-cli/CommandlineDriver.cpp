@@ -425,7 +425,8 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
                 if (!converted) {
                     std::cerr << "'" << arg.toStdString()
-                              << "' Bad address: " << args[i].toStdString() << " (try --help).";
+                              << "' Bad address: " << args[i].toStdString() << " (try --help)."
+                              << std::endl;
                     return 1;
                 }
 
