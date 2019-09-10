@@ -12,6 +12,7 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/SigEnum.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 
 #include <list>
@@ -25,7 +26,7 @@ class DecodeResult;
 class Exp;
 class IDecoder;
 class Project;
-class RTL;
+
 class Signature;
 class Statement;
 class UserProc;

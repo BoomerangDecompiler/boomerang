@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include <memory>
+
+
 class ExpModifier;
 class Assign;
 class PhiAssign;
@@ -44,31 +47,31 @@ public:
     /// Visit this statement.
     /// \param[in] stmt Statement to visit
     /// \param[out] visitChildren set to true to visit children of this statement
-    virtual void visit(Assign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(PhiAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(ImplicitAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(BoolAssign *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(GotoStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<GotoStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(BranchStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<BranchStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(CaseStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<CaseStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(CallStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(ReturnStatement *stmt, bool &visitChildren);
+    virtual void visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren);
 
 public:
     ExpModifier *mod; ///< The expression modifier object

@@ -10,17 +10,15 @@
 #pragma once
 
 
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
-
-
-class Statement;
 
 
 /// replaces expression e with e{def}
 class BOOMERANG_API ExpSubscripter : public ExpModifier
 {
 public:
-    ExpSubscripter(const SharedExp &s, Statement *d);
+    ExpSubscripter(const SharedExp &s, const SharedStmt &d);
     virtual ~ExpSubscripter() = default;
 
 public:
@@ -38,5 +36,5 @@ public:
 
 private:
     SharedExp m_search;
-    Statement *m_def;
+    SharedStmt m_def;
 };

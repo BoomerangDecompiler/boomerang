@@ -11,10 +11,10 @@
 
 
 #include "boomerang/passes/Pass.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 class LocationSet;
-class Statement;
 
 
 /// Removes unused local variables.
@@ -32,5 +32,5 @@ public:
 private:
     /// Special version of Statement::addUsedLocs for finding used locations.
     /// \return true if defineAll was found
-    bool addUsedLocalsForStmt(Statement *stmt, LocationSet &locals);
+    bool addUsedLocalsForStmt(const SharedStmt &stmt, LocationSet &locals);
 };

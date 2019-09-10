@@ -27,12 +27,12 @@ SharedExp ExpPropagator::postModify(const std::shared_ptr<RefExp> &exp)
         return exp;
     }
 
-    Statement *def = exp->getDef();
+    SharedStmt def = exp->getDef();
     SharedExp res  = exp;
 
     if (def && def->isAssign()) {
-        SharedExp lhs = static_cast<Assign *>(def)->getLeft();
-        SharedExp rhs = static_cast<Assign *>(def)->getRight();
+        SharedExp lhs = def->as<Assign>()->getLeft();
+        SharedExp rhs = def->as<Assign>()->getRight();
         bool ch;
         res = exp->searchReplaceAll(RefExp(lhs, def), rhs->clone(), ch);
 

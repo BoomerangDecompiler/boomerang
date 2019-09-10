@@ -10,13 +10,13 @@
 #pragma once
 
 
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 
 #include <list>
 #include <memory>
 
 
-class Statement;
 class OStream;
 
 
@@ -28,7 +28,8 @@ class OStream;
  */
 class BOOMERANG_API RTL
 {
-    typedef std::list<Statement *> StmtList;
+public:
+    typedef std::list<SharedStmt> StmtList;
 
 public:
     typedef StmtList::size_type size_type;
@@ -44,10 +45,10 @@ public:
 public:
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
-    explicit RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
+    explicit RTL(Address instrAddr, const StmtList *listStmt = nullptr);
 
     /// Take ownership of the statements in the initializer list.
-    explicit RTL(Address instrAddr, const std::initializer_list<Statement *> &statements);
+    explicit RTL(Address instrAddr, const std::initializer_list<SharedStmt> &statements);
 
     explicit RTL(const RTL &other); ///< Deep copies the content
     explicit RTL(RTL &&other) = default;
@@ -70,13 +71,13 @@ public:
      * \note Leaves any flag call at the end
      * (so may push exp to second last position, instead of last)
      */
-    void append(Statement *s);
+    void append(const SharedStmt &s);
 
     /// Append a deep copy of \p le to this RTL.
-    void append(const std::list<Statement *> &le);
+    void append(const StmtList &le);
 
     /// Deep copy the elements of this RTL into the given list.
-    void deepCopyList(std::list<Statement *> &dest) const;
+    void deepCopyList(StmtList &dest) const;
 
     /**
      * Prints this object to a stream in text form.
@@ -92,13 +93,13 @@ public:
     bool isCall() const;
 
     /// Use this slow function when you can't be sure that the HL Statement is last
-    Statement *getHlStmt() const;
+    SharedStmt getHlStmt() const;
 
     /// Simplify all elements in this list and subsequently remove
     /// unnecessary statements (like branches with constant conditions)
     void simplify();
 
-    const std::list<Statement *> &getStatements() const { return m_stmts; }
+    const StmtList &getStatements() const { return m_stmts; }
 
     // delegates to std::list
 public:
@@ -132,7 +133,7 @@ public:
     iterator erase(iterator it) { return m_stmts.erase(it); }
 
 private:
-    std::list<Statement *> m_stmts;
+    StmtList m_stmts;
     Address m_nativeAddr; ///< RTL's source program instruction address
 };
 

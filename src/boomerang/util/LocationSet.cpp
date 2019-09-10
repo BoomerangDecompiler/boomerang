@@ -151,7 +151,7 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp> &ref, SharedExp
 }
 
 
-void LocationSet::addSubscript(Statement *d)
+void LocationSet::addSubscript(const SharedStmt &d)
 {
     Set newSet;
 

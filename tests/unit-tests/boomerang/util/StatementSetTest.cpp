@@ -19,12 +19,12 @@ void StatementSetTest::testInsert()
 {
     StatementSet set;
 
-    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    set.insert(&assign);
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    set.insert(assign);
 
     auto it = set.begin();
     QVERIFY(it != set.end());
-    QVERIFY(*it == &assign);
+    QVERIFY(*it == assign);
 }
 
 
@@ -33,11 +33,11 @@ void StatementSetTest::testRemove()
     StatementSet set;
     QVERIFY(!set.remove(nullptr));
 
-    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
 
-    set.insert(&assign);
-    QVERIFY(set.remove(&assign));
-    QVERIFY(!set.remove(&assign)); // not contained in set
+    set.insert(assign);
+    QVERIFY(set.remove(assign));
+    QVERIFY(!set.remove(assign)); // not contained in set
 }
 
 
@@ -46,11 +46,11 @@ void StatementSetTest::testContains()
     StatementSet set;
     QVERIFY(!set.contains(nullptr));
 
-    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    set.insert(&assign);
-    QVERIFY(set.contains(&assign));
-    set.remove(&assign);
-    QVERIFY(!set.contains(&assign));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    set.insert(assign);
+    QVERIFY(set.contains(assign));
+    set.remove(assign);
+    QVERIFY(!set.contains(assign));
 }
 
 
@@ -59,10 +59,10 @@ void StatementSetTest::testDefinesLoc()
     StatementSet set;
     QVERIFY(!set.definesLoc(nullptr));
 
-    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    set.insert(&assign);
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    set.insert(assign);
     QVERIFY(set.definesLoc(Location::regOf(REG_PENT_ECX)));
-    set.remove(&assign);
+    set.remove(assign);
     QVERIFY(!set.definesLoc(Location::regOf(REG_PENT_ECX)));
 }
 
@@ -72,16 +72,16 @@ void StatementSetTest::testIsSubSetOf()
     StatementSet set1, set2;
     QVERIFY(set1.isSubSetOf(set2));
 
-    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    set1.insert(&assign);
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    set1.insert(assign);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
 
-    set2.insert(&assign);
+    set2.insert(assign);
     QVERIFY(set1.isSubSetOf(set2));
 
-    Assign assign2(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX));
-    set1.insert(&assign2);
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
+    set1.insert(assign2);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
 }
@@ -94,14 +94,14 @@ void StatementSetTest::testMakeUnion()
     set1.makeUnion(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    Assign assign2(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX));
-    Assign assign3(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
 
-    set1.insert(&assign1);
-    set1.insert(&assign2);
-    set2.insert(&assign2);
-    set2.insert(&assign3);
+    set1.insert(assign1);
+    set1.insert(assign2);
+    set2.insert(assign2);
+    set2.insert(assign3);
 
     set1.makeUnion(set1); // self union
     QVERIFY(std::distance(set1.begin(), set1.end()) == 2);
@@ -116,14 +116,14 @@ void StatementSetTest::testMakeIsect()
     set1.makeIsect(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    Assign assign2(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX));
-    Assign assign3(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
 
-    set1.insert(&assign1);
-    set1.insert(&assign2);
-    set2.insert(&assign2);
-    set2.insert(&assign3);
+    set1.insert(assign1);
+    set1.insert(assign2);
+    set2.insert(assign2);
+    set2.insert(assign3);
 
     set1.makeIsect(set1); // self intersection
     QVERIFY(std::distance(set1.begin(), set1.end()) == 2);
@@ -140,14 +140,14 @@ void StatementSetTest::testMakeDiff()
     set1.makeDiff(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    Assign assign2(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX));
-    Assign assign3(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
 
-    set1.insert(&assign1);
-    set1.insert(&assign2);
-    set2.insert(&assign2);
-    set2.insert(&assign3);
+    set1.insert(assign1);
+    set1.insert(assign2);
+    set2.insert(assign2);
+    set2.insert(assign3);
 
     set1.makeDiff(set2);
     QVERIFY(std::distance(set1.begin(), set1.end()) == 1);

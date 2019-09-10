@@ -170,14 +170,14 @@ void SPARCSignature::getLibraryDefines(StatementList &defs)
     }
 
     // o0-o7 (r8-r15) modified
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O0)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O1)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O2)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O3)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O4)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O5)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O6)));
-    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O7)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O0)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O1)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O2)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O3)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O4)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O5)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O6)));
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O7)));
 }
 
 

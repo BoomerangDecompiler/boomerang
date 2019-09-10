@@ -254,10 +254,10 @@ void Win32Signature::getLibraryDefines(StatementList &defs)
         ty = m_returns[1]->getType();
     }
 
-    defs.append(new ImplicitAssign(ty, r24));                       // eax
-    defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ECX))); // ecx
-    defs.append(new ImplicitAssign(Location::regOf(REG_PENT_EDX))); // edx
-    defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ESP))); // esp
+    defs.append(std::make_shared<ImplicitAssign>(ty, r24));                       // eax
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ECX))); // ecx
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDX))); // edx
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ESP))); // esp
 }
 
 

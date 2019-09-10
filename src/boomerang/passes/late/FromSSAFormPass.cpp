@@ -42,7 +42,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // Map registers to initial local variables
         mapRegistersToLocals(s);
 
@@ -62,7 +62,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     ConnectionGraph pu; // The Phi Unites: these need the same local variable or copies
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         LocationSet defs;
         s->getDefinitions(defs, assumeABICompliance);
 
@@ -184,13 +184,13 @@ bool FromSSAFormPass::execute(UserProc *proc)
             // operands to become ebx_1, so the neat oprimisation of replacing the phi with one copy
             // doesn't work. The result is an extra copy. So check of r1 is a phi and r2 one of its
             // operands, and all other operands for the phi have the same name. If so, don't rename.
-            Statement *def1 = ref1->getDef();
+            SharedStmt def1 = ref1->getDef();
 
             if (def1->isPhi()) {
                 bool allSame     = true;
                 bool r2IsOperand = false;
                 QString firstName;
-                PhiAssign *pa = static_cast<PhiAssign *>(def1);
+                std::shared_ptr<PhiAssign> pa = def1->as<PhiAssign>();
 
                 for (const std::shared_ptr<RefExp> &refExp : *pa) {
                     auto re(RefExp::get(refExp->getSubExp1(), refExp->getDef()));
@@ -243,7 +243,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     removeSubscriptsFromSymbols(proc);
     removeSubscriptsFromParameters(proc);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // The last part of the fromSSA logic:
         // replace subscripted locations with suitable local variables
         ExpSSAXformer esx(proc);
@@ -253,13 +253,13 @@ bool FromSSAFormPass::execute(UserProc *proc)
     }
 
     // Now remove the phis
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
             continue;
         }
 
         // Check if the base variables are all the same
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        std::shared_ptr<PhiAssign> phi = s->as<PhiAssign>();
 
         if (phi->begin() == phi->end()) {
             // no params to this phi, just remove it
@@ -346,12 +346,12 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *insn : stmts) {
+    for (SharedStmt insn : stmts) {
         if (!insn->isPhi()) {
             continue; // Might be able to optimise this a bit
         }
 
-        PhiAssign *pi = static_cast<PhiAssign *>(insn);
+        std::shared_ptr<PhiAssign> pi = insn->as<PhiAssign>();
         // See if the destination has a symbol already
         SharedExp lhs = pi->getLeft();
         auto lhsRef   = RefExp::get(lhs, pi);
@@ -394,7 +394,7 @@ void FromSSAFormPass::mapParameters(UserProc *proc)
     StatementList::iterator pp;
 
     for (pp = proc->getParameters().begin(); pp != proc->getParameters().end(); ++pp) {
-        SharedExp lhs      = static_cast<Assignment *>(*pp)->getLeft();
+        SharedExp lhs      = (*pp)->as<Assignment>()->getLeft();
         QString mappedName = proc->lookupParam(lhs);
 
         if (mappedName.isEmpty()) {
@@ -403,13 +403,13 @@ void FromSSAFormPass::mapParameters(UserProc *proc)
             SharedExp clean = lhs->clone()->removeSubscripts(allZero);
 
             if (allZero) {
-                static_cast<Assignment *>(*pp)->setLeft(clean);
+                (*pp)->as<Assignment>()->setLeft(clean);
             }
 
             // Else leave them alone
         }
         else {
-            static_cast<Assignment *>(*pp)->setLeft(Location::param(mappedName, proc));
+            (*pp)->as<Assignment>()->setLeft(Location::param(mappedName, proc));
         }
     }
 }
@@ -447,10 +447,10 @@ void FromSSAFormPass::removeSubscriptsFromParameters(UserProc *proc)
 {
     ExpSSAXformer esx(proc);
 
-    for (Statement *param : proc->getParameters()) {
-        SharedExp left = static_cast<Assignment *>(param)->getLeft();
+    for (SharedStmt param : proc->getParameters()) {
+        SharedExp left = param->as<Assignment>()->getLeft();
         left           = left->acceptModifier(&esx);
-        static_cast<Assignment *>(param)->setLeft(left);
+        param->as<Assignment>()->setLeft(left);
     }
 }
 
@@ -460,14 +460,14 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *stmt : stmts) {
+    for (SharedStmt stmt : stmts) {
         if (!stmt->isPhi()) {
             continue;
         }
 
-        PhiAssign *pa = static_cast<PhiAssign *>(stmt);
-        SharedExp lhs = pa->getLeft();
-        auto reLhs    = RefExp::get(lhs, pa);
+        std::shared_ptr<PhiAssign> pa = stmt->as<PhiAssign>();
+        SharedExp lhs                 = pa->getLeft();
+        auto reLhs                    = RefExp::get(lhs, pa);
 
         for (const std::shared_ptr<RefExp> &v : *pa) {
             assert(v->getSubExp1());
@@ -478,7 +478,7 @@ void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph &pu)
 }
 
 
-void FromSSAFormPass::insertCastsForStmt(Statement *stmt)
+void FromSSAFormPass::insertCastsForStmt(const SharedStmt &stmt)
 {
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
     ExpCastInserter eci;
@@ -491,7 +491,7 @@ void FromSSAFormPass::insertCastsForStmt(Statement *stmt)
 }
 
 
-void FromSSAFormPass::mapRegistersToLocals(Statement *stmt)
+void FromSSAFormPass::mapRegistersToLocals(const SharedStmt &stmt)
 {
     ExpRegMapper erm(stmt->getProc());
     StmtRegMapper srm(&erm);

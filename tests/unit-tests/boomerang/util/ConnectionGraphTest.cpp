@@ -101,8 +101,8 @@ void ConnectionGraphTest::testAllRefsHaveDefs()
     ConnectionGraph cg;
     QVERIFY(cg.allRefsHaveDefs());
 
-    Assign asgn(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
-    SharedExp ref1 = RefExp::get(Location::regOf(REG_PENT_ECX), &asgn);
+    std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX)));
+    SharedExp ref1 = RefExp::get(Location::regOf(REG_PENT_ECX), asgn);
     cg.add(Location::regOf(REG_PENT_ESI), ref1);
 
     QVERIFY(cg.allRefsHaveDefs());

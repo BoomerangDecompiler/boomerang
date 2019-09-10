@@ -37,8 +37,8 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     }
 
     // prove preservation for all modifieds in the return statement
-    for (Statement *mod : proc->getRetStmt()->getModifieds()) {
-        SharedExp lhs = static_cast<Assignment *>(mod)->getLeft();
+    for (SharedStmt mod : proc->getRetStmt()->getModifieds()) {
+        SharedExp lhs = mod->as<Assignment>()->getLeft();
         auto equation = Binary::get(opEquals, lhs, lhs);
 
         if (proc->getProg()->getProject()->getSettings()->debugProof) {

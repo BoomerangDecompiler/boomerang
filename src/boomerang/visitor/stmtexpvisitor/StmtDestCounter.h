@@ -29,5 +29,5 @@ public:
 
 public:
     /// \copydoc StmtExpVisitor::visit
-    bool visit(PhiAssign *stmt, bool &visitChildren) override;
+    bool visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 };

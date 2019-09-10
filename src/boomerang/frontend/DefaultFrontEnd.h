@@ -77,7 +77,8 @@ public:
 
     /// Do extra processing of call instructions.
     /// Does nothing by default.
-    virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls);
+    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
+                                  const RTLList &BB_rtls);
 
 public:
     /// \copydoc IFrontEnd::getEntryPoints
@@ -133,8 +134,8 @@ private:
      * Change a jump to a call if the jump destination is an impoted function.
      * \sa refersToImportedFunction
      */
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,
-                            const std::list<Statement *> &sl, RTL *originalRTL);
+    void preprocessProcGoto(RTL::StmtList::iterator ss, Address dest, const RTL::StmtList &sl,
+                            RTL *originalRTL);
 
     /// Creates a UserProc for the entry point at address \p addr.
     /// Returns nullptr on failure.
@@ -144,7 +145,7 @@ private:
      * Get the address of the destination of a library thunk.
      * Returns Address::INVALID if the call is not a library thunk or an error occurred.
      */
-    Address getAddrOfLibraryThunk(CallStatement *call, UserProc *proc);
+    Address getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc);
 
 protected:
     IDecoder *m_decoder      = nullptr;

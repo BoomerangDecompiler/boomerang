@@ -41,9 +41,9 @@ ImplicitAssign::ImplicitAssign(const ImplicitAssign &other)
 }
 
 
-Statement *ImplicitAssign::clone() const
+SharedStmt ImplicitAssign::clone() const
 {
-    return new ImplicitAssign(m_type, m_lhs);
+    return std::make_shared<ImplicitAssign>(m_type, m_lhs);
 }
 
 
@@ -89,7 +89,7 @@ bool ImplicitAssign::searchAndReplace(const Exp &pattern, SharedExp replace, boo
 bool ImplicitAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<ImplicitAssign>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -106,7 +106,7 @@ bool ImplicitAssign::accept(StmtExpVisitor *v)
 bool ImplicitAssign::accept(StmtModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<ImplicitAssign>(), visitChildren);
 
     if (v->m_mod) {
         v->m_mod->clearModified();
@@ -116,7 +116,7 @@ bool ImplicitAssign::accept(StmtModifier *v)
         }
 
         if (v->m_mod->isModified()) {
-            LOG_VERBOSE("ImplicitAssign changed: now %1", this);
+            LOG_VERBOSE("ImplicitAssign changed: now %1", shared_from_this());
         }
     }
 
@@ -127,7 +127,7 @@ bool ImplicitAssign::accept(StmtModifier *v)
 bool ImplicitAssign::accept(StmtPartModifier *v)
 {
     bool visitChildren;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<ImplicitAssign>(), visitChildren);
     v->mod->clearModified();
 
     if (visitChildren && m_lhs->isMemOf()) {
@@ -135,7 +135,7 @@ bool ImplicitAssign::accept(StmtPartModifier *v)
     }
 
     if (v->mod->isModified()) {
-        LOG_VERBOSE("ImplicitAssign changed: now %1", this);
+        LOG_VERBOSE("ImplicitAssign changed: now %1", shared_from_this());
     }
 
     return true;

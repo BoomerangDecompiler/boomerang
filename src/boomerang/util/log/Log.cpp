@@ -170,7 +170,8 @@ void Log::truncateFileName(char *dstBuffer, size_t dstCharacters, const char *fi
 }
 
 
-QString Log::collectArg(const QString &msg, const Statement *s)
+template<>
+QString Log::collectArg<Statement>(const QString &msg, const std::shared_ptr<Statement> &s)
 {
     return msg.arg(s->toString());
 }

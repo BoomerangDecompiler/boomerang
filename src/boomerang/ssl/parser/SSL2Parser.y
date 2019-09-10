@@ -110,12 +110,12 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %right NOT LNOT
 %nonassoc AT
 
-%type <SharedExp>    exp location exp_term
-%type <Statement *>  statement ret_stmt goto_stmt call_stmt
-%type <Assign *>     assignment
-%type <SharedType>   assigntype
-%type <SharedRTL>    rtl nonempty_rtl rtl_part
-%type <std::shared_ptr<Table>> table_expr
+%type <SharedExp>               exp location exp_term
+%type <SharedStmt>              statement ret_stmt goto_stmt call_stmt
+%type <std::shared_ptr<Assign>> assignment
+%type <SharedType>              assigntype
+%type <SharedRTL>               rtl nonempty_rtl rtl_part
+%type <std::shared_ptr<Table>>  table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
 %type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
 %type <std::shared_ptr<std::list<QString>>> paramlist nonempty_paramlist
@@ -125,8 +125,8 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %printer { yyoutput << $$; } <*>;
 %printer { yyoutput << $$.toStdString(); } <QString>;
 %printer { yyoutput << $$->toString().toStdString(); } <SharedExp>;
-%printer { yyoutput << $$->toString().toStdString(); } <Statement *>;
-%printer { yyoutput << $$->toString().toStdString(); } <Assign *>;
+%printer { yyoutput << $$->toString().toStdString(); } <SharedStmt>;
+%printer { yyoutput << $$->toString().toStdString(); } <std::shared_ptr<Assign>>;
 %printer {
     yyoutput << "{ ";
     bool first = true;
@@ -425,28 +425,28 @@ nonempty_rtl:
 rtl_part:
     KW_FPUSH {
         $$.reset(new RTL(Address::ZERO, {
-            new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST7)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST5)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST4)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST3)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST2)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST1)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST0)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
+            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST7)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST5)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST4)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST3)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST2)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST1)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST0)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
         }));
     }
   | KW_FPOP {
         $$.reset(new RTL(Address::ZERO, {
-            new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST0)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST2)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST3)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST4)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST5)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST6)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST7)),
-            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::tempOf(Const::get(const_cast<char *>("tmpD9")))),
+            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST0)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST2)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST3)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST4)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST5)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST6)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST7)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::tempOf(Const::get(const_cast<char *>("tmpD9")))),
         }));
     }
   ;
@@ -462,7 +462,7 @@ statement:
             throw SSL2::parser::syntax_error(drv.location, "Flag function not defined.");
         }
         const bool isFloat = $1 == "SETFFLAGS";
-        $$ = new Assign(Terminal::get(isFloat ? opFflags : opFlags),
+        $$ = std::make_shared<Assign>(Terminal::get(isFloat ? opFflags : opFlags),
                         Binary::get(opFlagCall, Const::get($1), listExpToExp($3.get())));
     }
   ;
@@ -470,11 +470,11 @@ statement:
 assignment:
     // example *32* %eax := 0
     assigntype location ASSIGN exp {
-        $$ = new Assign($1, $2, $4);
+        $$ = std::make_shared<Assign>($1, $2, $4);
     }
     // exampe *32* %CF=0 => %eax := %ecx
   | assigntype exp THEN location ASSIGN exp {
-        $$ = new Assign($1, $4, $6);
+        $$ = std::make_shared<Assign>($1, $4, $6);
         $$->setGuard($2);
     }
   ;
@@ -509,18 +509,18 @@ assigntype:
 
 ret_stmt:
     KW_RET {
-        $$ = new ReturnStatement;
+        $$ = std::make_shared<ReturnStatement>();
     }
   ;
 
 goto_stmt:
     KW_GOTO exp {
-        GotoStatement *jump = new GotoStatement;
+        std::shared_ptr<GotoStatement> jump(new GotoStatement);
         jump->setDest($2);
         $$ = jump;
     }
   | exp THEN KW_GOTO exp {
-        BranchStatement *jump = new BranchStatement;
+        std::shared_ptr<BranchStatement> jump(new BranchStatement);
         jump->setDest($4);
         jump->setCondExpr($1);
         $$ = jump;
@@ -529,7 +529,7 @@ goto_stmt:
 
 call_stmt:
     KW_CALL exp {
-        CallStatement *call = new CallStatement;
+        std::shared_ptr<CallStatement> call(new CallStatement);
         call->setDest($2);
         $$ = call;
     }

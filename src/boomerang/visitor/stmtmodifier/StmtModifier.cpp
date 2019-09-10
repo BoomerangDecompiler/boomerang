@@ -19,55 +19,55 @@ StmtModifier::StmtModifier(ExpModifier *em, bool ignnoreCol)
 }
 
 
-void StmtModifier::visit(Assign *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<Assign> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(PhiAssign *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<PhiAssign> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(ImplicitAssign *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<ImplicitAssign> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(BoolAssign *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<BoolAssign> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(GotoStatement *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<GotoStatement> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(BranchStatement *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<BranchStatement> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(CaseStatement *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<CaseStatement> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(CallStatement *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<CallStatement> &, bool &visitChildren)
 {
     visitChildren = true;
 }
 
 
-void StmtModifier::visit(ReturnStatement *, bool &visitChildren)
+void StmtModifier::visit(const std::shared_ptr<ReturnStatement> &, bool &visitChildren)
 {
     visitChildren = true;
 }

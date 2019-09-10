@@ -107,9 +107,9 @@ void CaseStatement::print(OStream &os) const
 }
 
 
-Statement *CaseStatement::clone() const
+SharedStmt CaseStatement::clone() const
 {
-    CaseStatement *ret = new CaseStatement();
+    std::shared_ptr<CaseStatement> ret(new CaseStatement());
 
     ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
@@ -124,6 +124,7 @@ Statement *CaseStatement::clone() const
     ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
+
     return ret;
 }
 
@@ -148,7 +149,7 @@ void CaseStatement::simplify()
 bool CaseStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -169,7 +170,7 @@ bool CaseStatement::accept(StmtExpVisitor *v)
 bool CaseStatement::accept(StmtModifier *v)
 {
     bool visitChildren;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {
@@ -188,7 +189,7 @@ bool CaseStatement::accept(StmtModifier *v)
 bool CaseStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
     if (m_dest && visitChildren) {
         m_dest = m_dest->acceptModifier(v->mod);

@@ -178,24 +178,24 @@ void LocationSetTest::testFindDifferentRef()
     set.insert(RefExp::get(Location::regOf(REG_PENT_EAX), nullptr));
     QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_EAX), nullptr), result));
 
-    Assign as1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    Assign as2(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
+    std::shared_ptr<Assign> as1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> as2(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
 
-    as1.setNumber(10);
-    as2.setNumber(20);
+    as1->setNumber(10);
+    as2->setNumber(20);
 
-    set.insert(RefExp::get(Location::regOf(REG_PENT_ECX), &as1));
+    set.insert(RefExp::get(Location::regOf(REG_PENT_ECX), as1));
     // no other ref
-    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), &as1), result));
+    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), as1), result));
 
-    set.insert(RefExp::get(Location::regOf(REG_PENT_ECX), &as2));
+    set.insert(RefExp::get(Location::regOf(REG_PENT_ECX), as2));
     // return a different ref
-    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), &as1), result));
+    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), as1), result));
     QCOMPARE(result->toString(), QString("r25{20}"));
 
     // should work even when the ref is not in the set
-    set.remove(RefExp::get(Location::regOf(REG_PENT_ECX), &as1));
-    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), &as1), result));
+    set.remove(RefExp::get(Location::regOf(REG_PENT_ECX), as1));
+    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), as1), result));
     QCOMPARE(result->toString(), QString("r25{20}"));
 }
 
@@ -211,12 +211,12 @@ void LocationSetTest::testAddSubscript()
     QCOMPARE(set, LocationSet({ RefExp::get(Location::regOf(REG_PENT_ECX), nullptr) }));
 
     set.insert(Location::regOf(REG_PENT_ECX));
-    Assign as(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    as.setNumber(42);
-    set.addSubscript(&as);
+    std::shared_ptr<Assign> as(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    as->setNumber(42);
+    set.addSubscript(as);
     QCOMPARE(set, LocationSet({
         RefExp::get(Location::regOf(REG_PENT_ECX), nullptr),
-        RefExp::get(Location::regOf(REG_PENT_ECX), &as) }));
+        RefExp::get(Location::regOf(REG_PENT_ECX), as) }));
 }
 
 

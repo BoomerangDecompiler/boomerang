@@ -28,7 +28,7 @@ bool ImplicitPlacementPass::execute(UserProc *proc)
     ImplicitConverter ic(proc->getCFG());
     StmtImplicitConverter sm(&ic, proc->getCFG());
 
-    for (Statement *stmt : stmts) {
+    for (SharedStmt stmt : stmts) {
         stmt->accept(&sm);
     }
 

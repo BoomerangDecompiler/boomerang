@@ -34,7 +34,7 @@ public:
 
 public:
     /// \copydoc Statement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) const override;

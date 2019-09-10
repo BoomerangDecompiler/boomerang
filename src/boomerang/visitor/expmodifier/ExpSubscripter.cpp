@@ -15,7 +15,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 
 
-ExpSubscripter::ExpSubscripter(const SharedExp &s, Statement *def)
+ExpSubscripter::ExpSubscripter(const SharedExp &s, const SharedStmt &def)
     : m_search(s)
     , m_def(def)
 {

@@ -95,8 +95,8 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay,
-                                   UserProc *proc);
+    BasicBlock *optimizeCallReturn(std::shared_ptr<CallStatement> call, const RTL *rtl,
+                                   const RTL *delay, UserProc *proc);
 
     /**
      * Adds the destination of a branch to the queue of address
@@ -149,7 +149,7 @@ private:
      */
     bool case_CALL(Address &address, DecodeResult &inst, DecodeResult &delay_inst,
                    std::unique_ptr<RTLList> &BB_rtls, UserProc *proc,
-                   std::list<CallStatement *> &callList, bool isPattern = false);
+                   std::list<std::shared_ptr<CallStatement>> &callList, bool isPattern = false);
 
     /**
      * Handles a non-call, static delayed (SD) instruction
@@ -185,7 +185,7 @@ private:
      */
     bool case_DD(Address &address, ptrdiff_t delta, DecodeResult &inst, DecodeResult &delay_inst,
                  std::unique_ptr<RTLList> BB_rtls, TargetQueue &tq, UserProc *proc,
-                 std::list<CallStatement *> &callList);
+                 std::list<std::shared_ptr<CallStatement>> &callList);
 
     /**
      * Handles all Static Conditional Delayed non-anulled branches

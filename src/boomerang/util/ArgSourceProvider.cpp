@@ -75,7 +75,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
             return nullptr;
         }
 
-        s = static_cast<Assignment *>(*pp++)->getLeft()->clone();
+        s = (*pp++)->as<Assignment>()->getLeft()->clone();
         s->removeSubscripts(allZero);
 
         // Localise the components. Has the effect of translating into the contect of this caller
@@ -89,7 +89,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
         }
 
         // Give the location, i.e. the left hand side of the assignment
-        return static_cast<Assign *>(*cc++)->getLeft();
+        return (*cc++)->as<Assign>()->getLeft();
 
     default: assert(false); break;
     }
@@ -102,7 +102,7 @@ SharedExp ArgSourceProvider::localise(SharedExp e)
 {
     if (src == ArgSource::Collector) {
         // Provide the RHS of the current assignment
-        SharedExp ret = static_cast<Assign *>(*std::prev(cc))->getRight();
+        SharedExp ret = (*std::prev(cc))->as<Assign>()->getRight();
         return ret;
     }
 
@@ -119,7 +119,7 @@ SharedType ArgSourceProvider::curType(SharedExp e)
     case ArgSource::Lib: return callSig->getParamType(i - 1);
 
     case ArgSource::Callee: {
-        SharedType ty = static_cast<Assignment *>(*std::prev(pp))->getType();
+        SharedType ty = (*std::prev(pp))->as<Assignment>()->getType();
         return ty;
     }
 
@@ -162,7 +162,7 @@ bool ArgSourceProvider::exists(SharedExp e)
 
     case ArgSource::Callee:
         for (pp = calleeParams->begin(); pp != calleeParams->end(); ++pp) {
-            SharedExp par = static_cast<Assignment *>(*pp)->getLeft()->clone();
+            SharedExp par = (*pp)->as<Assignment>()->getLeft()->clone();
             par->removeSubscripts(allZero);
             call->localiseComp(par);
 

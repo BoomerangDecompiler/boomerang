@@ -17,12 +17,16 @@
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 #include "boomerang/visitor/stmtexpvisitor/UsedLocsVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
+
+
+SharedStmt Statement::wild = SharedStmt(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
 
 
 Statement::Statement()
@@ -53,7 +57,7 @@ void Statement::setProc(UserProc *proc)
 }
 
 
-OStream &operator<<(OStream &os, const Statement *s)
+OStream &operator<<(OStream &os, const SharedStmt &s)
 {
     if (s == nullptr) {
         os << "nullptr ";
@@ -94,7 +98,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
         return false;
     }
 
-    const Statement *def = ref.getDef();
+    SharedConstStmt def = ref.getDef();
 
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
@@ -109,14 +113,8 @@ bool Statement::canPropagateToExp(const Exp &exp)
         return false; // Only propagate ordinary assignments (so far)
     }
 
-    const Assign *adef = static_cast<const Assign *>(def);
-
-    if (adef->getType()->isArray()) {
-        // Assigning to an array, don't propagate (Could be alias problems?)
-        return false;
-    }
-
-    return true;
+    // Assigning to an array, don't propagate (Could be alias problems?)
+    return !def->as<const Assign>()->getType()->isArray();
 }
 
 
@@ -142,9 +140,9 @@ bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExp
                 continue;
             }
 
-            assert(dynamic_cast<Assignment *>(e->access<RefExp>()->getDef()) != nullptr);
-            Assignment *def = static_cast<Assignment *>(e->access<RefExp>()->getDef());
-            SharedExp rhs   = def->getRight();
+            assert(e->access<RefExp>()->getDef()->isAssignment());
+            std::shared_ptr<Assignment> def = e->access<RefExp>()->getDef()->as<Assignment>();
+            SharedExp rhs                   = def->getRight();
 
             // If force is true, ignore the fact that a memof should not be propagated (for switch
             // analysis)
@@ -201,10 +199,9 @@ bool Statement::propagateFlagsTo(Settings *settings)
                 continue; // e.g. %pc
             }
 
-            Assignment *def = dynamic_cast<Assignment *>(e->access<RefExp>()->getDef());
-
-            if ((def == nullptr) ||
-                (nullptr == def->getRight())) { // process if it has definition with rhs
+            std::shared_ptr<Assignment> def = std::dynamic_pointer_cast<Assignment>(
+                e->access<RefExp>()->getDef());
+            if (!def || !def->getRight()) { // process only if it has definition with rhs
                 continue;
             }
 
@@ -227,7 +224,8 @@ void Statement::setTypeForExp(SharedExp, SharedType)
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, Settings *settings)
+bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def,
+                              Settings *settings)
 {
     // Respect the -p N switch
     if (settings->numToPropagate >= 0) {
@@ -238,17 +236,16 @@ bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, Settings *set
         settings->numToPropagate--;
     }
 
-    LOG_VERBOSE2("Propagating %1 into %2", def, this);
+    LOG_VERBOSE2("Propagating %1 into %2", def, shared_from_this());
     const bool change = replaceRef(e, def);
-    LOG_VERBOSE2("    result %1", this);
+    LOG_VERBOSE2("    result %1", shared_from_this());
     return change;
 }
 
 
-bool Statement::replaceRef(SharedExp e, Assignment *def)
+bool Statement::replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def)
 {
     SharedExp rhs = def->getRight();
-
     assert(rhs);
 
     SharedExp base = e->getSubExp1();
@@ -407,11 +404,13 @@ bool Statement::isNullStatement() const
 
     if (right->isSubscript()) {
         // Must refer to self to be null
-        return this == right->access<RefExp>()->getDef();
+        return right->access<RefExp>()->getDef().get() == this;
     }
     else {
+        assert(this->isAssign());
+
         // Null if left == right
-        return *static_cast<const Assign *>(this)->getLeft() == *right;
+        return *shared_from_this()->as<const Assign>()->getLeft() == *right;
     }
 }
 
@@ -419,7 +418,7 @@ bool Statement::isNullStatement() const
 void Statement::bypass()
 {
     // Use the Part modifier so we don't change the top level of LHS of assigns etc
-    CallBypasser cb(this);
+    CallBypasser cb(shared_from_this());
     StmtPartModifier sm(&cb);
 
     accept(&sm);

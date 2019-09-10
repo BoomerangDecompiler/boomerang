@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/StatementList.h"
 
@@ -204,29 +205,29 @@ public:
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated,
      * easily-bugged code
      */
-    Statement *getFirstStmt(RTLIterator &rit, StatementList::iterator &sit);
-    Statement *getNextStmt(RTLIterator &rit, StatementList::iterator &sit);
-    Statement *getLastStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
-    Statement *getPrevStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
+    SharedStmt getFirstStmt(RTLIterator &rit, RTL::iterator &sit);
+    SharedStmt getNextStmt(RTLIterator &rit, RTL::iterator &sit);
+    SharedStmt getLastStmt(RTLRIterator &rit, RTL::reverse_iterator &sit);
+    SharedStmt getPrevStmt(RTLRIterator &rit, RTL::reverse_iterator &sit);
 
-    Statement *getFirstStmt();
-    const Statement *getFirstStmt() const;
-    Statement *getLastStmt();
-    const Statement *getLastStmt() const;
+    SharedStmt getFirstStmt();
+    const SharedConstStmt getFirstStmt() const;
+    SharedStmt getLastStmt();
+    const SharedConstStmt getLastStmt() const;
 
     /// Appends all statements in this BB to \p stmts.
     void appendStatementsTo(StatementList &stmts) const;
 
     ///
-    ImplicitAssign *addImplicitAssign(const SharedExp &lhs);
+    std::shared_ptr<ImplicitAssign> addImplicitAssign(const SharedExp &lhs);
 
     /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
-    PhiAssign *addPhi(const SharedExp &usedExp);
+    std::shared_ptr<PhiAssign> addPhi(const SharedExp &usedExp);
 
     // Remove all refs from phis in this BB
     void clearPhis();
 
-    bool hasStatement(const Statement *stmt) const;
+    bool hasStatement(const SharedStmt &stmt) const;
 
     /// \returns true iff the BB does not contain any statements.
     /// \note This is different from a BB that does not contain

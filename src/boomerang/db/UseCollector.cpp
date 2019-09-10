@@ -88,7 +88,7 @@ void UseCollector::print(OStream &os) const
 }
 
 
-void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
+void UseCollector::fromSSAForm(UserProc *proc, const SharedStmt &def)
 {
     LocationSet removes, inserts;
     iterator it;

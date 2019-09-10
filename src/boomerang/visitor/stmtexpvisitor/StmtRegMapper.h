@@ -27,17 +27,17 @@ public:
     virtual ~StmtRegMapper() = default;
 
 public:
-    virtual bool common(Assignment *stmt, bool &visitChildren);
+    virtual bool common(const std::shared_ptr<Assignment> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(Assign *stmt, bool &visitChildren) override;
+    virtual bool visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool &visitChildren) override;
+    virtual bool visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool &visitChildren) override;
+    virtual bool visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool &visitChildren) override;
+    virtual bool visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
 };

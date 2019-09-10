@@ -30,12 +30,12 @@ StmtSSAXformer::StmtSSAXformer(ExpSSAXformer *esx, UserProc *proc)
 }
 
 
-void StmtSSAXformer::handleCommonLHS(Assignment *as)
+void StmtSSAXformer::handleCommonLHS(const std::shared_ptr<Assignment> &as)
 {
     SharedExp lhs = as->getLeft();
 
-    lhs = lhs->acceptModifier(
-        static_cast<ExpSSAXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
+    // In case the LHS has say m[r28{0}+8] -> m[esp+8]
+    lhs = lhs->acceptModifier(static_cast<ExpSSAXformer *>(m_mod));
 
     const QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
     if (!sym.isEmpty()) {
@@ -44,7 +44,7 @@ void StmtSSAXformer::handleCommonLHS(Assignment *as)
 }
 
 
-void StmtSSAXformer::visit(BoolAssign *stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren)
 {
     handleCommonLHS(stmt);
     SharedExp condExp = stmt->getCondExpr();
@@ -54,7 +54,7 @@ void StmtSSAXformer::visit(BoolAssign *stmt, bool &visitChildren)
 }
 
 
-void StmtSSAXformer::visit(Assign *stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren)
 {
     handleCommonLHS(stmt);
     SharedExp rhs = stmt->getRight();
@@ -64,14 +64,14 @@ void StmtSSAXformer::visit(Assign *stmt, bool &visitChildren)
 }
 
 
-void StmtSSAXformer::visit(ImplicitAssign *stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren)
 {
     handleCommonLHS(stmt);
     visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSSAXformer::visit(PhiAssign *stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     handleCommonLHS(stmt);
 
@@ -91,7 +91,7 @@ void StmtSSAXformer::visit(PhiAssign *stmt, bool &visitChildren)
 }
 
 
-void StmtSSAXformer::visit(CallStatement *stmt, bool &visitChildren)
+void StmtSSAXformer::visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren)
 {
     SharedExp callDest = stmt->getDest();
 
@@ -101,7 +101,7 @@ void StmtSSAXformer::visit(CallStatement *stmt, bool &visitChildren)
 
     const StatementList &arguments = stmt->getArguments();
 
-    for (Statement *s : arguments) {
+    for (SharedStmt s : arguments) {
         s->accept(this);
     }
 
@@ -111,9 +111,10 @@ void StmtSSAXformer::visit(CallStatement *stmt, bool &visitChildren)
     // fromSSA() function
     StatementList &defines = stmt->getDefines();
 
-    for (Statement *define : defines) {
+    for (SharedStmt define : defines) {
         assert(define->isAssignment());
-        Assignment *as = static_cast<Assignment *>(define);
+        std::shared_ptr<Assignment> as = define->as<Assignment>();
+
         // FIXME: use of fromSSAleft is deprecated
         SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSSAXformer *>(m_mod)->getProc(),
                                                  stmt);

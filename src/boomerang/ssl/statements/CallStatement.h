@@ -41,7 +41,7 @@ public:
 
 public:
     /// \copydoc GotoStatement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtVisitor *visitor) const override;
@@ -78,23 +78,20 @@ public:
     void removeDefine(SharedExp e);
 
     /// For testing. Takes ownership of the pointer.
-    void addDefine(ImplicitAssign *as);
+    void addDefine(const std::shared_ptr<ImplicitAssign> &as);
 
-    // Calculate results(this) = defines(this) intersect live(this)
-    // Note: could use a LocationList for this, but then there is nowhere to store the types (for
-    // DFA based TA) So the RHS is just ignored
-    std::unique_ptr<StatementList> calcResults() const; // Calculate defines(this) isect live(this)
+    /// Calculate results(this) = defines(this) intersect live(this)
+    /// \note could use a LocationList for this, but then there is nowhere to store the types
+    /// (for DFA based TA). So the RHS is just ignored
+    std::unique_ptr<StatementList> calcResults() const;
 
-    ReturnStatement *getCalleeReturn() { return m_calleeReturn; }
-    void setCalleeReturn(ReturnStatement *ret) { m_calleeReturn = ret; }
+    const std::shared_ptr<ReturnStatement> &getCalleeReturn() { return m_calleeReturn; }
+    void setCalleeReturn(const std::shared_ptr<ReturnStatement> &ret) { m_calleeReturn = ret; }
     bool isChildless() const;
     SharedExp getProven(SharedExp e);
 
     std::shared_ptr<Signature> getSignature() { return m_signature; }
-    void setSignature(std::shared_ptr<Signature> sig)
-    {
-        m_signature = sig;
-    } ///< Only used by range analysis
+    void setSignature(const std::shared_ptr<Signature> &sig) { m_signature = sig; }
 
     /// Localise the various components of expression e with reaching definitions to this call
     /// Note: can change e so usually need to clone the argument
@@ -218,7 +215,7 @@ public:
     bool tryConvertToDirect();
 
     /// direct call
-    void useColfromSSAForm(Statement *s) { m_useCol.fromSSAForm(m_proc, s); }
+    void useColfromSSAForm(const SharedStmt &s) { m_useCol.fromSSAForm(m_proc, s); }
 
     bool isCallToMemOffset() const;
 
@@ -228,7 +225,7 @@ private:
     void addSigParam(SharedType ty, bool isScanf);
 
     /// Make an assign suitable for use as an argument from a callee context expression
-    Assign *makeArgAssign(SharedType ty, SharedExp e);
+    std::shared_ptr<Assign> makeArgAssign(SharedType ty, SharedExp e);
 
     bool objcSpecificProcessing(const QString &formatStr);
 
@@ -269,5 +266,5 @@ private:
     /// this will be a special ReturnStatement with ImplicitAssigns.
     /// Callee could be unanalysed because of an unanalysed indirect call,
     /// or a "recursion break".
-    ReturnStatement *m_calleeReturn = nullptr;
+    std::shared_ptr<ReturnStatement> m_calleeReturn = nullptr;
 };

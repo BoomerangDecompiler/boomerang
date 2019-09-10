@@ -49,8 +49,8 @@ bool AssignRemovalPass::removeSpAssigns(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<Assign *>(stmt)->getLeft() == *sp)) {
+    for (SharedStmt stmt : stmts) {
+        if (stmt->isAssign() && (*stmt->as<Assign>()->getLeft() == *sp)) {
             foundone = true;
         }
 
@@ -59,7 +59,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc *proc)
 
         for (const SharedExp &rr : refs) {
             if (rr->isSubscript() && (*rr->getSubExp1() == *sp)) {
-                Statement *def = rr->access<RefExp>()->getDef();
+                SharedStmt def = rr->access<RefExp>()->getDef();
 
                 if (def && (def->getProc() == proc)) {
                     return false;
@@ -77,7 +77,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc *proc)
 
     for (auto &stmt : stmts) {
         if (stmt->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
+            std::shared_ptr<Assign> a = stmt->as<Assign>();
 
             if (*a->getLeft() == *sp) {
                 proc->removeStatement(a);
@@ -103,12 +103,12 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
     proc->getStatements(stmts);
 
     for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<const Assign *>(stmt)->getLeft() == *e)) {
+        if (stmt->isAssign() && (*stmt->as<Assign>()->getLeft() == *e)) {
             foundone = true;
         }
 
         if (stmt->isPhi()) {
-            if (*static_cast<const PhiAssign *>(stmt)->getLeft() == *e) {
+            if (*stmt->as<PhiAssign>()->getLeft() == *e) {
                 foundone = true;
             }
 
@@ -120,7 +120,7 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
 
         for (const SharedExp &rr : refs) {
             if (rr->isSubscript() && (*rr->getSubExp1() == *e)) {
-                Statement *def = rr->access<RefExp>()->getDef();
+                SharedStmt def = rr->access<RefExp>()->getDef();
 
                 if (def && (def->getProc() == proc)) {
                     return false;
@@ -141,14 +141,14 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
 
     for (auto &stmt : stmts) {
         if ((stmt)->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
+            std::shared_ptr<Assign> a = stmt->as<Assign>();
 
             if (*a->getLeft() == *e) {
                 proc->removeStatement(a);
             }
         }
         else if ((stmt)->isPhi()) {
-            PhiAssign *a = static_cast<PhiAssign *>(stmt);
+            std::shared_ptr<PhiAssign> a = stmt->as<PhiAssign>();
 
             if (*a->getLeft() == *e) {
                 proc->removeStatement(a);

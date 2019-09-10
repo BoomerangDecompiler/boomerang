@@ -17,7 +17,7 @@
 
 DefCollector::~DefCollector()
 {
-    qDeleteAll(m_defs);
+    clear();
 }
 
 
@@ -28,7 +28,7 @@ void DefCollector::clear()
 }
 
 
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar> &Stacks,
+void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
                               UserProc *proc)
 {
     for (auto &Stack : Stacks) {
@@ -37,8 +37,8 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessE
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto re    = RefExp::get(Stack.first->clone(), Stack.second.back());
-        Assign *as = new Assign(Stack.first->clone(), re);
+        auto re = RefExp::get(Stack.first->clone(), Stack.second.back());
+        std::shared_ptr<Assign> as(new Assign(Stack.first->clone(), re));
         as->setProc(proc); // Simplify sometimes needs this
         insert(as);
     }
@@ -91,7 +91,7 @@ void DefCollector::print(OStream &os) const
 
 SharedExp DefCollector::findDefFor(SharedExp e) const
 {
-    for (Assign *def : m_defs) {
+    for (std::shared_ptr<Assign> def : m_defs) {
         SharedExp lhs = def->getLeft();
 
         if (*lhs == *e) {
@@ -106,11 +106,10 @@ SharedExp DefCollector::findDefFor(SharedExp e) const
 void DefCollector::makeCloneOf(const DefCollector &other)
 {
     m_initialised = other.m_initialised;
-    qDeleteAll(m_defs);
     m_defs.clear();
 
     for (const auto &elem : other) {
-        m_defs.insert(static_cast<Assign *>(elem->clone()));
+        m_defs.insert(elem->clone()->as<Assign>());
     }
 }
 
@@ -123,12 +122,11 @@ void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &changed
 }
 
 
-void DefCollector::insert(Assign *a)
+void DefCollector::insert(const std::shared_ptr<Assign> &a)
 {
     SharedExp l = a->getLeft();
 
     if (existsOnLeft(l)) {
-        delete a;
         return;
     }
 

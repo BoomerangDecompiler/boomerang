@@ -147,7 +147,6 @@ private:
 
     QString collectArg(const QString &msg, const char *arg) { return msg.arg(arg); }
     QString collectArg(const QString &msg, const QString &arg) { return msg.arg(arg); }
-    QString collectArg(const QString &msg, const Statement *s);
     QString collectArg(const QString &msg, const SharedConstExp &e);
     QString collectArg(const QString &msg, const SharedType &ty);
     QString collectArg(const QString &msg, const Type &ty);
@@ -191,6 +190,10 @@ private:
     LogLevel m_level = LogLevel::Default;
     std::vector<std::unique_ptr<ILogSink>> m_sinks;
 };
+
+template<>
+BOOMERANG_API QString Log::collectArg<Statement>(const QString &msg,
+                                                 const std::shared_ptr<Statement> &s);
 
 
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");

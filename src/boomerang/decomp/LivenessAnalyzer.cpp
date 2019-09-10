@@ -77,7 +77,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
         // For all statements in this BB in reverse order
         for (auto rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
             for (auto sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                Statement *s = *sit;
+                SharedStmt s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs, assumeABICompliance);
 
@@ -138,7 +138,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
         RTL *phiRTL = currBB->getRTLs()->front().get();
         assert(phiRTL);
 
-        for (Statement *st : *phiRTL) {
+        for (SharedStmt st : *phiRTL) {
             // Only interested in phi assignments. Note that it is possible that some phi
             // assignments have been converted to ordinary assignments. So the below is a continue,
             // not a break.
@@ -146,7 +146,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 continue;
             }
 
-            PhiAssign *pa = static_cast<PhiAssign *>(st);
+            std::shared_ptr<PhiAssign> pa = st->as<PhiAssign>();
 
             for (const auto &v : pa->getDefs()) {
                 if (!cfg->hasBB(v.first)) {
@@ -157,7 +157,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
 
             // Get the jth operand to the phi function; it has a use from BB *this
             // assert(j>=0);
-            Statement *def = pa->getStmtAt(bb);
+            SharedStmt def = pa->getStmtAt(bb);
 
             if (!def) {
                 std::set<BasicBlock *> tried{ bb };

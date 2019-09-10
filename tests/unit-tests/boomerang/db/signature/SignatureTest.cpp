@@ -354,10 +354,10 @@ void SignatureTest::testIsAddrOfStackLocal()
     QVERIFY(!sig.isAddrOfStackLocal(REG_PENT_ESP, spMinusPi));
 
     // m[sp{4} - 10] is not a stack local
-    Assign asgn(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX));
-    asgn.setNumber(4);
+    std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
+    asgn->setNumber(4);
 
-    SharedExp sp4Minus10 = Binary::get(opMinus, RefExp::get(Location::regOf(REG_PENT_ESP), &asgn), Const::get(10));
+    SharedExp sp4Minus10 = Binary::get(opMinus, RefExp::get(Location::regOf(REG_PENT_ESP), asgn), Const::get(10));
     QVERIFY(!sig.isAddrOfStackLocal(REG_PENT_ESP, sp4Minus10));
 
     // verify a[...] and m[...] cancel out
@@ -422,7 +422,6 @@ void SignatureTest::testGetABIDefines()
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PENT_EAX)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PENT_ECX)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PENT_EDX)) != nullptr);
-    qDeleteAll(defs);
     defs.clear();
 
     QVERIFY(Signature::getABIDefines(Machine::SPARC, defs));
@@ -434,7 +433,6 @@ void SignatureTest::testGetABIDefines()
     QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O4)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O5)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_G1)) != nullptr);
-    qDeleteAll(defs);
     defs.clear();
 
     QVERIFY(Signature::getABIDefines(Machine::PPC, defs));
@@ -449,7 +447,6 @@ void SignatureTest::testGetABIDefines()
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PPC_G10)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PPC_G11)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PPC_G12)) != nullptr);
-    qDeleteAll(defs);
     defs.clear();
 
     QVERIFY(Signature::getABIDefines(Machine::ST20, defs));
@@ -465,7 +462,6 @@ void SignatureTest::testGetABIDefines()
     QVERIFY(defs.findOnLeft(Location::regOf(REG_ST20_A)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_ST20_B)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_ST20_C)) != nullptr);
-    qDeleteAll(defs);
     defs.clear();
 
     QVERIFY(Signature::getABIDefines(Machine::UNKNOWN, defs));

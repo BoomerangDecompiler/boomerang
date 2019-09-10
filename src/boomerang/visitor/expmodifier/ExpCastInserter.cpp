@@ -71,7 +71,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp> &exp)
 
     if (base->isMemOf()) {
         // Check to see if the address expression needs type annotation
-        Statement *def = exp->getDef();
+        SharedStmt def = exp->getDef();
 
         if (!def) {
             LOG_WARN("RefExp def is null");

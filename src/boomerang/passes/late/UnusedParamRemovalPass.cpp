@@ -47,15 +47,19 @@ bool UnusedParamRemovalPass::execute(UserProc *proc)
     // Note: this would be far more efficient if we had def-use information
     for (StatementList::iterator pp = proc->getParameters().begin();
          pp != proc->getParameters().end(); ++pp) {
-        SharedExp param = static_cast<Assignment *>(*pp)->getLeft();
+        SharedExp param = (*pp)->as<Assignment>()->getLeft();
         bool az;
-        SharedExp bparam = param->clone()->removeSubscripts(
-            az); // FIXME: why does main have subscripts on parameters?
-        // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found
-        // in uses
+
+        // FIXME: why does main have subscripts on parameters?
+        SharedExp bparam = param->clone()->removeSubscripts(az);
+
+        // Memory parameters will be of the form m[sp + K];
+        // convert to m[sp{0} + K] as will be found in uses
         bparam = bparam->expSubscriptAllNull(); // Now m[sp{-}+K]{-}
+
         ImplicitConverter ic(proc->getCFG());
         bparam = bparam->acceptModifier(&ic); // Now m[sp{0}+K]{0}
+
         assert(bparam->isSubscript());
         bparam = bparam->access<Exp, 1>(); // now m[sp{0}+K] (bare parameter)
 
@@ -105,11 +109,11 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // Special checking for recursive calls
         if (s->isCall()) {
-            CallStatement *c = static_cast<CallStatement *>(s);
-            UserProc *dest   = dynamic_cast<UserProc *>(c->getDestProc());
+            std::shared_ptr<CallStatement> c = s->as<CallStatement>();
+            UserProc *dest                   = dynamic_cast<UserProc *>(c->getDestProc());
 
             if (dest && dest->doesRecurseTo(proc)) {
                 // In the destination expression?
@@ -123,9 +127,12 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                 // Else check for arguments of the form lloc := f(bparam{0})
                 const StatementList &args = c->getArguments();
 
-                for (const Statement *arg : args) {
-                    const Assign *a = dynamic_cast<const Assign *>(arg);
-                    SharedExp rhs   = a ? a->getRight() : nullptr;
+                for (const SharedStmt &arg : args) {
+                    if (!arg->isAssign()) {
+                        continue;
+                    }
+
+                    SharedExp rhs = arg->as<Assign>()->getRight();
                     if (!rhs) {
                         continue;
                     }
@@ -134,7 +141,7 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                     rhs->addUsedLocs(argUses);
 
                     if (argUses.containsImplicit(bparam)) {
-                        SharedExp lloc = static_cast<const Assign *>(arg)->getLeft();
+                        SharedExp lloc = arg->as<Assign>()->getLeft();
 
                         if ((visited.find(dest) == visited.end()) &&
                             checkForGainfulUse(dest, lloc, visited)) {
@@ -156,12 +163,12 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
         }
         else if (s->isPhi() && (proc->getRetStmt() != nullptr) && proc->getRecursionGroup() &&
                  !proc->getRecursionGroup()->empty()) {
-            SharedExp phiLeft = static_cast<PhiAssign *>(s)->getLeft();
+            SharedExp phiLeft = s->as<PhiAssign>()->getLeft();
             auto refPhi       = RefExp::get(phiLeft, s);
             bool foundPhi     = false;
 
-            for (Statement *stmt : *proc->getRetStmt()) {
-                SharedExp rhs = static_cast<Assign *>(stmt)->getRight();
+            for (SharedStmt stmt : *proc->getRetStmt()) {
+                SharedExp rhs = stmt->as<Assign>()->getRight();
                 LocationSet uses;
                 rhs->addUsedLocs(uses);
 

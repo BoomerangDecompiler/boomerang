@@ -44,7 +44,7 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 
 // Subscript dataflow variables
 bool BlockVarRenamePass::renameBlockVars(
-    UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar> &stacks)
+    UserProc *proc, int n, std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &stacks)
 {
     if (proc->getCFG()->getNumBBs() == 0) {
         return false;
@@ -58,14 +58,14 @@ bool BlockVarRenamePass::renameBlockVars(
     StatementList::iterator sit;
     BasicBlock *bb = proc->getDataFlow()->nodeToBB(n);
 
-    for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (SharedStmt S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
 
             if (S->isPhi()) {
-                PhiAssign *pa     = static_cast<PhiAssign *>(S);
-                SharedExp phiLeft = pa->getLeft();
+                std::shared_ptr<PhiAssign> pa = S->as<PhiAssign>();
+                SharedExp phiLeft             = pa->getLeft();
 
                 if (phiLeft->isMemOf() || phiLeft->isRegOf()) {
                     phiLeft->getSubExp1()->addUsedLocs(locs);
@@ -74,10 +74,10 @@ bool BlockVarRenamePass::renameBlockVars(
                 // A phi statement may use a location defined in a childless call,
                 // in which case its use collector needs updating
                 for (auto &pp : *pa) {
-                    Statement *def = pp->getDef();
+                    SharedStmt def = pp->getDef();
 
                     if (def && def->isCall()) {
-                        static_cast<CallStatement *>(def)->useBeforeDefine(phiLeft->clone());
+                        def->as<CallStatement>()->useBeforeDefine(phiLeft->clone());
                     }
                 }
             }
@@ -91,7 +91,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     continue;
                 }
 
-                Statement *def = nullptr;
+                SharedStmt def;
 
                 if (location->isSubscript()) { // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new
@@ -103,7 +103,7 @@ bool BlockVarRenamePass::renameBlockVars(
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at
                         // the call
-                        static_cast<CallStatement *>(def)->useBeforeDefine(base->clone());
+                        def->as<CallStatement>()->useBeforeDefine(base->clone());
                         continue;
                     }
 
@@ -135,14 +135,14 @@ bool BlockVarRenamePass::renameBlockVars(
                 if (def && def->isCall()) {
                     // Calls have UseCollectors for locations that are used before definition
                     // at the call
-                    static_cast<CallStatement *>(def)->useBeforeDefine(location->clone());
+                    def->as<CallStatement>()->useBeforeDefine(location->clone());
                 }
 
                 // Replace the use of x with x{def} in S
                 changed = true;
 
                 if (S->isPhi()) {
-                    SharedExp phiLeft = static_cast<PhiAssign *>(S)->getLeft();
+                    SharedExp phiLeft = S->as<PhiAssign>()->getLeft();
                     phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(location, def));
                 }
                 else {
@@ -158,10 +158,10 @@ bool BlockVarRenamePass::renameBlockVars(
             DefCollector *col;
 
             if (S->isCall()) {
-                col = static_cast<CallStatement *>(S)->getDefCollector();
+                col = S->as<CallStatement>()->getDefCollector();
             }
             else {
-                col = static_cast<ReturnStatement *>(S)->getCollector();
+                col = S->as<ReturnStatement>()->getCollector();
             }
 
             col->updateDefs(stacks, proc);
@@ -205,7 +205,7 @@ bool BlockVarRenamePass::renameBlockVars(
 
         // Special processing for define-alls (presently, only childless calls).
         // But note that only 'everythings' at the current memory level are defined!
-        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless() &&
+        if (S->isCall() && S->as<CallStatement>()->isChildless() &&
             !proc->getProg()->getProject()->getSettings()->assumeABI) {
             // S is a childless call (and we're not assuming ABI compliance)
             stacks[defineAll]; // Ensure that there is an entry for defineAll
@@ -220,12 +220,12 @@ bool BlockVarRenamePass::renameBlockVars(
     // For each successor Y of block n
     for (BasicBlock *Ybb : bb->getSuccessors()) {
         // For each phi-function in Y
-        for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+        for (SharedStmt St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             if (!St->isPhi()) {
                 continue;
             }
 
-            PhiAssign *pa = static_cast<PhiAssign *>(St);
+            std::shared_ptr<PhiAssign> pa = St->as<PhiAssign>();
 
             // Suppose the jth operand of the phi is 'a'
             // For now, just get the LHS
@@ -236,7 +236,7 @@ bool BlockVarRenamePass::renameBlockVars(
                 continue;
             }
 
-            Statement *def = nullptr; // assume No reaching definition
+            SharedStmt def = nullptr; // assume No reaching definition
 
             if (!STACKS_EMPTY(a)) {
                 def = stacks[a].back();
@@ -265,7 +265,7 @@ bool BlockVarRenamePass::renameBlockVars(
     BasicBlock::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
+    for (SharedStmt S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs, assumeABICompliance);
@@ -285,7 +285,7 @@ bool BlockVarRenamePass::renameBlockVars(
         }
 
         // Pop all defs due to childless calls
-        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless()) {
+        if (S->isCall() && S->as<CallStatement>()->isChildless()) {
             for (auto &stack : stacks) {
                 if (!stack.second.empty() && (stack.second.back() == S)) {
                     stack.second.pop_back();
@@ -301,7 +301,7 @@ bool BlockVarRenamePass::renameBlockVars(
 bool BlockVarRenamePass::execute(UserProc *proc)
 {
     /// The stack which remembers the last definition of an expression.
-    std::map<SharedExp, std::deque<Statement *>, lessExpStar> stacks;
+    std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> stacks;
     BasicBlock *entryBB = proc->getCFG()->getEntryBB();
 
     if (entryBB == nullptr) {
@@ -312,7 +312,8 @@ bool BlockVarRenamePass::execute(UserProc *proc)
 }
 
 
-void BlockVarRenamePass::subscriptVar(Statement *stmt, SharedExp var, Statement *varDef)
+void BlockVarRenamePass::subscriptVar(const SharedStmt &stmt, SharedExp var,
+                                      const SharedStmt &varDef)
 {
     ExpSubscripter es(var, varDef);
     StmtSubscripter ss(&es);

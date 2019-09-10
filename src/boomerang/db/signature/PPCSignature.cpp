@@ -116,7 +116,7 @@ void PPCSignature::getLibraryDefines(StatementList &defs)
 
     // Registers 3-12 are volatile (caller save)
     for (RegNum r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
-        defs.append(new ImplicitAssign(Location::regOf(r)));
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(r)));
     }
 }
 

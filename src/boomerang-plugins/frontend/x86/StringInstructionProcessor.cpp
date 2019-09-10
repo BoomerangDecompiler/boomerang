@@ -43,9 +43,9 @@ bool StringInstructionProcessor::processStringInstructions()
             addr = rtl->getAddress();
 
             if (!rtl->empty()) {
-                Statement *firstStmt = rtl->front();
+                SharedStmt firstStmt = rtl->front();
                 if (firstStmt->isAssign()) {
-                    SharedExp lhs = static_cast<Assign *>(firstStmt)->getLeft();
+                    SharedExp lhs = firstStmt->as<Assign>()->getLeft();
 
                     if (lhs->isMachFtr()) {
                         QString str = lhs->access<Const, 1>()->getStr();
@@ -69,23 +69,23 @@ bool StringInstructionProcessor::processStringInstructions()
         RTL *skipRTL   = p.first;
         BasicBlock *bb = p.second;
 
-        BranchStatement *skipBranch = new BranchStatement;
+        std::shared_ptr<BranchStatement> skipBranch(new BranchStatement);
 
         assert(skipRTL->size() >= 4); // They vary; at least 5 or 6
 
-        Statement *s1 = *skipRTL->begin();
-        Statement *s6 = *(--skipRTL->end());
+        SharedStmt s1 = *skipRTL->begin();
+        SharedStmt s6 = *(--skipRTL->end());
         if (s1->isAssign()) {
-            skipBranch->setCondExpr(static_cast<Assign *>(s1)->getRight());
+            skipBranch->setCondExpr(s1->as<Assign>()->getRight());
         }
         else {
             skipBranch->setCondExpr(nullptr);
         }
         skipBranch->setDest(skipRTL->getAddress() + 2);
 
-        BranchStatement *rptBranch = new BranchStatement;
+        std::shared_ptr<BranchStatement> rptBranch(new BranchStatement);
         if (s6->isAssign()) {
-            rptBranch->setCondExpr(static_cast<Assign *>(s6)->getRight());
+            rptBranch->setCondExpr(s6->as<Assign>()->getRight());
         }
         else {
             rptBranch->setCondExpr(nullptr);
@@ -100,8 +100,8 @@ bool StringInstructionProcessor::processStringInstructions()
 
 
 BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL,
-                                                       BranchStatement *skipBranch,
-                                                       BranchStatement *rptBranch)
+                                                       std::shared_ptr<BranchStatement> skipBranch,
+                                                       std::shared_ptr<BranchStatement> rptBranch)
 {
     Address stringAddr         = stringRTL->getAddress();
     RTLList::iterator stringIt = std::find_if(

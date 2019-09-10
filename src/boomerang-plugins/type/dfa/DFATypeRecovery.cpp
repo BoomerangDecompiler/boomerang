@@ -68,7 +68,7 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
 {
     LOG_VERBOSE("%1 iterations", iter);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         LOG_VERBOSE("%1", s); // Print the statement; has dest type
 
         // Now print type for each constant in this Statement
@@ -80,11 +80,11 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
         }
 
         // If s is a call, also display its return types
-        CallStatement *call = dynamic_cast<CallStatement *>(s);
+        std::shared_ptr<CallStatement> call = std::dynamic_pointer_cast<CallStatement>(s);
 
         if (call && call->isCall()) {
-            ReturnStatement *rs = call->getCalleeReturn();
-            UseCollector *uc    = call->getUseCollector();
+            std::shared_ptr<ReturnStatement> rs = call->getCalleeReturn();
+            UseCollector *uc                    = call->getUseCollector();
 
             if (!rs || !uc) {
                 continue;
@@ -92,10 +92,10 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
 
             LOG_VERBOSE("  returns:");
 
-            for (Statement *ret : *rs) {
+            for (SharedStmt ret : *rs) {
                 // Intersect the callee's returns with the live locations at the call,
                 // i.e. make sure that they exist in *uc
-                Assignment *assgn = dynamic_cast<Assignment *>(ret);
+                std::shared_ptr<Assignment> assgn = std::dynamic_pointer_cast<Assignment>(ret);
                 if (!assgn) {
                     continue;
                 }
@@ -123,7 +123,7 @@ static const Location scaledArrayPat(opMemOf,
 // clang-format on
 
 
-void DFATypeRecovery::replaceArrayIndices(Statement *s)
+void DFATypeRecovery::replaceArrayIndices(const SharedStmt &s)
 {
     UserProc *proc = s->getProc();
     Prog *prog     = proc->getProg();
@@ -150,8 +150,8 @@ void DFATypeRecovery::replaceArrayIndices(Statement *s)
         if (s->searchAndReplace(scaledArrayPat, array)) {
             if (s->isImplicit()) {
                 // Register an array of appropriate type
-                prog->markGlobalUsed(
-                    base, ArrayType::get(static_cast<const ImplicitAssign *>(s)->getType()));
+                prog->markGlobalUsed(base,
+                                     ArrayType::get(s->as<const ImplicitAssign>()->getType()));
             }
             else if (s->isCall()) {
                 // array of function pointers
@@ -162,7 +162,7 @@ void DFATypeRecovery::replaceArrayIndices(Statement *s)
 }
 
 
-void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
+void DFATypeRecovery::dfa_analyze_implict_assigns(const SharedStmt &s)
 {
     if (!s->isImplicit()) {
         return;
@@ -173,13 +173,11 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
     Prog *prog = proc->getProg();
     assert(prog);
 
-    SharedExp lhs = static_cast<const ImplicitAssign *>(s)->getLeft();
-    // Note: parameters are not explicit any more
-    // if (lhs->isParam()) { // }
+    SharedExp lhs = s->as<const ImplicitAssign>()->getLeft();
 
     bool allZero            = false;
     SharedExp slhs          = lhs->clone()->removeSubscripts(allZero);
-    SharedType implicitType = static_cast<const ImplicitAssign *>(s)->getType();
+    SharedType implicitType = s->as<const ImplicitAssign>()->getType();
     int i                   = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
@@ -258,8 +256,8 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
-        for (Statement *stmt : stmts) {
-            Statement *before = nullptr;
+        for (SharedStmt stmt : stmts) {
+            SharedStmt before = nullptr;
 
             if (proc->getProg()->getProject()->getSettings()->debugTA) {
                 before = stmt->clone();
@@ -278,10 +276,6 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                                 "    TO:   %2",
                                 before, stmt);
                 }
-            }
-
-            if (proc->getProg()->getProject()->getSettings()->debugTA) {
-                delete before;
             }
         }
 
@@ -311,7 +305,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     Prog *_prog = proc->getProg();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // 1) constants
         std::list<std::shared_ptr<Const>> constList;
         findConstantsInStmt(s, constList);
@@ -355,8 +349,8 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                                 Binary::get(opPlus, Unary::get(opAddrOf, g), Const::get(r)), proc);
                         }
                         else {
-                            SharedType ty = _prog->getGlobalType(gloName);
-                            Assign *assgn = dynamic_cast<Assign *>(s);
+                            SharedType ty                 = _prog->getGlobalType(gloName);
+                            std::shared_ptr<Assign> assgn = std::dynamic_pointer_cast<Assign>(s);
 
                             if (assgn && s->isAssign() && assgn->getType()) {
                                 Type::Size bits = assgn->getType()->getSize();
@@ -419,7 +413,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                         const bool isImplicit = s->isImplicit();
 
                         if (isImplicit) {
-                            cfg->removeImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
+                            cfg->removeImplicitAssign(s->as<ImplicitAssign>()->getLeft());
                         }
 
                         if (!s->searchAndReplace(unscaledArrayPat, arr)) {
@@ -431,8 +425,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
                         if (isImplicit) {
                             // Replace the implicit assignment entry. Note that s' lhs has changed
-                            cfg->findOrCreateImplicitAssign(
-                                static_cast<ImplicitAssign *>(s)->getLeft());
+                            cfg->findOrCreateImplicitAssign(s->as<ImplicitAssign>()->getLeft());
                         }
 
                         // Ensure that the global is declared
@@ -470,11 +463,11 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
             SharedType typeExp = nullptr;
 
             assert(s->isAssignment());
-            SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
+            SharedExp lhs = s->as<Assignment>()->getLeft();
 
             if (lhs->isMemOf()) {
                 addrExp = lhs->getSubExp1();
-                typeExp = static_cast<Assignment *>(s)->getType();
+                typeExp = s->as<Assignment>()->getType();
             }
 
             const int spIndex = Util::getStackRegisterIndex(_prog);
@@ -494,7 +487,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                     }
                 }
 
-                const SharedType &ty = static_cast<TypingStatement *>(s)->getType();
+                const SharedType &ty = s->as<TypingStatement>()->getType();
                 LOG_VERBOSE2(
                     "Type analysis for '%1': Adding addrExp '%2' with type %3 to local table",
                     proc->getName(), addrExp, ty);
@@ -516,7 +509,7 @@ bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, ProcCFG *cfg)
 
     for (const std::shared_ptr<Parameter> &it : sig->getParameters()) {
         // Parameters should be defined in an implicit assignment
-        Statement *def = cfg->findImplicitParamAssign(it.get());
+        SharedStmt def = cfg->findImplicitParamAssign(it.get());
 
         if (def) { // But sometimes they are not used, and hence have no implicit definition
             bool thisCh = false;
@@ -536,12 +529,12 @@ bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, ProcCFG *cfg)
 }
 
 
-bool DFATypeRecovery::dfaTypeAnalysis(Statement *i)
-{
-    Q_UNUSED(i);
-    assert(false);
-    return false;
-}
+// bool DFATypeRecovery::dfaTypeAnalysis(const SharedStmt &i)
+// {
+//     Q_UNUSED(i);
+//     assert(false);
+//     return false;
+// }
 
 
 bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
@@ -551,7 +544,8 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
+        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
+            bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {
@@ -569,7 +563,7 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
 }
 
 
-void DFATypeRecovery::findConstantsInStmt(Statement *stmt,
+void DFATypeRecovery::findConstantsInStmt(const SharedStmt &stmt,
                                           std::list<std::shared_ptr<Const>> &constants)
 {
     ConstFinder cf(constants);

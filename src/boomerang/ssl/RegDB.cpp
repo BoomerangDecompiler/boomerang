@@ -164,7 +164,7 @@ bool RegDB::createRegRelation(const QString &parent, const QString &child, int o
 }
 
 
-std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
+std::unique_ptr<RTL> RegDB::processOverlappedRegs(const std::shared_ptr<Assignment> &stmt,
                                                   const std::set<RegNum> &usedRegs) const
 {
     assert(stmt != nullptr);
@@ -202,8 +202,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
 
                 // is the parent actually used? if not, then skip
                 if (usedRegs.find(parentID) != usedRegs.end()) {
-                    Assignment *overlapAsgn = emitOverlappedStmt(stmt, parent, base,
-                                                                 offsetInParent);
+                    std::shared_ptr<Assignment> overlapAsgn(
+                        emitOverlappedStmt(stmt, parent, base, offsetInParent));
                     if (overlapAsgn) {
                         result->append(overlapAsgn);
                     }
@@ -228,8 +228,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
                     if (m_offsetInParent.find(current->getName()) != m_offsetInParent.end()) {
                         // is the parent actually used? if not, then skip
                         if (usedRegs.find(currentID) != usedRegs.end()) {
-                            Assignment *overlapAsgn = emitOverlappedStmt(stmt, current, base,
-                                                                         offset);
+                            std::shared_ptr<Assignment> overlapAsgn(
+                                emitOverlappedStmt(stmt, current, base, offset));
                             if (overlapAsgn) {
                                 result->append(overlapAsgn);
                             }
@@ -254,8 +254,9 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
 }
 
 
-Assignment *RegDB::emitOverlappedStmt(const Assignment *original, const Register *lhs,
-                                      const Register *rhs, int offsetInParent) const
+std::shared_ptr<Assignment> RegDB::emitOverlappedStmt(const std::shared_ptr<Assignment> &original,
+                                                      const Register *lhs, const Register *rhs,
+                                                      int offsetInParent) const
 {
     const RegNum lhsID = getRegNumByName(lhs->getName());
     const RegNum rhsID = getRegNumByName(rhs->getName());
@@ -263,31 +264,33 @@ Assignment *RegDB::emitOverlappedStmt(const Assignment *original, const Register
     if (lhsID == RegNumSpecial || rhsID == RegNumSpecial) {
         return nullptr;
     }
+
     assert(lhsID != rhsID);
 
-    Assign *result = nullptr;
+    std::shared_ptr<Assign> result = nullptr;
     if (lhs->getSize() <= rhs->getSize()) {
         // emit lhs = rhs@[offset:(offset + lhs->size -1)]
-        result = new Assign(IntegerType::get(lhs->getSize()), Location::regOf(lhsID),
-                            Ternary::get(opAt, Location::regOf(rhsID), Const::get(offsetInParent),
-                                         Const::get(offsetInParent + lhs->getSize() - 1)));
+        result.reset(
+            new Assign(IntegerType::get(lhs->getSize()), Location::regOf(lhsID),
+                       Ternary::get(opAt, Location::regOf(rhsID), Const::get(offsetInParent),
+                                    Const::get(offsetInParent + lhs->getSize() - 1))));
     }
     else {
         const unsigned int mask = ~(Util::getLowerBitMask(rhs->getSize()) << offsetInParent);
 
         // emit lhs := (lhs & mask) | (zfill(rhs) << offset)
-        result = new Assign(
+        result.reset(new Assign(
             IntegerType::get(lhs->getSize()), Location::regOf(lhsID),
             Binary::get(
                 opBitOr, Binary::get(opBitAnd, Location::regOf(lhsID), Const::get(mask)),
                 Binary::get(opShL,
                             Ternary::get(opZfill, Const::get(rhs->getSize()),
                                          Const::get(lhs->getSize()), Location::regOf(rhsID)),
-                            Const::get(offsetInParent))));
+                            Const::get(offsetInParent)))));
     }
 
-    if (original->isAssign() && static_cast<const Assign *>(original)->getGuard()) {
-        result->setGuard(static_cast<const Assign *>(original)->getGuard()->clone());
+    if (original->isAssign() && original->as<const Assign>()->getGuard()) {
+        result->setGuard(original->as<const Assign>()->getGuard()->clone());
     }
 
     result->simplify();

@@ -13,13 +13,14 @@
 #include "boomerang/visitor/expmodifier/ExpSubscriptReplacer.h"
 
 
-StmtSubscriptReplacer::StmtSubscriptReplacer(const Statement *original, Statement *replacement)
+StmtSubscriptReplacer::StmtSubscriptReplacer(const SharedConstStmt &original,
+                                             const SharedStmt &replacement)
     : StmtModifier(new ExpSubscriptReplacer(original, replacement), false)
 {
 }
 
 
-void StmtSubscriptReplacer::visit(PhiAssign *stmt, bool &visitChildren)
+void StmtSubscriptReplacer::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     // replace only the refs on the RHS of the phi, since the ExpModifier already replaces the LHS.
     for (auto it = stmt->begin(); it != stmt->end(); ++it) {

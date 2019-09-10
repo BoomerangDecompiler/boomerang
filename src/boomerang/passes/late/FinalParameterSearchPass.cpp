@@ -28,7 +28,6 @@ FinalParameterSearchPass::FinalParameterSearchPass()
 
 bool FinalParameterSearchPass::execute(UserProc *proc)
 {
-    qDeleteAll(proc->getParameters());
     proc->getParameters().clear();
 
     if (proc->getSignature()->isForced()) {
@@ -49,7 +48,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             }
 
             proc->getParameters().append(
-                new ImplicitAssign(proc->getSignature()->getParamType(i), paramLoc));
+                std::make_shared<ImplicitAssign>(proc->getSignature()->getParamType(i), paramLoc));
             QString name         = proc->getSignature()->getParamName(i);
             SharedExp param      = Location::param(name, proc);
             SharedExp reParamLoc = RefExp::get(
@@ -69,7 +68,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at
         // the start of the program
         if (!s->isImplicit()) {
@@ -78,7 +77,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             break; // Stop after reading all implicit assignments
         }
 
-        SharedExp e = static_cast<ImplicitAssign *>(s)->getLeft();
+        SharedExp e = s->as<ImplicitAssign>()->getLeft();
 
         if (proc->getSignature()->findParam(e) == -1) {
             if (DEBUG_PARAMS) {
@@ -95,7 +94,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
                 LOG_VERBOSE("Found new parameter %1", e);
             }
 
-            SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
+            SharedType ty = s->as<ImplicitAssign>()->getType();
             // Add this parameter to the signature (for now; creates parameter names)
             proc->addParameterToSignature(e, ty);
             // Insert it into the parameters StatementList, in sensible order

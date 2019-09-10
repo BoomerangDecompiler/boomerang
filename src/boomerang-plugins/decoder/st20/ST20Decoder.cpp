@@ -88,7 +88,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             total += oper;
             const Address jumpDest = pc + result.numBytes + total;
 
-            GotoStatement *jump = new GotoStatement();
+            std::shared_ptr<GotoStatement> jump(new GotoStatement());
             jump->setDest(jumpDest);
             result.rtl->append(jump);
         } break;
@@ -121,7 +121,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             const Address callDest = Address(pc + result.numBytes + total);
             result.rtl             = instantiate(pc, "call", { Const::get(callDest) });
 
-            CallStatement *newCall = new CallStatement;
+            std::shared_ptr<CallStatement> newCall(new CallStatement);
             newCall->setIsComputed(false);
             newCall->setDest(callDest);
 
@@ -137,7 +137,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
 
         case 10: { // cond jump
             total += oper;
-            BranchStatement *br = new BranchStatement();
+            std::shared_ptr<BranchStatement> br(new BranchStatement);
             br->setDest(pc + result.numBytes + total);
             br->setCondExpr(Binary::get(opEquals, Location::regOf(REG_ST20_A), Const::get(0)));
 

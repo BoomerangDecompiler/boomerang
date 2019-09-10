@@ -323,12 +323,12 @@ bool DataFlow::placePhiFunctions()
         StatementList::iterator sit;
         BasicBlock *bb = m_BBs[n];
 
-        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
             // If this is a childless call
-            if (stmt->isCall() && static_cast<const CallStatement *>(stmt)->isChildless()) {
+            if (stmt->isCall() && stmt->as<CallStatement>()->isChildless()) {
                 // then this block defines every variable
                 m_defallsites.insert(n);
             }

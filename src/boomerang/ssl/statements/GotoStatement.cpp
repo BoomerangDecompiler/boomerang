@@ -151,9 +151,9 @@ bool GotoStatement::isComputed() const
 }
 
 
-Statement *GotoStatement::clone() const
+SharedStmt GotoStatement::clone() const
 {
-    GotoStatement *ret = new GotoStatement();
+    std::shared_ptr<GotoStatement> ret(new GotoStatement);
 
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
@@ -161,6 +161,7 @@ Statement *GotoStatement::clone() const
     ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
+
     return ret;
 }
 
@@ -183,7 +184,7 @@ void GotoStatement::simplify()
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<GotoStatement>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -200,7 +201,7 @@ bool GotoStatement::accept(StmtExpVisitor *v)
 bool GotoStatement::accept(StmtModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<GotoStatement>(), visitChildren);
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {
@@ -215,7 +216,7 @@ bool GotoStatement::accept(StmtModifier *v)
 bool GotoStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<GotoStatement>(), visitChildren);
 
     if (m_dest && visitChildren) {
         m_dest = m_dest->acceptModifier(v->mod);

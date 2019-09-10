@@ -12,6 +12,7 @@
 
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/exp/Operator.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/OStream.h"
 
 #include <QString>
@@ -29,7 +30,6 @@ class ExpVisitor;
 class ExpModifier;
 class UserProc;
 class LocationSet;
-class Statement;
 class CompoundType;
 
 class OStream;
@@ -446,11 +446,11 @@ public:
     /// Needs the UserProc for the symbol map
     // FIXME: if the wrapped expression does not convert to a location, the result is subscripted,
     // which is probably not what is wanted!
-    SharedExp fromSSAleft(UserProc *proc, Statement *d);
+    SharedExp fromSSAleft(UserProc *proc, const SharedStmt &d);
 
     /// Subscript all e in this Exp with statement def
     /// Subscript any occurrences of e with e{def} in this expression
-    SharedExp expSubscriptVar(const SharedExp &e, Statement *def);
+    SharedExp expSubscriptVar(const SharedExp &e, const SharedStmt &def);
 
     /// Subscript all e in this Exp with 0 (implicit assignments)
     /// Subscript any occurrences of e with e{-} in this expression

@@ -35,7 +35,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
     std::map<SharedExp, int, lessExpStar> destCounts;
 
     // Also maintain a set of locations which are used by phi statements
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         ExpDestCounter edc(destCounts);
         StmtDestCounter sdc(&edc);
         s->accept(&sdc);
@@ -46,14 +46,14 @@ bool StatementPropagationPass::execute(UserProc *proc)
     bool change = false;
 
     Settings *settings = proc->getProg()->getProject()->getSettings();
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
             change |= s->propagateFlagsTo(settings);
         }
     }
 
     // Finally the actual propagation
-    for (Statement *s : stmts) {
+    for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
             change |= s->propagateTo(settings, &destCounts);
         }
@@ -89,7 +89,7 @@ void StatementPropagationPass::propagateToCollector(UseCollector *collector)
                 continue;
             }
 
-            Assign *as = static_cast<Assign *>(r->getDef());
+            std::shared_ptr<Assign> as = r->getDef()->as<Assign>();
 
             bool ch;
             auto res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);

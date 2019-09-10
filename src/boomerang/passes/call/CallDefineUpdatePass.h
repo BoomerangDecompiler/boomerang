@@ -12,6 +12,7 @@
 
 #include "boomerang/passes/Pass.h"
 
+#include <memory>
 
 class CallStatement;
 
@@ -28,5 +29,5 @@ public:
     bool execute(UserProc *proc) override;
 
 private:
-    bool updateCallDefines(UserProc *proc, CallStatement *callStmt);
+    bool updateCallDefines(UserProc *proc, const std::shared_ptr<CallStatement> &callStmt);
 };

@@ -35,8 +35,8 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
     const BinarySymbolTable *syms = proc->getProg()->getBinaryFile()->getSymbols();
     bool changed                  = false;
 
-    for (Statement *st : stmts) {
-        Assign *assgn = dynamic_cast<Assign *>(st);
+    for (SharedStmt st : stmts) {
+        std::shared_ptr<Assign> assgn = std::dynamic_pointer_cast<Assign>(st);
 
         if (assgn == nullptr) {
             continue;

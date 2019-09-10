@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/visitor/expmodifier/SimpExpModifier.h"
 
 
@@ -27,7 +28,7 @@ class Statement;
 class CallBypasser : public SimpExpModifier
 {
 public:
-    CallBypasser(Statement *enclosing);
+    CallBypasser(const SharedStmt &enclosing);
     virtual ~CallBypasser() = default;
 
 public:
@@ -39,5 +40,5 @@ public:
 
 private:
     /// Statement that is being modified at present, for debugging only
-    Statement *m_enclosingStmt;
+    SharedStmt m_enclosingStmt;
 };

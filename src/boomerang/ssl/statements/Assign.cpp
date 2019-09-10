@@ -63,15 +63,17 @@ Assign::Assign(const Assign &other)
 }
 
 
-Statement *Assign::clone() const
+SharedStmt Assign::clone() const
 {
-    Assign *asgn = new Assign(m_type == nullptr ? nullptr : m_type->clone(), m_lhs->clone(),
-                              m_rhs->clone(), m_guard == nullptr ? nullptr : m_guard->clone());
+    std::shared_ptr<Assign> asgn = std::make_shared<Assign>(
+        m_type == nullptr ? nullptr : m_type->clone(), m_lhs->clone(), m_rhs->clone(),
+        m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members
     asgn->m_bb     = m_bb;
     asgn->m_proc   = m_proc;
     asgn->m_number = m_number;
+
     return asgn;
 }
 
@@ -183,7 +185,7 @@ bool Assign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/
 bool Assign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret           = v->visit(this, visitChildren);
+    bool ret           = v->visit(shared_from_this()->as<Assign>(), visitChildren);
 
     if (!visitChildren) {
         // The visitor has overridden this functionality.  This is needed for example in
@@ -208,7 +210,7 @@ bool Assign::accept(StmtModifier *v)
 {
     bool visitChildren;
 
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<Assign>(), visitChildren);
 
     if (v->m_mod) {
         v->m_mod->clearModified();
@@ -222,7 +224,7 @@ bool Assign::accept(StmtModifier *v)
         }
 
         if (v->m_mod->isModified()) {
-            LOG_VERBOSE2("Assignment changed: now %1", this);
+            LOG_VERBOSE2("Assignment changed: now %1", shared_from_this());
         }
     }
 
@@ -233,7 +235,7 @@ bool Assign::accept(StmtModifier *v)
 bool Assign::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
-    v->visit(this, visitChildren);
+    v->visit(shared_from_this()->as<Assign>(), visitChildren);
     v->mod->clearModified();
 
     if (visitChildren && m_lhs->isMemOf()) {
@@ -245,7 +247,7 @@ bool Assign::accept(StmtPartModifier *v)
     }
 
     if (v->mod->isModified()) {
-        LOG_VERBOSE2("Assignment changed: now %1", this);
+        LOG_VERBOSE2("Assignment changed: now %1", shared_from_this());
     }
 
     return true;

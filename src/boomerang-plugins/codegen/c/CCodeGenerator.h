@@ -15,6 +15,7 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"
 
@@ -98,7 +99,7 @@ public:
 
 private:
     /// Add an assignment statement at the current position.
-    void addAssignmentStatement(const Assign *assign);
+    void addAssignmentStatement(const std::shared_ptr<const Assign> &assign);
 
     /**
      * Adds a call to the function \p proc.
@@ -306,7 +307,7 @@ private:
     bool isAllParentsGenerated(const BasicBlock *bb) const;
     bool isGenerated(const BasicBlock *bb) const;
 
-    void emitCodeForStmt(const Statement *stmt);
+    void emitCodeForStmt(const SharedConstStmt &stmt);
 
     /**
      * Computes the optimal case ordering of switch statements.

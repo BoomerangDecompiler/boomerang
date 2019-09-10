@@ -20,7 +20,7 @@
 #include <QString>
 
 
-bool StatementList::remove(Statement *s)
+bool StatementList::remove(const SharedStmt &s)
 {
     for (auto it = begin(); it != end(); ++it) {
         if (*it == s) {
@@ -33,7 +33,7 @@ bool StatementList::remove(Statement *s)
 }
 
 
-void StatementList::append(Statement *s)
+void StatementList::append(const SharedStmt &s)
 {
     assert(s);
     m_list.push_back(s);
@@ -82,7 +82,7 @@ void StatementList::makeIsect(StatementList &a, LocationSet &b)
     if (this == &a) { // *this = *this isect b
         for (auto it = a.begin(); it != a.end();) {
             assert((*it)->isAssignment());
-            Assignment *as = static_cast<Assignment *>(*it);
+            std::shared_ptr<Assignment> as = (*it)->as<Assignment>();
 
             if (!b.contains(as->getLeft())) {
                 it = m_list.erase(it);
@@ -94,9 +94,9 @@ void StatementList::makeIsect(StatementList &a, LocationSet &b)
     }
     else { // normal assignment
         clear();
-        for (Statement *stmt : a) {
+        for (SharedStmt stmt : a) {
             assert(stmt->isAssignment());
-            Assignment *as = static_cast<Assignment *>(stmt);
+            std::shared_ptr<Assignment> as = stmt->as<Assignment>();
 
             if (b.contains(as->getLeft())) {
                 append(as);
@@ -109,7 +109,7 @@ void StatementList::makeIsect(StatementList &a, LocationSet &b)
 bool StatementList::existsOnLeft(const SharedExp &loc) const
 {
     for (auto &elem : *this) {
-        if (*static_cast<Assignment *>(elem)->getLeft() == *loc) {
+        if (*elem->as<Assignment>()->getLeft() == *loc) {
             return true;
         }
     }
@@ -118,7 +118,7 @@ bool StatementList::existsOnLeft(const SharedExp &loc) const
 }
 
 
-Statement *StatementList::removeFirstDefOf(SharedExp loc)
+SharedStmt StatementList::removeFirstDefOf(SharedExp loc)
 {
     if (!loc) {
         return nullptr;
@@ -126,7 +126,7 @@ Statement *StatementList::removeFirstDefOf(SharedExp loc)
 
     for (iterator it = begin(); it != end(); ++it) {
         assert((*it)->isAssignment());
-        Assignment *assign = static_cast<Assignment *>(*it);
+        std::shared_ptr<Assignment> assign = (*it)->as<Assignment>();
 
         if (*assign->getLeft() == *loc) {
             erase(it);
@@ -138,7 +138,7 @@ Statement *StatementList::removeFirstDefOf(SharedExp loc)
 }
 
 
-const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
+std::shared_ptr<const Assignment> StatementList::findOnLeft(SharedConstExp loc) const
 {
     if (empty()) {
         return nullptr;
@@ -146,10 +146,10 @@ const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
 
     for (const auto &elem : *this) {
         assert(elem->isAssignment());
-        SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
+        SharedConstExp left = elem->as<Assignment>()->getLeft();
 
         if (*left == *loc) {
-            return static_cast<const Assignment *>(elem);
+            return elem->as<const Assignment>();
         }
 
         if (left->isLocal()) {
@@ -157,7 +157,7 @@ const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
             SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const, 1>()->getStr());
 
             if (e && ((*e == *loc) || (e->isSubscript() && (*e->getSubExp1() == *loc)))) {
-                return static_cast<const Assignment *>(elem);
+                return elem->as<const Assignment>();
             }
         }
     }
@@ -166,7 +166,7 @@ const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
 }
 
 
-Assignment *StatementList::findOnLeft(SharedExp loc)
+std::shared_ptr<Assignment> StatementList::findOnLeft(SharedExp loc)
 {
     if (empty()) {
         return nullptr;
@@ -174,10 +174,10 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
 
     for (auto &elem : *this) {
         assert(elem->isAssignment());
-        SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
+        SharedConstExp left = elem->as<Assignment>()->getLeft();
 
         if (*left == *loc) {
-            return static_cast<Assignment *>(elem);
+            return elem->as<Assignment>();
         }
 
         if (left->isLocal()) {
@@ -185,7 +185,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
             SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const, 1>()->getStr());
 
             if (e && ((*e == *loc) || (e->isSubscript() && (*e->getSubExp1() == *loc)))) {
-                return static_cast<Assignment *>(elem);
+                return elem->as<Assignment>();
             }
         }
     }

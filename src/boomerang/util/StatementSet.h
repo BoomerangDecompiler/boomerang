@@ -30,8 +30,9 @@ template<typename T, typename Sorter = void,
          typename Enabler = std::enable_if<std::is_base_of<Statement, T>::value>>
 class StmtSet
 {
-    using Set = typename std::conditional<std::is_void<Sorter>::value, std::unordered_set<T *>,
-                                          std::set<T *, Sorter>>::type;
+    using Set = typename std::conditional<std::is_void<Sorter>::value,
+                                          std::unordered_set<std::shared_ptr<T>>,
+                                          std::set<std::shared_ptr<T>, Sorter>>::type;
 
 public:
     typedef typename Set::iterator iterator;
@@ -49,7 +50,7 @@ public:
     void clear() { m_set.clear(); }
     int size() const { return m_set.size(); }
 
-    void insert(T *stmt)
+    void insert(const std::shared_ptr<T> &stmt)
     {
         assert(stmt != nullptr);
         m_set.insert(stmt);
@@ -57,7 +58,7 @@ public:
 
     /// Remove this Statement.
     /// \returns true if removed, false if not found
-    bool remove(T *s)
+    bool remove(const std::shared_ptr<T> &s)
     {
         if (this->contains(s)) {
             m_set.erase(s);
@@ -67,7 +68,7 @@ public:
         return false;
     }
 
-    bool contains(T *stmt) const { return m_set.find(stmt) != m_set.end(); }
+    bool contains(const std::shared_ptr<T> &stmt) const { return m_set.find(stmt) != m_set.end(); }
 
 
     /// \returns true if any statement in this set defines \p loc
@@ -78,7 +79,7 @@ public:
         }
 
         return std::any_of(m_set.begin(), m_set.end(),
-                           [loc](const T *stmt) { return stmt->definesLoc(loc); });
+                           [loc](const SharedStmt &stmt) { return stmt->definesLoc(loc); });
     }
 
     /// \returns true if this set is a subset of \p other
@@ -88,7 +89,7 @@ public:
             return false;
         }
 
-        for (T *stmt : *this) {
+        for (const std::shared_ptr<T> &stmt : *this) {
             if (!other.contains(stmt)) {
                 return false;
             }
@@ -100,7 +101,7 @@ public:
     /// Set union: this = this union \p other
     void makeUnion(const StmtSet &other)
     {
-        for (T *stmt : other) {
+        for (const std::shared_ptr<T> &stmt : other) {
             m_set.insert(stmt);
         }
     }
@@ -127,7 +128,7 @@ public:
             return;
         }
 
-        for (T *stmt : other) {
+        for (const std::shared_ptr<T> &stmt : other) {
             m_set.erase(stmt);
         }
     }
@@ -135,14 +136,14 @@ public:
     /// Find a definition for \p loc on the LHS of each assignment in this set.
     /// If found, return pointer to the Assign with that LHS (else return nullptr)
     template<typename = std::enable_if<std::is_base_of<Assign, T>::value>>
-    Assign *lookupLoc(SharedExp loc)
+    std::shared_ptr<Assign> lookupLoc(SharedExp loc)
     {
         if (!loc) {
             return nullptr;
         }
 
-        Assign as(loc, Terminal::get(opWild));
-        iterator ff = m_set.find(&as);
+        std::shared_ptr<Assign> as(new Assign(loc, Terminal::get(opWild)));
+        iterator ff = m_set.find(as);
 
         return (ff != end()) ? *ff : nullptr;
     }
@@ -154,7 +155,7 @@ private:
 
 struct BOOMERANG_API lessAssign
 {
-    bool operator()(const Assign *as1, const Assign *as2) const;
+    bool operator()(const std::shared_ptr<Assign> &as1, const std::shared_ptr<Assign> &as2) const;
 };
 
 

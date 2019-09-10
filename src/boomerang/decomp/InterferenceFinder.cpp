@@ -51,7 +51,7 @@ void InterferenceFinder::findInterferences(ConnectionGraph &ig)
         }
 
         if (currBB->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
-            Statement *last = currBB->getLastStmt();
+            SharedStmt last = currBB->getLastStmt();
 
             LOG_MSG("Revisiting BB ending with stmt %1 due to change",
                     last ? QString::number(last->getNumber(), 10) : "<none>");

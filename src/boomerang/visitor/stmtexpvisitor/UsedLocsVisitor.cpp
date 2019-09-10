@@ -26,7 +26,7 @@ UsedLocsVisitor::UsedLocsVisitor(ExpVisitor *v, bool cc)
 }
 
 
-bool UsedLocsVisitor::visit(Assign *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
     SharedExp rhs = stmt->getRight();
@@ -69,7 +69,7 @@ bool UsedLocsVisitor::visit(Assign *stmt, bool &visitChildren)
 }
 
 
-bool UsedLocsVisitor::visit(PhiAssign *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -107,7 +107,7 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool &visitChildren)
 }
 
 
-bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -135,7 +135,7 @@ bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool &visitChildren)
 }
 
 
-bool UsedLocsVisitor::visit(CallStatement *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren)
 {
     SharedExp condExp = stmt->getDest();
 
@@ -146,16 +146,15 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool &visitChildren)
 
     const StatementList &arguments = stmt->getArguments();
 
-    for (Statement *s : arguments) {
+    for (SharedStmt s : arguments) {
         // Don't want to ever collect anything from the lhs
-        const Assign *retval = dynamic_cast<const Assign *>(s);
-        if (retval) {
-            retval->getRight()->acceptVisitor(ev);
+        if (s->isAssign()) {
+            s->as<Assign>()->getRight()->acceptVisitor(ev);
         }
     }
 
     if (m_countCol) {
-        for (Assign *as : *stmt->getDefCollector()) {
+        for (const std::shared_ptr<Assign> &as : *stmt->getDefCollector()) {
             as->accept(this);
         }
     }
@@ -165,10 +164,10 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool &visitChildren)
 }
 
 
-bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren)
 {
     // For the final pass, only consider the first return
-    for (Statement *ret : *stmt) {
+    for (SharedStmt ret : *stmt) {
         ret->accept(this);
     }
 
@@ -194,7 +193,7 @@ bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool &visitChildren)
 }
 
 
-bool UsedLocsVisitor::visit(BoolAssign *stmt, bool &visitChildren)
+bool UsedLocsVisitor::visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren)
 {
     SharedExp condExp = stmt->getCondExpr();
 

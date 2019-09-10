@@ -34,7 +34,7 @@ public:
 
 public:
     /// \copydoc Statement::clone
-    virtual Statement *clone() const override;
+    virtual SharedStmt clone() const override;
 
     /// \copydoc Statement::search
     virtual bool search(const Exp &search, SharedExp &result) const override;
