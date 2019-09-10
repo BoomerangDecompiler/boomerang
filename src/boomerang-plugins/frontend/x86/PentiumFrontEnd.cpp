@@ -35,27 +35,6 @@
 #include "boomerang/util/log/Log.h"
 
 
-void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask)
-{
-    std::list<SharedExp *> li;
-    SharedExp exp = e;
-    // Use doSearch, which is normally an internal method of Exp, to avoid problems of replacing the
-    // wrong subexpression (in some odd cases)
-    Exp::doSearch(*Terminal::get(opWildRegOf), exp, li, false);
-
-    for (SharedExp *it : li) {
-        int reg = (*it)->access<Const, 1>()->getInt();
-
-        if ((min <= reg) && (reg <= max)) {
-            // Replace the K in r[ K] with a new K
-            // **it is a reg[K]
-            auto K = (*it)->access<Const, 1>();
-            K->setInt(min + ((reg - min + delta) & mask));
-        }
-    }
-}
-
-
 bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work

@@ -73,27 +73,6 @@ private:
      */
     bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
-    /**
-     * Finds a subexpression within this expression of the form
-     * \code
-     *   r[ int x] where min <= x <= max,
-     * \endcode
-     * and replaces it with
-     * \code
-     *   r[ int y] where y = min + (x - min + delta & mask).
-     * \endcode
-     * This is used to "flatten" stack floating point arithmetic (e.g. Pentium floating point code).
-     * If registers are not replaced "all at once" like this, there can be subtle errors from
-     * re-replacing already replaced registers
-     *
-     * \param exp   Expression to modify
-     * \param min   minimum register numbers before any change is considered
-     * \param max   maximum register numbers before any change is considered
-     * \param delta amount to bump up the register number by
-     * \param mask  see above
-     */
-    void bumpRegisterAll(SharedExp exp, int min, int max, int delta, int mask);
-
     bool isOverlappedRegsProcessed(const BasicBlock *bb) const
     {
         return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
