@@ -11,7 +11,7 @@ include(CMakeParseArguments)
 
 #
 # Copy the Debug and Release DLL(s) for an IMPORTED target to the output directory on Windows
-# Example: BOOMERANG_COPY_IMPORTED_DLL(Qt5::Core)
+# Example: BOOMERANG_COPY_IMPORTED_DLL(boomerang Qt5::Core)
 #
 function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
     if (MSVC)
