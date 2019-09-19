@@ -10,8 +10,8 @@ bb0x10000438:
         break;
     }
     switch(argc) {
-    case 1:
     case 0:
+    case 1:
         goto bb0x10000438;
     case 7:
         puts("Seven!");

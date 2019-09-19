@@ -12,8 +12,8 @@ bb0x106d0:
         break;
     }
     switch(argc) {
-    case 1:
     case 0:
+    case 1:
         goto bb0x106d0;
     case 7:
 bb0x106dc:
