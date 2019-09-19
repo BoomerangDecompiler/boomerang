@@ -341,7 +341,7 @@ disabled_tests = [
 def clean_old_outputs(base_dir):
     print("Cleaning up old data ...")
     output_dir = os.path.join(base_dir, "outputs")
-    if os.path.isdir(output_dir): shutil.rmtree(output_dir)
+    if os.path.isdir(output_dir): shutil.rmtree(output_dir, ignore_errors=True)
     os.makedirs(output_dir)
 
 
