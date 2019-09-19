@@ -2,6 +2,7 @@ v0.5.1 (in development)
 -----------------------
 - Fixed: Possible crash when replacing Phi by Assign.
 - Fixed: Non-deterministic decompilation of functions containing removable return values.
+- Fixed: Non-deterministic order of case labels in some cases.
 - Fixed: Zero return value of boomerang-cli when command-line switch processing fails.
 - Feature: Added '--log-level' switch to change log verbosity on startup.
 - Removed: Deprecated '-ds' switch.
