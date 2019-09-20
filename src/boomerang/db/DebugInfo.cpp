@@ -70,6 +70,12 @@ SharedType makeUDT(int index, DWORD64 ModBase)
     int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
     dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(
         FindChildrenSize);
+
+    if (pFC == nullptr) {
+        // not enough memory for types, discard information (not usable)
+        return nullptr;
+    }
+
     memset(pFC, 0, FindChildrenSize);
     pFC->Count = count;
     SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
@@ -214,6 +220,12 @@ SharedType typeFromDebugInfo(const QString &name, Address addr)
 #if defined(_WIN32) && !defined(__MINGW32__)
     HANDLE hProcess           = GetCurrentProcess();
     dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+
+    if (sym == nullptr) {
+        // not enough memory for symbol information, discard it
+        return nullptr;
+    }
+
     sym->SizeOfStruct         = sizeof(*sym);
     sym->MaxNameLen           = 1000;
     sym->Name[0]              = 0;
