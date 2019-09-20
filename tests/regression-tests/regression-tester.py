@@ -47,7 +47,6 @@ regression_tests = [
     "OSX/o4/hello",
     "OSX/o4/ifthen",
     "OSX/o4/loop",
-    "OSX/o4/manyparams",
     "OSX/o4/minmax",
     "OSX/o4/minmax2",
     "OSX/o4/paramchain",
@@ -126,7 +125,6 @@ regression_tests = [
     "ppc/condcodexform",
     "ppc/daysofxmas",
     "ppc/fbranch",
-    "ppc/fib",
     "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
@@ -252,6 +250,7 @@ smoke_tests = [
     "OSX/o4/fibo2",
     "OSX/o4/fibo_iter",
     "OSX/o4/frontier",
+    "OSX/o4/manyparams",
     "OSX/o4/phi",
     "OSX/o4/semi",
     "OSX/o4/sumarray",
@@ -284,6 +283,7 @@ smoke_tests = [
     "pentium/twoproc3",
     "pentium/uns",
 
+    "ppc/fib",
     "ppc/fibo",
     "ppc/frontier",
     "ppc/funcptr",
@@ -341,7 +341,7 @@ disabled_tests = [
 def clean_old_outputs(base_dir):
     print("Cleaning up old data ...")
     output_dir = os.path.join(base_dir, "outputs")
-    if os.path.isdir(output_dir): shutil.rmtree(output_dir)
+    if os.path.isdir(output_dir): shutil.rmtree(output_dir, ignore_errors=True)
     os.makedirs(output_dir)
 
 

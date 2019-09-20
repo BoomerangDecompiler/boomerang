@@ -1299,9 +1299,10 @@ void SPARCFrontEnd::warnInvalidInstruction(Address pc)
     Byte insnBytes[4] = { 0 };
 
     for (int i = 0; i < 4; i++) {
-        const bool ok = image->readNative1(pc + i, insnBytes[i]);
-        assert(ok);
-        Q_UNUSED(ok);
+        if (!image->readNative1(pc + i, insnBytes[i])) {
+            LOG_WARN("Tried to disassemble out of image bounds at address %1", pc);
+            return;
+        }
     }
 
     // clang-format off
