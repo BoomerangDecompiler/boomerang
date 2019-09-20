@@ -226,10 +226,10 @@ SharedType typeFromDebugInfo(const QString &name, Address addr)
         return nullptr;
     }
 
-    sym->SizeOfStruct         = sizeof(*sym);
-    sym->MaxNameLen           = 1000;
-    sym->Name[0]              = 0;
-    BOOL got                  = dbghelp::SymFromAddr(hProcess, addr.value(), 0, sym);
+    sym->SizeOfStruct = sizeof(*sym);
+    sym->MaxNameLen   = 1000;
+    sym->Name[0]      = 0;
+    BOOL got          = dbghelp::SymFromAddr(hProcess, addr.value(), 0, sym);
 
     if (got && *sym->Name && sym->TypeIndex) {
         assert(name == sym->Name);
