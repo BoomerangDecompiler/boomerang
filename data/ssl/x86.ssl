@@ -977,7 +977,7 @@ AND.rm64.reg64 dest, src
 # BSWAP
 BSWAP.reg16 dest
     *16* dest := ((dest & 0x00FF) << 8) |
-                 ((dest & 0xFF00) > 8)
+                 ((dest & 0xFF00) >> 8)
 ;
 
 
