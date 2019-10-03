@@ -81,10 +81,14 @@ void Log::logDirect(LogLevel level, const char *file, int line, const QString &m
 {
     char prettyFile[40]; // truncated file name
     truncateFileName(prettyFile, 40, file);
+    QString prettyFilePath(prettyFile);
 
-    QString header  = "%1 | %2 | %3 | %4\n";
-    QString logLine = header.arg(levelToString(level)).arg(prettyFile).arg(line, 4).arg(msg);
-    this->write(logLine);
+#ifdef _WIN32
+    prettyFilePath = prettyFilePath.replace("\\", "/");
+#endif
+
+    const QString pattern = "%1 | %2 | %3 | %4\n";
+    this->write(pattern.arg(levelToString(level)).arg(prettyFilePath).arg(line, 4).arg(msg));
 
     if (level == LogLevel::Fatal) {
         abort();
