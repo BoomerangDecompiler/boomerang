@@ -20,6 +20,12 @@ StmtSubscriptReplacer::StmtSubscriptReplacer(const SharedConstStmt &original,
 }
 
 
+StmtSubscriptReplacer::~StmtSubscriptReplacer()
+{
+    delete m_mod;
+}
+
+
 void StmtSubscriptReplacer::visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren)
 {
     // replace only the refs on the RHS of the phi, since the ExpModifier already replaces the LHS.

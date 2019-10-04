@@ -197,10 +197,10 @@ _?[A-Za-z][A-Za-z0-9_]* {
                 return SSL2::parser::make_FLOAT_LITERAL(atof(yytext), loc);
 }
 -?[0-9]+ {
-                return SSL2::parser::make_INT_LITERAL(strtol(yytext, nullptr, 10), loc);
+                return SSL2::parser::make_INT_LITERAL(strtoll(yytext, nullptr, 10), loc);
 }
 0x[A-F0-9]+ {
-                return SSL2::parser::make_INT_LITERAL(strtol(yytext, nullptr, 16), loc);
+                return SSL2::parser::make_INT_LITERAL(strtoll(yytext, nullptr, 16), loc);
 }
 -?"2**"[0-9]+    {
                 // a power of two
