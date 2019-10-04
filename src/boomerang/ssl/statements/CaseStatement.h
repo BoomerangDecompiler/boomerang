@@ -26,10 +26,7 @@ enum class SwitchType : char
     F       = 'F', // Fortran style
 };
 
-/**
- * CaseStatement is derived from GotoStatement. In addition to the destination
- * of the jump, it has a switch variable Exp.
- */
+
 struct SwitchInfo
 {
     SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
@@ -42,6 +39,10 @@ struct SwitchInfo
 };
 
 
+/**
+ * CaseStatement is derived from GotoStatement. In addition to the destination
+ * of the jump, it has a switch variable Exp.
+ */
 class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
