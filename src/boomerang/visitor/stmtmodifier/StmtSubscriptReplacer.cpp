@@ -19,6 +19,12 @@ StmtSubscriptReplacer::StmtSubscriptReplacer(const Statement *original, Statemen
 }
 
 
+StmtSubscriptReplacer::~StmtSubscriptReplacer()
+{
+    delete m_mod;
+}
+
+
 void StmtSubscriptReplacer::visit(PhiAssign *stmt, bool &visitChildren)
 {
     // replace only the refs on the RHS of the phi, since the ExpModifier already replaces the LHS.
