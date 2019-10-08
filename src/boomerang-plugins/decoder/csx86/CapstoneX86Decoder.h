@@ -71,6 +71,8 @@ private:
      */
     bool genBSFR(Address pc, const cs::cs_insn *instruction, DecodeResult &result);
 
+    QString getInstructionID(const cs::cs_insn *instruction) const;
+
 private:
     int m_bsfrState = 0; ///< State for state machine used in genBSFR()
     cs::cs_insn *m_insn; ///< decoded instruction;

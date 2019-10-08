@@ -211,39 +211,13 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
     const int numOperands         = instruction->detail->x86.op_count;
     const cs::cs_x86_op *operands = instruction->detail->x86.operands;
 
-    QString insnID = cs::cs_insn_name(m_handle, instruction->id);
-
-    switch (instruction->detail->x86.prefix[0]) {
-    case cs::X86_PREFIX_REP: insnID = "REP" + insnID; break;
-    case cs::X86_PREFIX_REPNE: insnID = "REPNE" + insnID; break;
-    }
-
-    insnID = insnID.toUpper();
-
-    for (int i = 0; i < numOperands; i++) {
-        // example: ".imm8"
-        QString operandName = "." + operandNames[operands[i].type] +
-                              QString::number(operands[i].size * 8);
-
-        insnID += operandName;
-    }
-
-    std::unique_ptr<RTL> rtl;
-
-    // special hack to ignore 'and esp, 0xfffffff0' in startup code
-    if (instruction->id == cs::X86_INS_AND && operands[0].type == cs::X86_OP_REG &&
-        operands[0].reg == cs::X86_REG_ESP && operands[1].type == cs::X86_OP_IMM &&
-        operands[1].imm == 0xFFFFFFF0) {
+    const QString insnID     = getInstructionID(instruction);
+    std::unique_ptr<RTL> rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
+    if (!rtl) {
+        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+                  "treating instruction as NOP",
+                  insnID, pc);
         return instantiateRTL(pc, "NOP", 0, nullptr);
-    }
-    else {
-        rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
-        if (!rtl) {
-            LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                      "treating instruction as NOP",
-                      insnID, pc);
-            return instantiateRTL(pc, "NOP", 0, nullptr);
-        }
     }
 
     if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
@@ -517,6 +491,41 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
     }
 
     return true;
+}
+
+
+QString CapstoneX86Decoder::getInstructionID(const cs::cs_insn *instruction) const
+{
+    const int numOperands         = instruction->detail->x86.op_count;
+    const cs::cs_x86_op *operands = instruction->detail->x86.operands;
+
+    // clang-format off
+    if (instruction->id == cs::X86_INS_AND &&
+        operands[0].type == cs::X86_OP_REG && operands[0].reg == cs::X86_REG_ESP &&
+        operands[1].type == cs::X86_OP_IMM && operands[1].imm == 0xFFFFFFF0) {
+        // special hack to ignore 'and esp, 0xfffffff0' in startup code
+        return "NOP";
+    }
+    // clang-format on
+
+    QString insnID = cs::cs_insn_name(m_handle, instruction->id);
+
+    switch (instruction->detail->x86.prefix[0]) {
+    case cs::X86_PREFIX_REP: insnID = "REP" + insnID; break;
+    case cs::X86_PREFIX_REPNE: insnID = "REPNE" + insnID; break;
+    }
+
+    insnID = insnID.toUpper();
+
+    for (int i = 0; i < numOperands; i++) {
+        // example: ".imm8"
+        QString operandName = "." + operandNames[operands[i].type] +
+                              QString::number(operands[i].size * 8);
+
+        insnID += operandName;
+    }
+
+    return insnID;
 }
 
 
