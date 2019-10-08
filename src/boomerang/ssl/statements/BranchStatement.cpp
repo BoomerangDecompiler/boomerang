@@ -46,48 +46,10 @@ void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
     m_jumpType = cond;
     m_isFloat  = usesFloat;
 
-    // set cond to a high level representation of this type
-    SharedExp p = nullptr;
-
-    switch (cond) {
-    case BranchType::JE: p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JNE: p = Binary::get(opNotEqual, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JSL: p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JSLE: p = Binary::get(opLessEq, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JSGE: p = Binary::get(opGtrEq, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JSG: p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JUL: p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JULE:
-        p = Binary::get(opLessEqUns, Terminal::get(opFlags), Const::get(0));
-        break;
-
-    case BranchType::JUGE:
-        p = Binary::get(opGtrEqUns, Terminal::get(opFlags), Const::get(0));
-        break;
-
-    case BranchType::JUG: p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JMI: p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JPOS: p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JOF: p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JNOF: p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0)); break;
-    case BranchType::JPAR:
-    case BranchType::JNPAR:
-        // Can't handle this properly here; leave an impossible expression involving %flags so
-        // propagation will still happen, and we can recognise this later in condToRelational()
-        // Update: these expressions seem to get ignored ???
-        p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(999));
-        break;
-
-    case BranchType::INVALID: assert(false); break;
-    }
-
     // this is such a hack.. preferably we should actually recognise SUBFLAGS32(..,..,..) > 0
     // instead of just SUBFLAGS32(..,..,..) but I'll leave this in here for the moment as it
     // actually works.
-    p = Terminal::get(usesFloat ? opFflags : opFlags);
-
-    assert(p);
-    setCondExpr(p);
+    setCondExpr(Terminal::get(usesFloat ? opFflags : opFlags));
 }
 
 
