@@ -29,52 +29,11 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
         switch (jtCond) {
         case BranchType::JE: op = opEquals; break;
-
         case BranchType::JNE: op = opNotEqual; break;
-
-        case BranchType::JSL:
-
-            if (makeUns) {
-                op = opLessUns;
-            }
-            else {
-                op = opLess;
-            }
-
-            break;
-
-        case BranchType::JSLE:
-
-            if (makeUns) {
-                op = opLessEqUns;
-            }
-            else {
-                op = opLessEq;
-            }
-
-            break;
-
-        case BranchType::JSGE:
-
-            if (makeUns) {
-                op = opGtrEqUns;
-            }
-            else {
-                op = opGtrEq;
-            }
-
-            break;
-
-        case BranchType::JSG:
-
-            if (makeUns) {
-                op = opGtrUns;
-            }
-            else {
-                op = opGtr;
-            }
-
-            break;
+        case BranchType::JSL: op = makeUns ? opLessUns : opLess; break;
+        case BranchType::JSLE: op = makeUns ? opLessEqUns : opLessEq; break;
+        case BranchType::JSGE: op = makeUns ? opGtrEqUns : opGtrEq; break;
+        case BranchType::JSG: op = makeUns ? opGtrUns : opGtr; break;
 
         case BranchType::JUL: op = opLessUns; break;
 
