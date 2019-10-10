@@ -1521,10 +1521,37 @@ CMP.rm64.reg64 lhs, rhs
 
 
 # CMPXCHG
+CMPXCHG.reg8.reg8 dest, src
+    *1* %ZF := %al = dest
+    *8* %ZF = 1 => dest := src
+    *8* %ZF = 0 => %al := dest
+;
+
+CMPXCHG.reg16.reg16 dest, src
+    *1* %ZF := %ax = dest
+    *16* %ZF = 1 => dest := src
+    *16* %ZF = 0 => %ax := dest
+;
+
+CMPXCHG.reg32.reg32 dest, src
+    *1* %ZF := %eax = dest
+    *32* %ZF = 1 => dest := src
+    *32* %ZF = 0 => %eax := dest
+;
+
 CMPXCHG.rm32.reg32 dest, src
     *1* %ZF := %eax = dest
     *32* %ZF = 1 => dest := src
     *32* %ZF = 0 => %eax := dest
+;
+
+
+# CMPXCHG8B
+CMPXCHG8B.rm64 dest
+    *1* %ZF := (dest@[0:31] = %eax) && (dest@[32:63] = %edx)
+    *64* %ZF = 1 => dest := %ebx | %ecx << 32
+    *32* %ZF = 0 => %eax := dest@[0:31]
+    *32* %ZF = 0 => %edx := dest@[32:63]
 ;
 
 
