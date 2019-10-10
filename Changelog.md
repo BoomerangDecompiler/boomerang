@@ -3,6 +3,7 @@ v0.5.1 (in development)
 - Fixed: Possible crash when replacing Phi by Assign.
 - Fixed: Possible crash when analyzing binaries with a large number of debug information on Windows.
 - Fixed: Wrong decompilation of binaries containing a `bswap` instruction.
+- Fixed: Wrong decompilation of binaries containing an `xadd` instruction in some cases.
 - Fixed: Non-deterministic decompilation of functions containing removable return values.
 - Fixed: Non-deterministic order of case labels in some cases.
 - Fixed: Zero return value of boomerang-cli when command-line switch processing fails.

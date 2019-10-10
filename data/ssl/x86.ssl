@@ -4199,28 +4199,60 @@ WAIT
 
 
 # XADD
-XADD.rm8.reg8 dest, src
+XADD.reg8.reg8 dest, src
+    *8* tmp_src := src
     *8* tmpb := src + dest
     *8* src := dest
     *8* dest := tmpb
+    ADDFLAGS8(tmp_src, src, dest)
 ;
 
-XADD.rm16.reg16 dest, src
+XADD.rm8.reg8 dest, src
+    *8* tmp_src := src
+    *8* tmpb := src + dest
+    *8* src := dest
+    *8* dest := tmpb
+    ADDFLAGS8(tmp_src, src, dest)
+;
+
+XADD.reg16.reg16 dest, src
+    *16* tmp_src := src
     *16* tmph := src + dest
     *16* src := dest
     *16* dest := tmph
+    ADDFLAGS16(tmp_src, src, dest)
+;
+
+XADD.rm16.reg16 dest, src
+    *16* tmp_src := src
+    *16* tmph := src + dest
+    *16* src := dest
+    *16* dest := tmph
+    ADDFLAGS16(tmp_src, src, dest)
+;
+
+XADD.reg32.reg32 dest, src
+    *32* tmp_src := src
+    *32* tmp1 := src + dest
+    *32* src := dest
+    *32* dest := tmp1
+    ADDFLAGS32(tmp_src, src, dest)
 ;
 
 XADD.rm32.reg32 dest, src
-    *8* tmp1 := src + dest
-    *8* src := dest
-    *8* dest := tmp1
+    *32* tmp_src := src
+    *32* tmp1 := src + dest
+    *32* src := dest
+    *32* dest := tmp1
+    ADDFLAGS32(tmp_src, src, dest)
 ;
 
 XADD.rm64.reg64 dest, src
-    *8* tmp1 := src + dest
-    *8* src := dest
-    *8* dest := tmp1
+    *64* tmp_src := src
+    *64* tmp1 := src + dest
+    *64* src := dest
+    *64* dest := tmp1
+    ADDFLAGS64(tmp_src, src, dest)
 ;
 
 
