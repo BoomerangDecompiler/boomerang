@@ -1,4 +1,4 @@
-v0.5.1 (in development)
+v0.5.1 (2019-10-11)
 -----------------------
 - Fixed: Possible crash when replacing Phi by Assign.
 - Fixed: Possible crash when analyzing binaries with a large number of debug information on Windows.
