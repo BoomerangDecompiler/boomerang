@@ -47,7 +47,6 @@ regression_tests = [
     "OSX/o4/hello",
     "OSX/o4/ifthen",
     "OSX/o4/loop",
-    "OSX/o4/manyparams",
     "OSX/o4/minmax",
     "OSX/o4/minmax2",
     "OSX/o4/paramchain",
@@ -86,7 +85,6 @@ regression_tests = [
     "pentium/fibo3",
     "pentium/fibo4",
     "pentium/fibo_iter",
-    "pentium/fibo-O4",
     "pentium/funcptr",
     "pentium/hello",
     "pentium/ifthen",
@@ -126,7 +124,6 @@ regression_tests = [
     "ppc/condcodexform",
     "ppc/daysofxmas",
     "ppc/fbranch",
-    "ppc/fib",
     "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
@@ -161,7 +158,6 @@ regression_tests = [
     "ppc/o4/twoproc2",
     "ppc/o4/uns",
     "ppc/paramchain",
-    "ppc/phi",
     "ppc/phi2",
     "ppc/printpi",
     "ppc/set",
@@ -254,6 +250,7 @@ smoke_tests = [
     "OSX/o4/fibo2",
     "OSX/o4/fibo_iter",
     "OSX/o4/frontier",
+    "OSX/o4/manyparams",
     "OSX/o4/phi",
     "OSX/o4/semi",
     "OSX/o4/sumarray",
@@ -269,6 +266,7 @@ smoke_tests = [
     "pentium/fedora2_true",
     "pentium/fedora3_true",
     "pentium/fibo2",
+    "pentium/fibo-O4",
     "pentium/fromssa2",
     "pentium/frontier",
     "pentium/global1",
@@ -286,6 +284,7 @@ smoke_tests = [
     "pentium/twoproc3",
     "pentium/uns",
 
+    "ppc/fib",
     "ppc/fibo",
     "ppc/frontier",
     "ppc/funcptr",
@@ -302,6 +301,7 @@ smoke_tests = [
     "ppc/o4/phi",
     "ppc/o4/semi",
     "ppc/o4/sumarray",
+    "ppc/phi",
     "ppc/semi",
 
     "sparc/asgngoto",
@@ -341,7 +341,7 @@ disabled_tests = [
 def clean_old_outputs(base_dir):
     print("Cleaning up old data ...")
     output_dir = os.path.join(base_dir, "outputs")
-    if os.path.isdir(output_dir): shutil.rmtree(output_dir)
+    if os.path.isdir(output_dir): shutil.rmtree(output_dir, ignore_errors=True)
     os.makedirs(output_dir)
 
 

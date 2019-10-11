@@ -23,8 +23,6 @@ BOOMERANG_ADD_TEST(
         ${CMAKE_SOURCE_DIR}/src/boomerang-cli/CommandlineDriver.h
         ${CMAKE_SOURCE_DIR}/src/boomerang-cli/Console.cpp
         ${CMAKE_SOURCE_DIR}/src/boomerang-cli/Console.h
-        ${CMAKE_SOURCE_DIR}/src/boomerang-cli/MiniDebugger.cpp
-        ${CMAKE_SOURCE_DIR}/src/boomerang-cli/MiniDebugger.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/CommandLineDriverTest.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/CommandLineDriverTest.h

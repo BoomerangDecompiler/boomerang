@@ -14,7 +14,6 @@ set(boomerang-cli-sources
     Console
     CommandlineDriver
     Main
-    MiniDebugger
 )
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-cli-sources ".cpp")

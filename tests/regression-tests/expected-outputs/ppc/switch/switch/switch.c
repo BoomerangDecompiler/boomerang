@@ -28,8 +28,8 @@ bb0x100004c8:
     case 7:
         printf("Seven!\n");
         break;
-    case 1:
     case 0:
+    case 1:
         goto bb0x100004c8;
     }
     return 0;

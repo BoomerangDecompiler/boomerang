@@ -23,6 +23,17 @@
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 
+bool lessUserProc(const UserProc *lhs, const UserProc *rhs)
+{
+    if (lhs && rhs) {
+        return lhs->getEntryAddress() < rhs->getEntryAddress();
+    }
+    else {
+        return lhs < rhs;
+    }
+}
+
+
 UnusedReturnRemover::UnusedReturnRemover(Prog *prog)
     : m_prog(prog)
 {
@@ -41,12 +52,13 @@ bool UnusedReturnRemover::removeUnusedReturns()
     }
 
     bool change = false;
-    // The workset is processed in arbitrary order. May be able to do better,
-    // but note that sometimes changes propagate down the call tree
+    // The workset is processed in order of entry address. This is to provide a consistent
+    // deterministic order of processing. Note that sometimes changes propagate down the call tree
     // (no caller uses potential returns for child), and sometimes up the call tree
     // (removal of returns and/or dead code removes parameters, which affects all callers).
     while (!m_removeRetSet.empty()) {
-        auto it                   = m_removeRetSet.begin(); // Pick the first element of the set
+        auto it = std::min_element(m_removeRetSet.begin(), m_removeRetSet.end(), lessUserProc);
+        assert(*it != nullptr);
         const bool removedReturns = removeUnusedParamsAndReturns(*it);
 
         if (removedReturns) {
@@ -300,10 +312,9 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
         }
 
         std::set<CallStatement *> &callers = proc->getCallers();
-        const bool experimental            = m_prog->getProject()->getSettings()->experimental;
 
         for (CallStatement *cc : callers) {
-            cc->updateArguments(experimental);
+            cc->updateArguments();
             // Schedule the callers for analysis
             m_removeRetSet.insert(cc->getProc());
         }

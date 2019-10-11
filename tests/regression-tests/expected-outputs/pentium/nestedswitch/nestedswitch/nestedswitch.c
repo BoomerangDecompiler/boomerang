@@ -40,8 +40,8 @@ bb0x804840c:
             return 0;
         }
         goto bb0x80483a8;
-    case 1:
     case 0:
+    case 1:
         goto bb0x80483a8;
     case 2:
         goto bb0x80483bc;

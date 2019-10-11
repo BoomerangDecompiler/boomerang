@@ -26,11 +26,9 @@ Q_DECLARE_METATYPE(Address)
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_project(new Project())
-    , m_debugger(new MiniDebugger())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
-    m_project->addWatcher(m_debugger.get());
 }
 
 
@@ -65,6 +63,7 @@ static void help()
 "  --version        : Print version information and exit\n"
 "  -h, --help       : Show this help and exit\n"
 "  -v               : Verbose decompilation output\n"
+"  --log-level <n>  : Set log verbosity (n=0..5, default 3)\n"
 "  -o <output_path> : Where to generate output (defaults to ./output/)\n"
 "  -r               : Print RTL for each proc to log before code generation\n"
 "  -gd <dot_file>   : Generate a dotty graph of the program's CFG(s)\n"
@@ -74,16 +73,14 @@ static void help()
 "Misc.\n"
 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
 "  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
-"  -X               : activate eXperimental code; errors likely\n"
 "  --               : Terminates argument processing\n"
 "\n"
 "Debug\n"
 "  -dc              : Debug Switch/Case Analysis\n"
 "  -dd              : Debug Instruction Decoder\n"
-"  -dg              : Debug Dode Generation\n"
+"  -dg              : Debug Code Generation\n"
 "  -dl              : Debug SSA Liveness Analysis\n"
 "  -dp              : Debug Proof Engine\n"
-"  -ds              : Stop at debug points for keypress\n"
 "  -dt              : Debug Type Analysis\n"
 "  -du              : Debug removal of unused statements etc.\n"
 "\n"
@@ -141,8 +138,22 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->verboseOutput = true;
             continue;
         }
-        else if (arg == "-X") {
-            m_project->getSettings()->experimental = true;
+        else if (arg == "--log-level") {
+            if (++i == args.size()) {
+                help();
+                return 1;
+            }
+
+            bool converted     = false;
+            const int logLevel = args[i].toInt(&converted, 0);
+            if (!converted || logLevel < (int)LogLevel::Fatal ||
+                logLevel > (int)LogLevel::Verbose2) {
+                std::cerr << "'--log-level': Bad argument '" << args[i].toStdString()
+                          << "' (try --help)." << std::endl;
+                return 1;
+            }
+
+            Log::getOrCreateLog().setLogLevel((LogLevel)logLevel);
             continue;
         }
         else if (arg == "-r") {
@@ -270,11 +281,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->useTypeAnalysis = false;
             continue;
         }
-        else if (arg == "-pa") {
-            m_project->getSettings()->propOnlyToAll = true;
-            std::cerr << "Warning! -pa is not implemented yet!" << std::endl;
-            continue;
-        }
         else if (arg == "-p") {
             if (++i == args.size()) {
                 help();
@@ -284,7 +290,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             bool converted                           = false;
             m_project->getSettings()->numToPropagate = args[i].toInt(&converted, 0);
             if (!converted) {
-                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-p': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -316,7 +322,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             const Address addr = Address(addrStr.toLongLong(&converted, 0));
 
             if (!converted) {
-                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)"
+                std::cerr << "'-s': Bad argument '" << addrStr.toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -344,10 +350,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->debugProof = true;
             continue;
         }
-        else if (arg == "-ds") {
-            m_project->getSettings()->stopAtDebugPoints = true;
-            continue;
-        }
         else if (arg == "-dt") {
             m_project->getSettings()->debugTA = true;
             continue;
@@ -370,7 +372,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             m_project->getSettings()->propMaxDepth = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-l': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -387,7 +389,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             minsToStopAfter = args[i].toInt(&converted, 0);
 
             if (!converted) {
-                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)"
+                std::cerr << "'-S': Bad argument '" << args[i].toStdString() << "' (try --help)."
                           << std::endl;
                 return 1;
             }
@@ -423,7 +425,8 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
                 if (!converted) {
                     std::cerr << "'" << arg.toStdString()
-                              << "' Bad address: " << args[i].toStdString() << " (try --help)";
+                              << "' Bad address: " << args[i].toStdString() << " (try --help)."
+                              << std::endl;
                     return 1;
                 }
 

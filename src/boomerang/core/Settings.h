@@ -64,12 +64,10 @@ public:
 
     /// The file in which the dotty graph is saved
     QString dotFile;
-    int numToPropagate     = -1;
-    bool usePromotion      = true;
-    bool propOnlyToAll     = false;
-    bool debugGen          = false;
-    bool nameParameters    = true;
-    bool stopAtDebugPoints = false;
+    int numToPropagate  = -1;
+    bool usePromotion   = true;
+    bool debugGen       = false;
+    bool nameParameters = true;
 
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given
@@ -85,7 +83,6 @@ public:
     bool generateSymbols   = false;
     bool useGlobals        = true;
     bool assumeABI         = false; ///< Assume ABI compliance
-    bool experimental      = false; ///< Activate experimental code. Caution!
 
     QString replayFile;  ///< file with commands to execute in interactive mode
     QString sslFileName; ///< Use this SSL file instead of one of the hard-coded ones.

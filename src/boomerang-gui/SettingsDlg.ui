@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>675</height>
+    <height>588</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -188,16 +188,6 @@
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabDecompile">
            <item>
-            <widget class="QCheckBox" name="chkStopAtDebugPoints">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Activate debugger at debug points</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QCheckBox" name="chkUseDataflow">
              <property name="text">
               <string>Use basic data-flow analysis</string>
@@ -295,13 +285,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="chkPropOnlyToAll">
-             <property name="text">
-              <string>Propagate only to all</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <layout class="QHBoxLayout" name="hLayout_numToPropagate">
              <item>
               <widget class="QLabel" name="lbNumToPropagate">
@@ -359,13 +342,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chkExperimental">
-             <property name="text">
-              <string>Activate experimental code</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>

@@ -11,6 +11,9 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/util/log/Log.h"
 
 
 BBSimplifyPass::BBSimplifyPass()
@@ -24,5 +27,6 @@ bool BBSimplifyPass::execute(UserProc *proc)
     for (BasicBlock *bb : *proc->getCFG()) {
         bb->simplify();
     }
+
     return true;
 }

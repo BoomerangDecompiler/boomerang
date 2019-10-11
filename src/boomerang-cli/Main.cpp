@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     CommandlineDriver driver;
 
-    const bool decompile = driver.applyCommandline(app.arguments()) == 0;
-    if (!decompile) {
-        return 0;
+    const int applyResult = driver.applyCommandline(app.arguments());
+    if (applyResult != 0) {
+        return applyResult;
     }
 
     return driver.decompile();

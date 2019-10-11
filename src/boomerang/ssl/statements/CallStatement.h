@@ -72,7 +72,7 @@ public:
     const StatementList &getArguments() const { return m_arguments; }
 
     /// Update the arguments based on a callee change
-    void updateArguments(bool experimental);
+    void updateArguments();
 
     /// Temporarily needed for ad-hoc type analysis
     void removeDefine(SharedExp e);

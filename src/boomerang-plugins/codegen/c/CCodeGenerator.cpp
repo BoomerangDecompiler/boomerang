@@ -2786,13 +2786,25 @@ CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const Swi
 
         while (leftSucc->getType() != BBType::Ret) {
             if (leftSucc == rightBB) {
-                return true; // the left case is a fallthrough to the right case
+                return leftBB != rightBB; // the left case is a fallthrough to the right case
             }
             else if (leftSucc->getNumSuccessors() != 1) {
                 break;
             }
 
             leftSucc = leftSucc->getSuccessor(0);
+        }
+
+        const BasicBlock *rightSucc = rightBB;
+        while (rightSucc->getType() != BBType::Ret) {
+            if (rightSucc == leftBB) {
+                return leftBB != rightBB; // the right case is a fallthrough to the left case
+            }
+            else if (rightSucc->getNumSuccessors() != 1) {
+                break;
+            }
+
+            rightSucc = rightSucc->getSuccessor(0);
         }
 
         // No fallthrough found; compare by address
