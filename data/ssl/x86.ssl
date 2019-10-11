@@ -1262,89 +1262,145 @@ INSTRUCTION "CMC" () {
 
 
 # CMOVcc
-INSTRUCTION "CMOVA.reg32.reg32"    (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
-INSTRUCTION "CMOVA.reg32.rm32"     (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
+INSTRUCTION "CMOVA.reg16.reg16"    (dest, src) { *16* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVA.reg16.rm16"     (dest, src) { *16* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVA.reg32.reg32"    (dest, src) { *32* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVA.reg32.rm32"     (dest, src) { *32* dest := [(~%CF && ~%ZF)         ? src : dest] };
 
-INSTRUCTION "CMOVAE.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
-INSTRUCTION "CMOVAE.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVAE.reg16.reg16"   (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVAE.reg16.rm16"    (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVAE.reg32.reg32"   (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVAE.reg32.rm32"    (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
 
-INSTRUCTION "CMOVB.reg32.reg32"    (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
-INSTRUCTION "CMOVB.reg32.rm32"     (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVB.reg16.reg16"    (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVB.reg16.rm16"     (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVB.reg32.reg32"    (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVB.reg32.rm32"     (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
 
-INSTRUCTION "CMOVBE.reg32.reg32"   (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
-INSTRUCTION "CMOVBE.reg32.rm32"    (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
+INSTRUCTION "CMOVBE.reg16.reg16"   (dest, src) { *16* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVBE.reg16.rm16"    (dest, src) { *16* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVBE.reg32.reg32"   (dest, src) { *32* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVBE.reg32.rm32"    (dest, src) { *32* dest := [(%CF || %ZF)           ? src : dest] };
 
-INSTRUCTION "CMOVC.reg32.reg32"    (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
-INSTRUCTION "CMOVC.reg32.rm32"     (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVC.reg16.reg16"    (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVC.reg16.rm16"     (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVC.reg32.reg32"    (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVC.reg32.rm32"     (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
 
-INSTRUCTION "CMOVE.reg32.reg32"    (dest, src) {      *32* dest := [(%ZF = 1)              ? src : dest]};
-INSTRUCTION "CMOVE.reg32.rm32"     (dest, src) {      *32* dest := [(%ZF = 1)              ? src : dest]};
+INSTRUCTION "CMOVE.reg16.reg16"    (dest, src) { *16* dest := [(%ZF = 1)              ? src : dest] };
+INSTRUCTION "CMOVE.reg16.rm16"     (dest, src) { *16* dest := [(%ZF = 1)              ? src : dest] };
+INSTRUCTION "CMOVE.reg32.reg32"    (dest, src) { *32* dest := [(%ZF = 1)              ? src : dest] };
+INSTRUCTION "CMOVE.reg32.rm32"     (dest, src) { *32* dest := [(%ZF = 1)              ? src : dest] };
 
-INSTRUCTION "CMOVG.reg32.reg32"    (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
-INSTRUCTION "CMOVG.reg32.rm32"     (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVG.reg16.reg16"    (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVG.reg16.rm16"     (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVG.reg32.reg32"    (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVG.reg32.rm32"     (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
 
-INSTRUCTION "CMOVGE.reg32.reg32"   (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
-INSTRUCTION "CMOVGE.reg32.rm32"    (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
+INSTRUCTION "CMOVGE.reg16.reg16"   (dest, src) { *16* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVGE.reg16.rm16"    (dest, src) { *16* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVGE.reg32.reg32"   (dest, src) { *32* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVGE.reg32.rm32"    (dest, src) { *32* dest := [(~(%SF ^ %OF))         ? src : dest] };
 
-INSTRUCTION "CMOVL.reg32.reg32"    (dest, src) {      *32* dest := [(%SF ^ %OF)            ? src : dest]};
-INSTRUCTION "CMOVL.reg32.rm32"     (dest, src) {      *32* dest := [(%SF ^ %OF)            ? src : dest]};
+INSTRUCTION "CMOVL.reg16.reg16"    (dest, src) { *16* dest := [(%SF ^ %OF)            ? src : dest] };
+INSTRUCTION "CMOVL.reg16.rm16"     (dest, src) { *16* dest := [(%SF ^ %OF)            ? src : dest] };
+INSTRUCTION "CMOVL.reg32.reg32"    (dest, src) { *32* dest := [(%SF ^ %OF)            ? src : dest] };
+INSTRUCTION "CMOVL.reg32.rm32"     (dest, src) { *32* dest := [(%SF ^ %OF)            ? src : dest] };
 
-INSTRUCTION "CMOVLE.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
-INSTRUCTION "CMOVLE.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
+INSTRUCTION "CMOVLE.reg16.reg16"   (dest, src) { *16* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVLE.reg16.rm16"    (dest, src) { *16* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVLE.reg32.reg32"   (dest, src) { *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVLE.reg32.rm32"    (dest, src) { *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
 
-INSTRUCTION "CMOVNA.reg32.reg32"   (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
-INSTRUCTION "CMOVNA.reg32.rm32"    (dest, src) {      *32* dest := [(%CF || %ZF)           ? src : dest]};
+INSTRUCTION "CMOVNA.reg16.reg16"   (dest, src) { *16* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVNA.reg16.rm16"    (dest, src) { *16* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVNA.reg32.reg32"   (dest, src) { *32* dest := [(%CF || %ZF)           ? src : dest] };
+INSTRUCTION "CMOVNA.reg32.rm32"    (dest, src) { *32* dest := [(%CF || %ZF)           ? src : dest] };
 
-INSTRUCTION "CMOVNAE.reg32.reg32"  (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
-INSTRUCTION "CMOVNAE.reg32.rm32"   (dest, src) {      *32* dest := [(%CF = 1)              ? src : dest]};
+INSTRUCTION "CMOVNAE.reg16.reg16"  (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVNAE.reg16.rm16"   (dest, src) { *16* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVNAE.reg32.reg32"  (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
+INSTRUCTION "CMOVNAE.reg32.rm32"   (dest, src) { *32* dest := [(%CF = 1)              ? src : dest] };
 
-INSTRUCTION "CMOVNB.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
-INSTRUCTION "CMOVNB.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNB.reg16.reg16"   (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNB.reg16.rm16"    (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNB.reg32.reg32"   (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNB.reg32.rm32"    (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
 
-INSTRUCTION "CMOVNBE.reg32.reg32"  (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
-INSTRUCTION "CMOVNBE.reg32.rm32"   (dest, src) {      *32* dest := [(~%CF && ~%ZF)         ? src : dest]};
+INSTRUCTION "CMOVNBE.reg16.reg16"  (dest, src) { *16* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVNBE.reg16.rm16"   (dest, src) { *16* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVNBE.reg32.reg32"  (dest, src) { *32* dest := [(~%CF && ~%ZF)         ? src : dest] };
+INSTRUCTION "CMOVNBE.reg32.rm32"   (dest, src) { *32* dest := [(~%CF && ~%ZF)         ? src : dest] };
 
-INSTRUCTION "CMOVNC.reg32.reg32"   (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
-INSTRUCTION "CMOVNC.reg32.rm32"    (dest, src) {      *32* dest := [(%CF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNC.reg16.reg16"   (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNC.reg16.rm16"    (dest, src) { *16* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNC.reg32.reg32"   (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNC.reg32.rm32"    (dest, src) { *32* dest := [(%CF = 0)              ? src : dest] };
 
-INSTRUCTION "CMOVNE.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF = 0)              ? src : dest]};
-INSTRUCTION "CMOVNE.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF = 0)              ? src : dest]};
+INSTRUCTION "CMOVNE.reg16.reg16"   (dest, src) { *16* dest := [(%ZF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNE.reg16.rm16"    (dest, src) { *16* dest := [(%ZF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNE.reg32.reg32"   (dest, src) { *32* dest := [(%ZF = 0)              ? src : dest] };
+INSTRUCTION "CMOVNE.reg32.rm32"    (dest, src) { *32* dest := [(%ZF = 0)              ? src : dest] };
 
-INSTRUCTION "CMOVNG.reg32.reg32"   (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
-INSTRUCTION "CMOVNG.reg32.rm32"    (dest, src) {      *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest]};
+INSTRUCTION "CMOVNG.reg16.reg16"   (dest, src) { *16* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVNG.reg16.rm16"    (dest, src) { *16* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVNG.reg32.reg32"   (dest, src) { *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
+INSTRUCTION "CMOVNG.reg32.rm32"    (dest, src) { *32* dest := [(%ZF || (%SF ^ %OF))   ? src : dest] };
 
-INSTRUCTION "CMOVNGE.reg32.reg32"  (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
-INSTRUCTION "CMOVNGE.reg32.rm32"   (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVNGE.reg16.reg16"  (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNGE.reg16.rm16"   (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNGE.reg32.reg32"  (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNGE.reg32.rm32"   (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
 
-INSTRUCTION "CMOVNL.reg32.reg32"   (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
-INSTRUCTION "CMOVNL.reg32.rm32"    (dest, src) {      *32* dest := [(~(%SF ^ %OF))         ? src : dest]};
+INSTRUCTION "CMOVNL.reg16.reg16"   (dest, src) { *16* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVNL.reg16.rm16"    (dest, src) { *16* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVNL.reg32.reg32"   (dest, src) { *32* dest := [(~(%SF ^ %OF))         ? src : dest] };
+INSTRUCTION "CMOVNL.reg32.rm32"    (dest, src) { *32* dest := [(~(%SF ^ %OF))         ? src : dest] };
 
-INSTRUCTION "CMOVNLE.reg32.reg32"  (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
-INSTRUCTION "CMOVNLE.reg32.rm32"   (dest, src) {      *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest]};
+INSTRUCTION "CMOVNLE.reg16.reg16"  (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNLE.reg16.rm16"   (dest, src) { *16* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNLE.reg32.reg32"  (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
+INSTRUCTION "CMOVNLE.reg32.rm32"   (dest, src) { *32* dest := [(~%ZF && ~(%SF ^ %OF)) ? src : dest] };
 
-INSTRUCTION "CMOVNO.reg32.reg32"   (dest, src) {      *32* dest := [(~%OF)                 ? src : dest]};
-INSTRUCTION "CMOVNO.reg32.rm32"    (dest, src) {      *32* dest := [(~%OF)                 ? src : dest]};
+INSTRUCTION "CMOVNO.reg16.reg16"   (dest, src) { *16* dest := [(~%OF)                 ? src : dest] };
+INSTRUCTION "CMOVNO.reg16.rm16"    (dest, src) { *16* dest := [(~%OF)                 ? src : dest] };
+INSTRUCTION "CMOVNO.reg32.reg32"   (dest, src) { *32* dest := [(~%OF)                 ? src : dest] };
+INSTRUCTION "CMOVNO.reg32.rm32"    (dest, src) { *32* dest := [(~%OF)                 ? src : dest] };
 
-INSTRUCTION "CMOVNP.reg32.reg32"   (dest, src) {      *32* dest := [(~%PF)                 ? src : dest]};
-INSTRUCTION "CMOVNP.reg32.rm32"    (dest, src) {      *32* dest := [(~%PF)                 ? src : dest]};
+INSTRUCTION "CMOVNP.reg16.reg16"   (dest, src) { *16* dest := [(~%PF)                 ? src : dest] };
+INSTRUCTION "CMOVNP.reg16.rm16"    (dest, src) { *16* dest := [(~%PF)                 ? src : dest] };
+INSTRUCTION "CMOVNP.reg32.reg32"   (dest, src) { *32* dest := [(~%PF)                 ? src : dest] };
+INSTRUCTION "CMOVNP.reg32.rm32"    (dest, src) { *32* dest := [(~%PF)                 ? src : dest] };
 
-INSTRUCTION "CMOVNS.reg32.reg32"   (dest, src) {      *32* dest := [(~%SF)                 ? src : dest]};
-INSTRUCTION "CMOVNS.reg32.rm32"    (dest, src) {      *32* dest := [(~%SF)                 ? src : dest]};
+INSTRUCTION "CMOVNS.reg16.reg16"   (dest, src) { *16* dest := [(~%SF)                 ? src : dest] };
+INSTRUCTION "CMOVNS.reg16.rm16"    (dest, src) { *16* dest := [(~%SF)                 ? src : dest] };
+INSTRUCTION "CMOVNS.reg32.reg32"   (dest, src) { *32* dest := [(~%SF)                 ? src : dest] };
+INSTRUCTION "CMOVNS.reg32.rm32"    (dest, src) { *32* dest := [(~%SF)                 ? src : dest] };
 
-INSTRUCTION "CMOVNZ.reg32.reg32"   (dest, src) {      *32* dest := [(~%ZF)                 ? src : dest]};
-INSTRUCTION "CMOVNZ.reg32.rm32"    (dest, src) {      *32* dest := [(~%ZF)                 ? src : dest]};
+INSTRUCTION "CMOVNZ.reg16.reg16"   (dest, src) { *16* dest := [(~%ZF)                 ? src : dest] };
+INSTRUCTION "CMOVNZ.reg16.rm16"    (dest, src) { *16* dest := [(~%ZF)                 ? src : dest] };
+INSTRUCTION "CMOVNZ.reg32.reg32"   (dest, src) { *32* dest := [(~%ZF)                 ? src : dest] };
+INSTRUCTION "CMOVNZ.reg32.rm32"    (dest, src) { *32* dest := [(~%ZF)                 ? src : dest] };
 
-INSTRUCTION "CMOVO.reg32.reg32"    (dest, src) {      *32* dest := [(%OF)                  ? src : dest]};
-INSTRUCTION "CMOVO.reg32.rm32"     (dest, src) {      *32* dest := [(%OF)                  ? src : dest]};
+INSTRUCTION "CMOVO.reg16.reg16"    (dest, src) { *16* dest := [(%OF)                  ? src : dest] };
+INSTRUCTION "CMOVO.reg16.rm16"     (dest, src) { *16* dest := [(%OF)                  ? src : dest] };
+INSTRUCTION "CMOVO.reg32.reg32"    (dest, src) { *32* dest := [(%OF)                  ? src : dest] };
+INSTRUCTION "CMOVO.reg32.rm32"     (dest, src) { *32* dest := [(%OF)                  ? src : dest] };
 
-INSTRUCTION "CMOVP.reg32.reg32"    (dest, src) {      *32* dest := [(%PF)                  ? src : dest]};
-INSTRUCTION "CMOVP.reg32.rm32"     (dest, src) {      *32* dest := [(%PF)                  ? src : dest]};
+INSTRUCTION "CMOVP.reg16.reg16"    (dest, src) { *16* dest := [(%PF)                  ? src : dest] };
+INSTRUCTION "CMOVP.reg16.rm16"     (dest, src) { *16* dest := [(%PF)                  ? src : dest] };
+INSTRUCTION "CMOVP.reg32.reg32"    (dest, src) { *32* dest := [(%PF)                  ? src : dest] };
+INSTRUCTION "CMOVP.reg32.rm32"     (dest, src) { *32* dest := [(%PF)                  ? src : dest] };
 
-INSTRUCTION "CMOVS.reg32.reg32"    (dest, src) {      *32* dest := [(%SF)                  ? src : dest]};
-INSTRUCTION "CMOVS.reg32.rm32"     (dest, src) {      *32* dest := [(%SF)                  ? src : dest]};
+INSTRUCTION "CMOVS.reg16.reg16"    (dest, src) { *16* dest := [(%SF)                  ? src : dest] };
+INSTRUCTION "CMOVS.reg16.rm16"     (dest, src) { *16* dest := [(%SF)                  ? src : dest] };
+INSTRUCTION "CMOVS.reg32.reg32"    (dest, src) { *32* dest := [(%SF)                  ? src : dest] };
+INSTRUCTION "CMOVS.reg32.rm32"     (dest, src) { *32* dest := [(%SF)                  ? src : dest] };
 
-INSTRUCTION "CMOVZ.reg32.reg32"    (dest, src) {      *32* dest := [(%ZF)                  ? src : dest]};
-INSTRUCTION "CMOVZ.reg32.rm32"     (dest, src) {      *32* dest := [(%ZF)                  ? src : dest]};
+INSTRUCTION "CMOVZ.reg16.reg16"    (dest, src) { *16* dest := [(%ZF)                  ? src : dest] };
+INSTRUCTION "CMOVZ.reg16.rm16"     (dest, src) { *16* dest := [(%ZF)                  ? src : dest] };
+INSTRUCTION "CMOVZ.reg32.reg32"    (dest, src) { *32* dest := [(%ZF)                  ? src : dest] };
+INSTRUCTION "CMOVZ.reg32.rm32"     (dest, src) { *32* dest := [(%ZF)                  ? src : dest] };
 
 
 # CMP
@@ -1465,10 +1521,37 @@ INSTRUCTION "CMP.rm64.reg64" (lhs, rhs) {
 
 
 # CMPXCHG
+INSTRUCTION "CMPXCHG.reg8.reg8" (dest, src) {
+    *1* %ZF := %al = dest
+    *8* %ZF = 1 => dest := src
+    *8* %ZF = 0 => %al := dest
+};
+
+INSTRUCTION "CMPXCHG.reg16.reg16" (dest, src) {
+    *1* %ZF := %ax = dest
+    *16* %ZF = 1 => dest := src
+    *16* %ZF = 0 => %ax := dest
+};
+
+INSTRUCTION "CMPXCHG.reg32.reg32" (dest, src) {
+    *1* %ZF := %eax = dest
+    *32* %ZF = 1 => dest := src
+    *32* %ZF = 0 => %eax := dest
+};
+
 INSTRUCTION "CMPXCHG.rm32.reg32" (dest, src) {
     *1* %ZF := %eax = dest
     *32* %ZF = 1 => dest := src
     *32* %ZF = 0 => %eax := dest
+};
+
+
+# CMPXCHG8B
+INSTRUCTION "CMPXCHG8B.rm64" (dest) {
+    *1* %ZF := (dest@[0:31] = %eax) && (dest@[32:63] = %edx)
+    *64* %ZF = 1 => dest := %ebx | %ecx << 32
+    *32* %ZF = 0 => %eax := dest@[0:31]
+    *32* %ZF = 0 => %edx := dest@[32:63]
 };
 
 
@@ -4125,28 +4208,60 @@ INSTRUCTION "WAIT" () {
 
 
 # XADD
-INSTRUCTION "XADD.rm8.reg8" (dest, src) {
+INSTRUCTION "XADD.reg8.reg8" (dest, src) {
+    *8* tmp_src := src
     *8* tmpb := src + dest
     *8* src := dest
     *8* dest := tmpb
+    ADDFLAGS8(tmp_src, src, dest)
 };
 
-INSTRUCTION "XADD.rm16.reg16" (dest, src) {
+INSTRUCTION "XADD.rm8.reg8" (dest, src) {
+    *8* tmp_src := src
+    *8* tmpb := src + dest
+    *8* src := dest
+    *8* dest := tmpb
+    ADDFLAGS8(tmp_src, src, dest)
+};
+
+INSTRUCTION "XADD.reg16.reg16" (dest, src) {
+    *16* tmp_src := src
     *16* tmph := src + dest
     *16* src := dest
     *16* dest := tmph
+    ADDFLAGS16(tmp_src, src, dest)
+};
+
+INSTRUCTION "XADD.rm16.reg16" (dest, src) {
+    *16* tmp_src := src
+    *16* tmph := src + dest
+    *16* src := dest
+    *16* dest := tmph
+    ADDFLAGS16(tmp_src, src, dest)
+};
+
+INSTRUCTION "XADD.reg32.reg32" (dest, src) {
+    *32* tmp_src := src
+    *32* tmp1 := src + dest
+    *32* src := dest
+    *32* dest := tmp1
+    ADDFLAGS32(tmp_src, src, dest)
 };
 
 INSTRUCTION "XADD.rm32.reg32" (dest, src) {
-    *8* tmp1 := src + dest
-    *8* src := dest
-    *8* dest := tmp1
+    *32* tmp_src := src
+    *32* tmp1 := src + dest
+    *32* src := dest
+    *32* dest := tmp1
+    ADDFLAGS32(tmp_src, src, dest)
 };
 
 INSTRUCTION "XADD.rm64.reg64" (dest, src) {
-    *8* tmp1 := src + dest
-    *8* src := dest
-    *8* dest := tmp1
+    *64* tmp_src := src
+    *64* tmp1 := src + dest
+    *64* src := dest
+    *64* dest := tmp1
+    ADDFLAGS64(tmp_src, src, dest)
 };
 
 
