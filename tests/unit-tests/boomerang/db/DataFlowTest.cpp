@@ -225,6 +225,8 @@ void DataFlowTest::testRenameVars()
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe  = prog->getFrontEnd();
+    assert(fe != nullptr);
+
     Type::clearNamedTypes();
     fe->decodeEntryPointsRecursive();
 
