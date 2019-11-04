@@ -1,6 +1,7 @@
 v0.5.2 (in development)
 -----------------------
 - Fixed: Crash when checking whether a LibProc returns while no FrontEnd is loaded.
+- Fixed: Crash when re-decoding while no FrontEnd is loaded.
 
 v0.5.1 (2019-10-11)
 -------------------

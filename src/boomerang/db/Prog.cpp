@@ -320,12 +320,20 @@ bool Prog::isWin32() const
 
 QString Prog::getRegNameByNum(RegNum regNum) const
 {
+    if (!m_fe || !m_fe->getDecoder()) {
+        return "";
+    }
+
     return m_fe->getDecoder()->getRegNameByNum(regNum);
 }
 
 
 int Prog::getRegSizeByNum(RegNum regNum) const
 {
+    if (!m_fe || !m_fe->getDecoder()) {
+        return 0;
+    }
+
     return m_fe->getDecoder()->getRegSizeByNum(regNum);
 }
 
@@ -635,7 +643,7 @@ bool Prog::decodeFragment(UserProc *proc, Address a)
 
 bool Prog::reDecode(UserProc *proc)
 {
-    if (!proc) {
+    if (!proc || !m_fe) {
         return false;
     }
 
