@@ -9,61 +9,131 @@
 
 include(boomerang-utils)
 
-set(TESTS
-    binary/BinaryImageTest
-    binary/BinarySectionTest
-    binary/BinarySymbolTableTest
-    binary/BinarySymbolTest
-    proc/LibProcTest
-    proc/ProcCFGTest
-    proc/UserProcTest
-    signature/SignatureTest
-    BasicBlockTest
-    GlobalTest
-    ProgTest
+BOOMERANG_ADD_TEST(
+    NAME BinaryImageTest
+    SOURCES binary/BinaryImageTest.h binary/BinaryImageTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
 )
 
-# These tests require the ELF loader
-set(TESTS_WITH_ELF
-    DataFlowTest
+
+BOOMERANG_ADD_TEST(
+    NAME BinarySectionTest
+    SOURCES binary/BinarySectionTest.h binary/BinarySectionTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
 )
 
-foreach(t ${TESTS})
-    string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
-    BOOMERANG_ADD_TEST(
-        NAME ${TEST_NAME}
-        SOURCES ${t}.h ${t}.cpp
-        LIBRARIES
-            ${DEBUG_LIB}
-            boomerang
-            ${CMAKE_THREAD_LIBS_INIT}
-    )
-endforeach()
 
-target_link_libraries(ProgTest
-    boomerang-X86FrontEnd
+BOOMERANG_ADD_TEST(
+    NAME BinarySymbolTableTest
+    SOURCES binary/BinarySymbolTableTest.h binary/BinarySymbolTableTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
 )
 
-if (MSVC)
-    add_custom_command(TARGET ProgTest POST_BUILD
-        COMMAND "${CMAKE_COMMAND}"
-        ARGS
-            -E copy_if_different
-            "$<TARGET_FILE:boomerang-X86FrontEnd>"
-            "${BOOMERANG_OUTPUT_DIR}/bin/"
-    )
-endif (MSVC)
+
+BOOMERANG_ADD_TEST(
+    NAME BinarySymbolTest
+    SOURCES binary/BinarySymbolTest.h binary/BinarySymbolTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
 
 
-if (BOOMERANG_BUILD_LOADER_Elf)
-    foreach(t ${TESTS_WITH_ELF})
-        BOOMERANG_ADD_TEST(
-            NAME ${t}
-            SOURCES ${t}.h ${t}.cpp
-            LIBRARIES
-                ${DEBUG_LIB}
-                boomerang
-                ${CMAKE_THREAD_LIBS_INIT}
-        )
-    endforeach()
-endif (BOOMERANG_BUILD_LOADER_Elf)
+BOOMERANG_ADD_TEST(
+    NAME LibProcTest
+    SOURCES proc/LibProcTest.h proc/LibProcTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-X86FrontEnd
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME ProcCFGTest
+    SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME UserProcTest
+    SOURCES proc/UserProcTest.h proc/UserProcTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-X86FrontEnd
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME SignatureTest
+    SOURCES signature/SignatureTest.h signature/SignatureTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME BasicBlockTest
+    SOURCES BasicBlockTest.h BasicBlockTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME GlobalTest
+    SOURCES GlobalTest.h GlobalTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME ProgTest
+    SOURCES ProgTest.h ProgTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+        boomerang-X86FrontEnd
+    DEPENDENCIES
+        boomerang-X86FrontEnd
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME DataFlowTest
+    SOURCES DataFlowTest.h DataFlowTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)
