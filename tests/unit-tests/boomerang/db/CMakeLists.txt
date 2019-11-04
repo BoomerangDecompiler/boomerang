@@ -58,6 +58,7 @@ BOOMERANG_ADD_TEST(
         ${CMAKE_THREAD_LIBS_INIT}
     DEPENDENCIES
         boomerang-X86FrontEnd
+        boomerang-ElfLoader
 )
 
 
@@ -80,6 +81,7 @@ BOOMERANG_ADD_TEST(
         ${CMAKE_THREAD_LIBS_INIT}
     DEPENDENCIES
         boomerang-X86FrontEnd
+        boomerang-ElfLoader
 )
 
 
@@ -110,6 +112,8 @@ BOOMERANG_ADD_TEST(
         ${DEBUG_LIB}
         boomerang
         ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
 )
 
 
@@ -123,6 +127,7 @@ BOOMERANG_ADD_TEST(
         boomerang-X86FrontEnd
     DEPENDENCIES
         boomerang-X86FrontEnd
+        boomerang-ElfLoader
 )
 
 
