@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Types.h"
 
@@ -19,27 +20,6 @@
 
 
 class RTL;
-
-
-/**
- * These are the instruction classes defined in
- * "A Transformational Approach to Binary Translation of Delayed Branches"
- * for SPARC instructions.
- * Ignored by machines with no delay slots.
- */
-enum class IClass : uint8
-{
-    NOP, ///< No operation (e.g. SPARC BN,A)
-    NCT, ///< Non Control Transfer
-
-    SD,    ///< Static Delayed
-    DD,    ///< Dynamic Delayed
-    SCD,   ///< Static Conditional Delayed
-    SCDAN, ///< Static Conditional Delayed, Anulled if Not taken
-    SCDAT, ///< Static Conditional Delayed, Anulled if Taken
-    SU,    ///< Static Unconditional (not delayed)
-    SKIP   ///< Skip successor
-};
 
 
 /**

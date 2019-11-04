@@ -26,7 +26,10 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
+
+    /// \copydoc IDecoder::liftInstruction
+    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
 
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;
@@ -38,10 +41,9 @@ public:
     bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
 
 private:
-    std::unique_ptr<RTL> createRTLForInstruction(Address pc, cs::cs_insn *instruction);
+    std::unique_ptr<RTL> createRTLForInstruction(const MachineInstruction &insn);
 
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID,
-                                        const cs::cs_insn *instruction);
+    std::unique_ptr<RTL> instantiateRTL(const MachineInstruction &insn);
 
     /// \returns the delay slot behaviour type of an instruction.
     IClass getInstructionType(const cs::cs_insn *instruction);
@@ -77,4 +79,6 @@ private:
 
     /// Decode STD instruction manually. Can be removed when upgrading to Capstone 5.
     bool decodeSTD(cs::cs_insn *instruction, uint32_t instructionData) const;
+
+    QString getInstructionID(const cs::cs_insn *instruction) const;
 };

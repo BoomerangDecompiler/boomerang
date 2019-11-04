@@ -794,7 +794,14 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
     ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
 
     try {
-        return m_decoder->decodeInstruction(pc, host_native_diff, result);
+        MachineInstruction insn;
+        bool ok = m_decoder->decodeInstruction(pc, host_native_diff, insn);
+        if (!ok) {
+            result.valid = false;
+            return false;
+        }
+
+        return m_decoder->liftInstruction(insn, result);
     }
     catch (std::runtime_error &e) {
         LOG_ERROR("%1", e.what());

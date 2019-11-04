@@ -27,7 +27,10 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
+
+    /// \copydoc IDecoder::liftInstruction
+    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
 
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;
@@ -36,11 +39,12 @@ public:
     int getRegSizeByNum(RegNum regNum) const override;
 
 private:
-    std::unique_ptr<RTL> createRTLForInstruction(Address pc, cs::cs_insn *instruction);
+    std::unique_ptr<RTL> createRTLForInstruction(const MachineInstruction &insn);
 
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
-                                        const cs::cs_ppc_op *operands);
+    std::unique_ptr<RTL> instantiateRTL(const MachineInstruction &insn);
 
     /// \returns true if the instruction is a CR manipulation instruction, e.g. crxor
     bool isCRManip(const cs::cs_insn *instruction) const;
+
+    QString getInstructionID(const cs::cs_insn *instruction) const;
 };

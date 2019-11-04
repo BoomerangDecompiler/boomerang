@@ -11,6 +11,7 @@
 
 
 #include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/ssl/Register.h"
 
 
@@ -40,7 +41,13 @@ public:
      * If the decode was not successful, the content of \p result is undefined.
      * \returns true iff decoding the instruction was successful.
      */
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) = 0;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) = 0;
+
+    /**
+     * Lift a decoded instruction to an RTL
+     * \returns true if lifting the instruction was succesful.
+     */
+    virtual bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) = 0;
 
     /// \returns machine-specific register name given its index
     virtual QString getRegNameByNum(RegNum regNum) const = 0;

@@ -18,6 +18,27 @@
 #include "boomerang/util/log/Log.h"
 
 #include <cassert>
+#include <cstring>
+
+
+#define ST20_INS_J 0
+#define ST20_INS_LDLP 1
+
+#define ST20_INS_LDNL 3
+#define ST20_INS_LDC 4
+#define ST20_INS_LDNLP 5
+
+#define ST20_INS_LDL 7
+#define ST20_INS_ADC 8
+#define ST20_INS_CALL 9
+#define ST20_INS_CJ 10
+#define ST20_INS_AJW 11
+#define ST20_INS_EQC 12
+#define ST20_INS_STL 13
+#define ST20_INS_STNL 14
+
+#define OPR_MASK (1 << 16)
+#define OPR_SIGN (1 << 17)
 
 
 static const char *functionNames[] = {
@@ -68,43 +89,57 @@ bool ST20Decoder::initialize(Project *project)
 }
 
 
-bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
+bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
 {
-    int total = 0; // Total value from all prefixes
-
-    result.reset();
-    result.rtl = std::make_unique<RTL>(pc);
+    int total     = 0; // Total value from all prefixes
+    result.m_size = 0;
 
     while (true) {
         const Byte instructionData = Util::readByte(
-            (const void *)(pc.value() + delta + result.numBytes));
+            (const void *)(pc.value() + delta + result.m_size));
         const Byte functionCode = (instructionData >> 4) & 0xF;
         const Byte oper         = instructionData & 0xF;
 
-        result.numBytes++;
+        result.m_size++;
 
         switch (functionCode) {
-        case 0: { // unconditional jump
+        case ST20_INS_J: { // unconditional jump
             total += oper;
-            const Address jumpDest = pc + result.numBytes + total;
+            const Address jumpDest = pc + result.m_size + total;
 
-            std::shared_ptr<GotoStatement> jump(new GotoStatement());
-            jump->setDest(jumpDest);
-            result.rtl->append(jump);
+            result.m_addr   = pc;
+            result.m_id     = ST20_INS_J;
+            result.m_valid  = true;
+            result.m_iclass = IClass::NOP;
+
+            std::strcpy(result.m_mnem.data(), "j");
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
+            result.m_operands.push_back(Const::get(jumpDest));
+            result.m_variantID = "J";
         } break;
 
-        case 1:
-        case 3:
-        case 4:
-        case 5:
-        case 7:
-        case 8:
-        case 11:
-        case 12:
-        case 13:
-        case 14: {
+        case ST20_INS_LDLP:
+        case ST20_INS_LDNL:
+        case ST20_INS_LDC:
+        case ST20_INS_LDNLP:
+        case ST20_INS_LDL:
+        case ST20_INS_ADC:
+        case ST20_INS_AJW:
+        case ST20_INS_EQC:
+        case ST20_INS_STL:
+        case ST20_INS_STNL: {
             total += oper;
-            result.rtl = instantiate(pc, functionNames[functionCode], { Const::get(total) });
+
+            result.m_addr   = pc;
+            result.m_id     = functionCode;
+            result.m_valid  = true;
+            result.m_iclass = IClass::NOP;
+
+            std::strcpy(result.m_mnem.data(), functionNames[functionCode]);
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%x", total);
+
+            result.m_operands.push_back(Const::get(total));
+            result.m_variantID = QString(functionNames[functionCode]).toUpper();
         } break;
 
         case 2: { // prefix
@@ -116,32 +151,36 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             continue;
         }
 
-        case 9: { // call
+        case ST20_INS_CALL: { // call
             total += oper;
-            const Address callDest = Address(pc + result.numBytes + total);
-            result.rtl             = instantiate(pc, "call", { Const::get(callDest) });
+            const Address callDest = Address(pc + result.m_size + total);
 
-            std::shared_ptr<CallStatement> newCall(new CallStatement);
-            newCall->setIsComputed(false);
-            newCall->setDest(callDest);
+            result.m_addr   = pc;
+            result.m_id     = ST20_INS_CALL;
+            result.m_valid  = true;
+            result.m_iclass = IClass::NOP;
 
-            if (m_prog) {
-                Function *callee = m_prog->getOrCreateFunction(callDest);
-                if (callee && callee != reinterpret_cast<Function *>(-1)) {
-                    newCall->setDestProc(callee);
-                }
-            }
+            std::strcpy(result.m_mnem.data(), "call");
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", callDest.value());
 
-            result.rtl->append(newCall);
+            result.m_operands.push_back(Const::get(callDest));
+            result.m_variantID = "CALL";
         } break;
 
-        case 10: { // cond jump
+        case ST20_INS_CJ: { // cond jump
             total += oper;
-            std::shared_ptr<BranchStatement> br(new BranchStatement);
-            br->setDest(pc + result.numBytes + total);
-            br->setCondExpr(Binary::get(opEquals, Location::regOf(REG_ST20_A), Const::get(0)));
+            const Address jumpDest = pc + result.m_size + total;
 
-            result.rtl->append(br);
+            result.m_addr   = pc;
+            result.m_id     = ST20_INS_CJ;
+            result.m_valid  = true;
+            result.m_iclass = IClass::NOP;
+
+            std::strcpy(result.m_mnem.data(), "cj");
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
+
+            result.m_operands.push_back(Const::get(jumpDest));
+            result.m_variantID = "CJ";
         } break;
 
         case 15: { // operate
@@ -149,11 +188,19 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
             const char *insnName = getInstructionName(total);
             if (!insnName) {
                 // invalid or unknown instruction
-                result.valid = false;
+                result.m_valid = false;
                 return false;
             }
 
-            result.rtl = instantiate(pc, insnName);
+            result.m_addr = pc;
+            result.m_id   = OPR_MASK |
+                          (total > 0 ? total : ((~total & ~0xF) | (total & 0xF) | OPR_SIGN));
+            result.m_valid  = true;
+            result.m_iclass = IClass::NOP;
+
+            std::strcpy(result.m_mnem.data(), insnName);
+            std::strcpy(result.m_opstr.data(), "");
+            result.m_variantID = QString(insnName).toUpper();
         } break;
 
         default: assert(false);
@@ -162,7 +209,19 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &r
         break;
     }
 
-    return result.valid;
+    return result.m_valid;
+}
+
+
+bool ST20Decoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
+{
+    lifted.iclass   = IClass::NOP;
+    lifted.numBytes = insn.m_size;
+    lifted.reDecode = false;
+    lifted.rtl      = instantiateRTL(insn);
+    lifted.valid    = lifted.rtl != nullptr;
+
+    return lifted.valid;
 }
 
 
@@ -350,21 +409,17 @@ bool ST20Decoder::isSPARCRestore(Address, ptrdiff_t) const
 }
 
 
-std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
-                                              const std::initializer_list<SharedExp> &args)
+std::unique_ptr<RTL> ST20Decoder::instantiateRTL(const MachineInstruction &insn)
 {
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(name).remove(".").toUpper();
-
-    // Put the operands into a vector
-    std::vector<SharedExp> actuals(args);
+    const QString sanitizedName = QString(insn.m_variantID).remove(".").toUpper();
 
     if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {
         OStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
-        q_cout << pc << ": " << name << " ";
+        q_cout << insn.m_addr << ": " << insn.m_variantID << " ";
 
-        for (const SharedExp &itd : actuals) {
+        for (const SharedExp &itd : insn.m_operands) {
             if (itd->isIntConst()) {
                 int val = itd->access<Const>()->getInt();
 
@@ -385,12 +440,13 @@ std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
         q_cout << '\n';
     }
 
-    std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, pc, actuals);
+    std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, insn.m_addr,
+                                                        insn.m_operands);
     if (!rtl) {
         LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
                   "treating instruction as NOP",
-                  name, pc);
-        return m_rtlDict.instantiateRTL("nop", pc, {});
+                  insn.m_variantID, insn.m_addr);
+        return std::make_unique<RTL>(insn.m_addr);
     }
 
     return rtl;

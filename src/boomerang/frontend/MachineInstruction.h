@@ -34,18 +34,43 @@ enum class MIGroup
 };
 
 
+/**
+ * These are the instruction classes defined in
+ * "A Transformational Approach to Binary Translation of Delayed Branches"
+ * for SPARC instructions.
+ * Ignored by machines with no delay slots.
+ */
+enum class IClass : uint8
+{
+    NOP, ///< No operation (e.g. SPARC BN,A)
+    NCT, ///< Non Control Transfer
+
+    SD,    ///< Static Delayed
+    DD,    ///< Dynamic Delayed
+    SCD,   ///< Static Conditional Delayed
+    SCDAN, ///< Static Conditional Delayed, Anulled if Not taken
+    SCDAT, ///< Static Conditional Delayed, Anulled if Taken
+    SU,    ///< Static Unconditional (not delayed)
+    SKIP   ///< Skip successor
+};
+
+
 struct BOOMERANG_API MachineInstruction
 {
-    uint32 m_id;        ///< instruction unique ID (e.g. MOV, ADD etc.)
-    uint16 m_size  = 0; ///< Size in bytes
-    uint8 m_groups = 0;
-    bool m_valid   = false;
+    Address m_addr;      ///< Address (IP) of the instruction
+    uint32 m_id;         ///< instruction unique ID (e.g. MOV, ADD etc.)
+    uint16 m_size   = 0; ///< Size in bytes
+    uint8 m_groups  = 0;
+    bool m_valid    = false;
+    IClass m_iclass = IClass::NOP;
 
     std::array<char, MNEM_SIZE> m_mnem   = { 0 };
     std::array<char, OPSTR_SIZE> m_opstr = { 0 };
 
-    std::vector<SharedConstExp> m_operands;
+    std::vector<SharedExp> m_operands;
     QString m_variantID; ///< Unique instruction variant ID (e.g. REPSTOSB.rm8 or MOVSX.r32.rm8)
+
+    int m_sparcCC;
 
 public:
     /// Enables or disables the membership in a certain group. Does not affect other groups.

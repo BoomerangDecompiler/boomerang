@@ -28,7 +28,10 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
+
+    /// \copydoc IDecoder::liftInstruction
+    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
 
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;
@@ -48,7 +51,7 @@ private:
      * hard-coded adjustments are performed due to SSL limitations. See the function definition
      * for details.
      */
-    std::unique_ptr<RTL> createRTLForInstruction(Address pc, const cs::cs_insn *instruction);
+    std::unique_ptr<RTL> createRTLForInstruction(const MachineInstruction &insn);
 
     /**
      * Instantiates an RTL for a single instruction, replacing formal parameters with actual
@@ -59,8 +62,7 @@ private:
      * \param numOperands number of instruction operands (e.g. 2 for MOV.reg32.reg32)
      * \param operands Array containing actual arguments containing \p numOperands elements.
      */
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
-                                        const cs::cs_x86_op *operands);
+    std::unique_ptr<RTL> instantiateRTL(const MachineInstruction &insn);
 
     /**
      * Generate statements for the BSF and BSR instructions (Bit Scan Forward/Reverse)
@@ -69,7 +71,7 @@ private:
      * instrucion to generate the correct semantics.
      * \param pc start of the instruction
      */
-    bool genBSFR(Address pc, const cs::cs_insn *instruction, DecodeResult &result);
+    bool genBSFR(const MachineInstruction &insn, DecodeResult &result);
 
     QString getInstructionID(const cs::cs_insn *instruction) const;
 

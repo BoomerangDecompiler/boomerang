@@ -99,12 +99,13 @@ INSTRUCTION "breakpoint" () {
 
 
 # conditional jump
-INSTRUCTION "cj" (val) {
+INSTRUCTION "cj" (dest) {
     *32* tmp := %Areg
     *32* %ZF := [tmp = 0?1:0]
     *32* %Areg := [tmp = 0?%Areg:%Breg]
     *32* %Breg := [tmp = 0?%Breg:%Creg]
-    *32* %pc := [tmp = 0?%pc+val:%pc]
+
+    tmp ~= 0 => goto dest
 };
 
 
@@ -196,8 +197,8 @@ INSTRUCTION "io" () {
 
 
 # jump
-INSTRUCTION "j" (disp) {
-    *32* %pc := %pc + disp
+INSTRUCTION "j" (dest) {
+    goto dest
 };
 
 
@@ -251,7 +252,8 @@ INSTRUCTION "ldnlp" (val) {
 
 # load pointer to instruction
 INSTRUCTION "ldpi" () {
-    *32* %Areg := %pc + (%Areg * 4)
+    # A := A + next instruction
+    *32* %Areg := %pc + 2 + %Areg
 };
 
 
@@ -606,6 +608,8 @@ INSTRUCTION "call" (dest) {
     *32* m[%sp+4] := %Areg
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg
+
+    call dest
 };
 
 
@@ -616,6 +620,10 @@ INSTRUCTION "call1" (dest) {
     *32* m[%sp+4] := %Areg
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg
+
+    *32* %Areg := %pc
+
+    call dest
 };
 
 
@@ -627,6 +635,8 @@ INSTRUCTION "call2" (dest) {
     *32* m[%sp+8] := %Breg
     *32* m[%sp+12] := %Creg
     *32* %sp := %sp + 16
+
+    call dest
 };
 
 
@@ -759,36 +769,21 @@ INSTRUCTION "devmove" () {
 # device store byte
 INSTRUCTION "devsb" () {
     *8* m[%Areg] := %Breg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
+    *32* %Areg := %Creg
 };
 
 
 # device store sixteen
 INSTRUCTION "devss" () {
     *16* m[%Areg] := %Breg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
+    *32* %Areg := %Creg
 };
 
 
 # device store word
 INSTRUCTION "devsw" () {
     *32* m[%Areg] := %Breg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
-
-    *32* %Areg := %Breg
-    *32* %Breg := %Creg
+    *32* %Areg := %Creg
 };
 
 
@@ -864,6 +859,8 @@ INSTRUCTION "gcall" () {
     *32* tmp := %Areg
     *32* %Areg := %pc
     *32* %pc := tmp
+
+    call tmp
 };
 
 
