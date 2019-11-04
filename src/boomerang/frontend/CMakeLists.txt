@@ -10,6 +10,7 @@
 list(APPEND boomerang-frontend-sources
     frontend/DecodeResult
     frontend/DefaultFrontEnd
+    frontend/MachineInstruction
     frontend/SigEnum
     frontend/TargetQueue
 )
