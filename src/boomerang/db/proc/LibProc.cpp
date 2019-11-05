@@ -36,6 +36,10 @@ bool LibProc::isLib() const
 
 bool LibProc::isNoReturn() const
 {
+    if (!m_prog->getFrontEnd()) {
+        return false;
+    }
+
     return m_prog->getFrontEnd()->isNoReturnCallDest(this->getName()) || m_signature->isNoReturn();
 }
 
