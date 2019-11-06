@@ -10,27 +10,30 @@
 include(boomerang-utils)
 
 
-
-# These tests require the ELF loader
-set(TESTS_WITH_ELF
-    PentiumFrontEndTest
-    SPARCFrontEndTest
+BOOMERANG_ADD_TEST(
+    NAME PentiumFrontEndTest
+    SOURCES PentiumFrontEndTest.h PentiumFrontEndTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_DL_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
+        boomerang-X86FrontEnd
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
 )
 
-
-if (BOOMERANG_BUILD_LOADER_Elf)
-    foreach(t ${TESTS_WITH_ELF})
-        BOOMERANG_ADD_TEST(
-            NAME ${t}
-            SOURCES ${t}.h ${t}.cpp
-            LIBRARIES
-                ${DEBUG_LIB}
-                boomerang
-                ${CMAKE_DL_LIBS}
-                ${CMAKE_THREAD_LIBS_INIT}
-        )
-    endforeach()
-
-    target_link_libraries(PentiumFrontEndTest boomerang-X86FrontEnd)
-    target_link_libraries(SPARCFrontEndTest boomerang-SPARCFrontEnd)
-endif (BOOMERANG_BUILD_LOADER_Elf)
+BOOMERANG_ADD_TEST(
+    NAME SPARCFrontEndTest
+    SOURCES SPARCFrontEndTest.h SPARCFrontEndTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_DL_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
+        boomerang-SPARCFrontEnd
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-SPARCFrontEnd
+)

@@ -273,7 +273,13 @@ endfunction()
 # Usage: BOOMERANG_ADD_TEST(NAME <name> SOURCES <souce files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_TEST)
-    cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+    cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES;DEPENDENCIES" ${ARGN})
+
+    foreach (dep ${TEST_DEPENDENCIES})
+        if (NOT TARGET ${dep})
+            return()
+        endif (NOT TARGET ${dep})
+    endforeach ()
 
     get_filename_component(exename "${TEST_NAME}" NAME)
 
@@ -286,6 +292,18 @@ function(BOOMERANG_ADD_TEST)
     add_test(NAME ${exename} COMMAND $<TARGET_FILE:${exename}>)
     set_property(TEST ${exename} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
     BOOMERANG_COPY_IMPORTED_DLL(${exename} Qt5::Test)
+
+    if (MSVC)
+        foreach (dep ${TEST_DEPENDENCIES})
+            add_custom_command(TARGET ${TEST_NAME} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}"
+                ARGS
+                    -E copy_if_different
+                    "$<TARGET_FILE:${dep}>"
+                    "${BOOMERANG_OUTPUT_DIR}/bin/"
+            )
+        endforeach ()
+    endif (MSVC)
 endfunction(BOOMERANG_ADD_TEST)
 
 

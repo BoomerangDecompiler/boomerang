@@ -20,13 +20,4 @@ if (BOOMERANG_BUILD_REGRESSION_TESTS)
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
         DEPENDS copy-regression-script
     )
-
-    add_dependencies(check
-        boomerang-cli
-        boomerang-DOS4GWLoader
-        boomerang-ElfLoader
-        boomerang-ExeLoader
-        boomerang-MachOLoader
-        boomerang-Win32Loader
-    )
 endif (BOOMERANG_BUILD_REGRESSION_TESTS)

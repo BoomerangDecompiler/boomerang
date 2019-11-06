@@ -1084,6 +1084,7 @@ void StatementTest::testBypass()
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
+    assert(fe != nullptr);
 
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);

@@ -9,10 +9,11 @@
 
 include(boomerang-utils)
 
-if (BOOMERANG_BUILD_LOADER_Elf)
-    BOOMERANG_ADD_TEST(
-        NAME ProjectTest
-        SOURCES ProjectTest.h ProjectTest.cpp
-        LIBRARIES boomerang ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT}
-    )
-endif (BOOMERANG_BUILD_LOADER_Elf)
+BOOMERANG_ADD_TEST(
+    NAME ProjectTest
+    SOURCES ProjectTest.h ProjectTest.cpp
+    LIBRARIES boomerang ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)

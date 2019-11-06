@@ -15,6 +15,8 @@ BOOMERANG_ADD_TEST(
         ppc/CapstonePPCDecoderTest.cpp
     LIBRARIES
         boomerang-CapstonePPCDecoder
+    DEPENDENCIES
+        boomerang-CapstonePPCDecoder
 )
 
 BOOMERANG_ADD_TEST(
@@ -23,5 +25,7 @@ BOOMERANG_ADD_TEST(
         sparc/SPARCDecoderTest.h
         sparc/SPARCDecoderTest.cpp
     LIBRARIES
+        boomerang-CapstoneSPARCDecoder
+    DEPENDENCIES
         boomerang-CapstoneSPARCDecoder
 )
