@@ -152,7 +152,7 @@ void Log::writeLogHeader()
     logDirect(LogLevel::Message, __FILE__, __LINE__, "This is Boomerang " BOOMERANG_VERSION);
     logDirect(LogLevel::Message, __FILE__, __LINE__, "Log initialized.");
     logDirect(LogLevel::Message, __FILE__, __LINE__,
-              "Log level is '" + levelToString(getLogLevel()) + "'.");
+              "Log level is '" + levelToString(getLogLevel()).trimmed() + "'.");
 }
 
 
