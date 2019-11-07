@@ -219,9 +219,8 @@ bool ST20Decoder::liftInstruction(const MachineInstruction &insn, DecodeResult &
     lifted.numBytes = insn.m_size;
     lifted.reDecode = false;
     lifted.rtl      = instantiateRTL(insn);
-    lifted.valid    = lifted.rtl != nullptr;
 
-    return lifted.valid;
+    return lifted.valid();
 }
 
 
@@ -440,16 +439,7 @@ std::unique_ptr<RTL> ST20Decoder::instantiateRTL(const MachineInstruction &insn)
         q_cout << '\n';
     }
 
-    std::unique_ptr<RTL> rtl = m_rtlDict.instantiateRTL(sanitizedName, insn.m_addr,
-                                                        insn.m_operands);
-    if (!rtl) {
-        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                  "treating instruction as NOP",
-                  insn.m_variantID, insn.m_addr);
-        return std::make_unique<RTL>(insn.m_addr);
-    }
-
-    return rtl;
+    return m_rtlDict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
 }
 
 

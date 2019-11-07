@@ -290,14 +290,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     LOG_WARN(message);
                 }
 
-                assert(!inst.valid);
+                assert(!inst.valid());
                 break; // try next instruction in queue
-            }
-            else if (!inst.rtl || inst.rtl->empty()) {
-                LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
-                if (!inst.rtl) {
-                    inst.rtl.reset(new RTL(addr));
-                }
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
@@ -306,7 +300,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 BB_rtls.reset(new std::list<std::unique_ptr<RTL>>());
             }
 
-            if (!inst.valid) {
+            if (!inst.valid()) {
                 // Alert the watchers to the problem
                 m_program->getProject()->alertBadDecode(addr);
 
@@ -780,7 +774,6 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
         LOG_ERROR("Attempted to decode outside any known section at address %1", pc);
-        result.valid = false;
         return false;
     }
 
@@ -797,15 +790,26 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
         MachineInstruction insn;
         bool ok = m_decoder->decodeInstruction(pc, host_native_diff, insn);
         if (!ok) {
-            result.valid = false;
             return false;
         }
 
-        return m_decoder->liftInstruction(insn, result);
+        ok = m_decoder->liftInstruction(insn, result);
+
+        if (!ok) {
+            LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+                      "treating instruction as NOP",
+                      insn.m_variantID, insn.m_addr);
+
+            result.iclass   = IClass::NOP;
+            result.numBytes = insn.m_size;
+            result.reDecode = false;
+            result.rtl      = std::make_unique<RTL>(insn.m_addr);
+        }
+
+        return true;
     }
     catch (std::runtime_error &e) {
         LOG_ERROR("%1", e.what());
-        result.valid = false;
         return false;
     }
 }

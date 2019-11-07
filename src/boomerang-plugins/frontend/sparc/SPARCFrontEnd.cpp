@@ -170,15 +170,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
         assert(disp30 != 1);
 
         // First check for helper functions
-        Address dest             = callStmt->getFixedDest();
-        const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
-            dest);
-
-        // Special check for calls to weird PLT entries which don't have symbols
-        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddr(dest) == "")) {
-            // This is one of those. Flag this as an invalid instruction
-            inst.valid = false;
-        }
+        const Address dest = callStmt->getFixedDest();
 
         if (isHelperFunc(dest, address, *BB_rtls)) {
             address += 8; // Skip call, delay slot
@@ -208,9 +200,9 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             // Now add the out edge
             cfg->addEdge(callBB, returnBB);
 
-            address += inst.numBytes; // For coverage
-            // This is a CTI block that doesn't fall through and so must
-            // stop sequentially decoding
+            address += inst.numBytes;
+            // This is a CTI block that doesn't fall through
+            // and so we must stop decoding sequentially
             return false;
         }
         else {
@@ -602,7 +594,6 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
             if (ff != m_previouslyDecoded.end()) {
                 inst.rtl.reset(ff->second);
-                inst.valid  = true;
                 inst.iclass = IClass::DD; // E.g. decode the delay slot instruction
             }
             else if (!decodeSingleInstruction(pc, inst)) {
@@ -1265,8 +1256,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
 
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.iclass   = IClass::NOP;
-    nop_inst.valid    = true;
-    nop_inst.rtl      = nullptr;
+    nop_inst.rtl      = std::make_unique<RTL>(Address::INVALID);
 }
 
 

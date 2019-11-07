@@ -147,9 +147,8 @@ bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, DecodeR
     lifted.numBytes = PPC_MAX_INSTRUCTION_LENGTH;
     lifted.reDecode = false;
     lifted.rtl      = createRTLForInstruction(insn);
-    lifted.valid    = (lifted.rtl != nullptr);
 
-    return true;
+    return lifted.valid();
 }
 
 
@@ -170,10 +169,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
     std::unique_ptr<RTL> rtl = instantiateRTL(insn);
 
     if (rtl == nullptr) {
-        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                  "treating instruction as NOP",
-                  insn.m_variantID, insn.m_addr);
-        return std::make_unique<RTL>(insn.m_addr);
+        return nullptr;
     }
 
     const QString insnID          = insn.m_variantID;

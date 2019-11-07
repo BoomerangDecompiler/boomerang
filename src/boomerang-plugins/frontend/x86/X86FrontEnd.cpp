@@ -171,9 +171,8 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 
     do {
         DecodeResult inst;
-        decodeSingleInstruction(addr, inst);
 
-        if (inst.rtl == nullptr) {
+        if (!decodeSingleInstruction(addr, inst) || !inst.valid()) {
             // Must have gotten out of step
             break;
         }
@@ -227,7 +226,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                 //   m[esp-4] = K
                 //   esp = esp-4
                 decodeSingleInstruction(prevAddr, inst);
-                if (inst.valid && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
+                if (inst.valid() && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
                     std::shared_ptr<Assign> a = inst.rtl->front()->as<Assign>(); // Get m[esp-4] = K
                     SharedExp rhs             = a->getRight();
                     if (rhs->isIntConst()) {

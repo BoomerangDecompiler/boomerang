@@ -196,14 +196,13 @@ bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, Decod
     lifted.numBytes = SPARC_INSTRUCTION_LENGTH;
     lifted.reDecode = false;
     lifted.rtl      = createRTLForInstruction(insn);
-    lifted.valid    = (lifted.rtl != nullptr);
 
-    if (lifted.rtl->empty()) {
+    if (lifted.rtl && lifted.rtl->empty()) {
         // Force empty unrecognized instructions to have NOP type instead of NCT
         lifted.iclass = IClass::NOP;
     }
 
-    return true;
+    return lifted.valid();
 }
 
 
@@ -270,10 +269,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(const Machine
     const QString insnID     = insn.m_variantID;
 
     if (rtl == nullptr) {
-        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                  "treating instruction as NOP",
-                  insnID, insn.m_addr);
-        return std::make_unique<RTL>(insn.m_addr);
+        return nullptr;
     }
 
 

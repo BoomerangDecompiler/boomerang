@@ -201,7 +201,6 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
         result.setGroup(MIGroup::Computed, !result.m_operands[0]->isConst());
     }
 
-    LOG_MSG("Decoded instruction: %1 %2", result.m_mnem.data(), result.m_opstr.data());
     return true;
 }
 
@@ -231,8 +230,7 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         lifted.rtl = createRTLForInstruction(insn);
     }
 
-    lifted.valid = (lifted.rtl != nullptr);
-    return lifted.valid;
+    return lifted.valid();
 }
 
 
@@ -261,10 +259,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
     std::unique_ptr<RTL> rtl = instantiateRTL(insn);
 
     if (!rtl) {
-        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                  "treating instruction as NOP",
-                  insnID, insn.m_addr);
-        return nullptr; // instantiateRTL(insn.m_addr, "NOP", 0, nullptr);
+        return nullptr;
     }
 
     if (insn.isInGroup(MIGroup::Call)) {

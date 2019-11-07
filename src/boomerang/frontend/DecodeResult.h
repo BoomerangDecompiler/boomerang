@@ -44,9 +44,9 @@ public:
     /// Resets all the fields to their default values.
     void reset();
 
-public:
-    bool valid; ///< Indicates whether or not a valid instruction was decoded.
+    bool valid() const { return rtl != nullptr; }
 
+public:
     /**
      * The class of the decoded instruction. Will be one of the classes described in
      * "A Transformational Approach to Binary Translation of Delayed Branches".
