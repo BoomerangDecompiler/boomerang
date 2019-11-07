@@ -2545,6 +2545,11 @@ INSTRUCTION "LAHF" () {
 
 
 # LDS
+INSTRUCTION "LDS.reg16.rm16" (dest, src) {
+    *16* %ds  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LDS.reg16.rm32" (dest, src) {
     *16* %ds  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2580,6 +2585,11 @@ INSTRUCTION "LEAVE" () {
 
 
 # LES
+INSTRUCTION "LES.reg16.rm16" (dest, src) {
+    *16* %es  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LES.reg16.rm32" (dest, src) {
     *16* %es  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2592,6 +2602,11 @@ INSTRUCTION "LES.reg32.rm32" (dest, src) {
 
 
 # LFS
+INSTRUCTION "LFS.reg16.rm16" (dest, src) {
+    *16* %fs  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LFS.reg16.rm32" (dest, src) {
     *16* %fs  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2604,6 +2619,11 @@ INSTRUCTION "LFS.reg32.rm32" (dest, src) {
 
 
 # LGS
+INSTRUCTION "LGS.reg16.rm16" (dest, src) {
+    *16* %gs  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LGS.reg16.rm32" (dest, src) {
     *16* %gs  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2652,6 +2672,11 @@ INSTRUCTION "LOOPNE.imm32" (dest) {
 
 
 # LSS
+INSTRUCTION "LSS.reg16.rm16" (dest, src) {
+    *16* %ss  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LSS.reg16.rm32" (dest, src) {
     *16* %ss  := src@[16:31]
     *16* dest := src@[0:15]
