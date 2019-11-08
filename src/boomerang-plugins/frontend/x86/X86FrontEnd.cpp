@@ -168,20 +168,20 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
     // them. This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA
     // followed by a push of eax and then the call to main.  Or a call to __libc_start_main
     Address dest;
+    MachineInstruction insn;
+    DecodeResult lifted;
 
     do {
-        DecodeResult inst;
-
-        if (!decodeSingleInstruction(addr, inst) || !inst.valid()) {
+        if (!decodeInstruction(addr, insn, lifted)) {
             // Must have gotten out of step
             break;
         }
 
         std::shared_ptr<const CallStatement> call = nullptr;
 
-        if (!inst.rtl->empty()) {
-            call = (inst.rtl->back()->getKind() == StmtType::Call)
-                       ? inst.rtl->back()->as<CallStatement>()
+        if (!lifted.rtl->empty()) {
+            call = (lifted.rtl->back()->getKind() == StmtType::Call)
+                       ? lifted.rtl->back()->as<CallStatement>()
                        : nullptr;
         }
 
@@ -191,19 +191,19 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                                       : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
-            const int oldInstLength = inst.numBytes;
+            const int oldInsnLength = lifted.numBytes;
 
-            if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
+            if (decodeInstruction(addr + oldInsnLength, insn, lifted) &&
+                (lifted.rtl->size() == 2)) {
                 // using back instead of rtl[1], since size()==2
                 std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(
-                    inst.rtl->back());
+                    lifted.rtl->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_X86_EAX))) {
-                    decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
-
-                    if (!inst.rtl->empty() && inst.rtl->back()->isCall()) {
-                        std::shared_ptr<CallStatement> main = inst.rtl->back()->as<CallStatement>();
-
+                    if (decodeInstruction(addr + oldInsnLength + lifted.numBytes, insn, lifted) &&
+                        !lifted.rtl->empty() && lifted.rtl->back()->isCall()) {
+                        std::shared_ptr<CallStatement> main = lifted.rtl->back()
+                                                                  ->as<CallStatement>();
                         if (main->getFixedDest() != Address::INVALID) {
                             symbols->createSymbol(main->getFixedDest(), "WinMain");
                             gotMain = true;
@@ -225,10 +225,12 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                 // Note: For GCC3, the RTL has the following pattern:
                 //   m[esp-4] = K
                 //   esp = esp-4
-                decodeSingleInstruction(prevAddr, inst);
-                if (inst.valid() && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
-                    std::shared_ptr<Assign> a = inst.rtl->front()->as<Assign>(); // Get m[esp-4] = K
-                    SharedExp rhs             = a->getRight();
+
+                if (decodeInstruction(prevAddr, insn, lifted) && lifted.rtl->size() == 2 &&
+                    lifted.rtl->front()->isAssign()) {
+                    std::shared_ptr<Assign> a = lifted.rtl->front()
+                                                    ->as<Assign>(); // Get m[esp-4] = K
+                    SharedExp rhs = a->getRight();
                     if (rhs->isIntConst()) {
                         gotMain = true;
                         return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
@@ -239,7 +241,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const SharedConstStmt lastStmt = !inst.rtl->empty() ? inst.rtl->back() : nullptr;
+        const SharedConstStmt lastStmt = !lifted.rtl->empty() ? lifted.rtl->back() : nullptr;
 
         if (lastStmt && lastStmt->isGoto()) {
             // Example: Borland often starts with a branch
@@ -247,7 +249,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
             addr = lastStmt->as<const GotoStatement>()->getFixedDest();
         }
         else {
-            addr += inst.numBytes;
+            addr += lifted.numBytes;
         }
     } while (--numInstructionsLeft > 0);
 

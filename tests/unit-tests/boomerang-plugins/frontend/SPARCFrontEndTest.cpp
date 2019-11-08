@@ -40,14 +40,15 @@ void SPARCFrontendTest::test1()
     QVERIFY(addr != Address::INVALID);
 
     // Decode first instruction
-    DecodeResult inst;
+    MachineInstruction insn;
+    DecodeResult lifted;
     QString     expected;
     QString     actual;
     OStream strm(&actual);
 
-    QVERIFY(fe->decodeSingleInstruction(addr, inst));
-    QVERIFY(inst.rtl != nullptr);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+    QVERIFY(lifted.rtl != nullptr);
+    lifted.rtl->print(strm);
 
     expected = "0x00010684    0 *32* tmp := r14 - 112\n"
                "              0 *32* m[r14] := r16\n"
@@ -78,16 +79,16 @@ void SPARCFrontendTest::test1()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    addr += inst.numBytes;
-    fe->decodeSingleInstruction(addr, inst);
-    inst.rtl->print(strm);
+    addr += lifted.numBytes;
+    QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010688    0 *32* r8 := 0x10400\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    addr += inst.numBytes;
-    fe->decodeSingleInstruction(addr, inst);
-    inst.rtl->print(strm);
+    addr += lifted.numBytes;
+    QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x0001068c    0 *32* r8 := r8 | 848\n");
     QCOMPARE(actual, expected);
     actual.clear();
@@ -98,7 +99,8 @@ void SPARCFrontendTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
-    DecodeResult inst;
+    MachineInstruction insn;
+    DecodeResult lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -108,8 +110,8 @@ void SPARCFrontendTest::test2()
     SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    fe->decodeSingleInstruction(Address(0x00010690), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010690), insn, lifted));
+    lifted.rtl->print(strm);
     // This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
     expected = QString("0x00010690    0 CALL printf(\n"
@@ -119,20 +121,20 @@ void SPARCFrontendTest::test2()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeSingleInstruction(Address(0x00010694), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010694), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010694\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeSingleInstruction(Address(0x00010698), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010698), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010698    0 *32* r8 := 0\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeSingleInstruction(Address(0x0001069C), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x0001069C), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x0001069c    0 *32* r24 := r8\n");
     QCOMPARE(actual, expected);
 }
@@ -146,26 +148,27 @@ void SPARCFrontendTest::test3()
     SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    DecodeResult inst;
+    MachineInstruction insn;
+    DecodeResult lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
 
-    fe->decodeSingleInstruction(Address(0x000106a0), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x000106a0), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x000106a0\n");
     QCOMPARE(actual, expected);
     actual.clear();
-    fe->decodeSingleInstruction(Address(0x000106a4), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x000106a4), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x000106a4    0 RET\n"
                        "              Modifieds: <None>\n"
                        "              Reaching definitions: <None>\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeSingleInstruction(Address(0x000106a8), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x000106a8), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x000106a8    0 *32* tmp := 0\n"
                        "              0 *32* r8 := r24\n"
                        "              0 *32* r9 := r25\n"
@@ -199,7 +202,8 @@ void SPARCFrontendTest::test3()
 
 void SPARCFrontendTest::testBranch()
 {
-    DecodeResult inst;
+    MachineInstruction insn;
+    DecodeResult lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -210,24 +214,24 @@ void SPARCFrontendTest::testBranch()
     QVERIFY(fe != nullptr);
 
     // bne
-    fe->decodeSingleInstruction(Address(0x00010ab0), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010ab0), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
     // bg
-    fe->decodeSingleInstruction(Address(0x00010af8), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010af8), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition signed greater\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
     // bleu
-    fe->decodeSingleInstruction(Address(0x00010b44), inst);
-    inst.rtl->print(strm);
+    QVERIFY(fe->decodeInstruction(Address(0x00010b44), insn, lifted));
+    lifted.rtl->print(strm);
     expected = QString("0x00010b44    0 BRANCH 0x00010b54, condition unsigned less or equals\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);

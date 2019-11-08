@@ -771,9 +771,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 }
 
 
-bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
+bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn, DecodeResult &result)
 {
-    MachineInstruction insn;
     return disassembleInstruction(pc, insn) && liftInstruction(insn, result);
 }
 
@@ -1109,29 +1108,32 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
         return Address::INVALID;
     }
 
-    DecodeResult decoded;
-    if (!decodeSingleInstruction(callAddr, decoded)) {
+    MachineInstruction insn;
+    DecodeResult lifted;
+
+    if (!decodeInstruction(callAddr, insn, lifted)) {
         return Address::INVALID;
     }
 
     // Make sure to re-decode the instruction as often as necessary, but throw away the results.
     // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
-    if (decoded.reDecode) {
-        DecodeResult dummy;
+    if (lifted.reDecode) {
+        MachineInstruction dummyInsn;
+        DecodeResult dummyLifted;
         do {
-            decodeSingleInstruction(callAddr, dummy);
-            dummy.rtl.reset();
-        } while (dummy.reDecode);
+            decodeInstruction(callAddr, dummyInsn, dummyLifted);
+            dummyLifted.rtl.reset();
+        } while (dummyLifted.reDecode);
     }
 
-    if (decoded.rtl->empty()) {
-        decoded.rtl.reset();
+    if (lifted.rtl->empty()) {
+        lifted.rtl.reset();
         return Address::INVALID;
     }
 
-    SharedStmt firstStmt = decoded.rtl->front();
+    SharedStmt firstStmt = lifted.rtl->front();
     if (!firstStmt) {
-        decoded.rtl.reset();
+        lifted.rtl.reset();
         return Address::INVALID;
     }
 
@@ -1140,7 +1142,7 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
 
     std::shared_ptr<GotoStatement> jmpStmt = std::dynamic_pointer_cast<GotoStatement>(firstStmt);
     if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
-        decoded.rtl.reset();
+        lifted.rtl.reset();
         return Address::INVALID;
     }
 
