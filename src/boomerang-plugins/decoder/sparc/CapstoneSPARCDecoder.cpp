@@ -193,7 +193,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
 bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
     lifted.iclass   = insn.m_iclass;
-    lifted.numBytes = SPARC_INSTRUCTION_LENGTH;
     lifted.reDecode = false;
     lifted.rtl      = createRTLForInstruction(insn);
 

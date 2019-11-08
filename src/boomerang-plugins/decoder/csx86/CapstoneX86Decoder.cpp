@@ -214,7 +214,6 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
     }
 
     lifted.iclass   = IClass::NOP; //< ICLASS is irrelevant for x86
-    lifted.numBytes = insn.m_size;
     lifted.reDecode = false;
 
     // clang-format off
@@ -510,11 +509,9 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     if (m_bsfrState != 3 - 1) {
         // Let the number of bytes be 1. This is important at least for setting the fallthrough
         // address for the branch (in the first RTL), which should point to the next RTL
-        result.numBytes = 1;
         result.reDecode = true; // Decode this instuction again
     }
     else {
-        result.numBytes = insn.m_size;
         result.reDecode = false;
     }
 

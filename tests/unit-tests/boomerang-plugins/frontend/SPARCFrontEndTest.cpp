@@ -79,14 +79,14 @@ void SPARCFrontendTest::test1()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    addr += lifted.numBytes;
+    addr += insn.m_size;
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
     lifted.rtl->print(strm);
     expected = QString("0x00010688    0 *32* r8 := 0x10400\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    addr += lifted.numBytes;
+    addr += insn.m_size;
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
     lifted.rtl->print(strm);
     expected = QString("0x0001068c    0 *32* r8 := r8 | 848\n");

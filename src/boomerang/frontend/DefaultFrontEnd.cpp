@@ -316,8 +316,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             // alert the watchers that we have decoded an instruction
-            m_program->getProject()->alertInstructionDecoded(addr, lifted.numBytes);
-            numBytesDecoded += lifted.numBytes;
+            m_program->getProject()->alertInstructionDecoded(addr, insn.m_size);
+            numBytesDecoded += insn.m_size;
 
             // Check if this is an already decoded jump instruction (from a previous pass with
             // propagation etc) If so, we throw away the just decoded RTL (but we still may have
@@ -329,10 +329,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             if (!lifted.rtl) {
-                // This can happen if an instruction is "cancelled", e.g. call to __main in a hppa
-                // program Just ignore the whole instruction
-                if (lifted.numBytes > 0) {
-                    addr += lifted.numBytes;
+                // This can happen if an instruction is "cancelled",
+                // e.g. call to __main in a hppa program.
+                // Just ignore the whole instruction
+                if (insn.m_size > 0) {
+                    addr += insn.m_size;
                 }
 
                 continue;
@@ -508,7 +509,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
 
                         // Add the fall-through outedge
-                        cfg->addEdge(currentBB, addr + lifted.numBytes);
+                        cfg->addEdge(currentBB, addr + insn.m_size);
                     }
                 } break;
 
@@ -569,7 +570,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             sequentialDecode = false;
                         }
                         else {
-                            cfg->addEdge(currentBB, addr + lifted.numBytes);
+                            cfg->addEdge(currentBB, addr + insn.m_size);
                         }
 
                         // Add this call to the list of calls to analyse. We won't
@@ -583,7 +584,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         // Calls with 0 offset (i.e. call the next instruction) are simply
                         // pushing the PC to the stack. Treat these as non-control flow
                         // instructions and continue.
-                        if (callAddr == addr + lifted.numBytes) {
+                        if (callAddr == addr + insn.m_size) {
                             break;
                         }
 
@@ -659,7 +660,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 // Add the fall through edge if the block didn't
                                 // already exist
                                 if (currentBB != nullptr) {
-                                    cfg->addEdge(currentBB, addr + lifted.numBytes);
+                                    cfg->addEdge(currentBB, addr + insn.m_size);
                                 }
                             }
                         }
@@ -713,7 +714,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 continue;
             }
 
-            addr += lifted.numBytes;
+            addr += insn.m_size;
 
             if (addr > lastAddr) {
                 lastAddr = addr;
@@ -814,7 +815,6 @@ bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &li
                   insn.m_variantID, insn.m_addr);
 
         lifted.iclass   = IClass::NOP;
-        lifted.numBytes = insn.m_size;
         lifted.reDecode = false;
         lifted.rtl      = std::make_unique<RTL>(insn.m_addr);
     }

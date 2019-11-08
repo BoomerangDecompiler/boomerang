@@ -191,7 +191,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                                       : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
-            const int oldInsnLength = lifted.numBytes;
+            const int oldInsnLength = insn.m_size;
 
             if (decodeInstruction(addr + oldInsnLength, insn, lifted) &&
                 (lifted.rtl->size() == 2)) {
@@ -200,7 +200,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                     lifted.rtl->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_X86_EAX))) {
-                    if (decodeInstruction(addr + oldInsnLength + lifted.numBytes, insn, lifted) &&
+                    if (decodeInstruction(addr + oldInsnLength + insn.m_size, insn, lifted) &&
                         !lifted.rtl->empty() && lifted.rtl->back()->isCall()) {
                         std::shared_ptr<CallStatement> main = lifted.rtl->back()
                                                                   ->as<CallStatement>();
@@ -249,7 +249,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
             addr = lastStmt->as<const GotoStatement>()->getFixedDest();
         }
         else {
-            addr += lifted.numBytes;
+            addr += insn.m_size;
         }
     } while (--numInstructionsLeft > 0);
 

@@ -1264,9 +1264,8 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
         m_decoder->initialize(project);
     }
 
-    nop_inst.numBytes = 0; // So won't disturb coverage
-    nop_inst.iclass   = IClass::NOP;
-    nop_inst.rtl      = std::make_unique<RTL>(Address::INVALID);
+    nop_inst.iclass = IClass::NOP;
+    nop_inst.rtl    = std::make_unique<RTL>(Address::INVALID);
 }
 
 

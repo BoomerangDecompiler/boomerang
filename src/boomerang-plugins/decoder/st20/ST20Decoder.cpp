@@ -216,7 +216,6 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 bool ST20Decoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
     lifted.iclass   = IClass::NOP;
-    lifted.numBytes = insn.m_size;
     lifted.reDecode = false;
     lifted.rtl      = instantiateRTL(insn);
 

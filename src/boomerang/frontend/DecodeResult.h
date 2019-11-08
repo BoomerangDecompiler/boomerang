@@ -47,6 +47,9 @@ public:
     bool valid() const { return rtl != nullptr; }
 
 public:
+    /// The RTL constructed (if any).
+    std::unique_ptr<RTL> rtl;
+
     /**
      * The class of the decoded instruction. Will be one of the classes described in
      * "A Transformational Approach to Binary Translation of Delayed Branches".
@@ -60,8 +63,4 @@ public:
      * be carefully set for the fall through out edge after the branch)
      */
     bool reDecode;
-    int numBytes; ///< The number of bytes decoded in the main instruction
-
-    /// The RTL constructed (if any).
-    std::unique_ptr<RTL> rtl;
 };

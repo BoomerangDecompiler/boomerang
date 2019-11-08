@@ -53,7 +53,7 @@ void X86FrontEndTest::test1()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    addr += lifted.numBytes;
+    addr += insn.m_size;
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
     lifted.rtl->print(strm);
     expected = QString("0x08048329    0 *32* r29 := r28\n");
