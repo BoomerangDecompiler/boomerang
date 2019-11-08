@@ -24,7 +24,8 @@ class RTLInstDict;
 
 /**
  * Base class for machine instruction decoders.
- * Decoders translate raw bytes to statement lists (RTLs).
+ * Decoders translate raw bytes to MachineInstructions
+ * and lift them to statement lists (RTLs).
  */
 class BOOMERANG_API IDecoder
 {

@@ -245,21 +245,21 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     int numBytesDecoded = 0;
     Address startAddr   = addr;
     Address lastAddr    = addr;
+    MachineInstruction insn;
+    DecodeResult lifted;
 
     while ((addr = m_targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::unique_ptr<RTLList> BB_rtls(new RTLList);
 
         // Keep decoding sequentially until a CTI without a fall through branch is decoded
-        DecodeResult inst;
-
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1", addr);
             }
 
-            if (!decodeSingleInstruction(addr, inst)) {
+            if (!disassembleInstruction(addr, insn)) {
                 // Do not throw away previously decoded instrucions before the invalid one
                 if (BB_rtls && !BB_rtls->empty()) {
                     cfg->createBB(BBType::Fall, std::move(BB_rtls));
@@ -290,7 +290,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     LOG_WARN(message);
                 }
 
-                assert(!inst.valid());
+                assert(!insn.isValid());
                 break; // try next instruction in queue
             }
 
@@ -300,22 +300,24 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 BB_rtls.reset(new std::list<std::unique_ptr<RTL>>());
             }
 
-            if (!inst.valid()) {
+            lifted.reset();
+
+            if (!liftInstruction(insn, lifted)) {
                 // Alert the watchers to the problem
                 m_program->getProject()->alertBadDecode(addr);
 
-                // An invalid instruction. Most likely because a call did not return (e.g. call
-                // _exit()), etc. Best thing is to emit an INVALID BB, and continue with valid
-                // instructions Emit the RTL anyway, so we have the address and maybe some other
-                // clues
+                // An invalid instruction. Most likely because a call did not return
+                // (e.g. call _exit()), etc.
+                // Best thing is to emit an INVALID BB, and continue with valid instructions
+                // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(std::make_unique<RTL>(addr));
                 cfg->createBB(BBType::Invalid, std::move(BB_rtls));
                 break; // try the next instruction in the queue
             }
 
             // alert the watchers that we have decoded an instruction
-            m_program->getProject()->alertInstructionDecoded(addr, inst.numBytes);
-            numBytesDecoded += inst.numBytes;
+            m_program->getProject()->alertInstructionDecoded(addr, lifted.numBytes);
+            numBytesDecoded += lifted.numBytes;
 
             // Check if this is an already decoded jump instruction (from a previous pass with
             // propagation etc) If so, we throw away the just decoded RTL (but we still may have
@@ -323,14 +325,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(addr);
 
             if (ff != m_previouslyDecoded.end()) {
-                inst.rtl.reset(ff->second);
+                lifted.rtl.reset(ff->second);
             }
 
-            if (!inst.rtl) {
+            if (!lifted.rtl) {
                 // This can happen if an instruction is "cancelled", e.g. call to __main in a hppa
                 // program Just ignore the whole instruction
-                if (inst.numBytes > 0) {
-                    addr += inst.numBytes;
+                if (lifted.numBytes > 0) {
+                    addr += lifted.numBytes;
                 }
 
                 continue;
@@ -340,7 +342,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             if (m_program->getProject()->getSettings()->printRTLs) {
                 QString tgt;
                 OStream st(&tgt);
-                inst.rtl->print(st);
+                lifted.rtl->print(st);
                 LOG_MSG(tgt);
             }
 
@@ -353,14 +355,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL
             // followed by a return if it points to the start of a known procedure
-            RTL::StmtList sl(inst.rtl->getStatements());
+            RTL::StmtList sl(lifted.rtl->getStatements());
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 SharedStmt s = *ss;
                 s->setProc(proc); // let's do this really early!
 
-                if (m_refHints.find(inst.rtl->getAddress()) != m_refHints.end()) {
-                    const QString &name(m_refHints[inst.rtl->getAddress()]);
+                if (m_refHints.find(lifted.rtl->getAddress()) != m_refHints.end()) {
+                    const QString &name(m_refHints[lifted.rtl->getAddress()]);
                     Address globAddr = m_program->getGlobalAddrByName(name);
 
                     if (globAddr != Address::INVALID) {
@@ -377,7 +379,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 // jumps), or to the PLT (note that a LibProc entry for the PLT function may not yet
                 // exist)
                 if (s->getKind() == StmtType::Goto) {
-                    preprocessProcGoto(ss, jumpStmt->getFixedDest(), sl, inst.rtl.get());
+                    preprocessProcGoto(ss, jumpStmt->getFixedDest(), sl, lifted.rtl.get());
                     s = *ss; // *ss can be changed within processProc
                 }
 
@@ -387,7 +389,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Handle one way jumps and computed jumps separately
                     if (jumpDest != Address::INVALID) {
-                        BB_rtls->push_back(std::move(inst.rtl));
+                        BB_rtls->push_back(std::move(lifted.rtl));
                         sequentialDecode = false;
 
                         currentBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
@@ -415,7 +417,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     SharedExp jumpDest = jumpStmt->getDest();
 
                     if (jumpDest == nullptr) { // Happens if already analysed (now redecoding)
-                        BB_rtls->push_back(std::move(inst.rtl));
+                        BB_rtls->push_back(std::move(lifted.rtl));
 
                         // processSwitch will update num outedges
                         currentBB = cfg->createBB(BBType::Nway, std::move(BB_rtls));
@@ -448,13 +450,13 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                         call->setDestProc(lp);
                         BB_rtls->push_back(
-                            std::unique_ptr<RTL>(new RTL(inst.rtl->getAddress(), { call })));
+                            std::unique_ptr<RTL>(new RTL(lifted.rtl->getAddress(), { call })));
 
                         currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                        appendSyntheticReturn(currentBB, proc, inst.rtl.get());
+                        appendSyntheticReturn(currentBB, proc, lifted.rtl.get());
                         sequentialDecode = false;
 
-                        if (inst.rtl->getAddress() == proc->getEntryAddress()) {
+                        if (lifted.rtl->getAddress() == proc->getEntryAddress()) {
                             // it's a thunk
                             // Proc *lp = prog->findProc(func.c_str());
                             func = "__imp_" + func;
@@ -469,7 +471,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         break;
                     }
 
-                    BB_rtls->push_back(std::move(inst.rtl));
+                    BB_rtls->push_back(std::move(lifted.rtl));
 
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
@@ -483,7 +485,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                 case StmtType::Branch: {
                     Address jumpDest = jumpStmt->getFixedDest();
-                    BB_rtls->push_back(std::move(inst.rtl));
+                    BB_rtls->push_back(std::move(lifted.rtl));
 
                     currentBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
 
@@ -506,7 +508,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
 
                         // Add the fall-through outedge
-                        cfg->addEdge(currentBB, addr + inst.numBytes);
+                        cfg->addEdge(currentBB, addr + lifted.numBytes);
                     }
                 } break;
 
@@ -558,7 +560,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Treat computed and static calls separately
                     if (call->isComputed()) {
-                        BB_rtls->push_back(std::move(inst.rtl));
+                        BB_rtls->push_back(std::move(lifted.rtl));
                         currentBB = cfg->createBB(BBType::CompCall, std::move(BB_rtls));
 
                         // Stop decoding sequentially if the basic block already
@@ -567,7 +569,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             sequentialDecode = false;
                         }
                         else {
-                            cfg->addEdge(currentBB, addr + inst.numBytes);
+                            cfg->addEdge(currentBB, addr + lifted.numBytes);
                         }
 
                         // Add this call to the list of calls to analyse. We won't
@@ -581,7 +583,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         // Calls with 0 offset (i.e. call the next instruction) are simply
                         // pushing the PC to the stack. Treat these as non-control flow
                         // instructions and continue.
-                        if (callAddr == addr + inst.numBytes) {
+                        if (callAddr == addr + lifted.numBytes) {
                             break;
                         }
 
@@ -589,12 +591,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         // machine specific funcion calls
                         if (isHelperFunc(callAddr, addr, *BB_rtls)) {
                             // We have already added to BB_rtls
-                            inst.rtl.reset(); // Discard the call semantics
+                            lifted.rtl.reset(); // Discard the call semantics
                             break;
                         }
 
-                        RTL *rtl = inst.rtl.get();
-                        BB_rtls->push_back(std::move(inst.rtl));
+                        RTL *rtl = lifted.rtl.get();
+                        BB_rtls->push_back(std::move(lifted.rtl));
 
                         // Add this non computed call site to the set of call sites which need
                         // to be analysed later.
@@ -657,7 +659,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 // Add the fall through edge if the block didn't
                                 // already exist
                                 if (currentBB != nullptr) {
-                                    cfg->addEdge(currentBB, addr + inst.numBytes);
+                                    cfg->addEdge(currentBB, addr + lifted.numBytes);
                                 }
                             }
                         }
@@ -678,7 +680,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
-                    createReturnBlock(proc, std::move(BB_rtls), std::move(inst.rtl));
+                    createReturnBlock(proc, std::move(BB_rtls), std::move(lifted.rtl));
                     break;
 
                 case StmtType::BoolAssign:
@@ -700,18 +702,18 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
             }
 
-            if (BB_rtls != nullptr && inst.rtl != nullptr) {
+            if (BB_rtls != nullptr && lifted.rtl != nullptr) {
                 // If non null, we haven't put this RTL into a the current BB as yet
-                BB_rtls->push_back(std::move(inst.rtl));
+                BB_rtls->push_back(std::move(lifted.rtl));
             }
 
-            if (inst.reDecode) {
+            if (lifted.reDecode) {
                 // Special case: redecode the last instruction, without advancing addr by
                 // numBytes
                 continue;
             }
 
-            addr += inst.numBytes;
+            addr += lifted.numBytes;
 
             if (addr > lastAddr) {
                 lastAddr = addr;
@@ -771,15 +773,22 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
 bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
 {
+    MachineInstruction insn;
+    return disassembleInstruction(pc, insn) && liftInstruction(insn, result);
+}
+
+
+bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &insn)
+{
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
-        LOG_ERROR("Attempted to decode outside any known section at address %1", pc);
+        LOG_ERROR("Attempted to disassemble outside any known section at address %1", pc);
         return false;
     }
 
     const BinarySection *section = image->getSectionByAddr(pc);
     if (section->getHostAddr() == HostAddress::INVALID) {
-        LOG_ERROR("Attempted to decode instruction in unmapped section '%1' at address %2",
+        LOG_ERROR("Attempted to disassemble instruction in unmapped section '%1' at address %2",
                   section->getName(), pc);
         return false;
     }
@@ -787,31 +796,31 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
     ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
 
     try {
-        MachineInstruction insn;
-        bool ok = m_decoder->decodeInstruction(pc, host_native_diff, insn);
-        if (!ok) {
-            return false;
-        }
-
-        ok = m_decoder->liftInstruction(insn, result);
-
-        if (!ok) {
-            LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                      "treating instruction as NOP",
-                      insn.m_variantID, insn.m_addr);
-
-            result.iclass   = IClass::NOP;
-            result.numBytes = insn.m_size;
-            result.reDecode = false;
-            result.rtl      = std::make_unique<RTL>(insn.m_addr);
-        }
-
-        return true;
+        return m_decoder->decodeInstruction(pc, host_native_diff, insn);
     }
     catch (std::runtime_error &e) {
         LOG_ERROR("%1", e.what());
         return false;
     }
+}
+
+
+bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &lifted)
+{
+    const bool ok = m_decoder->liftInstruction(insn, lifted);
+
+    if (!ok) {
+        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+                  "treating instruction as NOP",
+                  insn.m_variantID, insn.m_addr);
+
+        lifted.iclass   = IClass::NOP;
+        lifted.numBytes = insn.m_size;
+        lifted.reDecode = false;
+        lifted.rtl      = std::make_unique<RTL>(insn.m_addr);
+    }
+
+    return true;
 }
 
 

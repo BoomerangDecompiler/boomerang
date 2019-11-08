@@ -29,6 +29,7 @@ class Signature;
 class Statement;
 class CallStatement;
 class BinaryFile;
+class MachineInstruction;
 
 class QString;
 
@@ -72,13 +73,14 @@ public:
     /// \copydoc IFrontEnd::processProc
     bool processProc(UserProc *proc, Address addr) override;
 
-    /// Decode a single instruction at address \p addr
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult &result);
-
     /// Do extra processing of call instructions.
     /// Does nothing by default.
     virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
                                   const RTLList &BB_rtls);
+
+    /// Disassemble and lift a single instruction at address \p addr
+    /// \returns true on success
+    bool decodeSingleInstruction(Address pc, DecodeResult &result);
 
 public:
     /// \copydoc IFrontEnd::getEntryPoints
@@ -116,6 +118,14 @@ protected:
     virtual bool isHelperFunc(Address dest, Address addr, RTLList &lrtl);
 
 private:
+    /// Disassemble a single instruction at address \p pc
+    /// \returns true on success
+    bool disassembleInstruction(Address pc, MachineInstruction &insn);
+
+    /// Lifts a single instruction \p insn to an RTL.
+    /// \returns true on success
+    bool liftInstruction(MachineInstruction &insn, DecodeResult &lifted);
+
     /// \returns true iff \p exp is a memof that references the address of an imported function.
     bool refersToImportedFunction(const SharedExp &exp);
 
