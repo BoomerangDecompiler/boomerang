@@ -40,6 +40,8 @@
 #include <sstream>
 
 
+#define SPARC_INSTRUCTION_LENGTH (4)
+
 bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta,
                                          Interval<Address> textLimit) const
 {
@@ -200,7 +202,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             // Now add the out edge
             cfg->addEdge(callBB, returnBB);
 
-            address += inst.numBytes;
+            address += SPARC_INSTRUCTION_LENGTH;
             // This is a CTI block that doesn't fall through
             // and so we must stop decoding sequentially
             return false;
@@ -262,7 +264,7 @@ void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> text
     }
 
     // Update the address (for coverage)
-    pc += 2 * inst.numBytes;
+    pc += 2 * SPARC_INSTRUCTION_LENGTH;
 
     // Add the SD
     BB_rtls->push_back(std::move(inst.rtl));
@@ -400,8 +402,8 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
 
         createJumpToAddress(jumpDest, newBB, cfg, tq, textLimit);
         // Add the "false" leg
-        cfg->addEdge(newBB, address + inst.numBytes);
-        address += inst.numBytes; // Skip the SCD only
+        cfg->addEdge(newBB, address + SPARC_INSTRUCTION_LENGTH);
+        address += SPARC_INSTRUCTION_LENGTH; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
         LOG_WARN("Instruction at address %1 not copied to true leg of preceding branch", address);
@@ -646,7 +648,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // the destinsation of a branch. Even if not the start of a BB,
                 // some other branch may be discovered to it later.
                 BB_rtls->push_back(std::move(lifted.rtl));
-                pc += lifted.numBytes;
+                pc += SPARC_INSTRUCTION_LENGTH;
                 break;
             }
 
@@ -655,14 +657,14 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
                 if (jumpStmt) {
-                    jumpStmt->setDest(pc + 2 * lifted.numBytes);
+                    jumpStmt->setDest(pc + 2 * SPARC_INSTRUCTION_LENGTH);
                 }
 
                 BB_rtls->push_back(std::move(lifted.rtl));
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
 
-                createJumpToAddress(pc + 2 * lifted.numBytes, newBB, cfg, _targetQueue,
+                createJumpToAddress(pc + 2 * SPARC_INSTRUCTION_LENGTH, newBB, cfg, _targetQueue,
                                     m_program->getBinaryFile()->getImage()->getLimitText());
 
                 // There is no fall through branch.
@@ -692,8 +694,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // or a call to .stret4
                 MachineInstruction delayInsn;
                 DecodeResult delayLifted;
-                if (!decodeInstruction(pc + lifted.numBytes, delayInsn, delayLifted)) {
-                    warnInvalidInstruction(pc + lifted.numBytes);
+                if (!decodeInstruction(pc + SPARC_INSTRUCTION_LENGTH, delayInsn, delayLifted)) {
+                    warnInvalidInstruction(pc + SPARC_INSTRUCTION_LENGTH);
                     sequentialDecode = false;
                     continue;
                 }
@@ -714,7 +716,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
                     const ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
-                    if (m_decoder->isSPARCRestore(pc + lifted.numBytes, delta)) {
+                    if (m_decoder->isSPARCRestore(pc + SPARC_INSTRUCTION_LENGTH, delta)) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
                         delayLifted.rtl->setAddress(pc);
@@ -804,7 +806,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 case IClass::SKIP:
                     case_unhandled_stub(pc);
-                    pc += 2 * lifted.numBytes;
+                    pc += 2 * SPARC_INSTRUCTION_LENGTH;
                     break;
 
                 case IClass::SU: {
@@ -823,7 +825,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // Adjust the destination of the SD and emit it.
                     std::shared_ptr<const GotoStatement> delayJump = delayRTL->back()
                                                                          ->as<GotoStatement>();
-                    const Address dest = pc + lifted.numBytes + delayJump->getFixedDest();
+                    const Address dest = pc + SPARC_INSTRUCTION_LENGTH + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(lifted.rtl));
 
@@ -832,8 +834,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                         BasicBlock *newBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                         assert(newBB);
 
-                        createCallToAddress(dest, pc, newBB, cfg, 2 * lifted.numBytes);
-                        pc += 2 * lifted.numBytes;
+                        createCallToAddress(dest, pc, newBB, cfg, 2 * SPARC_INSTRUCTION_LENGTH);
+                        pc += 2 * SPARC_INSTRUCTION_LENGTH;
 
                         // Add this call site to the set of call sites which need to be analyzed
                         // later.
@@ -854,7 +856,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 default:
                     case_unhandled_stub(pc);
-                    pc += 2 * lifted.numBytes; // Skip the pair
+                    pc += 2 * SPARC_INSTRUCTION_LENGTH; // Skip the pair
                     break;
                 }
 
@@ -864,8 +866,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             case IClass::DD: {
                 MachineInstruction delayInsn;
                 DecodeResult delayLifted;
-                if (!decodeInstruction(pc + lifted.numBytes, delayInsn, delayLifted)) {
-                    warnInvalidInstruction(pc + lifted.numBytes);
+                if (!decodeInstruction(pc + SPARC_INSTRUCTION_LENGTH, delayInsn, delayLifted)) {
+                    warnInvalidInstruction(pc + SPARC_INSTRUCTION_LENGTH);
                     sequentialDecode = false;
                     continue;
                 }
@@ -896,8 +898,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 MachineInstruction delayInsn;
                 DecodeResult delayLifted;
-                if (!decodeInstruction(pc + lifted.numBytes, delayInsn, delayLifted)) {
-                    warnInvalidInstruction(pc + lifted.numBytes);
+                if (!decodeInstruction(pc + SPARC_INSTRUCTION_LENGTH, delayInsn, delayLifted)) {
+                    warnInvalidInstruction(pc + SPARC_INSTRUCTION_LENGTH);
                     sequentialDecode = false;
                     continue;
                 }
@@ -934,8 +936,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // instruction if branch not taken.
                 MachineInstruction delayInsn;
                 DecodeResult delayLifted;
-                if (!decodeInstruction(pc + lifted.numBytes, delayInsn, delayLifted)) {
-                    warnInvalidInstruction(pc + lifted.numBytes);
+                if (!decodeInstruction(pc + SPARC_INSTRUCTION_LENGTH, delayInsn, delayLifted)) {
+                    warnInvalidInstruction(pc + SPARC_INSTRUCTION_LENGTH);
                     sequentialDecode = false;
                     continue;
                 }
@@ -956,7 +958,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                     // Add the "false" leg: point past the delay inst
                     cfg->addEdge(newBB, pc + 8);
-                    pc += 2 * lifted.numBytes; // Skip branch and delay
+                    pc += 2 * SPARC_INSTRUCTION_LENGTH; // Skip branch and delay
                     break;
                 }
 
@@ -969,7 +971,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 default:
                     case_unhandled_stub(pc);
-                    pc += 2 * lifted.numBytes;
+                    pc += 2 * SPARC_INSTRUCTION_LENGTH;
                     break;
                 }
 
