@@ -255,10 +255,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         // Keep decoding sequentially until a CTI without a fall through branch is decoded
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (m_program->getProject()->getSettings()->traceDecoder) {
-                LOG_MSG("*%1", addr);
-            }
-
             if (!disassembleInstruction(addr, insn)) {
                 // Do not throw away previously decoded instrucions before the invalid one
                 if (BB_rtls && !BB_rtls->empty()) {
@@ -292,6 +288,10 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                 assert(!insn.isValid());
                 break; // try next instruction in queue
+            }
+
+            if (m_program->getProject()->getSettings()->traceDecoder) {
+                LOG_MSG("*%1 %2 %3", addr, insn.m_mnem.data(), insn.m_opstr.data());
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
