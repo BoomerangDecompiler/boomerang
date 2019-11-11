@@ -11,8 +11,8 @@ include(boomerang-utils)
 
 
 BOOMERANG_ADD_TEST(
-    NAME PentiumFrontEndTest
-    SOURCES PentiumFrontEndTest.h PentiumFrontEndTest.cpp
+    NAME X86FrontEndTest
+    SOURCES X86FrontEndTest.h X86FrontEndTest.cpp
     LIBRARIES
         ${DEBUG_LIB}
         boomerang
