@@ -55,8 +55,9 @@ enum class IClass : uint8
 };
 
 
-struct BOOMERANG_API MachineInstruction
+class BOOMERANG_API MachineInstruction
 {
+public:
     Address m_addr;      ///< Address (IP) of the instruction
     uint32 m_id;         ///< instruction unique ID (e.g. MOV, ADD etc.)
     uint16 m_size   = 0; ///< Size in bytes
