@@ -938,7 +938,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
-        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to
+        // sometimes be extra semantics associated with a return (e.g. x86 ret instruction adds to
         // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
         // returning a value as part of the restore instruction) are assumed to appear in a
         // previous RTL. It is assumed that THE return statement will have the same semantics

@@ -770,7 +770,7 @@ void StatementTest::testRecursion()
     {
         std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
         // This ReturnStatement requires the following two sets of semantics to pass the
-        // tests for standard Pentium calling convention
+        // tests for standard x86 calling convention
         // pc = m[r28]
         std::shared_ptr<Assign> a1(new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP))));
         // r28 = r28 + 4

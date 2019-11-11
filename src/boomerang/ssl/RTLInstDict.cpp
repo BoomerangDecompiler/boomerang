@@ -152,7 +152,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
         }
     }
 
-    // Perform simplifications, e.g. *1 in Pentium addressing modes
+    // Perform simplifications, e.g. *1 in x86 addressing modes
     for (SharedStmt &s : *newList) {
         s->simplify();
 

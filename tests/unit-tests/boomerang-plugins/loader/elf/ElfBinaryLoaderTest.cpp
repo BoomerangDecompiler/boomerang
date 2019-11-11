@@ -62,7 +62,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 
 void ElfBinaryLoaderTest::testPentiumLoad()
 {
-    // Load Pentium hello world
+    // Load x86 hello world
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     BinaryFile *binary = m_project.getLoadedBinaryFile();
 

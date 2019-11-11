@@ -64,7 +64,7 @@ bool X86Signature::qualified(UserProc *p, Signature & /*candidate*/)
         return false;
     }
 
-    LOG_VERBOSE2("Consider promotion to stdc pentium signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc x86 signature for %1", p->getName());
 
 #if 1
     LOG_VERBOSE2("Promotion qualified: always true");

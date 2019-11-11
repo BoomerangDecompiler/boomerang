@@ -472,7 +472,7 @@ void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
         }
     }
 
-    // some Pentium specific ellipsis processing
+    // some x86 specific ellipsis processing
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found    = false;
