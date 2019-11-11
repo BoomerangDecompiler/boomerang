@@ -1099,7 +1099,7 @@ void StatementTest::testBypass()
     UserProc *proc = static_cast<UserProc *>(prog->getFunctionByName("foo2"));
     QVERIFY(proc != nullptr);
 
-    proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
+    proc->promoteSignature(); // Make sure it's an X86Signature (needed for bypassing)
 
     // Number the statements
     proc->numberStatements();

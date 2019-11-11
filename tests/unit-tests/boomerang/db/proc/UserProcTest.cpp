@@ -23,7 +23,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/db/signature/PentiumSignature.h"
+#include "boomerang/db/signature/X86Signature.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -354,7 +354,7 @@ void UserProcTest::testEnsureExpIsMappedToLocal()
 void UserProcTest::testGetSymbolExp()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    proc.setSignature(std::make_shared<CallingConvention::StdC::PentiumSignature>("test"));
+    proc.setSignature(std::make_shared<CallingConvention::StdC::X86Signature>("test"));
 
     SharedExp local0 = proc.getSymbolExp(Location::regOf(REG_PENT_EAX), VoidType::get());
     QVERIFY(local0 != nullptr);
@@ -436,7 +436,7 @@ void UserProcTest::testIsLocalOrParamPattern()
     QVERIFY(!proc.isLocalOrParamPattern(Location::regOf(REG_PENT_EAX)));
     QVERIFY(!proc.isLocalOrParamPattern(spPlus4)); // signature is not promoted
 
-    proc.setSignature(std::make_shared<CallingConvention::StdC::PentiumSignature>("test"));
+    proc.setSignature(std::make_shared<CallingConvention::StdC::X86Signature>("test"));
     QVERIFY(proc.isLocalOrParamPattern(spPlus4));
 
     SharedConstExp spTimes4 = Location::memOf(Binary::get(opMults, RefExp::get(Location::regOf(REG_PENT_EAX), nullptr), Const::get(4)));

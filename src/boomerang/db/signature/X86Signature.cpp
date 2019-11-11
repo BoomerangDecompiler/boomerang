@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "PentiumSignature.h"
+#include "X86Signature.h"
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -22,7 +22,7 @@
 
 namespace CallingConvention::StdC
 {
-PentiumSignature::PentiumSignature(const QString &name)
+X86Signature::X86Signature(const QString &name)
     : Signature(name)
 {
     Signature::addReturn(Location::regOf(REG_PENT_ESP));
@@ -31,15 +31,15 @@ PentiumSignature::PentiumSignature(const QString &name)
 }
 
 
-PentiumSignature::PentiumSignature(Signature &old)
+X86Signature::X86Signature(Signature &old)
     : Signature(old)
 {
 }
 
 
-std::shared_ptr<Signature> PentiumSignature::clone() const
+std::shared_ptr<Signature> X86Signature::clone() const
 {
-    PentiumSignature *n = new PentiumSignature(m_name);
+    X86Signature *n = new X86Signature(m_name);
 
     Util::clone(m_params, n->m_params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -52,13 +52,13 @@ std::shared_ptr<Signature> PentiumSignature::clone() const
 }
 
 
-bool PentiumSignature::operator==(const Signature &other) const
+bool X86Signature::operator==(const Signature &other) const
 {
     return Signature::operator==(other);
 }
 
 
-bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
+bool X86Signature::qualified(UserProc *p, Signature & /*candidate*/)
 {
     if (p->getProg()->getMachine() != Machine::X86) {
         return false;
@@ -108,13 +108,13 @@ bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
 }
 
 
-RegNum PentiumSignature::getStackRegister() const
+RegNum X86Signature::getStackRegister() const
 {
     return REG_PENT_ESP;
 }
 
 
-void PentiumSignature::addReturn(SharedType type, SharedExp e)
+void X86Signature::addReturn(SharedType type, SharedExp e)
 {
     if (type->isVoid()) {
         return;
@@ -133,14 +133,14 @@ void PentiumSignature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void PentiumSignature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+void X86Signature::addParameter(const QString &name, const SharedExp &e, SharedType type,
                                     const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
 
 
-SharedExp PentiumSignature::getArgumentExp(int n) const
+SharedExp X86Signature::getArgumentExp(int n) const
 {
     if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
@@ -156,14 +156,14 @@ SharedExp PentiumSignature::getArgumentExp(int n) const
 }
 
 
-std::shared_ptr<Signature> PentiumSignature::promote(UserProc * /*p*/)
+std::shared_ptr<Signature> X86Signature::promote(UserProc * /*p*/)
 {
     // No promotions from here up, obvious idea would be c++ name mangling
     return shared_from_this();
 }
 
 
-SharedExp PentiumSignature::getProven(SharedExp left) const
+SharedExp X86Signature::getProven(SharedExp left) const
 {
     if (left->isRegOfConst()) {
         const int r = left->access<Const, 1>()->getInt();
@@ -189,7 +189,7 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
 }
 
 
-bool PentiumSignature::isPreserved(SharedExp e) const
+bool X86Signature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
         switch (e->access<Const, 1>()->getInt()) {
@@ -213,7 +213,7 @@ bool PentiumSignature::isPreserved(SharedExp e) const
 }
 
 
-void PentiumSignature::getLibraryDefines(StatementList &defs)
+void X86Signature::getLibraryDefines(StatementList &defs)
 {
     if (defs.size() > 0) {
         // Do only once
@@ -234,7 +234,7 @@ void PentiumSignature::getLibraryDefines(StatementList &defs)
 }
 
 
-bool PentiumSignature::returnCompare(const Assignment &a, const Assignment &b) const
+bool X86Signature::returnCompare(const Assignment &a, const Assignment &b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
@@ -260,7 +260,7 @@ bool PentiumSignature::returnCompare(const Assignment &a, const Assignment &b) c
 }
 
 
-bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment &a,
+bool CallingConvention::StdC::X86Signature::argumentCompare(const Assignment &a,
                                                                 const Assignment &b) const
 {
     SharedConstExp la = a.getLeft();
