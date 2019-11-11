@@ -46,5 +46,6 @@ private:
     /// \returns true if the instruction is a CR manipulation instruction, e.g. crxor
     bool isCRManip(const cs::cs_insn *instruction) const;
 
-    QString getInstructionID(const cs::cs_insn *instruction) const;
+    /// \returns the name of the SSL template for \p instruction
+    QString getTemplateName(const cs::cs_insn *instruction) const;
 };

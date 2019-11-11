@@ -177,8 +177,8 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
         result.m_operands[i] = operandToExp(&decodedInstruction, i);
     }
 
-    result.m_variantID = getInstructionID(&decodedInstruction);
-    result.m_sparcCC   = decodedInstruction.detail->sparc.cc;
+    result.m_templateName = getTemplateName(&decodedInstruction);
+    result.m_sparcCC      = decodedInstruction.detail->sparc.cc;
 
     std::strncpy(result.m_mnem.data(), decodedInstruction.mnemonic, MNEM_SIZE);
     std::strncpy(result.m_opstr.data(), decodedInstruction.op_str, OPSTR_SIZE);
@@ -255,7 +255,7 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::createRTLForInstruction(const Machine
     const std::size_t numOperands = insn.getNumOperands();
 
     std::unique_ptr<RTL> rtl = instantiateRTL(insn);
-    const QString insnID     = insn.m_variantID;
+    const QString insnID     = insn.m_templateName;
 
     if (rtl == nullptr) {
         return nullptr;
@@ -393,11 +393,11 @@ std::unique_ptr<RTL> CapstoneSPARCDecoder::instantiateRTL(const MachineInstructi
             argNames += insn.m_operands[i]->toString();
         }
 
-        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_variantID, argNames);
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
     }
 
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(insn.m_variantID).remove(".").toUpper();
+    const QString sanitizedName = QString(insn.m_templateName).remove(".").toUpper();
     return m_dict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
 }
 
@@ -674,7 +674,7 @@ bool CapstoneSPARCDecoder::decodeSTD(cs::cs_insn *decodedInstruction, uint32_t i
 }
 
 
-QString CapstoneSPARCDecoder::getInstructionID(const cs::cs_insn *instruction) const
+QString CapstoneSPARCDecoder::getTemplateName(const cs::cs_insn *instruction) const
 {
     QString insnID = instruction->mnemonic;
 

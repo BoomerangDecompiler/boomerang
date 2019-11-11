@@ -810,9 +810,9 @@ bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &li
     const bool ok = m_decoder->liftInstruction(insn, lifted);
 
     if (!ok) {
-        LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
+        LOG_ERROR("Cannot find instruction template '%1' at address %2, "
                   "treating instruction as NOP",
-                  insn.m_variantID, insn.m_addr);
+                  insn.m_templateName, insn.m_addr);
 
         lifted.iclass = IClass::NOP;
         lifted.reLift = false;

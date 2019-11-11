@@ -80,5 +80,6 @@ private:
     /// Decode STD instruction manually. Can be removed when upgrading to Capstone 5.
     bool decodeSTD(cs::cs_insn *instruction, uint32_t instructionData) const;
 
-    QString getInstructionID(const cs::cs_insn *instruction) const;
+    /// \returns the name of the SSL template for \p instruction
+    QString getTemplateName(const cs::cs_insn *instruction) const;
 };

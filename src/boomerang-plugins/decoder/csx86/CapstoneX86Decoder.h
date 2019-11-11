@@ -73,7 +73,8 @@ private:
      */
     bool genBSFR(const MachineInstruction &insn, DecodeResult &result);
 
-    QString getInstructionID(const cs::cs_insn *instruction) const;
+    /// \returns the name of the SSL template for \p instruction
+    QString getTemplateName(const cs::cs_insn *instruction) const;
 
 private:
     int m_bsfrState = 0; ///< State for state machine used in genBSFR()

@@ -69,7 +69,7 @@ public:
     std::array<char, OPSTR_SIZE> m_opstr = { 0 };
 
     std::vector<SharedExp> m_operands;
-    QString m_variantID; ///< Unique instruction variant ID (e.g. REPSTOSB.rm8 or MOVSX.r32.rm8)
+    QString m_templateName; ///< Name of SSL IR template (e.g. REPSTOSB.rm8 or MOVSX.r32.rm8)
 
     int m_sparcCC;
 

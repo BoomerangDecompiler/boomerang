@@ -190,11 +190,11 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
         result.m_operands[i] = operandToExp(m_insn->detail->x86.operands[i]);
     }
 
-    result.m_variantID = getInstructionID(m_insn);
+    result.m_templateName = getTemplateName(m_insn);
 
     result.setGroup(MIGroup::Jump, isInstructionInGroup(m_insn, cs::CS_GRP_JUMP));
     result.setGroup(MIGroup::Call, isInstructionInGroup(m_insn, cs::CS_GRP_CALL));
-    result.setGroup(MIGroup::BoolAsgn, result.m_variantID.startsWith("SET"));
+    result.setGroup(MIGroup::BoolAsgn, result.m_templateName.startsWith("SET"));
 
     if (result.isInGroup(MIGroup::Jump) || result.isInGroup(MIGroup::Call)) {
         assert(result.getNumOperands() > 0);
@@ -254,7 +254,7 @@ static const QString operandNames[] = {
 
 std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineInstruction &insn)
 {
-    const QString insnID     = insn.m_variantID;
+    const QString insnID     = insn.m_templateName;
     std::unique_ptr<RTL> rtl = instantiateRTL(insn);
 
     if (!rtl) {
@@ -416,7 +416,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
 std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(const MachineInstruction &insn)
 {
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName   = QString(insn.m_variantID).remove(".").toUpper();
+    const QString sanitizedName   = QString(insn.m_templateName).remove(".").toUpper();
     const std::size_t numOperands = insn.getNumOperands();
 
     if (m_debugMode) {
@@ -428,7 +428,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(const MachineInstruction
             argNames += insn.m_operands[i]->toString();
         }
 
-        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_variantID, argNames);
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
     }
 
     return m_dict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
@@ -528,7 +528,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
 }
 
 
-QString CapstoneX86Decoder::getInstructionID(const cs::cs_insn *instruction) const
+QString CapstoneX86Decoder::getTemplateName(const cs::cs_insn *instruction) const
 {
     const int numOperands         = instruction->detail->x86.op_count;
     const cs::cs_x86_op *operands = instruction->detail->x86.operands;

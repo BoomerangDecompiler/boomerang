@@ -134,7 +134,7 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
         result.m_operands[i] = operandToExp(decodedInstruction->detail->ppc.operands[i]);
     }
 
-    result.m_variantID = getInstructionID(decodedInstruction);
+    result.m_templateName = getTemplateName(decodedInstruction);
 
     cs_free(decodedInstruction, numInstructions);
     return true;
@@ -171,7 +171,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
         return nullptr;
     }
 
-    const QString insnID          = insn.m_variantID;
+    const QString insnID          = insn.m_templateName;
     const std::size_t numOperands = insn.getNumOperands();
 
     if (insnID == "BL" || insnID == "BLA") {
@@ -337,11 +337,11 @@ std::unique_ptr<RTL> CapstonePPCDecoder::instantiateRTL(const MachineInstruction
             argNames += insn.m_operands[i]->toString();
         }
 
-        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_variantID, argNames);
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
     }
 
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(insn.m_variantID).remove(".").toUpper();
+    const QString sanitizedName = QString(insn.m_templateName).remove(".").toUpper();
     return m_dict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
 }
 
@@ -367,7 +367,7 @@ bool CapstonePPCDecoder::isCRManip(const cs::cs_insn *instruction) const
 }
 
 
-QString CapstonePPCDecoder::getInstructionID(const cs::cs_insn *instruction) const
+QString CapstonePPCDecoder::getTemplateName(const cs::cs_insn *instruction) const
 {
     QString insnID = instruction->mnemonic; // cs::cs_insn_name(m_handle, instruction->id);
     insnID         = insnID.toUpper();

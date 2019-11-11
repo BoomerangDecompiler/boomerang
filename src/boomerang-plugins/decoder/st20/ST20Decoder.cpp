@@ -115,7 +115,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
             std::strcpy(result.m_mnem.data(), "j");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
             result.m_operands.push_back(Const::get(jumpDest));
-            result.m_variantID = "J";
+            result.m_templateName = "J";
         } break;
 
         case ST20_INS_LDLP:
@@ -139,7 +139,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%x", total);
 
             result.m_operands.push_back(Const::get(total));
-            result.m_variantID = QString(functionNames[functionCode]).toUpper();
+            result.m_templateName = QString(functionNames[functionCode]).toUpper();
         } break;
 
         case 2: { // prefix
@@ -164,7 +164,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", callDest.value());
 
             result.m_operands.push_back(Const::get(callDest));
-            result.m_variantID = "CALL";
+            result.m_templateName = "CALL";
         } break;
 
         case ST20_INS_CJ: { // cond jump
@@ -180,7 +180,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
 
             result.m_operands.push_back(Const::get(jumpDest));
-            result.m_variantID = "CJ";
+            result.m_templateName = "CJ";
         } break;
 
         case 15: { // operate
@@ -200,7 +200,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             std::strcpy(result.m_mnem.data(), insnName);
             std::strcpy(result.m_opstr.data(), "");
-            result.m_variantID = QString(insnName).toUpper();
+            result.m_templateName = QString(insnName).toUpper();
         } break;
 
         default: assert(false);
@@ -410,12 +410,12 @@ bool ST20Decoder::isSPARCRestore(const MachineInstruction &) const
 std::unique_ptr<RTL> ST20Decoder::instantiateRTL(const MachineInstruction &insn)
 {
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(insn.m_variantID).remove(".").toUpper();
+    const QString sanitizedName = QString(insn.m_templateName).remove(".").toUpper();
 
     if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {
         OStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
-        q_cout << insn.m_addr << ": " << insn.m_variantID << " ";
+        q_cout << insn.m_addr << ": " << insn.m_templateName << " ";
 
         for (const SharedExp &itd : insn.m_operands) {
             if (itd->isIntConst()) {
