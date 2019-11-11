@@ -60,5 +60,5 @@ public:
 
     /// \return true if this is a SPARC restore instruction.
     // For all other architectures, this must return false.
-    virtual bool isSPARCRestore(Address pc, ptrdiff_t delta) const = 0;
+    virtual bool isSPARCRestore(const MachineInstruction &insn) const = 0;
 };

@@ -715,8 +715,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                    const ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
-                    if (m_decoder->isSPARCRestore(pc + SPARC_INSTRUCTION_LENGTH, delta)) {
+                    if (m_decoder->isSPARCRestore(delayInsn)) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
                         delayLifted.rtl->setAddress(pc);

@@ -38,7 +38,7 @@ public:
     int getRegSizeByNum(RegNum regNum) const override;
 
     /// \copydoc IDecoder::isSPARCRestore
-    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
+    bool isSPARCRestore(const MachineInstruction &insn) const override;
 
 private:
     std::unique_ptr<RTL> createRTLForInstruction(const MachineInstruction &insn);

@@ -401,7 +401,7 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
 }
 
 
-bool ST20Decoder::isSPARCRestore(Address, ptrdiff_t) const
+bool ST20Decoder::isSPARCRestore(const MachineInstruction &) const
 {
     return false;
 }

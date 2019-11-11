@@ -217,19 +217,9 @@ int CapstoneSPARCDecoder::getRegSizeByNum(RegNum regNum) const
 }
 
 
-bool CapstoneSPARCDecoder::isSPARCRestore(Address pc, ptrdiff_t delta) const
+bool CapstoneSPARCDecoder::isSPARCRestore(const MachineInstruction &insn) const
 {
-    const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
-
-    cs::cs_insn *decodedInstruction;
-    size_t numInstructions = cs_disasm(m_handle, instructionData, SPARC_INSTRUCTION_LENGTH,
-                                       pc.value(), 1, &decodedInstruction);
-
-    if (numInstructions < 1) {
-        return false;
-    }
-
-    return decodedInstruction->id == cs::SPARC_INS_RESTORE;
+    return insn.m_id == cs::SPARC_INS_RESTORE;
 }
 
 

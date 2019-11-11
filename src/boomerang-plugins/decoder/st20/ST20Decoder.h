@@ -52,7 +52,7 @@ public:
     bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
 
     /// \returns false
-    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
+    bool isSPARCRestore(const MachineInstruction &insn) const override;
 
 private:
     /**

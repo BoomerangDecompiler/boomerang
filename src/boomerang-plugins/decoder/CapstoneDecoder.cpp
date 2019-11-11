@@ -76,7 +76,7 @@ bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8
 }
 
 
-bool CapstoneDecoder::isSPARCRestore(Address, ptrdiff_t) const
+bool CapstoneDecoder::isSPARCRestore(const MachineInstruction &) const
 {
     return false; // Overridden in CapstoneSPARCDecoder
 }
