@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "PentiumFrontEnd.h"
+#include "X86FrontEnd.h"
 
 #include "StringInstructionProcessor.h"
 
@@ -35,7 +35,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
+bool X86FrontEnd::processProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
     if (!DefaultFrontEnd::processProc(function, addr)) {
@@ -56,7 +56,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 }
 
 
-bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
+bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 {
     if (dest == Address::INVALID) {
         return false;
@@ -119,18 +119,18 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(Project *project)
+X86FrontEnd::X86FrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
 }
 
 
-PentiumFrontEnd::~PentiumFrontEnd()
+X86FrontEnd::~X86FrontEnd()
 {
 }
 
 
-bool PentiumFrontEnd::initialize(Project *project)
+bool X86FrontEnd::initialize(Project *project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone x86 decoder plugin");
     if (!plugin) {
@@ -142,7 +142,7 @@ bool PentiumFrontEnd::initialize(Project *project)
 }
 
 
-Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
+Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 {
     Address start = m_binaryFile->getMainEntryPoint();
 
@@ -270,7 +270,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 }
 
 
-void PentiumFrontEnd::processStringInst(UserProc *proc)
+void X86FrontEnd::processStringInst(UserProc *proc)
 {
     bool change;
     do {
@@ -279,7 +279,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::processOverlapped(UserProc *proc)
+void X86FrontEnd::processOverlapped(UserProc *proc)
 {
     // first, lets look for any uses of the registers
     std::set<RegNum> usedRegs;
@@ -327,7 +327,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
+void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
                                        const RTLList &BB_rtls)
 {
     if (!call->getDestProc()) {
@@ -516,5 +516,5 @@ void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &cal
     }
 }
 
-BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, PentiumFrontEnd, "X86 FrontEnd plugin",
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, X86FrontEnd, "X86 FrontEnd plugin",
                         BOOMERANG_VERSION, "Boomerang developers")

@@ -17,22 +17,22 @@
 
 
 /**
- * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
+ * Class X86FrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
  */
-class BOOMERANG_PLUGIN_API PentiumFrontEnd : public DefaultFrontEnd
+class BOOMERANG_PLUGIN_API X86FrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PentiumFrontEnd(Project *project);
-    PentiumFrontEnd(const PentiumFrontEnd &other) = delete;
-    PentiumFrontEnd(PentiumFrontEnd &&other)      = default;
+    X86FrontEnd(Project *project);
+    X86FrontEnd(const X86FrontEnd &other) = delete;
+    X86FrontEnd(X86FrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~PentiumFrontEnd() override;
+    virtual ~X86FrontEnd() override;
 
-    PentiumFrontEnd &operator=(const PentiumFrontEnd &other) = delete;
-    PentiumFrontEnd &operator=(PentiumFrontEnd &&other) = default;
+    X86FrontEnd &operator=(const X86FrontEnd &other) = delete;
+    X86FrontEnd &operator=(X86FrontEnd &&other) = default;
 
 public:
     bool initialize(Project *project) override;

@@ -76,7 +76,7 @@ public:
 
     /**
      * If true, don't add numBytes and decode there; instead, re-decode the current instruction.
-     * Needed for instructions like the Pentium BSF/BSR, which emit branches (so numBytes needs to
+     * Needed for instructions like the x86 BSF/BSR, which emit branches (so numBytes needs to
      * be carefully set for the fall through out edge after the branch)
      */
     bool reDecode;

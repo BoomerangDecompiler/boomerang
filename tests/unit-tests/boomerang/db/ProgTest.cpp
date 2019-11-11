@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "ProgTest.h"
 
-#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
+#include "boomerang-plugins/frontend/x86/X86FrontEnd.h"
 
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
@@ -46,7 +46,7 @@ void ProgTest::testFrontend()
     m_project.getProg()->createModule("foo");
     QVERIFY(m_project.getProg()->getModuleList().size() == 2);
 
-    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(&m_project));
+    m_project.getProg()->setFrontEnd(new X86FrontEnd(&m_project));
     QVERIFY(m_project.getProg()->getFrontEnd() != nullptr);
     QVERIFY(m_project.getProg()->getModuleList().size() == 1);
     QVERIFY(m_project.getProg()->getRootModule() != nullptr);

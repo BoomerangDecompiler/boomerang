@@ -432,7 +432,7 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
     // %SKIP/%RPT won't work. We need to emit 6 statements, but these need to be in 3 RTLs, since
     // the destination of a branch has to be to the start of an RTL.  So we use a state machine, and
     // set numBytes to 0 for the first two times. That way, this instruction ends up emitting three
-    // RTLs, each with the semantics we need. Note: we don't use pentium.ssl for these.
+    // RTLs, each with the semantics we need. Note: we don't use x86.ssl for these.
     //
     // BSFR1:
     //    pc+0:    *1* zf := 1

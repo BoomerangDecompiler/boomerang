@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "PentiumFrontEndTest.h"
 
-#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
+#include "boomerang-plugins/frontend/x86/X86FrontEnd.h"
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/ifc/IDecoder.h"
@@ -31,7 +31,7 @@ void FrontPentTest::test1()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     QString     expected;
@@ -73,7 +73,7 @@ void FrontPentTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -107,7 +107,7 @@ void FrontPentTest::test3()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -140,7 +140,7 @@ void FrontPentTest::testBranch()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_PENT));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;

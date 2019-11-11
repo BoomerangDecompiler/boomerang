@@ -34,7 +34,7 @@ bool SPPreservationPass::execute(UserProc *proc)
     for (int n = 0; n < 2; n++) {
         // may need to do multiple times due to dependencies FIXME: efficiency! Needed any more?
 
-        // Special case for 32-bit stack-based machines (e.g. Pentium).
+        // Special case for 32-bit stack-based machines (e.g. x86).
         // RISC machines generally preserve the stack pointer (so no special case required)
         for (int p = 0; !stdsp && p < 8; p++) {
             if (proc->getProg()->getProject()->getSettings()->debugProof) {

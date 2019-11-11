@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "DataFlowTest.h"
 
-#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
+#include "boomerang-plugins/frontend/x86/X86FrontEnd.h"
 
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"

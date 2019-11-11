@@ -530,7 +530,7 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 
 // Hard-coded numbers of register indices.
 
-// Pentium (x86)
+// x86
 #define REG_PENT_AX RegNum(0)
 #define REG_PENT_CX RegNum(1)
 #define REG_PENT_DX RegNum(2)

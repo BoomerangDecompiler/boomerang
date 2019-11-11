@@ -15,8 +15,8 @@ include_directories(
 BOOMERANG_ADD_FRONTEND(
     NAME "X86"
     SOURCES
-        x86/PentiumFrontEnd.cpp
-        x86/PentiumFrontEnd.h
+        x86/X86FrontEnd.cpp
+        x86/X86FrontEnd.h
         x86/StringInstructionProcessor.cpp
         x86/StringInstructionProcessor.h
 )

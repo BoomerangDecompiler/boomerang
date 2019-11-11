@@ -9,7 +9,7 @@
 /*
  * Tests cases where the only thing defining a parameter is the return location
  * from an earlier call (tricky for Sparc)
- * Tests "don't bother to pop the last call's argument" for Pentium.
+ * Tests "don't bother to pop the last call's argument" for x86.
  * Compile with -fno-inline or equivalent
  */
 

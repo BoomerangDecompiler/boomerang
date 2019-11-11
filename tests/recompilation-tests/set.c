@@ -5,7 +5,7 @@
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
  */
-/* Generate a set instruction (Pentium) */
+/* Generate a set instruction (x86) */
 
 #include <stdio.h>
 

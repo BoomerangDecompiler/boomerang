@@ -237,7 +237,7 @@ void Module::addWin32DbgInfo(Function *function)
         else {
             // assume we're stdc calling convention, remove r28, r24 returns
             function->setSignature(
-                Signature::instantiate(Machine::PENTIUM, CallConv::C, function->getName()));
+                Signature::instantiate(Machine::X86, CallConv::C, function->getName()));
         }
 
         // get a return type
