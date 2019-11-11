@@ -23,5 +23,4 @@ private slots:
     void test3();
     void testFindMain();
     void testBranch();
-
 };
