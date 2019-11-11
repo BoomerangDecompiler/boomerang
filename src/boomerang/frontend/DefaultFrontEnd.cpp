@@ -1118,22 +1118,20 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
     // Make sure to re-decode the instruction as often as necessary, but throw away the results.
     // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
     if (lifted.reLift) {
-        MachineInstruction dummyInsn;
         DecodeResult dummyLifted;
         do {
-            decodeInstruction(callAddr, dummyInsn, dummyLifted);
-            dummyLifted.rtl.reset();
+            if (!m_decoder->liftInstruction(insn, dummyLifted)) {
+                return Address::INVALID;
+            }
         } while (dummyLifted.reLift);
     }
 
     if (lifted.rtl->empty()) {
-        lifted.rtl.reset();
         return Address::INVALID;
     }
 
     SharedStmt firstStmt = lifted.rtl->front();
     if (!firstStmt) {
-        lifted.rtl.reset();
         return Address::INVALID;
     }
 
@@ -1142,7 +1140,6 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
 
     std::shared_ptr<GotoStatement> jmpStmt = std::dynamic_pointer_cast<GotoStatement>(firstStmt);
     if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
-        lifted.rtl.reset();
         return Address::INVALID;
     }
 

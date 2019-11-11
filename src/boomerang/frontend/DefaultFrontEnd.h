@@ -80,7 +80,8 @@ public:
 
     /// Disassemble and lift a single instruction at address \p addr
     /// \returns true on success
-    bool decodeInstruction(Address pc, MachineInstruction &insn, DecodeResult &lifted);
+    [[nodiscard]] bool decodeInstruction(Address pc, MachineInstruction &insn,
+                                         DecodeResult &lifted);
 
 public:
     /// \copydoc IFrontEnd::getEntryPoints
