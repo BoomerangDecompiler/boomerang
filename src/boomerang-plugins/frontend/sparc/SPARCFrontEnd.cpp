@@ -988,7 +988,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             // need to decode again (unless it's an incomplete BB, then we do decode it).  In fact,
             // mustn't decode twice, because it will muck up the coverage, but also will cause
             // subtle problems like add a call to the list of calls to be processed, then delete the
-            // call RTL (e.g. Pentium 134.perl benchmark)
+            // call RTL
             if (sequentialDecode && cfg->isStartOfBB(pc)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {

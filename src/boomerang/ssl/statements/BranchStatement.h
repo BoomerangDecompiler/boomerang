@@ -90,6 +90,6 @@ private:
     BranchType m_jumpType; ///< The condition for jumping
     SharedExp m_cond;      ///< The Exp representation of the high level condition: e.g., r[8] == 5
     bool m_isFloat;        ///< True if uses floating point CC
-    // jtCond seems to be mainly needed for the Pentium weirdness.
+    // jtCond seems to be mainly needed for the x86 weirdness.
     // Perhaps m_isFloat, m_jumpType, and m_size could one day be merged into a type
 };

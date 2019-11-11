@@ -174,7 +174,7 @@ public:
 
     /**
      * Clear the named type map. This is necessary when testing; the
-     * type for the first parameter to 'main' is different for SPARC and Pentium
+     * type for the first parameter to 'main' is different for SPARC and x86
      */
     static void clearNamedTypes();
 

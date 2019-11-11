@@ -60,7 +60,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 }
 
 
-void ElfBinaryLoaderTest::testPentiumLoad()
+void ElfBinaryLoaderTest::testLoadSolaris()
 {
     // Load x86 hello world
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
@@ -86,7 +86,7 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 }
 
 
-void ElfBinaryLoaderTest::testPentiumLoad_data()
+void ElfBinaryLoaderTest::testLoadSolaris_data()
 {
     QTest::addColumn<int>("sectIndex");
     QTest::addColumn<QString>("sectName");

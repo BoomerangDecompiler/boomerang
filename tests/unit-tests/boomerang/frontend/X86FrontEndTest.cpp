@@ -138,7 +138,7 @@ void X86FrontEndTest::test3()
 
 void X86FrontEndTest::testBranch()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
+    QVERIFY(m_project.loadBinaryFile(BRANCH_X86));
     Prog *prog = m_project.getProg();
     X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);

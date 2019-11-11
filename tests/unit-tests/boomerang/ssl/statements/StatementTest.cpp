@@ -43,7 +43,7 @@
 
 
 #define HELLO_X86      getFullSamplePath("x86/hello")
-#define GLOBAL1_X86    getFullSamplePath("x86/lobal1")
+#define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
 void StatementTest::testEmpty()
