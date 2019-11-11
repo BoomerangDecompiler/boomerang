@@ -89,7 +89,7 @@ bool ST20Decoder::initialize(Project *project)
 }
 
 
-bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
+bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
 {
     bool valid    = false; //< Is this a valid instruction?
     int total     = 0;     // Total value from all prefixes

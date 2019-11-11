@@ -128,8 +128,8 @@ CapstoneSPARCDecoder::CapstoneSPARCDecoder(Project *project)
 }
 
 
-bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
-                                             MachineInstruction &result)
+bool CapstoneSPARCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
+                                                  MachineInstruction &result)
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
     const Byte *oldInstructionData = instructionData;

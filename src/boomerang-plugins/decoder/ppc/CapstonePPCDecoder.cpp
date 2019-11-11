@@ -89,7 +89,8 @@ CapstonePPCDecoder::CapstonePPCDecoder(Project *project)
 {
 }
 
-bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
+bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
+                                                MachineInstruction &result)
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
 

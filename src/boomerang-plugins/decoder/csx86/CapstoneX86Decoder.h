@@ -28,7 +28,7 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    bool decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
+    bool disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
 
     /// \copydoc IDecoder::liftInstruction
     bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;

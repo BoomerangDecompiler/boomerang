@@ -48,7 +48,7 @@ void SPARCDecoderTest::testInstructions()
     Address sourceAddr = Address(0x1000);
     ptrdiff_t diff     = (HostAddress(&insnData) - sourceAddr).value();
 
-    QVERIFY(m_decoder->decodeInstruction(sourceAddr, diff, insn));
+    QVERIFY(m_decoder->disassembleInstruction(sourceAddr, diff, insn));
     QVERIFY(m_decoder->liftInstruction(insn, result));
 
     QCOMPARE(result.iclass, expectedClass);

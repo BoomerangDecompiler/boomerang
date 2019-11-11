@@ -793,10 +793,10 @@ bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &ins
         return false;
     }
 
-    ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
+    const ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
 
     try {
-        return m_decoder->decodeInstruction(pc, host_native_diff, insn);
+        return m_decoder->disassembleInstruction(pc, host_native_diff, insn);
     }
     catch (std::runtime_error &e) {
         LOG_ERROR("%1", e.what());

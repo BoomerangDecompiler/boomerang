@@ -162,7 +162,8 @@ bool CapstoneX86Decoder::initialize(Project *project)
 }
 
 
-bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
+bool CapstoneX86Decoder::disassembleInstruction(Address pc, ptrdiff_t delta,
+                                                MachineInstruction &result)
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
     size_t size                 = X86_MAX_INSTRUCTION_LENGTH;
