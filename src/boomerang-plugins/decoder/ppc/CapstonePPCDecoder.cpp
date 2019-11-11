@@ -96,10 +96,9 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
     cs::cs_insn *decodedInstruction;
     size_t numInstructions = cs_disasm(m_handle, instructionData, PPC_MAX_INSTRUCTION_LENGTH,
                                        pc.value(), 1, &decodedInstruction);
+    const bool valid       = numInstructions > 0;
 
-
-    result.m_valid = numInstructions > 0;
-    if (!result.m_valid) {
+    if (!valid) {
         return false;
     }
 

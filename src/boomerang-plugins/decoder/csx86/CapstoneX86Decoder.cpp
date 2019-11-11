@@ -168,9 +168,9 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
     size_t size                 = X86_MAX_INSTRUCTION_LENGTH;
     uint64 addr                 = pc.value();
 
-    result.m_valid = cs_disasm_iter(m_handle, &instructionData, &size, &addr, m_insn);
+    const bool valid = cs_disasm_iter(m_handle, &instructionData, &size, &addr, m_insn);
 
-    if (!result.m_valid) {
+    if (!valid) {
         return false;
     }
 

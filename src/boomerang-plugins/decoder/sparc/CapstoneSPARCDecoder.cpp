@@ -138,20 +138,18 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
     cs::cs_insn decodedInstruction;
     decodedInstruction.detail = &insnDetail;
 
-    size_t bufsize = SPARC_INSTRUCTION_LENGTH;
-    uint64_t addr  = pc.value();
-    result.m_valid = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
-                                        &decodedInstruction);
+    size_t bufsize   = SPARC_INSTRUCTION_LENGTH;
+    uint64_t addr    = pc.value();
+    const bool valid = cs::cs_disasm_iter(m_handle, &instructionData, &bufsize, &addr,
+                                          &decodedInstruction);
 
-    if (!result.m_valid) {
+    if (!valid) {
         // HACK: Capstone does not support ldd and std for gpr destinations,
         // so we have to test for it manually.
         const uint32_t insn = Util::readDWord(oldInstructionData, Endian::Big);
 
-        result.m_valid = decodeLDD(&decodedInstruction, insn);
-        if (!result.m_valid) {
-            result.m_valid = decodeSTD(&decodedInstruction, insn);
-            if (!result.m_valid) {
+        if (!decodeLDD(&decodedInstruction, insn)) {
+            if (!decodeSTD(&decodedInstruction, insn)) {
                 return false;
             }
         }
@@ -162,7 +160,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
     result.m_addr   = pc;
     result.m_id     = decodedInstruction.id;
     result.m_size   = decodedInstruction.size;
-    result.m_valid  = true;
     result.m_iclass = getInstructionType(&decodedInstruction);
 
     std::strncpy(result.m_mnem.data(), decodedInstruction.mnemonic, MNEM_SIZE);
@@ -184,7 +181,6 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
     std::strncpy(result.m_opstr.data(), decodedInstruction.op_str, OPSTR_SIZE);
     result.m_mnem[MNEM_SIZE - 1]   = '\0';
     result.m_opstr[OPSTR_SIZE - 1] = '\0';
-
 
     return true;
 }

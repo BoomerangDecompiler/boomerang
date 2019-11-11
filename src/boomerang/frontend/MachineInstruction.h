@@ -62,7 +62,6 @@ public:
     uint32 m_id;         ///< instruction unique ID (e.g. MOV, ADD etc.)
     uint16 m_size   = 0; ///< Size in bytes
     uint8 m_groups  = 0;
-    bool m_valid    = false;
     IClass m_iclass = IClass::NOP;
 
     std::array<char, MNEM_SIZE> m_mnem   = { 0 };
@@ -77,8 +76,6 @@ public:
     /// Enables or disables the membership in a certain group. Does not affect other groups.
     void setGroup(MIGroup groupID, bool enabled);
     bool isInGroup(MIGroup groupID) const;
-
-    bool isValid() const;
 
     std::size_t getNumOperands() const { return m_operands.size(); }
 };

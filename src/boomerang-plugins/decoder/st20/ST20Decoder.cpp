@@ -91,7 +91,8 @@ bool ST20Decoder::initialize(Project *project)
 
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result)
 {
-    int total     = 0; // Total value from all prefixes
+    bool valid    = false; //< Is this a valid instruction?
+    int total     = 0;     // Total value from all prefixes
     result.m_size = 0;
 
     while (true) {
@@ -109,13 +110,14 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_addr   = pc;
             result.m_id     = ST20_INS_J;
-            result.m_valid  = true;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "j");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
             result.m_operands.push_back(Const::get(jumpDest));
             result.m_templateName = "J";
+
+            valid = true;
         } break;
 
         case ST20_INS_LDLP:
@@ -132,7 +134,6 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_addr   = pc;
             result.m_id     = functionCode;
-            result.m_valid  = true;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), functionNames[functionCode]);
@@ -140,6 +141,8 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_operands.push_back(Const::get(total));
             result.m_templateName = QString(functionNames[functionCode]).toUpper();
+
+            valid = true;
         } break;
 
         case 2: { // prefix
@@ -157,7 +160,6 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_addr   = pc;
             result.m_id     = ST20_INS_CALL;
-            result.m_valid  = true;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "call");
@@ -165,6 +167,8 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_operands.push_back(Const::get(callDest));
             result.m_templateName = "CALL";
+
+            valid = true;
         } break;
 
         case ST20_INS_CJ: { // cond jump
@@ -173,7 +177,6 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_addr   = pc;
             result.m_id     = ST20_INS_CJ;
-            result.m_valid  = true;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "cj");
@@ -181,6 +184,8 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
 
             result.m_operands.push_back(Const::get(jumpDest));
             result.m_templateName = "CJ";
+
+            valid = true;
         } break;
 
         case 15: { // operate
@@ -188,28 +193,28 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineInstruct
             const char *insnName = getInstructionName(total);
             if (!insnName) {
                 // invalid or unknown instruction
-                result.m_valid = false;
                 return false;
             }
 
             result.m_addr = pc;
             result.m_id   = OPR_MASK |
                           (total > 0 ? total : ((~total & ~0xF) | (total & 0xF) | OPR_SIGN));
-            result.m_valid  = true;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), insnName);
             std::strcpy(result.m_opstr.data(), "");
             result.m_templateName = QString(insnName).toUpper();
+
+            valid = true;
         } break;
 
-        default: assert(false);
+        default: return false;
         }
 
         break;
     }
 
-    return result.m_valid;
+    return valid;
 }
 
 

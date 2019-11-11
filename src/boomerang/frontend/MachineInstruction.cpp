@@ -25,9 +25,3 @@ bool MachineInstruction::isInGroup(MIGroup groupID) const
 {
     return (m_groups & (1 << (int)groupID)) != 0;
 }
-
-
-bool MachineInstruction::isValid() const
-{
-    return m_valid;
-}
