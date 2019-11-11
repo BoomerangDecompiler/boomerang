@@ -143,9 +143,9 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, MachineI
 
 bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
-    lifted.iclass   = IClass::NOP; //< only relevant for architectures with delay slots
-    lifted.reDecode = false;
-    lifted.rtl      = createRTLForInstruction(insn);
+    lifted.iclass = IClass::NOP; //< only relevant for architectures with delay slots
+    lifted.reLift = false;
+    lifted.rtl    = createRTLForInstruction(insn);
 
     return lifted.valid();
 }

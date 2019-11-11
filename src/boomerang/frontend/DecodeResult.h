@@ -67,5 +67,5 @@ public:
      * \warning Re-lifting must always be done until this variable is false, even if the semantics
      * are not used. Not doing so will break lifting other instructions.
      */
-    bool reDecode;
+    bool reLift;
 };

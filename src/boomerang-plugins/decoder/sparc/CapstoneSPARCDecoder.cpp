@@ -192,9 +192,9 @@ bool CapstoneSPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta,
 
 bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
-    lifted.iclass   = insn.m_iclass;
-    lifted.reDecode = false;
-    lifted.rtl      = createRTLForInstruction(insn);
+    lifted.iclass = insn.m_iclass;
+    lifted.reLift = false;
+    lifted.rtl    = createRTLForInstruction(insn);
 
     if (lifted.rtl && lifted.rtl->empty()) {
         // Force empty unrecognized instructions to have NOP type instead of NCT

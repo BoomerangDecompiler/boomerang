@@ -21,7 +21,7 @@ DecodeResult::DecodeResult()
 DecodeResult::DecodeResult(DecodeResult &&other)
     : rtl(std::move(other.rtl))
     , iclass(std::move(other.iclass))
-    , reDecode(std::move(other.reDecode))
+    , reLift(std::move(other.reLift))
 {
 }
 
@@ -33,9 +33,9 @@ DecodeResult::~DecodeResult()
 
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
-    rtl      = std::move(other.rtl);
-    iclass   = std::move(other.iclass);
-    reDecode = std::move(other.reDecode);
+    rtl    = std::move(other.rtl);
+    iclass = std::move(other.iclass);
+    reLift = std::move(other.reLift);
 
     return *this;
 }
@@ -43,7 +43,7 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 
 void DecodeResult::reset()
 {
-    rtl      = nullptr;
-    iclass   = IClass::NCT;
-    reDecode = false;
+    rtl    = nullptr;
+    iclass = IClass::NCT;
+    reLift = false;
 }

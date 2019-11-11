@@ -708,7 +708,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 BB_rtls->push_back(std::move(lifted.rtl));
             }
 
-            if (lifted.reDecode) {
+            if (lifted.reLift) {
                 // Special case: redecode the last instruction, without advancing addr by
                 // numBytes
                 continue;
@@ -814,9 +814,9 @@ bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &li
                   "treating instruction as NOP",
                   insn.m_variantID, insn.m_addr);
 
-        lifted.iclass   = IClass::NOP;
-        lifted.reDecode = false;
-        lifted.rtl      = std::make_unique<RTL>(insn.m_addr);
+        lifted.iclass = IClass::NOP;
+        lifted.reLift = false;
+        lifted.rtl    = std::make_unique<RTL>(insn.m_addr);
     }
 
     return true;
@@ -1117,13 +1117,13 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
 
     // Make sure to re-decode the instruction as often as necessary, but throw away the results.
     // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
-    if (lifted.reDecode) {
+    if (lifted.reLift) {
         MachineInstruction dummyInsn;
         DecodeResult dummyLifted;
         do {
             decodeInstruction(callAddr, dummyInsn, dummyLifted);
             dummyLifted.rtl.reset();
-        } while (dummyLifted.reDecode);
+        } while (dummyLifted.reLift);
     }
 
     if (lifted.rtl->empty()) {
