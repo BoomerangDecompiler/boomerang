@@ -172,12 +172,12 @@ void DataFlowTest::testPlacePhi()
     // test!
     QVERIFY(df->placePhiFunctions());
 
-    SharedExp e = Location::regOf(REG_PENT_EAX);
+    SharedExp e = Location::regOf(REG_X86_EAX);
     QString     actualStr;
     OStream actual(&actualStr);
 
     // r24 == eax
-    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
+    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_X86_EAX));
 
     for (BBIndex bb : A_phi) {
         actual << (int)bb << " ";
@@ -208,7 +208,7 @@ void DataFlowTest::testPlacePhi2()
 
     QString     actual_st;
     OStream actual(&actual_st);
-    SharedExp          e = Location::regOf(REG_PENT_EAX);
+    SharedExp          e = Location::regOf(REG_X86_EAX);
     std::set<BBIndex>& s = df->getA_phi(e);
 
     for (auto pp = s.begin(); pp != s.end(); ++pp) {

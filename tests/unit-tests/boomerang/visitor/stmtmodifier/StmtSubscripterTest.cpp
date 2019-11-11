@@ -41,20 +41,20 @@ void StmtSubscripterTest::subscriptVarForStmt(const SharedStmt& stmt, SharedExp 
 
 void StmtSubscripterTest::testSubscriptVars()
 {
-    SharedExp srch = Location::regOf(REG_PENT_ESP);
+    SharedExp srch = Location::regOf(REG_X86_ESP);
     std::shared_ptr<Assign> s9(new Assign(Const::get(0), Const::get(0)));
 
     s9->setNumber(9);
 
     // m[r28-4] := m[r28-8] * r26
     std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_ESP),
+                                         Location::regOf(REG_X86_ESP),
                                          Const::get(4))),
              Binary::get(opMult,
                         Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_PENT_ESP),
+                                                     Location::regOf(REG_X86_ESP),
                                                      Const::get(8))),
-                         Location::regOf(REG_PENT_EDX))));
+                         Location::regOf(REG_X86_EDX))));
     a->setNumber(1);
     QString     actual;
     OStream ost(&actual);
@@ -68,7 +68,7 @@ void StmtSubscripterTest::testSubscriptVars()
     // GotoStatement
     std::shared_ptr<GotoStatement> g(new GotoStatement);
     g->setNumber(55);
-    g->setDest(Location::regOf(REG_PENT_ESP));
+    g->setDest(Location::regOf(REG_X86_ESP));
     subscriptVarForStmt(g, srch, s9);
 
     actual   = "";
@@ -80,7 +80,7 @@ void StmtSubscripterTest::testSubscriptVars()
     // BranchStatement with dest m[r26{99}]{55}, condition %flags
     std::shared_ptr<BranchStatement> b(new BranchStatement);
     b->setNumber(99);
-    SharedExp srchb = Location::memOf(RefExp::get(Location::regOf(REG_PENT_EDX), b));
+    SharedExp srchb = Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b));
     b->setDest(RefExp::get(srchb, g));
     b->setCondExpr(Terminal::get(opFlags));
 
@@ -95,9 +95,9 @@ void StmtSubscripterTest::testSubscriptVars()
 
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
     std::shared_ptr<CaseStatement> c1(new CaseStatement);
-    c1->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    c1->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
-    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
+    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c1->setSwitchInfo(std::move(si));
 
     subscriptVarForStmt(c1, srch, s9);
@@ -109,7 +109,7 @@ void StmtSubscripterTest::testSubscriptVars()
 
     // CaseStatement (before recog) with dest = r28, switchVar is nullptr
     std::shared_ptr<CaseStatement> c2(new CaseStatement);
-    c2->setDest(Location::regOf(REG_PENT_ESP));
+    c2->setDest(Location::regOf(REG_X86_ESP));
     c2->setSwitchInfo(nullptr);
 
     subscriptVarForStmt(c2, srch, s9);
@@ -120,17 +120,17 @@ void StmtSubscripterTest::testSubscriptVars()
 
     // CallStatement with dest = m[r26], params = m[r27], r28, defines r28, m[r28]
     std::shared_ptr<CallStatement> ca(new CallStatement);
-    ca->setDest(Location::memOf(Location::regOf(REG_PENT_ESP)));
+    ca->setDest(Location::memOf(Location::regOf(REG_X86_ESP)));
     StatementList argl;
 
     Prog   *prog = new Prog("testSubscriptVars", nullptr);
     Module *mod  = prog->getOrInsertModuleForSymbol("test");
 
-    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_PENT_EBX)), Const::get(1)));
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_ESP), Const::get(2)));
+    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EBX)), Const::get(1)));
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_ESP), Const::get(2)));
     ca->setArguments(argl);
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ESP)));
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_PENT_ESP))));
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ESP)));
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_X86_ESP))));
 
     std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
     UserProc destProc(Address(0x2000), "dest", mod);
@@ -152,12 +152,12 @@ void StmtSubscripterTest::testSubscriptVars()
 
     // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
     std::shared_ptr<CallStatement> ca2(new CallStatement);
-    ca2->setDest(Location::regOf(REG_PENT_ESP));
-    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_PENT_EBX)), Const::get(1)));
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_EBP), Const::get(2)));
+    ca2->setDest(Location::regOf(REG_X86_ESP));
+    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EBX)), Const::get(1)));
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_EBP), Const::get(2)));
     ca2->setArguments(argl);
-    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDI)));
-    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_PENT_EDI))));
+    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
+    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_X86_EDI))));
 
     std::shared_ptr<ReturnStatement> retStmt2(new ReturnStatement);
     UserProc dest2(Address(0x2000), "dest", mod);
@@ -180,11 +180,11 @@ void StmtSubscripterTest::testSubscriptVars()
     // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
     // FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
     std::shared_ptr<ReturnStatement> r(new ReturnStatement);
-    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_PENT_ESP), Const::get(1000)));
-    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_PENT_ESP)), Const::get(2000)));
+    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_X86_ESP), Const::get(1000)));
+    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_ESP)), Const::get(2000)));
     r->addReturn(std::make_shared<Assign>(
-                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), g),
-                                                 RefExp::get(Location::regOf(REG_PENT_EDX), b))),
+                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_X86_ESP), g),
+                                                 RefExp::get(Location::regOf(REG_X86_EDX), b))),
                      Const::get(100)));
 
     subscriptVarForStmt(r, srch, s9); // New behaviour: gets ignored now
@@ -198,8 +198,8 @@ void StmtSubscripterTest::testSubscriptVars()
 
     // BoolAssign with condition m[r28] = r28, dest m[r28]
     std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
-    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_ESP)));
-    bs->setLeft(Location::memOf(Location::regOf(REG_PENT_ESP)));
+    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_ESP)), Location::regOf(REG_X86_ESP)));
+    bs->setLeft(Location::memOf(Location::regOf(REG_X86_ESP)));
 
     subscriptVarForStmt(bs, srch, s9);
 
@@ -217,16 +217,16 @@ void StmtSubscripterTest::testSubscriptVar()
 {
     // m[r28 - 4] := r28 + r29
     SharedExp lhs = Location::memOf(Binary::get(opMinus,
-                                                 Location::regOf(REG_PENT_ESP),
+                                                 Location::regOf(REG_X86_ESP),
                                                  Const::get(4)));
 
     std::shared_ptr<Assign> ae(new Assign(lhs->clone(),
                                 Binary::get(opPlus,
-                                            Location::regOf(REG_PENT_ESP),
-                                            Location::regOf(REG_PENT_EBP))));
+                                            Location::regOf(REG_X86_ESP),
+                                            Location::regOf(REG_X86_EBP))));
 
     // Subtest 1: should do nothing
-    SharedExp r28   = Location::regOf(REG_PENT_ESP);
+    SharedExp r28   = Location::regOf(REG_X86_ESP);
     SharedStmt def1(new Assign(r28->clone(), r28->clone()));
 
     def1->setNumber(12);
@@ -242,7 +242,7 @@ void StmtSubscripterTest::testSubscriptVar()
     // Subtest 3: change to a different definition
     // 99: r28 := 0
     // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
-    SharedStmt def3(new Assign(Location::regOf(REG_PENT_ESP), Const::get(0)));
+    SharedStmt def3(new Assign(Location::regOf(REG_X86_ESP), Const::get(0)));
     def3->setNumber(99);
     subscriptVarForStmt(ae, r28, def3);
     QCOMPARE(ae->toString(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));

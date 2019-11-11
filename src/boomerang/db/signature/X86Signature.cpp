@@ -25,9 +25,9 @@ namespace CallingConvention::StdC
 X86Signature::X86Signature(const QString &name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(REG_PENT_ESP));
+    Signature::addReturn(Location::regOf(REG_X86_ESP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                 Location::regOf(REG_PENT_ESP), nullptr);
+    //                                 Location::regOf(REG_X86_ESP), nullptr);
 }
 
 
@@ -85,15 +85,15 @@ bool X86Signature::qualified(UserProc *p, Signature & /*candidate*/)
         }
 
         if (e->getLeft()->isPC()) {
-            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP)) {
+            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(REG_X86_ESP)) {
                 LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;
             }
         }
         else if (e->getLeft()->isRegOfConst() &&
-                 (e->getLeft()->getSubExp1()->access<Const>()->getInt() == REG_PENT_ESP)) {
+                 (e->getLeft()->getSubExp1()->access<Const>()->getInt() == REG_X86_ESP)) {
             if ((e->getRight()->getOper() == opPlus) &&
-                e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP) &&
+                e->getRight()->getSubExp1()->isRegN(REG_X86_ESP) &&
                 e->getRight()->getSubExp2()->isIntConst() &&
                 (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
                 LOG_VERBOSE("Got r[28] = r[28] + 4");
@@ -110,7 +110,7 @@ bool X86Signature::qualified(UserProc *p, Signature & /*candidate*/)
 
 RegNum X86Signature::getStackRegister() const
 {
-    return REG_PENT_ESP;
+    return REG_X86_ESP;
 }
 
 
@@ -122,10 +122,10 @@ void X86Signature::addReturn(SharedType type, SharedExp e)
 
     if (e == nullptr) {
         if (type->isFloat()) {
-            e = Location::regOf(REG_PENT_ST0);
+            e = Location::regOf(REG_X86_ST0);
         }
         else {
-            e = Location::regOf(REG_PENT_EAX);
+            e = Location::regOf(REG_X86_EAX);
         }
     }
 
@@ -146,7 +146,7 @@ SharedExp X86Signature::getArgumentExp(int n) const
         return Signature::getArgumentExp(n);
     }
 
-    SharedExp esp = Location::regOf(REG_PENT_ESP);
+    SharedExp esp = Location::regOf(REG_X86_ESP);
 
     if ((m_params.size() != 0) && (*m_params[0]->getExp() == *esp)) {
         n--;
@@ -169,19 +169,19 @@ SharedExp X86Signature::getProven(SharedExp left) const
         const int r = left->access<Const, 1>()->getInt();
 
         switch (r) {
-        case REG_PENT_ESP:                                                            // esp
-            return Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)); // esp+4
+        case REG_X86_ESP:                                                            // esp
+            return Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(4)); // esp+4
 
-        case REG_PENT_BX:
-        case REG_PENT_BP:
-        case REG_PENT_SI:
-        case REG_PENT_DI:
-        case REG_PENT_BL:
-        case REG_PENT_BH:
-        case REG_PENT_EBX:
-        case REG_PENT_EBP:
-        case REG_PENT_ESI:
-        case REG_PENT_EDI: return Location::regOf(r);
+        case REG_X86_BX:
+        case REG_X86_BP:
+        case REG_X86_SI:
+        case REG_X86_DI:
+        case REG_X86_BL:
+        case REG_X86_BH:
+        case REG_X86_EBX:
+        case REG_X86_EBP:
+        case REG_X86_ESI:
+        case REG_X86_EDI: return Location::regOf(r);
         }
     }
 
@@ -193,16 +193,16 @@ bool X86Signature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
         switch (e->access<Const, 1>()->getInt()) {
-        case REG_PENT_EBP: // ebp
-        case REG_PENT_EBX: // ebx
-        case REG_PENT_ESI: // esi
-        case REG_PENT_EDI: // edi
-        case REG_PENT_BX:  // bx
-        case REG_PENT_BP:  // bp
-        case REG_PENT_SI:  // si
-        case REG_PENT_DI:  // di
-        case REG_PENT_BL:  // bl
-        case REG_PENT_BH:  // bh
+        case REG_X86_EBP: // ebp
+        case REG_X86_EBX: // ebx
+        case REG_X86_ESI: // esi
+        case REG_X86_EDI: // edi
+        case REG_X86_BX:  // bx
+        case REG_X86_BP:  // bp
+        case REG_X86_SI:  // si
+        case REG_X86_DI:  // di
+        case REG_X86_BL:  // bl
+        case REG_X86_BH:  // bh
             return true;
 
         default: return false;
@@ -220,7 +220,7 @@ void X86Signature::getLibraryDefines(StatementList &defs)
         return;
     }
 
-    auto r24      = Location::regOf(REG_PENT_EAX); // eax
+    auto r24      = Location::regOf(REG_X86_EAX); // eax
     SharedType ty = SizeType::get(32);
 
     if (m_returns.size() > 1) { // Ugh - note the stack pointer is the first return still
@@ -228,9 +228,9 @@ void X86Signature::getLibraryDefines(StatementList &defs)
     }
 
     defs.append(std::make_shared<ImplicitAssign>(ty, r24));                       // eax
-    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ECX))); // ecx
-    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDX))); // edx
-    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ESP))); // esp
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ECX))); // ecx
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDX))); // edx
+    defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ESP))); // esp
 }
 
 
@@ -240,18 +240,18 @@ bool X86Signature::returnCompare(const Assignment &a, const Assignment &b) const
     SharedConstExp lb = b.getLeft();
 
     // Eax is the preferred return location
-    if (la->isRegN(REG_PENT_EAX)) {
+    if (la->isRegN(REG_X86_EAX)) {
         return true; // r24 is less than anything
     }
-    else if (lb->isRegN(REG_PENT_EAX)) {
+    else if (lb->isRegN(REG_X86_EAX)) {
         return false; // Nothing is less than r24
     }
 
     // Next best is floating point %st
-    if (la->isRegN(REG_PENT_ST0)) {
+    if (la->isRegN(REG_X86_ST0)) {
         return true; // r30 is less than anything that's left
     }
-    else if (lb->isRegN(REG_PENT_ST0)) {
+    else if (lb->isRegN(REG_X86_ST0)) {
         return false; // Nothing left is less than r30
     }
 
@@ -265,8 +265,8 @@ bool CallingConvention::StdC::X86Signature::argumentCompare(const Assignment &a,
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
-    int ma            = Util::getStackOffset(la, REG_PENT_ESP);
-    int mb            = Util::getStackOffset(lb, REG_PENT_ESP);
+    int ma            = Util::getStackOffset(la, REG_X86_ESP);
+    int mb            = Util::getStackOffset(lb, REG_X86_ESP);
 
     if (ma && mb) {
         return ma < mb;

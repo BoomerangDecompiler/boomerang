@@ -189,10 +189,10 @@ void RTLTest::testVisitor()
 //    pBF->UnLoad();
 //    delete pBF;
 //    delete pFE;
-//    pBF = bff.Load(SWITCH_PENT);
+//    pBF = bff.Load(SWITCH_X86);
 //    QVERIFY(pBF != 0);
 //    QVERIFY(pBF->GetMachine() == MACHINE_X86);
-//    pFE = new PentiumFrontEnd(pBF, prog, &bff);
+//    pFE = new X86FrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
 
 //    // Decode fifth instruction: "cmp    $0x5,%eax"

@@ -501,9 +501,9 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
 
     switch (machine) {
     case Machine::X86:
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EAX))); // eax
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ECX))); // ecx
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDX))); // edx
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX))); // eax
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ECX))); // ecx
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDX))); // edx
         return true;
 
     case Machine::SPARC:

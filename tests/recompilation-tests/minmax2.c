@@ -33,7 +33,7 @@
         10840:  81 c7 e0 08        ret
         10844:  91 e8 20 00        restore      %g0, 0, %o0
 
-    For pentum, the Sun compiler doesn't (at present) generate terribly
+    For x86, the Sun compiler doesn't (at present) generate terribly
     interesting code, but the test is retained for completeness.
 
 05 Apr 01 - Mike: Created

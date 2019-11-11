@@ -19,7 +19,7 @@ void StatementSetTest::testInsert()
 {
     StatementSet set;
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     set.insert(assign);
 
     auto it = set.begin();
@@ -33,7 +33,7 @@ void StatementSetTest::testRemove()
     StatementSet set;
     QVERIFY(!set.remove(nullptr));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
 
     set.insert(assign);
     QVERIFY(set.remove(assign));
@@ -46,7 +46,7 @@ void StatementSetTest::testContains()
     StatementSet set;
     QVERIFY(!set.contains(nullptr));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     set.insert(assign);
     QVERIFY(set.contains(assign));
     set.remove(assign);
@@ -59,11 +59,11 @@ void StatementSetTest::testDefinesLoc()
     StatementSet set;
     QVERIFY(!set.definesLoc(nullptr));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     set.insert(assign);
-    QVERIFY(set.definesLoc(Location::regOf(REG_PENT_ECX)));
+    QVERIFY(set.definesLoc(Location::regOf(REG_X86_ECX)));
     set.remove(assign);
-    QVERIFY(!set.definesLoc(Location::regOf(REG_PENT_ECX)));
+    QVERIFY(!set.definesLoc(Location::regOf(REG_X86_ECX)));
 }
 
 
@@ -72,7 +72,7 @@ void StatementSetTest::testIsSubSetOf()
     StatementSet set1, set2;
     QVERIFY(set1.isSubSetOf(set2));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     set1.insert(assign);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
@@ -80,7 +80,7 @@ void StatementSetTest::testIsSubSetOf()
     set2.insert(assign);
     QVERIFY(set1.isSubSetOf(set2));
 
-    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_ECX)));
     set1.insert(assign2);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
@@ -94,9 +94,9 @@ void StatementSetTest::testMakeUnion()
     set1.makeUnion(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
-    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
-    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_ESI)));
 
     set1.insert(assign1);
     set1.insert(assign2);
@@ -116,9 +116,9 @@ void StatementSetTest::testMakeIsect()
     set1.makeIsect(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
-    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
-    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_ESI)));
 
     set1.insert(assign1);
     set1.insert(assign2);
@@ -140,9 +140,9 @@ void StatementSetTest::testMakeDiff()
     set1.makeDiff(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
-    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_ECX)));
-    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_PENT_EBX), Location::regOf(REG_PENT_ESI)));
+    std::shared_ptr<Assign> assign1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
+    std::shared_ptr<Assign> assign2(new Assign(Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_ECX)));
+    std::shared_ptr<Assign> assign3(new Assign(Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_ESI)));
 
     set1.insert(assign1);
     set1.insert(assign2);

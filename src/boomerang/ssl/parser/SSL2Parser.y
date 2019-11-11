@@ -425,28 +425,28 @@ nonempty_rtl:
 rtl_part:
     KW_FPUSH {
         $$.reset(new RTL(Address::ZERO, {
-            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST7)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST5)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST4)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST3)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST2)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST1)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST0)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
+            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_X86_ST7)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST7), Location::regOf(REG_X86_ST6)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST6), Location::regOf(REG_X86_ST5)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST5), Location::regOf(REG_X86_ST4)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST4), Location::regOf(REG_X86_ST3)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST3), Location::regOf(REG_X86_ST2)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST2), Location::regOf(REG_X86_ST1)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST1), Location::regOf(REG_X86_ST0)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
         }));
     }
   | KW_FPOP {
         $$.reset(new RTL(Address::ZERO, {
-            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST0)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST2)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST3)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST4)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST5)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST6)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST7)),
-            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::tempOf(Const::get(const_cast<char *>("tmpD9")))),
+            std::make_shared<Assign>(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_X86_ST0)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST0), Location::regOf(REG_X86_ST1)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST1), Location::regOf(REG_X86_ST2)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST2), Location::regOf(REG_X86_ST3)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST3), Location::regOf(REG_X86_ST4)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST4), Location::regOf(REG_X86_ST5)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST5), Location::regOf(REG_X86_ST6)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST6), Location::regOf(REG_X86_ST7)),
+            std::make_shared<Assign>(FloatType::get(80), Location::regOf(REG_X86_ST7), Location::tempOf(Const::get(const_cast<char *>("tmpD9")))),
         }));
     }
   ;

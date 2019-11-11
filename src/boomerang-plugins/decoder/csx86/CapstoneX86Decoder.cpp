@@ -33,45 +33,45 @@
 // not all registers supported by capstone
 static std::map<cs::x86_reg, RegNum> oldRegMap = {
     { cs::X86_REG_INVALID, RegNumSpecial },
-    { cs::X86_REG_EAX, REG_PENT_EAX },
-    { cs::X86_REG_ECX, REG_PENT_ECX },
-    { cs::X86_REG_EDX, REG_PENT_EDX },
-    { cs::X86_REG_EBX, REG_PENT_EBX },
-    { cs::X86_REG_ESP, REG_PENT_ESP },
-    { cs::X86_REG_EBP, REG_PENT_EBP },
-    { cs::X86_REG_ESI, REG_PENT_ESI },
-    { cs::X86_REG_EDI, REG_PENT_EDI },
-    { cs::X86_REG_AX, REG_PENT_AX },
-    { cs::X86_REG_CX, REG_PENT_CX },
-    { cs::X86_REG_DX, REG_PENT_DX },
-    { cs::X86_REG_BX, REG_PENT_BX },
-    { cs::X86_REG_SP, REG_PENT_SP },
-    { cs::X86_REG_BP, REG_PENT_BP },
-    { cs::X86_REG_SI, REG_PENT_SI },
-    { cs::X86_REG_DI, REG_PENT_DI },
-    { cs::X86_REG_AL, REG_PENT_AL },
-    { cs::X86_REG_CL, REG_PENT_CL },
-    { cs::X86_REG_DL, REG_PENT_DL },
-    { cs::X86_REG_BL, REG_PENT_BL },
-    { cs::X86_REG_AH, REG_PENT_AH },
-    { cs::X86_REG_CH, REG_PENT_CH },
-    { cs::X86_REG_DH, REG_PENT_DH },
-    { cs::X86_REG_BH, REG_PENT_BH },
-    { cs::X86_REG_CS, REG_PENT_CS },
-    { cs::X86_REG_DS, REG_PENT_DS },
-    { cs::X86_REG_ES, REG_PENT_ES },
-    { cs::X86_REG_FS, REG_PENT_FS },
-    { cs::X86_REG_GS, REG_PENT_GS },
-    { cs::X86_REG_SS, REG_PENT_SS },
+    { cs::X86_REG_EAX, REG_X86_EAX },
+    { cs::X86_REG_ECX, REG_X86_ECX },
+    { cs::X86_REG_EDX, REG_X86_EDX },
+    { cs::X86_REG_EBX, REG_X86_EBX },
+    { cs::X86_REG_ESP, REG_X86_ESP },
+    { cs::X86_REG_EBP, REG_X86_EBP },
+    { cs::X86_REG_ESI, REG_X86_ESI },
+    { cs::X86_REG_EDI, REG_X86_EDI },
+    { cs::X86_REG_AX, REG_X86_AX },
+    { cs::X86_REG_CX, REG_X86_CX },
+    { cs::X86_REG_DX, REG_X86_DX },
+    { cs::X86_REG_BX, REG_X86_BX },
+    { cs::X86_REG_SP, REG_X86_SP },
+    { cs::X86_REG_BP, REG_X86_BP },
+    { cs::X86_REG_SI, REG_X86_SI },
+    { cs::X86_REG_DI, REG_X86_DI },
+    { cs::X86_REG_AL, REG_X86_AL },
+    { cs::X86_REG_CL, REG_X86_CL },
+    { cs::X86_REG_DL, REG_X86_DL },
+    { cs::X86_REG_BL, REG_X86_BL },
+    { cs::X86_REG_AH, REG_X86_AH },
+    { cs::X86_REG_CH, REG_X86_CH },
+    { cs::X86_REG_DH, REG_X86_DH },
+    { cs::X86_REG_BH, REG_X86_BH },
+    { cs::X86_REG_CS, REG_X86_CS },
+    { cs::X86_REG_DS, REG_X86_DS },
+    { cs::X86_REG_ES, REG_X86_ES },
+    { cs::X86_REG_FS, REG_X86_FS },
+    { cs::X86_REG_GS, REG_X86_GS },
+    { cs::X86_REG_SS, REG_X86_SS },
     { cs::X86_REG_IP, RegNumSpecial },
-    { cs::X86_REG_ST0, REG_PENT_ST0 },
-    { cs::X86_REG_ST1, REG_PENT_ST1 },
-    { cs::X86_REG_ST2, REG_PENT_ST2 },
-    { cs::X86_REG_ST3, REG_PENT_ST3 },
-    { cs::X86_REG_ST4, REG_PENT_ST4 },
-    { cs::X86_REG_ST5, REG_PENT_ST5 },
-    { cs::X86_REG_ST6, REG_PENT_ST6 },
-    { cs::X86_REG_ST7, REG_PENT_ST7 }
+    { cs::X86_REG_ST0, REG_X86_ST0 },
+    { cs::X86_REG_ST1, REG_X86_ST1 },
+    { cs::X86_REG_ST2, REG_X86_ST2 },
+    { cs::X86_REG_ST3, REG_X86_ST3 },
+    { cs::X86_REG_ST4, REG_X86_ST4 },
+    { cs::X86_REG_ST5, REG_X86_ST5 },
+    { cs::X86_REG_ST6, REG_X86_ST6 },
+    { cs::X86_REG_ST7, REG_X86_ST7 }
     // fsw / fstp / fcw ?
 };
 
@@ -313,18 +313,18 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             switch (instruction->id) {
             case cs::X86_INS_JCXZ: {
                 branch->setCondExpr(
-                    Binary::get(opEquals, Location::regOf(REG_PENT_CX), Const::get(0)));
+                    Binary::get(opEquals, Location::regOf(REG_X86_CX), Const::get(0)));
                 break;
             }
             case cs::X86_INS_JECXZ: {
                 branch->setCondExpr(
-                    Binary::get(opEquals, Location::regOf(REG_PENT_ECX), Const::get(0)));
+                    Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0)));
                 break;
             }
             case cs::X86_INS_LOOP: {
                 // FIXME wrong for 16 bit programs
                 branch->setCondExpr(
-                    Binary::get(opNotEqual, Location::regOf(REG_PENT_ECX), Const::get(0)));
+                    Binary::get(opNotEqual, Location::regOf(REG_X86_ECX), Const::get(0)));
                 break;
             }
             case cs::X86_INS_LOOPE: {
@@ -332,7 +332,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
                 // clang-format off
                 branch->setCondExpr(Binary::get(opAnd,
                                                 Binary::get(opNotEqual,
-                                                            Location::regOf(REG_PENT_ECX),
+                                                            Location::regOf(REG_X86_ECX),
                                                             Const::get(0)),
                                                 Binary::get(opEquals,
                                                             Terminal::get(opZF),
@@ -345,7 +345,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
                 // clang-format off
                 branch->setCondExpr(Binary::get(opAnd,
                                                 Binary::get(opNotEqual,
-                                                            Location::regOf(REG_PENT_ECX),
+                                                            Location::regOf(REG_X86_ECX),
                                                             Const::get(0)),
                                                 Binary::get(opEquals,
                                                             Terminal::get(opZF),

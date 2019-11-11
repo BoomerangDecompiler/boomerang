@@ -82,7 +82,7 @@ void LibProcTest::testRemoveParameterFromSignature()
 {
     LibProc proc(Address(0x1000), "test", nullptr);
     auto sig = std::make_shared<CallingConvention::StdC::X86Signature>("test");
-    auto exp = Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(8)));
+    auto exp = Location::memOf(Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(8)));
     sig->addParameter("foo", exp);
 
     proc.setSignature(sig);
@@ -107,7 +107,7 @@ void LibProcTest::testRenameParameter()
 {
     LibProc proc(Address::INVALID, "test", nullptr);
     auto sig = std::make_shared<CallingConvention::StdC::X86Signature>("test");
-    auto exp = Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(8)));
+    auto exp = Location::memOf(Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(8)));
     sig->addParameter("foo", exp);
     sig->addParameter("foo", exp);
     proc.setSignature(sig);
@@ -145,12 +145,12 @@ void LibProcTest::testGetProven()
 {
     LibProc proc(Address::INVALID, "test", nullptr);
     QVERIFY(proc.getProven(nullptr) == nullptr);
-    QVERIFY(proc.getProven(Location::regOf(REG_PENT_EBX)) == nullptr);
+    QVERIFY(proc.getProven(Location::regOf(REG_X86_EBX)) == nullptr);
 
     proc.setSignature(std::make_shared<CallingConvention::StdC::X86Signature>("test"));
-    QVERIFY(proc.getProven(Location::regOf(REG_PENT_EBX)) != nullptr);
-    QCOMPARE(proc.getProven(Location::regOf(REG_PENT_EBX))->toString(),
-             Location::regOf(REG_PENT_EBX)->toString());
+    QVERIFY(proc.getProven(Location::regOf(REG_X86_EBX)) != nullptr);
+    QCOMPARE(proc.getProven(Location::regOf(REG_X86_EBX))->toString(),
+             Location::regOf(REG_X86_EBX)->toString());
 }
 
 
@@ -158,7 +158,7 @@ void LibProcTest::testGetPremised()
 {
     LibProc proc(Address::INVALID, "test", nullptr);
     QVERIFY(proc.getPremised(nullptr) == nullptr);
-    QVERIFY(proc.getPremised(Location::regOf(REG_PENT_EBX)) == nullptr);
+    QVERIFY(proc.getPremised(Location::regOf(REG_X86_EBX)) == nullptr);
 }
 
 
@@ -166,11 +166,11 @@ void LibProcTest::testIsPreserved()
 {
     LibProc proc(Address::INVALID, "test", nullptr);
     QVERIFY(!proc.isPreserved(nullptr));
-    QVERIFY(!proc.isPreserved(Location::regOf(REG_PENT_EBX)));
+    QVERIFY(!proc.isPreserved(Location::regOf(REG_X86_EBX)));
 
     proc.setSignature(std::make_shared<CallingConvention::StdC::X86Signature>("test"));
-    QVERIFY(!proc.isPreserved(Location::regOf(REG_PENT_EAX)));
-    QVERIFY(proc.isPreserved(Location::regOf(REG_PENT_EBX)));
+    QVERIFY(!proc.isPreserved(Location::regOf(REG_X86_EAX)));
+    QVERIFY(proc.isPreserved(Location::regOf(REG_X86_EBX)));
 }
 
 QTEST_GUILESS_MAIN(LibProcTest)

@@ -54,8 +54,8 @@ void FuncTypeTest::testLess()
     QCOMPARE(FuncType(sig1) < FuncType(sig2), true);
     QCOMPARE(FuncType(sig1) < FuncType(sig1), false);
 
-    sig1->addParameter(Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Unsigned));
-    sig2->addParameter(Location::regOf(REG_PENT_EBX), IntegerType::get(32, Sign::Unsigned));
+    sig1->addParameter(Location::regOf(REG_X86_EDX), IntegerType::get(32, Sign::Unsigned));
+    sig2->addParameter(Location::regOf(REG_X86_EBX), IntegerType::get(32, Sign::Unsigned));
 
     QCOMPARE(FuncType(sig1) < FuncType(sig2), true);
     QCOMPARE(FuncType(sig2) < FuncType(sig1), false);
@@ -70,7 +70,7 @@ void FuncTypeTest::testGetCtype()
     QCOMPARE(FuncType().getCtype(), "void (void)");
     QCOMPARE(FuncType(sig1).getCtype(), "void * ()");
 
-    sig1->addParameter(Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Unsigned));
+    sig1->addParameter(Location::regOf(REG_X86_EDX), IntegerType::get(32, Sign::Unsigned));
     QCOMPARE(FuncType(sig1).getCtype(), "void * (unsigned int)");
 
     sig1->addReturn(IntegerType::get(32, Sign::Signed));
@@ -92,12 +92,12 @@ void FuncTypeTest::testGetReturnAndParam()
     QCOMPARE(ret, "void *");
     QCOMPARE(param, " ()");
 
-    sig1->addParameter(Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Unsigned));
+    sig1->addParameter(Location::regOf(REG_X86_EDX), IntegerType::get(32, Sign::Unsigned));
     FuncType(sig1).getReturnAndParam(ret, param);
     QCOMPARE(ret, "void *");
     QCOMPARE(param, " (unsigned int)");
 
-    sig1->addParameter(Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Signed));
+    sig1->addParameter(Location::regOf(REG_X86_EDX), IntegerType::get(32, Sign::Signed));
     FuncType(sig1).getReturnAndParam(ret, param);
     QCOMPARE(ret, "void *");
     QCOMPARE(param, " (unsigned int, int)");

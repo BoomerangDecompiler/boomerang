@@ -45,7 +45,7 @@ CapstoneDecoder::CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode
     }
 
     // check that all required registers are present
-    if (m_dict.getRegDB()->getRegNameByNum(REG_PENT_ESP).isEmpty()) {
+    if (m_dict.getRegDB()->getRegNameByNum(REG_X86_ESP).isEmpty()) {
         throw std::runtime_error("Required register #28 (%esp) not present");
     }
 }

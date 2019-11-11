@@ -168,9 +168,9 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
 int debugRegister(int r)
 {
     switch (r) {
-    case 2: return REG_PENT_EDX;
-    case 4: return REG_PENT_ECX;
-    case 8: return REG_PENT_EBP;
+    case 2: return REG_X86_EDX;
+    case 4: return REG_X86_ECX;
+    case 8: return REG_X86_EBP;
     }
 
     assert(false);
@@ -189,7 +189,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
             assert(symInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(
                 symInfo->Name,
-                Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP),
+                Location::memOf(Binary::get(opPlus, Location::regOf(REG_X86_ESP),
                                             Const::get((int)symInfo->Address - 4))),
                 ty);
         }
@@ -202,7 +202,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         UserProc *uproc = static_cast<UserProc *>(proc);
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
-        SharedExp memref = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP),
+        SharedExp memref = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP),
                                                        Const::get(-((int)symInfo->Address - 4))));
         SharedType ty    = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
         uproc->addLocal(ty, symInfo->Name, memref);
