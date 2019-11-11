@@ -146,7 +146,7 @@ bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, DecodeR
     lifted.reLift = false;
     lifted.rtl    = createRTLForInstruction(insn);
 
-    return lifted.valid();
+    return lifted.rtl != nullptr;
 }
 
 

@@ -224,7 +224,7 @@ bool ST20Decoder::liftInstruction(const MachineInstruction &insn, DecodeResult &
     lifted.reLift = false;
     lifted.rtl    = instantiateRTL(insn);
 
-    return lifted.valid();
+    return lifted.rtl != nullptr;
 }
 
 

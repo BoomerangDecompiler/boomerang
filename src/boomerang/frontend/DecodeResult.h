@@ -45,7 +45,7 @@ public:
     /// Resets all the fields to their default values.
     void reset();
 
-    bool valid() const { return rtl != nullptr; }
+//     bool valid() const { return rtl != nullptr; }
 
 public:
     /// The RTL constructed (if any).

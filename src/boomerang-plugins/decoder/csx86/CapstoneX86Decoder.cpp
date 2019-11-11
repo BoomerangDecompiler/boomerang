@@ -229,7 +229,7 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         lifted.rtl = createRTLForInstruction(insn);
     }
 
-    return lifted.valid();
+    return lifted.rtl != nullptr;
 }
 
 

@@ -197,7 +197,7 @@ bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, Decod
         lifted.iclass = IClass::NOP;
     }
 
-    return lifted.valid();
+    return lifted.rtl != nullptr;
 }
 
 
