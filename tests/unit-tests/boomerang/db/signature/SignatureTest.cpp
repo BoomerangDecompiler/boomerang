@@ -417,7 +417,7 @@ void SignatureTest::testGetABIDefines()
 {
     StatementList defs;
 
-    QVERIFY(Signature::getABIDefines(Machine::PENTIUM, defs));
+    QVERIFY(Signature::getABIDefines(Machine::X86, defs));
     QVERIFY(defs.size() == 3);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PENT_EAX)) != nullptr);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PENT_ECX)) != nullptr);

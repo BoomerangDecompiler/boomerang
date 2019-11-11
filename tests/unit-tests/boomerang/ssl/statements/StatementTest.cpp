@@ -97,7 +97,7 @@ void StatementTest::testFlow()
 
     // create UserProc
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
 
     ProcCFG *cfg   = proc->getCFG();
 
@@ -166,7 +166,7 @@ void StatementTest::testKill()
     // create UserProc
     QString  name  = "test";
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, name));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, name));
 
     // create CFG
     ProcCFG              *cfg   = proc->getCFG();
@@ -232,7 +232,7 @@ void StatementTest::testUse()
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
 
     ProcCFG *cfg   = proc->getCFG();
 
@@ -294,7 +294,7 @@ void StatementTest::testUseOverKill()
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
     ProcCFG *cfg = proc->getCFG();
 
     std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));

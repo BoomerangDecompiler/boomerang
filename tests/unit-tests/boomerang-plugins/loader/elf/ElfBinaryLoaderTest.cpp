@@ -42,7 +42,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     // test the loader
     QVERIFY(binary != nullptr);
     QCOMPARE(binary->getFormat(),         LoadFmt::ELF);
-    QCOMPARE(binary->getMachine(),        Machine::PENTIUM);
+    QCOMPARE(binary->getMachine(),        Machine::X86);
     QCOMPARE(binary->hasDebugInfo(),      false);
     QCOMPARE(binary->getEntryPoint(),     Address(0x080482F0));
     QCOMPARE(binary->getMainEntryPoint(), Address(0x080483F0));
@@ -68,7 +68,7 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 
     QVERIFY(binary != nullptr);
     QCOMPARE(binary->getFormat(), LoadFmt::ELF);
-    QCOMPARE(binary->getMachine(), Machine::PENTIUM);
+    QCOMPARE(binary->getMachine(), Machine::X86);
 
     BinaryImage *image = m_project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);

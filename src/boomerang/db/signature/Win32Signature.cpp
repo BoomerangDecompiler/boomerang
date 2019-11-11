@@ -91,7 +91,7 @@ static SharedExp stackPlusFour = Binary::get(opPlus, Location::regOf(REG_PENT_ES
 
 bool Win32Signature::qualified(UserProc *p, Signature & /*candidate*/)
 {
-    if (p->getProg()->getMachine() != Machine::PENTIUM || !p->getProg()->isWin32()) {
+    if (p->getProg()->getMachine() != Machine::X86 || !p->getProg()->isWin32()) {
         return false;
     }
 

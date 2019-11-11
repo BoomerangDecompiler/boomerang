@@ -60,7 +60,7 @@ bool PentiumSignature::operator==(const Signature &other) const
 
 bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
 {
-    if (p->getProg()->getMachine() != Machine::PENTIUM) {
+    if (p->getProg()->getMachine() != Machine::X86) {
         return false;
     }
 

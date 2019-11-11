@@ -21,7 +21,7 @@
 
 void FuncTypeTest::testConstruct()
 {
-    std::shared_ptr<Signature> sig = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo");
+    std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "foo");
 
     QVERIFY(FuncType().getSignature() == nullptr);
     QVERIFY(*FuncType(sig).getSignature() == *sig);
@@ -30,8 +30,8 @@ void FuncTypeTest::testConstruct()
 
 void FuncTypeTest::testEquals()
 {
-    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo1");
-    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo2");
+    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::X86, CallConv::C, "foo1");
+    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::X86, CallConv::C, "foo2");
 
     QCOMPARE(FuncType() == VoidType(), false);
     QCOMPARE(FuncType() == FuncType(), true);
@@ -46,8 +46,8 @@ void FuncTypeTest::testLess()
     QCOMPARE(FuncType() < FuncType(), false);
     QCOMPARE(FuncType() < BooleanType(), true);
 
-    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo1");
-    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo2");
+    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::X86, CallConv::C, "foo1");
+    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::X86, CallConv::C, "foo2");
 
     QCOMPARE(FuncType(sig1) < FuncType(), false);
     QCOMPARE(FuncType() < FuncType(sig1), true);
@@ -64,8 +64,8 @@ void FuncTypeTest::testLess()
 
 void FuncTypeTest::testGetCtype()
 {
-    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo1");
-    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo2");
+    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::X86, CallConv::C, "foo1");
+    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::X86, CallConv::C, "foo2");
 
     QCOMPARE(FuncType().getCtype(), "void (void)");
     QCOMPARE(FuncType(sig1).getCtype(), "void * ()");
@@ -82,7 +82,7 @@ void FuncTypeTest::testGetReturnAndParam()
 {
     QString ret, param;
 
-    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo1");
+    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::X86, CallConv::C, "foo1");
 
     FuncType().getReturnAndParam(ret, param);
     QCOMPARE(ret, "void");
@@ -106,8 +106,8 @@ void FuncTypeTest::testGetReturnAndParam()
 
 void FuncTypeTest::testIsCompatibleWith()
 {
-    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo1");
-    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::PENTIUM, CallConv::C, "foo2");
+    std::shared_ptr<Signature> sig1 = Signature::instantiate(Machine::X86, CallConv::C, "foo1");
+    std::shared_ptr<Signature> sig2 = Signature::instantiate(Machine::X86, CallConv::C, "foo2");
 
     QCOMPARE(FuncType::get(sig1)->isCompatibleWith(*VoidType::get()), true);
     QCOMPARE(FuncType::get(sig1)->isCompatibleWith(*FuncType::get(sig1)), true);

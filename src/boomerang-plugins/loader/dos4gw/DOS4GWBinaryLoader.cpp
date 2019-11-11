@@ -416,7 +416,7 @@ LoadFmt DOS4GWBinaryLoader::getFormat() const
 
 Machine DOS4GWBinaryLoader::getMachine() const
 {
-    return Machine::PENTIUM;
+    return Machine::X86;
 }
 
 

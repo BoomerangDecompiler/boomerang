@@ -738,7 +738,7 @@ Machine ElfBinaryLoader::getMachine() const
         return Machine::SPARC;
     }
     else if (elfMachine == EM_386) {
-        return Machine::PENTIUM;
+        return Machine::X86;
     }
     else if (elfMachine == EM_PPC) {
         return Machine::PPC;

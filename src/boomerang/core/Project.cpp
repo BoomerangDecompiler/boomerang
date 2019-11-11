@@ -269,7 +269,7 @@ IFrontEnd *Project::createFrontEnd()
         Plugin *plugin = nullptr;
 
         switch (getLoadedBinaryFile()->getMachine()) {
-        case Machine::PENTIUM:
+        case Machine::X86:
             plugin = m_pluginManager->getPluginByName("X86 FrontEnd plugin");
             break;
         case Machine::SPARC:

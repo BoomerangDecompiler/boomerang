@@ -425,7 +425,7 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 std::unique_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
 {
     switch (machine) {
-    case Machine::PENTIUM:
+    case Machine::X86:
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention Pentium signatures will be Windows
             return std::make_unique<CallingConvention::Win32Signature>(name);
@@ -500,7 +500,7 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
     }
 
     switch (machine) {
-    case Machine::PENTIUM:
+    case Machine::X86:
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EAX))); // eax
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ECX))); // ecx
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDX))); // edx

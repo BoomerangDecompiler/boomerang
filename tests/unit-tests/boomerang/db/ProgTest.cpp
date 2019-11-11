@@ -287,7 +287,7 @@ void ProgTest::testGetMachine()
     QCOMPARE(testProg.getMachine(), Machine::INVALID);
 
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-    QCOMPARE(m_project.getProg()->getMachine(), Machine::PENTIUM);
+    QCOMPARE(m_project.getProg()->getMachine(), Machine::X86);
 }
 
 
