@@ -134,7 +134,7 @@ void X86Signature::addReturn(SharedType type, SharedExp e)
 
 
 void X86Signature::addParameter(const QString &name, const SharedExp &e, SharedType type,
-                                    const QString &boundMax)
+                                const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
@@ -227,7 +227,7 @@ void X86Signature::getLibraryDefines(StatementList &defs)
         ty = m_returns[1]->getType();
     }
 
-    defs.append(std::make_shared<ImplicitAssign>(ty, r24));                       // eax
+    defs.append(std::make_shared<ImplicitAssign>(ty, r24));                      // eax
     defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ECX))); // ecx
     defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDX))); // edx
     defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ESP))); // esp
@@ -261,7 +261,7 @@ bool X86Signature::returnCompare(const Assignment &a, const Assignment &b) const
 
 
 bool CallingConvention::StdC::X86Signature::argumentCompare(const Assignment &a,
-                                                                const Assignment &b) const
+                                                            const Assignment &b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();

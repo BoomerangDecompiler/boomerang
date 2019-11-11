@@ -328,7 +328,7 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
 
 
 void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                       const RTLList &BB_rtls)
+                                   const RTLList &BB_rtls)
 {
     if (!call->getDestProc()) {
         return;
@@ -516,5 +516,5 @@ void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
     }
 }
 
-BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, X86FrontEnd, "X86 FrontEnd plugin",
-                        BOOMERANG_VERSION, "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, X86FrontEnd, "X86 FrontEnd plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")
