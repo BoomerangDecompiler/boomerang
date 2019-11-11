@@ -42,15 +42,15 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      getFullSamplePath("pentium/hello")
-#define GLOBAL1_PENTIUM    getFullSamplePath("pentium/global1")
+#define HELLO_X86      getFullSamplePath("x86/hello")
+#define GLOBAL1_X86    getFullSamplePath("x86/lobal1")
 
 
 void StatementTest::testEmpty()
 {
     m_project.getSettings()->setOutputDirectory("./unit_test/");
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     Prog *prog = m_project.getProg();
 
@@ -91,7 +91,7 @@ void StatementTest::testEmpty()
 
 void StatementTest::testFlow()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     Prog *prog = m_project.getProg();
 
@@ -160,7 +160,7 @@ void StatementTest::testFlow()
 
 void StatementTest::testKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     // create UserProc
@@ -228,7 +228,7 @@ void StatementTest::testKill()
 
 void StatementTest::testUse()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
@@ -290,7 +290,7 @@ void StatementTest::testUse()
 
 void StatementTest::testUseOverKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
@@ -358,7 +358,7 @@ void StatementTest::testUseOverKill()
 
 void StatementTest::testUseOverBB()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     // create UserProc
@@ -428,7 +428,7 @@ void StatementTest::testUseOverBB()
 
 void StatementTest::testUseKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
@@ -493,7 +493,7 @@ void StatementTest::testEndlessLoop()
     // BB1 -> BB2 _
     //       ^_____|
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
@@ -690,7 +690,7 @@ void StatementTest::testWildLocationSet()
 
 void StatementTest::testRecursion()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
@@ -1080,7 +1080,7 @@ void StatementTest::testAddUsedLocsBool()
 
 void StatementTest::testBypass()
 {
-    QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(GLOBAL1_X86));
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();

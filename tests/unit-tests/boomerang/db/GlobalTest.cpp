@@ -26,9 +26,9 @@
 
 #define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
 
-#define HELLO_PENTIUM   SAMPLE("pentium/hello")
-#define FBRANCH_PENTIUM SAMPLE("pentium/fbranch")
-#define SUMARRAY_PENTIUM SAMPLE("pentium/sumarray")
+#define HELLO_X86    SAMPLE("x86/hello")
+#define FBRANCH_X86  SAMPLE("x86/fbranch")
+#define SUMARRAY_X86 SAMPLE("x86/sumarray")
 
 
 
@@ -48,7 +48,7 @@ void GlobalTest::testContainsAddress()
 
 void GlobalTest::testGetInitialValue()
 {
-    QVERIFY(m_project.loadBinaryFile(FBRANCH_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FBRANCH_X86));
     Global *bssGlob = m_project.getProg()->createGlobal(Address(0x080496DC));
     QVERIFY(bssGlob != nullptr);
     QVERIFY(bssGlob->getInitialValue() == nullptr);
@@ -58,7 +58,7 @@ void GlobalTest::testGetInitialValue()
 void GlobalTest::testReadInitialValue()
 {
     {
-        QVERIFY(m_project.loadBinaryFile(FBRANCH_PENTIUM));
+        QVERIFY(m_project.loadBinaryFile(FBRANCH_X86));
         Prog *prog = m_project.getProg();
 
         Global *nullptrGlob = prog->createGlobal(Address(0x0804830A), PointerType::get(VoidType::get()));
@@ -112,7 +112,7 @@ void GlobalTest::testReadInitialValue()
     }
 
     {
-        QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+        QVERIFY(m_project.loadBinaryFile(HELLO_X86));
         Prog *prog = m_project.getProg();
 
         // string constant
@@ -130,7 +130,7 @@ void GlobalTest::testReadInitialValue()
 
     {
         // arrays
-        QVERIFY(m_project.loadBinaryFile(SUMARRAY_PENTIUM));
+        QVERIFY(m_project.loadBinaryFile(SUMARRAY_X86));
         Prog *prog = m_project.getProg();
 
         Global *intArrGlob = prog->createGlobal(Address(0x08049460), ArrayType::get(IntegerType::get(32)));

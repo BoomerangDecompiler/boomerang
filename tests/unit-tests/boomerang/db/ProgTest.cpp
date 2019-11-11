@@ -28,14 +28,14 @@
 #include "boomerang/ssl/type/VoidType.h"
 
 
-#define HELLO_PENTIUM   getFullSamplePath("pentium/hello")
-#define FBRANCH_PENTIUM getFullSamplePath("pentium/fbranch")
-#define HELLO_WIN       getFullSamplePath("windows/hello.exe")
+#define HELLO_X86   getFullSamplePath("x86/hello")
+#define FBRANCH_X86 getFullSamplePath("x86/fbranch")
+#define HELLO_WIN   getFullSamplePath("windows/hello.exe")
 
 
 void ProgTest::testFrontend()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     m_project.getProg()->setFrontEnd(nullptr);
     QVERIFY(m_project.getProg()->getFrontEnd() == nullptr);
@@ -56,7 +56,7 @@ void ProgTest::testFrontend()
 
 void ProgTest::testName()
 {
-    QString progName = HELLO_PENTIUM;
+    QString progName = HELLO_X86;
     Prog prog(progName, nullptr);
 
     QCOMPARE(prog.getName(), progName);
@@ -243,7 +243,7 @@ void ProgTest::testGetNumFunctions()
 
 void ProgTest::testIsWellFormed()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     const Prog *hello = m_project.getProg();
     QVERIFY(hello->isWellFormed());
@@ -262,7 +262,7 @@ void ProgTest::testIsWin32()
     Prog testProg("test", nullptr);
     QVERIFY(!testProg.isWin32());
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(!m_project.getProg()->isWin32());
     QVERIFY(m_project.loadBinaryFile(HELLO_WIN));
     QVERIFY(m_project.getProg()->isWin32());
@@ -286,7 +286,7 @@ void ProgTest::testGetMachine()
     Prog testProg("test", nullptr);
     QCOMPARE(testProg.getMachine(), Machine::INVALID);
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QCOMPARE(m_project.getProg()->getMachine(), Machine::X86);
 }
 
@@ -294,7 +294,7 @@ void ProgTest::testGetMachine()
 void ProgTest::testGetDefaultSignature()
 {
     Prog testProg("test", nullptr);
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     auto sig = m_project.getProg()->getDefaultSignature("foo");
     QVERIFY(sig != nullptr);
     QCOMPARE(sig->getName(), QString("foo"));
@@ -308,7 +308,7 @@ void ProgTest::testGetStringConstant()
     QVERIFY(testProg.getStringConstant(Address(0x1000), false) == nullptr);
     QVERIFY(testProg.getStringConstant(Address::INVALID) == nullptr);
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     const char *hello1 = m_project.getProg()->getStringConstant(Address(0x80483FC), false);
     QVERIFY(hello1 != nullptr);
     QCOMPARE(hello1, "Hello, world!\n");
@@ -334,7 +334,7 @@ void ProgTest::testGetStringConstant()
 
 void ProgTest::testGetFloatConstant()
 {
-    QVERIFY(m_project.loadBinaryFile(FBRANCH_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FBRANCH_X86));
     QVERIFY(m_project.decodeBinaryFile());
 
     double result;
@@ -346,7 +346,7 @@ void ProgTest::testGetFloatConstant()
 
 void ProgTest::testGetSymbolNameByAddr()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     // "Hello, world!" string is not a symbol
     QCOMPARE(m_project.getProg()->getSymbolNameByAddr(Address(0x080483FC)), QString(""));
@@ -356,7 +356,7 @@ void ProgTest::testGetSymbolNameByAddr()
 
 void ProgTest::testGetSectionByAddr()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     QVERIFY(m_project.getProg()->getSectionByAddr(Address::INVALID) == nullptr);
 
@@ -368,7 +368,7 @@ void ProgTest::testGetSectionByAddr()
 
 void ProgTest::testGetLimitText()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     QCOMPARE(m_project.getProg()->getLimitTextLow(),  Address(0x08048230));
     QCOMPARE(m_project.getProg()->getLimitTextHigh(), Address(0x080483f3));
@@ -377,7 +377,7 @@ void ProgTest::testGetLimitText()
 
 void ProgTest::testIsReadOnly()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     QVERIFY(!m_project.getProg()->isReadOnly(Address::INVALID));
     QVERIFY(!m_project.getProg()->isReadOnly(Address(0x080496a8))); // address in .ctors
@@ -387,7 +387,7 @@ void ProgTest::testIsReadOnly()
 
 void ProgTest::testIsInStringsSection()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     QVERIFY(!m_project.getProg()->isInStringsSection(Address::INVALID));
     QVERIFY(!m_project.getProg()->isInStringsSection(Address(0x080483f4))); // address in .rodata
@@ -397,7 +397,7 @@ void ProgTest::testIsInStringsSection()
 
 void ProgTest::testIsDynamicallyLinkedProcPointer()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     QVERIFY(!m_project.getProg()->isDynamicallyLinkedProcPointer(Address::INVALID));
     QVERIFY(!m_project.getProg()->isDynamicallyLinkedProcPointer(Address(0x080483f4)));
@@ -411,7 +411,7 @@ void ProgTest::testGetOrInsertModuleForSymbol()
     QCOMPARE(prog.getOrInsertModuleForSymbol(""),     prog.getRootModule());
     QCOMPARE(prog.getOrInsertModuleForSymbol("test"), prog.getRootModule());
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol(""), m_project.getProg()->getRootModule());
     QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol("printf"), m_project.getProg()->getRootModule());
 
@@ -426,7 +426,7 @@ void ProgTest::testGetOrInsertModuleForSymbol()
 
 void ProgTest::testDecodeEntryPoint()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(!m_project.getProg()->decodeEntryPoint(Address::INVALID));
     QVERIFY(m_project.getProg()->decodeEntryPoint(m_project.getLoadedBinaryFile()->getEntryPoint()));
 }
@@ -434,7 +434,7 @@ void ProgTest::testDecodeEntryPoint()
 
 void ProgTest::testDecodeFragment()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     UserProc *mainProc = (UserProc *)m_project.getProg()->getOrCreateFunction(Address(0x08048328));
     QVERIFY(!m_project.getProg()->decodeFragment(mainProc, Address::INVALID));
     QVERIFY(m_project.getProg()->decodeFragment(mainProc, Address(0x08048328)));
@@ -443,7 +443,7 @@ void ProgTest::testDecodeFragment()
 
 void ProgTest::testReDecode()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     UserProc *mainProc = (UserProc *)m_project.getProg()->getOrCreateFunction(Address(0x08048328));
 
     QVERIFY(!m_project.getProg()->reDecode(nullptr));
@@ -480,7 +480,7 @@ void ProgTest::testGetGlobalAddrByName()
     QCOMPARE(prog.getGlobalAddrByName("foo"), Address(0x08000000));
     QCOMPARE(prog.getGlobalAddrByName("bar"), Address::INVALID);
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QCOMPARE(m_project.getProg()->getGlobalAddrByName("baz"), Address::INVALID);
 }
 
@@ -511,7 +511,7 @@ void ProgTest::testGuessGlobalType()
         QVERIFY(*ty == *VoidType::get());
     }
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     SharedType ty = m_project.getProg()->guessGlobalType("helloworld", Address(0x80483FC));
     QVERIFY(*ty == *PointerType::get(CharType::get()));
@@ -525,7 +525,7 @@ void ProgTest::testMakeArrayType()
     std::shared_ptr<ArrayType> ty = prog.makeArrayType(Address::INVALID, CharType::get());
     QVERIFY(*ty == *ArrayType::get(CharType::get()));
 
-    m_project.loadBinaryFile(HELLO_PENTIUM);
+    m_project.loadBinaryFile(HELLO_X86);
     BinarySymbol *helloworld = m_project.getLoadedBinaryFile()->getSymbols()
         ->createSymbol(Address(0x80483FC), "helloworld");
 
@@ -545,7 +545,7 @@ void ProgTest::testMarkGlobalUsed()
     Prog prog("test", nullptr);
     QVERIFY(!prog.markGlobalUsed(Address::INVALID));
 
-    m_project.loadBinaryFile(HELLO_PENTIUM);
+    m_project.loadBinaryFile(HELLO_X86);
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC)));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), IntegerType::get(32, Sign::Signed)));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), ArrayType::get(CharType::get(), 15)));
@@ -554,7 +554,7 @@ void ProgTest::testMarkGlobalUsed()
 
 void ProgTest::testGlobalType()
 {
-    m_project.loadBinaryFile(HELLO_PENTIUM);
+    m_project.loadBinaryFile(HELLO_X86);
     QVERIFY(m_project.getProg()->getGlobalType("") == nullptr);
     QVERIFY(m_project.getProg()->getGlobals().empty());
 

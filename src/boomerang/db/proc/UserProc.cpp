@@ -343,7 +343,7 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
 
     // Used to filter out preserved locations here: no!
     // Propagation and dead code elimination solve the problem.
-    // See test/pentium/restoredparam for an example
+    // See test/x86/restoredparam for an example
     // where you must not remove restored locations
 
     // Wrap it in an implicit assignment; DFA based TA should update the type later

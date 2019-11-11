@@ -11,7 +11,7 @@
 
 
 #define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
-#define HELLO_PENTIUM   SAMPLE("pentium/hello")
+#define HELLO_X86   SAMPLE("x86/hello")
 
 
 #include "boomerang/core/Settings.h"
@@ -222,7 +222,7 @@ void UserProcTest::testLookupParam()
 
 void UserProcTest::testFilterParams()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *mainProc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x08048328)));
@@ -257,7 +257,7 @@ void UserProcTest::testRetStmt()
 
 void UserProcTest::testFilterReturns()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(m_project.decodeBinaryFile());
     QVERIFY(m_project.decompileBinaryFile());
 
@@ -317,7 +317,7 @@ void UserProcTest::testAddLocal()
 
 void UserProcTest::testEnsureExpIsMappedToLocal()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     UserProc proc(Address(0x1000), "test", m_project.getProg()->getRootModule());
 
@@ -641,14 +641,14 @@ void UserProcTest::testAddCallee()
 
 void UserProcTest::testPreservesExp()
 {
-    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/fib")));
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/fib")));
     QVERIFY(m_project.decodeBinaryFile());
     QVERIFY(m_project.decompileBinaryFile());
     UserProc *fib = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("fib"));
     QVERIFY(fib && !fib->isLib());
     QVERIFY(fib->preservesExp(Location::regOf(REG_PENT_EBX)));
 
-    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/recursion2")));
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/recursion2")));
     QVERIFY(m_project.decodeBinaryFile());
     QVERIFY(m_project.decompileBinaryFile());
     UserProc *c = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("c"));
@@ -660,7 +660,7 @@ void UserProcTest::testPreservesExp()
 
 void UserProcTest::testPreservesExpWithOffset()
 {
-    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/recursion2")));
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/recursion2")));
     QVERIFY(m_project.decodeBinaryFile());
     QVERIFY(m_project.decompileBinaryFile());
     UserProc *f = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("f"));
@@ -672,7 +672,7 @@ void UserProcTest::testPreservesExpWithOffset()
 
 void UserProcTest::testPromoteSignature()
 {
-    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/fib")));
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/fib")));
     QVERIFY(m_project.decodeBinaryFile());
     UserProc *fib = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("fib"));
     QVERIFY(fib->getSignature()->getConvention() == CallConv::INVALID);

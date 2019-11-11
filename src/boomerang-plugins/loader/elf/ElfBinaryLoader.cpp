@@ -493,7 +493,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym &sym, int e_type, int i,
     const BinarySection *siPlt = m_binaryFile->getImage()->getSectionByName(".plt");
 
     if (sym.Value.isZero() && siPlt) { // && i < max_i_for_hack) {
-        // Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).  The value in the dynamic
+        // Special hack for gcc circa 3.3.3: (e.g. test/x86/settest).  The value in the dynamic
         // symbol table is zero!  I was assuming that index i in the dynamic symbol table would
         // always correspond to index i in the .plt section, but for fedora2_true, this doesn't
         // work. So we have to look in the .rel[a].plt section. Thanks, gcc!  Note that this hack

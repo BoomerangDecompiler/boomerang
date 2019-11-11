@@ -191,7 +191,7 @@ void RTLTest::testVisitor()
 //    delete pFE;
 //    pBF = bff.Load(SWITCH_PENT);
 //    QVERIFY(pBF != 0);
-//    QVERIFY(pBF->GetMachine() == MACHINE_PENTIUM);
+//    QVERIFY(pBF->GetMachine() == MACHINE_X86);
 //    pFE = new PentiumFrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
 

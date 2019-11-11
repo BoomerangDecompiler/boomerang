@@ -178,7 +178,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         QString name2 = proc->lookupSymFromRef(ref2);
 
         if (!name1.isEmpty() && !name2.isEmpty() && !ig.isConnected(ref1, *ref2)) {
-            // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We
+            // There is a case where this is unhelpful, and it happen in test/x86/fromssa2. We
             // have renamed the destination of the phi to ebx_1, and that leaves the two phi
             // operands as ebx. However, we attempt to unite them here, which will cause one of the
             // operands to become ebx_1, so the neat oprimisation of replacing the phi with one copy

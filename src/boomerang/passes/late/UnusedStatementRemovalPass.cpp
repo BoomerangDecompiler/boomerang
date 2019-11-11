@@ -179,7 +179,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
         }
     } while (change);
 
-    // Recalulate at least the livenesses. Example: first call to printf in test/pentium/fromssa2,
+    // Recalulate at least the livenesses. Example: first call to printf in test/x86/fromssa2,
     // eax used only in a removed statement, so liveness in the call needs to be removed
     PassManager::get()->executePass(PassID::CallLivenessRemoval, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);

@@ -21,7 +21,7 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 
 
-#define HELLO_PENTIUM  (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_X86  (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/hello"))
 
 
 void LibProcTest::testName()
@@ -128,7 +128,7 @@ void LibProcTest::testIsLib()
 
 void LibProcTest::testIsNoReturn()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     LibProc *proc = m_project.getProg()->getOrCreateLibraryProc("abort");
     QVERIFY(proc->isNoReturn());

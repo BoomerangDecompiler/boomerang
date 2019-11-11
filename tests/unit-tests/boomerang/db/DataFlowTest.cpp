@@ -27,9 +27,9 @@
 #include <QDebug>
 
 
-#define FRONTIER_PENTIUM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
-#define SEMI_PENTIUM        (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
-#define IFTHEN_PENTIUM      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
+#define FRONTIER_X86    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/frontier"))
+#define SEMI_X86        (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/semi"))
+#define IFTHEN_X86      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/ifthen"))
 
 
 std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
@@ -153,7 +153,7 @@ void DataFlowTest::testCalculateDominatorsComplex()
 
 void DataFlowTest::testPlacePhi()
 {
-    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_X86));
     QVERIFY(m_project.decodeBinaryFile());
 
     Prog *prog = m_project.getProg();
@@ -189,7 +189,7 @@ void DataFlowTest::testPlacePhi()
 
 void DataFlowTest::testPlacePhi2()
 {
-    QVERIFY(m_project.loadBinaryFile(IFTHEN_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(IFTHEN_X86));
     QVERIFY(m_project.decodeBinaryFile());
 
     Prog *prog = m_project.getProg();
@@ -221,7 +221,7 @@ void DataFlowTest::testPlacePhi2()
 
 void DataFlowTest::testRenameVars()
 {
-    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_X86));
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe  = prog->getFrontEnd();

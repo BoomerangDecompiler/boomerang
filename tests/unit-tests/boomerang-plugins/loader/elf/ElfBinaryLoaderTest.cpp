@@ -20,7 +20,7 @@
 
 #define HELLO_CLANG4           (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
 #define HELLO_CLANG4_STATIC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/hello-clang4-static"))
-#define HELLO_PENTIUM          (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_X86              (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/hello"))
 
 
 /// path to the ELF loader plugin
@@ -63,7 +63,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load x86 hello world
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     BinaryFile *binary = m_project.getLoadedBinaryFile();
 
     QVERIFY(binary != nullptr);
