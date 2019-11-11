@@ -50,7 +50,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual RegNum getStackRegister() const override { return REG_PENT_ESP; }
+    virtual RegNum getStackRegister() const override { return REG_X86_ESP; }
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;

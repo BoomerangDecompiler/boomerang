@@ -34,7 +34,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
      *        if s is a phi statement ps
      *              let r be a ref made up of lhs and s
      *              for each parameter p of ps
-     *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
+     *                if p == r                        // e.g. test/x86/fromssa2 r28{56}
      *                      remove p from ps
      *              let lhs be left hand side of ps
      *              allSame = true

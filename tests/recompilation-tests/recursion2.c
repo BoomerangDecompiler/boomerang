@@ -9,7 +9,7 @@
 /*
  * NOTE: this is not the whole source code for the test.
  * There are many additions made at the assembly language
- * level, see test/pentium/recursion2.s
+ * level, see test/x86/recursion2.s
  */
 
 #include <stdio.h>

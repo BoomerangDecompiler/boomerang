@@ -28,7 +28,7 @@ void StmtConstFinderTest::findConstants(const SharedStmt &stmt, std::list<std::s
 
 void StmtConstFinderTest::testFindConstants()
 {
-    auto a = std::make_shared<Assign>(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
+    auto a = std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Binary::get(opPlus, Const::get(3), Const::get(4)));
 
     std::list<std::shared_ptr<Const>> lc;
     findConstants(a, lc);

@@ -22,7 +22,7 @@ void StatementListTest::testEmpty()
     StatementList list;
     QVERIFY(list.empty());
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     list.append(a1);
 
     QVERIFY(!list.empty());
@@ -34,7 +34,7 @@ void StatementListTest::testSize()
     StatementList list;
     QVERIFY(list.size() == 0);
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
 
     list.append(a1);
     QVERIFY(list.size() == 1);
@@ -53,7 +53,7 @@ void StatementListTest::testMakeIsect()
     QVERIFY(list1.empty());
     QVERIFY(locs.empty());
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
 
     list1.append(a1);
     list1.makeIsect(list1, locs);
@@ -61,7 +61,7 @@ void StatementListTest::testMakeIsect()
     QVERIFY(locs.empty());
 
     list1.append(a1);
-    locs.insert(Location::regOf(REG_PENT_ECX));
+    locs.insert(Location::regOf(REG_X86_ECX));
     list1.makeIsect(list1, locs);
     QCOMPARE(list1.toString(), QString("   0 *v* r25 := r26"));
 
@@ -77,7 +77,7 @@ void StatementListTest::testMakeIsect()
 void StatementListTest::testAppend()
 {
     StatementList list;
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
 
     list.append(assign);
     QCOMPARE(list.toString(), QString("   0 *v* r25 := r26"));
@@ -89,7 +89,7 @@ void StatementListTest::testAppend()
     QCOMPARE(list.toString(), QString("   0 *v* r25 := r26,\t   0 *v* r25 := r26"));
 
     StatementSet set;
-    std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_PENT_ESI), Location::regOf(REG_PENT_EDI)));
+    std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_ESI), Location::regOf(REG_X86_EDI)));
     set.insert(asgn);
 
     list.append(set);
@@ -102,7 +102,7 @@ void StatementListTest::testRemove()
     StatementList list;
     QVERIFY(!list.remove(nullptr));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     list.append(assign);
     list.append(assign);
 
@@ -117,12 +117,12 @@ void StatementListTest::testRemoveFirstDefOf()
     StatementList list;
     QVERIFY(!list.removeFirstDefOf(nullptr));
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     list.append(assign);
 
-    QVERIFY(!list.removeFirstDefOf(Location::regOf(REG_PENT_EDX)));
+    QVERIFY(!list.removeFirstDefOf(Location::regOf(REG_X86_EDX)));
     QVERIFY(list.size() == 1);
-    QVERIFY(list.removeFirstDefOf(Location::regOf(REG_PENT_ECX)));
+    QVERIFY(list.removeFirstDefOf(Location::regOf(REG_X86_ECX)));
     QVERIFY(list.empty());
 }
 
@@ -130,13 +130,13 @@ void StatementListTest::testRemoveFirstDefOf()
 void StatementListTest::testExistsOnLeft()
 {
     StatementList list;
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
 
     QVERIFY(!list.existsOnLeft(nullptr));
 
     list.append(assign);
-    QVERIFY(list.existsOnLeft(Location::regOf(REG_PENT_ECX)));
-    QVERIFY(!list.existsOnLeft(Location::regOf(REG_PENT_EDX)));
+    QVERIFY(list.existsOnLeft(Location::regOf(REG_X86_ECX)));
+    QVERIFY(!list.existsOnLeft(Location::regOf(REG_X86_EDX)));
 }
 
 
@@ -145,11 +145,11 @@ void StatementListTest::testFindOnLeft()
     StatementList list;
     QVERIFY(list.findOnLeft(nullptr) == nullptr);
 
-    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX)));
+    std::shared_ptr<Assign> assign(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_EDX)));
     list.append(assign);
 
-    QVERIFY(list.findOnLeft(Location::regOf(REG_PENT_ECX)) == assign);
-    QVERIFY(list.findOnLeft(Location::regOf(REG_PENT_EDX)) == nullptr);
+    QVERIFY(list.findOnLeft(Location::regOf(REG_X86_ECX)) == assign);
+    QVERIFY(list.findOnLeft(Location::regOf(REG_X86_EDX)) == nullptr);
 }
 
 

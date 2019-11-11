@@ -174,6 +174,6 @@ bool SizeType::isCompatible(const Type &other, bool /*all*/) const
     }
 
     // return false;
-    // For now, size32 and double will be considered compatible (helps test/pentium/global2)
+    // For now, size32 and double will be considered compatible (helps test/x86/global2)
     return false;
 }

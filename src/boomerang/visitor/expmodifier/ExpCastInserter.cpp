@@ -91,7 +91,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
     OPER op = exp->getOper();
 
     switch (op) {
-    // This case needed for e.g. test/pentium/switch_gcc:
+    // This case needed for e.g. test/x86/switch_gcc:
     case opLessUns:
     case opGtrUns:
     case opLessEqUns:

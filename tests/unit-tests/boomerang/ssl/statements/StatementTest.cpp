@@ -42,15 +42,15 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      getFullSamplePath("pentium/hello")
-#define GLOBAL1_PENTIUM    getFullSamplePath("pentium/global1")
+#define HELLO_X86      getFullSamplePath("x86/hello")
+#define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
 void StatementTest::testEmpty()
 {
     m_project.getSettings()->setOutputDirectory("./unit_test/");
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     Prog *prog = m_project.getProg();
 
@@ -91,17 +91,17 @@ void StatementTest::testEmpty()
 
 void StatementTest::testFlow()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
     Prog *prog = m_project.getProg();
 
     // create UserProc
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
 
     ProcCFG *cfg   = proc->getCFG();
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), std::make_shared<Const>(5)));
     a1->setProc(proc);
     a1->setNumber(1);
 
@@ -112,7 +112,7 @@ void StatementTest::testFlow()
 
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(2);
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5)));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), std::make_shared<Const>(5)));
     a2->setProc(proc);
     rs->addReturn(a2);
 
@@ -160,22 +160,22 @@ void StatementTest::testFlow()
 
 void StatementTest::testKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     // create UserProc
     QString  name  = "test";
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, name));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, name));
 
     // create CFG
     ProcCFG              *cfg   = proc->getCFG();
 
-    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
+    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
     e1->setNumber(1);
     e1->setProc(proc);
 
-    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
+    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
     e2->setNumber(2);
     e2->setProc(proc);
 
@@ -186,7 +186,7 @@ void StatementTest::testKill()
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
 
-    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
+    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
     e->setProc(proc);
     rs->addReturn(e);
 
@@ -228,19 +228,19 @@ void StatementTest::testKill()
 
 void StatementTest::testUse()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
 
     ProcCFG *cfg   = proc->getCFG();
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -250,7 +250,7 @@ void StatementTest::testUse()
 
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_ESP), Const::get(1000)));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_ESP), Const::get(1000)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs.reset(new RTLList);
@@ -290,22 +290,22 @@ void StatementTest::testUse()
 
 void StatementTest::testUseOverKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
     ProcCFG *cfg = proc->getCFG();
 
-    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
+    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
     e1->setNumber(1);
     e1->setProc(proc);
 
-    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
+    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
     e2->setNumber(2);
     e2->setProc(proc);
 
-    std::shared_ptr<Assign> e3(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
+    std::shared_ptr<Assign> e3(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
     e3->setNumber(3);
     e3->setProc(proc);
 
@@ -315,7 +315,7 @@ void StatementTest::testUseOverKill()
 
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(4);
-    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
+    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
     e->setProc(proc);
     rs->addReturn(e);
 
@@ -358,18 +358,18 @@ void StatementTest::testUseOverKill()
 
 void StatementTest::testUseOverBB()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     // create UserProc
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
     ProcCFG *cfg       = proc->getCFG();
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Const::get(6)));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -377,7 +377,7 @@ void StatementTest::testUseOverBB()
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
     BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
 
-    std::shared_ptr<Assign> a3(new Assign(Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX)));
+    std::shared_ptr<Assign> a3(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
     a3->setNumber(3);
     a3->setProc(proc);
     bbRTLs.reset(new RTLList);
@@ -387,7 +387,7 @@ void StatementTest::testUseOverBB()
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(4);
 
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00001012), { rs })));
@@ -428,17 +428,17 @@ void StatementTest::testUseOverBB()
 
 void StatementTest::testUseKill()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
     ProcCFG *cfg   = proc->getCFG();
 
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5)));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
     a1->setNumber(1);
     a1->setProc(proc);
 
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Const::get(1))));
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Binary::get(opPlus, Location::regOf(REG_X86_EAX), Const::get(1))));
     a2->setNumber(2);
     a2->setProc(proc);
 
@@ -448,7 +448,7 @@ void StatementTest::testUseKill()
 
     std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
     rs->setNumber(3);
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_PENT_EAX), Const::get(0)));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
     a->setProc(proc);
     rs->addReturn(a);
     bbRTLs.reset(new RTLList);
@@ -493,14 +493,14 @@ void StatementTest::testEndlessLoop()
     // BB1 -> BB2 _
     //       ^_____|
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
     ProcCFG *cfg   = proc->getCFG();
 
     // r[24] := 5
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, Sign::Signed))));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5, IntegerType::get(32, Sign::Signed))));
     a1->setProc(proc);
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
@@ -509,8 +509,8 @@ void StatementTest::testEndlessLoop()
 
 
     // r24 := r24 + 1
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus,
-                                                                       Location::regOf(REG_PENT_EAX),
+    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Binary::get(opPlus,
+                                                                       Location::regOf(REG_X86_EAX),
                                                                        Const::get(1, IntegerType::get(32, Sign::Signed)))));
     a2->setProc(proc);
     bbRTLs.reset(new RTLList);
@@ -690,7 +690,7 @@ void StatementTest::testWildLocationSet()
 
 void StatementTest::testRecursion()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
@@ -702,14 +702,14 @@ void StatementTest::testRecursion()
     {
         // push bp
         // r28 := r28 + -4
-        std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_PENT_ESP),
+        std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_ESP),
                                 Binary::get(opPlus,
-                                            Location::regOf(REG_PENT_ESP),
+                                            Location::regOf(REG_X86_ESP),
                                             Const::get(-4))));
         a1->setProc(proc);
 
         // m[r28] := r29
-        std::shared_ptr<Assign> a2(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_EBP)));
+        std::shared_ptr<Assign> a2(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)), Location::regOf(REG_X86_EBP)));
         a2->setProc(proc);
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1004), { a1, a2 })));
 
@@ -721,10 +721,10 @@ void StatementTest::testRecursion()
         // Reference our parameter. At esp+0 is this arg; at esp+4 is old ebp;
         // esp+8 is return address; esp+12 is our arg
         // m[r28] := m[r28+12] + 1
-        std::shared_ptr<Assign> a4(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)),
+        std::shared_ptr<Assign> a4(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)),
                                 Binary::get(opPlus,
                                             Location::memOf(Binary::get(opPlus,
-                                                                        Location::regOf(REG_PENT_ESP),
+                                                                        Location::regOf(REG_X86_ESP),
                                                                         Const::get(12))),
                                             Const::get(1))));
 
@@ -738,11 +738,11 @@ void StatementTest::testRecursion()
     bbRTLs.reset(new RTLList);
     {
         // r28 := r28 + -4
-        std::shared_ptr<Assign> a5(new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4))));
+        std::shared_ptr<Assign> a5(new Assign(Location::regOf(REG_X86_ESP), Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(-4))));
         a5->setProc(proc);
 
         // m[r28] := pc
-        std::shared_ptr<Assign> a6(new Assign(Location::memOf(Location::regOf(REG_PENT_ESP)), Terminal::get(opPC)));
+        std::shared_ptr<Assign> a6(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)), Terminal::get(opPC)));
         a6->setProc(proc);
 
         // %pc := (%pc + 5) + 135893848
@@ -770,11 +770,11 @@ void StatementTest::testRecursion()
     {
         std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
         // This ReturnStatement requires the following two sets of semantics to pass the
-        // tests for standard Pentium calling convention
+        // tests for standard x86 calling convention
         // pc = m[r28]
-        std::shared_ptr<Assign> a1(new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_PENT_ESP))));
+        std::shared_ptr<Assign> a1(new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_X86_ESP))));
         // r28 = r28 + 4
-        std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4))));
+        std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_ESP), Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(4))));
 
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x100C), { a1, a2, retStmt })));
     }
@@ -908,13 +908,13 @@ void StatementTest::testAddUsedLocsAssign()
 {
     // m[r28-4] := m[r28-8] * r26
     std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_ESP),
+                                         Location::regOf(REG_X86_ESP),
                                          Const::get(4))),
              Binary::get(opMult,
                          Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_PENT_ESP),
+                                                     Location::regOf(REG_X86_ESP),
                                                      Const::get(8))),
-                         Location::regOf(REG_PENT_EDX))));
+                         Location::regOf(REG_X86_EDX))));
     a->setNumber(1);
 
     LocationSet l;
@@ -929,7 +929,7 @@ void StatementTest::testAddUsedLocsAssign()
     l.clear();
     std::shared_ptr<GotoStatement> g(new GotoStatement);
     g->setNumber(55);
-    g->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    g->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     g->addUsedLocs(l);
 
     actual   = "";
@@ -949,7 +949,7 @@ void StatementTest::testAddUsedLocsBranch()
     LocationSet     l;
     std::shared_ptr<BranchStatement> b(new BranchStatement);
     b->setNumber(99);
-    b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_PENT_EDX), b)), g));
+    b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b)), g));
     b->setCondExpr(Terminal::get(opFlags));
     b->addUsedLocs(l);
 
@@ -968,9 +968,9 @@ void StatementTest::testAddUsedLocsCase()
     LocationSet   l;
     std::shared_ptr<CaseStatement> c(new CaseStatement);
 
-    c->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    c->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
-    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(12)));
+    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c->setSwitchInfo(std::move(si));
     c->addUsedLocs(l);
 
@@ -991,13 +991,13 @@ void StatementTest::testAddUsedLocsCall()
 
     g->setNumber(55);
     std::shared_ptr<CallStatement> ca(new CallStatement);
-    ca->setDest(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    ca->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     StatementList argl;
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_AL), Location::memOf(Location::regOf(REG_PENT_EBX))));
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_PENT_CL), RefExp::get(Location::regOf(REG_PENT_ESP), g)));
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_AL), Location::memOf(Location::regOf(REG_X86_EBX))));
+    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_CL), RefExp::get(Location::regOf(REG_X86_ESP), g)));
     ca->setArguments(argl);
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDI)));
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EAX)));
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
+    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
     ca->addUsedLocs(l);
 
     QString actual;
@@ -1018,10 +1018,10 @@ void StatementTest::testAddUsedLocsReturn()
     b->setNumber(99);
 
     std::shared_ptr<ReturnStatement> r(new ReturnStatement);
-    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_PENT_EDI), Const::get(100)));
-    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_PENT_EAX)), Const::get(0)));
+    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_X86_EDI), Const::get(100)));
+    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EAX)), Const::get(0)));
     r->addReturn(std::make_shared<Assign>(
-                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ECX), g), RefExp::get(Location::regOf(REG_PENT_EDX), b))),
+                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_X86_ECX), g), RefExp::get(Location::regOf(REG_X86_EDX), b))),
                      Const::get(5)));
     r->addUsedLocs(l);
 
@@ -1038,8 +1038,8 @@ void StatementTest::testAddUsedLocsBool()
     LocationSet l;
     std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
 
-    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_PENT_EAX)), Location::regOf(REG_PENT_ECX)));
-    bs->setLeft(Location::memOf(Location::regOf(REG_PENT_EDX)));
+    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX)));
+    bs->setLeft(Location::memOf(Location::regOf(REG_X86_EDX)));
     bs->addUsedLocs(l);
 
     QString     actual;
@@ -1067,7 +1067,7 @@ void StatementTest::testAddUsedLocsBool()
     // m[r28{-} - 4] := -
     l.clear();
     auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
-                                               RefExp::get(Location::regOf(REG_PENT_ESP), nullptr),
+                                               RefExp::get(Location::regOf(REG_X86_ESP), nullptr),
                                                Const::get(4))));
 
     ia->addUsedLocs(l);
@@ -1080,7 +1080,7 @@ void StatementTest::testAddUsedLocsBool()
 
 void StatementTest::testBypass()
 {
-    QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(GLOBAL1_X86));
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
@@ -1099,7 +1099,7 @@ void StatementTest::testBypass()
     UserProc *proc = static_cast<UserProc *>(prog->getFunctionByName("foo2"));
     QVERIFY(proc != nullptr);
 
-    proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
+    proc->promoteSignature(); // Make sure it's an X86Signature (needed for bypassing)
 
     // Number the statements
     proc->numberStatements();

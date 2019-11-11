@@ -1189,7 +1189,7 @@ LoadFmt Win32BinaryLoader::getFormat() const
 
 Machine Win32BinaryLoader::getMachine() const
 {
-    return Machine::PENTIUM;
+    return Machine::X86;
 }
 
 

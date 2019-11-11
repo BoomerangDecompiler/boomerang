@@ -68,8 +68,8 @@ static char lengths[] =
     2, 2, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1, 2, 1, 5, 1, 6, 3, 1, 1
 };
 
-// text segment of hello pentium
-static const unsigned char pent_hello_text[] =
+// text segment of hello x86
+static const unsigned char x86_hello_text[] =
 {
     0x6a,  0x00, 0x6a,  0x00, 0x8b,  0xec, 0x52,  0xb8, 0x80,  0x87, 0x04,  0x08, 0x85,  0xc0, 0x74,  0x0d, 0x68,  0x80,
     0x87,  0x04, 0x08,  0xe8, 0x66,  0xff, 0xff,  0xff, 0x83,  0xc4, 0x04,  0xb8, 0x44,  0xa4, 0x04,  0x08, 0x85,  0xc0,
@@ -243,9 +243,9 @@ void MicroX86DisTest::testMicroDis1()
 {
     QString      deb;
     OStream  deb_str(&deb);
-    int n                  = sizeof(pent_hello_text);
+    int n                  = sizeof(x86_hello_text);
     int          totalSize = 0;
-    const uint8_t *p       = pent_hello_text;
+    const uint8_t *p       = x86_hello_text;
     int          i         = 0;
 
     while (totalSize < n) {
@@ -253,7 +253,7 @@ void MicroX86DisTest::testMicroDis1()
 
         if (size >= 0x40) {
             deb_str << "Not handled instruction at offset "
-                    << (uint64)(HostAddress(p).value() - HostAddress(pent_hello_text).value()) << '\n';
+                    << (uint64)(HostAddress(p).value() - HostAddress(x86_hello_text).value()) << '\n';
             qDebug() << deb;
             QVERIFY(size != 0x40);
             return;
@@ -262,7 +262,7 @@ void MicroX86DisTest::testMicroDis1()
         int expected = lengths[i++];
 
         if (expected != size) {
-            deb_str << "At offset " << (uint64)(HostAddress(p).value() - HostAddress(pent_hello_text).value()) << " ("
+            deb_str << "At offset " << (uint64)(HostAddress(p).value() - HostAddress(x86_hello_text).value()) << " ("
                     << static_cast<int>(*(p + 0)) << " "
                     << static_cast<int>(*(p + 1)) << " "
                     << static_cast<int>(*(p + 2)) << " "

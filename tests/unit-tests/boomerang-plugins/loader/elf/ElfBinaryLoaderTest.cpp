@@ -20,7 +20,7 @@
 
 #define HELLO_CLANG4           (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
 #define HELLO_CLANG4_STATIC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/hello-clang4-static"))
-#define HELLO_PENTIUM          (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_X86              (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/hello"))
 
 
 /// path to the ELF loader plugin
@@ -42,7 +42,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     // test the loader
     QVERIFY(binary != nullptr);
     QCOMPARE(binary->getFormat(),         LoadFmt::ELF);
-    QCOMPARE(binary->getMachine(),        Machine::PENTIUM);
+    QCOMPARE(binary->getMachine(),        Machine::X86);
     QCOMPARE(binary->hasDebugInfo(),      false);
     QCOMPARE(binary->getEntryPoint(),     Address(0x080482F0));
     QCOMPARE(binary->getMainEntryPoint(), Address(0x080483F0));
@@ -60,15 +60,15 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 }
 
 
-void ElfBinaryLoaderTest::testPentiumLoad()
+void ElfBinaryLoaderTest::testLoadSolaris()
 {
-    // Load Pentium hello world
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    // Load x86 hello world
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     BinaryFile *binary = m_project.getLoadedBinaryFile();
 
     QVERIFY(binary != nullptr);
     QCOMPARE(binary->getFormat(), LoadFmt::ELF);
-    QCOMPARE(binary->getMachine(), Machine::PENTIUM);
+    QCOMPARE(binary->getMachine(), Machine::X86);
 
     BinaryImage *image = m_project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
@@ -86,7 +86,7 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 }
 
 
-void ElfBinaryLoaderTest::testPentiumLoad_data()
+void ElfBinaryLoaderTest::testLoadSolaris_data()
 {
     QTest::addColumn<int>("sectIndex");
     QTest::addColumn<QString>("sectName");

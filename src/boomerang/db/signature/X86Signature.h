@@ -15,12 +15,12 @@
 
 namespace CallingConvention::StdC
 {
-class BOOMERANG_API PentiumSignature : public Signature
+class BOOMERANG_API X86Signature : public Signature
 {
 public:
-    explicit PentiumSignature(const QString &name);
-    explicit PentiumSignature(Signature &old);
-    virtual ~PentiumSignature() override = default;
+    explicit X86Signature(const QString &name);
+    explicit X86Signature(Signature &old);
+    virtual ~X86Signature() override = default;
 
 public:
     ///\copydoc Signature::clone

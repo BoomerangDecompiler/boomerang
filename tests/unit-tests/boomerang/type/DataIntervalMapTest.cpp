@@ -98,7 +98,7 @@ void DataIntervalMapTest::testDataInterval()
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x123)));
     DataIntervalMap dim(proc);
 
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "testProc"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "testProc"));
 
     dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
@@ -164,7 +164,7 @@ void DataIntervalMapTest::testDataIntervalOverlaps()
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000100)));
     DataIntervalMap dim(proc);
 
-    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
 
     dim.insertItem(Address(0x00001000), "firstInt", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "firstFloat", FloatType::get(32));

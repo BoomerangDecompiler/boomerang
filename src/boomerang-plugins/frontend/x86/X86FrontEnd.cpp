@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "PentiumFrontEnd.h"
+#include "X86FrontEnd.h"
 
 #include "StringInstructionProcessor.h"
 
@@ -35,7 +35,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
+bool X86FrontEnd::processProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
     if (!DefaultFrontEnd::processProc(function, addr)) {
@@ -56,7 +56,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 }
 
 
-bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
+bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 {
     if (dest == Address::INVALID) {
         return false;
@@ -76,16 +76,16 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
         SharedStmt a(new Assign(IntegerType::get(64),
                                 Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                 std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32),
-                                                          Location::regOf(REG_PENT_ST0))));
+                                                          Location::regOf(REG_X86_ST0))));
         std::unique_ptr<RTL> newRTL(new RTL(addr));
         newRTL->append(a);
         a = std::make_shared<Assign>(
-            Location::regOf(REG_PENT_EAX),
+            Location::regOf(REG_X86_EAX),
             std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         newRTL->append(a);
         a = std::make_shared<Assign>(
-            Location::regOf(REG_PENT_EDX),
+            Location::regOf(REG_X86_EDX),
             Binary::get(opShR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                         Const::get(32)));
         newRTL->append(a);
@@ -99,8 +99,8 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
     else if (name == "__mingw_allocstack") {
         std::unique_ptr<RTL> newRTL(new RTL(addr));
         newRTL->append(std::make_shared<Assign>(
-            Location::regOf(REG_PENT_ESP),
-            Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX))));
+            Location::regOf(REG_X86_ESP),
+            Binary::get(opMinus, Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX))));
         lrtl.push_back(std::move(newRTL));
         m_program->removeFunction(name);
         return true;
@@ -119,18 +119,18 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(Project *project)
+X86FrontEnd::X86FrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
 }
 
 
-PentiumFrontEnd::~PentiumFrontEnd()
+X86FrontEnd::~X86FrontEnd()
 {
 }
 
 
-bool PentiumFrontEnd::initialize(Project *project)
+bool X86FrontEnd::initialize(Project *project)
 {
     Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone x86 decoder plugin");
     if (!plugin) {
@@ -142,7 +142,7 @@ bool PentiumFrontEnd::initialize(Project *project)
 }
 
 
-Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
+Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 {
     Address start = m_binaryFile->getMainEntryPoint();
 
@@ -199,7 +199,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
                 std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(
                     inst.rtl->back());
 
-                if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
+                if (asgn && (*asgn->getRight() == *Location::regOf(REG_X86_EAX))) {
                     decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
 
                     if (!inst.rtl->empty() && inst.rtl->back()->isCall()) {
@@ -270,7 +270,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 }
 
 
-void PentiumFrontEnd::processStringInst(UserProc *proc)
+void X86FrontEnd::processStringInst(UserProc *proc)
 {
     bool change;
     do {
@@ -279,7 +279,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::processOverlapped(UserProc *proc)
+void X86FrontEnd::processOverlapped(UserProc *proc)
 {
     // first, lets look for any uses of the registers
     std::set<RegNum> usedRegs;
@@ -327,8 +327,8 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                       const RTLList &BB_rtls)
+void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
+                                   const RTLList &BB_rtls)
 {
     if (!call->getDestProc()) {
         return;
@@ -383,13 +383,13 @@ void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &cal
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);
 
-                    if (asgn->getLeft()->isRegN(REG_PENT_ESP) &&
+                    if (asgn->getLeft()->isRegN(REG_X86_ESP) &&
                         (asgn->getRight()->getOper() == opMinus)) {
                         pushcount++;
                     }
                     else if ((pushcount == i + 2) && asgn->getLeft()->isMemOf() &&
                              (asgn->getLeft()->getSubExp1()->getOper() == opMinus) &&
-                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_PENT_ESP) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_X86_ESP) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         found = asgn->getRight();
                         break;
@@ -472,7 +472,7 @@ void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &cal
         }
     }
 
-    // some Pentium specific ellipsis processing
+    // some x86 specific ellipsis processing
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found    = false;
@@ -488,13 +488,13 @@ void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &cal
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);
 
-                    if (asgn->getLeft()->isRegN(REG_PENT_ESP) &&
+                    if (asgn->getLeft()->isRegN(REG_X86_ESP) &&
                         (asgn->getRight()->getOper() == opMinus)) {
                         pushcount++;
                     }
                     else if (asgn->getLeft()->isMemOf() &&
                              (asgn->getLeft()->getSubExp1()->getOper() == opMinus) &&
-                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_PENT_ESP) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_X86_ESP) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         if (asgn->getRight()->isIntConst()) {
                             int n = asgn->getRight()->access<Const>()->getInt();
@@ -516,5 +516,5 @@ void PentiumFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &cal
     }
 }
 
-BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, PentiumFrontEnd, "X86 FrontEnd plugin",
-                        BOOMERANG_VERSION, "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, X86FrontEnd, "X86 FrontEnd plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")

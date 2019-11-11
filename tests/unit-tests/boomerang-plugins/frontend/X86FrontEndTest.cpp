@@ -7,9 +7,9 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "PentiumFrontEndTest.h"
+#include "X86FrontEndTest.h"
 
-#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
+#include "boomerang-plugins/frontend/x86/X86FrontEnd.h"
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/ifc/IDecoder.h"
@@ -20,18 +20,18 @@
 #include <QDebug>
 
 
-#define HELLO_PENT      getFullSamplePath("pentium/hello")
-#define BRANCH_PENT     getFullSamplePath("pentium/branch")
-#define FEDORA2_TRUE    getFullSamplePath("pentium/fedora2_true")
-#define FEDORA3_TRUE    getFullSamplePath("pentium/fedora3_true")
-#define SUSE_TRUE       getFullSamplePath("pentium/suse_true")
+#define HELLO_X86         getFullSamplePath("x86/hello")
+#define BRANCH_X86        getFullSamplePath("x86/branch")
+#define FEDORA2_TRUE_X86  getFullSamplePath("x86/fedora2_true")
+#define FEDORA3_TRUE_X86  getFullSamplePath("x86/fedora3_true")
+#define SUSE_TRUE_X86     getFullSamplePath("x86/suse_true")
 
 
-void FrontPentTest::test1()
+void X86FrontEndTest::test1()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     QString     expected;
@@ -69,11 +69,11 @@ void FrontPentTest::test1()
 }
 
 
-void FrontPentTest::test2()
+void X86FrontEndTest::test2()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -103,11 +103,11 @@ void FrontPentTest::test2()
 }
 
 
-void FrontPentTest::test3()
+void X86FrontEndTest::test3()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -136,11 +136,11 @@ void FrontPentTest::test3()
 }
 
 
-void FrontPentTest::testBranch()
+void X86FrontEndTest::testBranch()
 {
-    QVERIFY(m_project.loadBinaryFile(BRANCH_PENT));
+    QVERIFY(m_project.loadBinaryFile(BRANCH_X86));
     Prog *prog = m_project.getProg();
-    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -149,7 +149,7 @@ void FrontPentTest::testBranch()
     OStream  strm(&actual);
 
     // jne
-    fe->decodeSingleInstruction(Address(0x8048979), inst);
+    QVERIFY(fe->decodeSingleInstruction(Address(0x8048979), inst));
     inst.rtl->print(strm);
     expected = QString("0x08048979    0 BRANCH 0x08048988, condition "
                        "not equals\n"
@@ -158,7 +158,7 @@ void FrontPentTest::testBranch()
     actual.clear();
 
     // jg
-    fe->decodeSingleInstruction(Address(0x80489c1), inst);
+    QVERIFY(fe->decodeSingleInstruction(Address(0x80489c1), inst));
     inst.rtl->print(strm);
     expected = QString("0x080489c1    0 BRANCH 0x080489d5, condition signed greater\n"
                        "High level: %flags\n");
@@ -166,7 +166,7 @@ void FrontPentTest::testBranch()
     actual.clear();
 
     // jbe
-    fe->decodeSingleInstruction(Address(0x8048a1b), inst);
+    QVERIFY(fe->decodeSingleInstruction(Address(0x8048a1b), inst));
     inst.rtl->print(strm);
     expected = QString("0x08048a1b    0 BRANCH 0x08048a2a, condition unsigned less or equals\n"
                        "High level: %flags\n");
@@ -175,15 +175,16 @@ void FrontPentTest::testBranch()
 }
 
 
-void FrontPentTest::testFindMain()
+void X86FrontEndTest::testFindMain()
 {
     // Test the algorithm for finding main, when there is a call to __libc_start_main
     // Also tests the loader hack
     {
-        QVERIFY(m_project.loadBinaryFile(FEDORA2_TRUE));
+        QVERIFY(m_project.loadBinaryFile(FEDORA2_TRUE_X86));
 
         Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
+        QVERIFY(fe != nullptr);
 
         bool    found;
         Address addr     = fe->findMainEntryPoint(found);
@@ -192,9 +193,10 @@ void FrontPentTest::testFindMain()
     }
 
     {
-        QVERIFY(m_project.loadBinaryFile(FEDORA3_TRUE));
+        QVERIFY(m_project.loadBinaryFile(FEDORA3_TRUE_X86));
         Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
+        QVERIFY(fe != nullptr);
 
         bool found;
         Address addr     = fe->findMainEntryPoint(found);
@@ -203,10 +205,11 @@ void FrontPentTest::testFindMain()
     }
 
     {
-        QVERIFY(m_project.loadBinaryFile(SUSE_TRUE));
+        QVERIFY(m_project.loadBinaryFile(SUSE_TRUE_X86));
 
         Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
+        QVERIFY(fe != nullptr);
 
         bool found;
         Address addr     = fe->findMainEntryPoint(found);
@@ -216,4 +219,4 @@ void FrontPentTest::testFindMain()
 }
 
 
-QTEST_GUILESS_MAIN(FrontPentTest)
+QTEST_GUILESS_MAIN(X86FrontEndTest)

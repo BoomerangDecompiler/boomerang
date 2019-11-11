@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     /* This test is inspired by the 126.gcc spec benchmark, near the top of
     the emit_case_nodes() function. In the sparc source version, it's a great
     test of transforming the cfg to ensure that each use of flags has one
-    definition. In pentium source form, it's not so great, but it still
+    definition. In x86 source form, it's not so great, but it still
     tests a few set<cc> instructions, so it's worth while for that.
     The original source and object follow below.
 

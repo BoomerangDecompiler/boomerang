@@ -28,19 +28,19 @@ void ExpArithSimplifierTest::testSimplifyUnary()
     // a[eax - eax] is simplified by simplifyArith()
     TEST_SIMPLIFY(Unary::get(opAddrOf,
                              Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_EAX),
-                                         Location::regOf(REG_PENT_EAX))),
+                                         Location::regOf(REG_X86_EAX),
+                                         Location::regOf(REG_X86_EAX))),
                   Unary::get(opAddrOf, Const::get(0)));
 
     // -(eax - eax) is only simplified by simplify()
     TEST_SIMPLIFY(Unary::get(opNeg,
                              Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_EAX),
-                                         Location::regOf(REG_PENT_EAX))),
+                                         Location::regOf(REG_X86_EAX),
+                                         Location::regOf(REG_X86_EAX))),
                   Unary::get(opNeg,
                              Binary::get(opMinus,
-                                         Location::regOf(REG_PENT_EAX),
-                                         Location::regOf(REG_PENT_EAX))));
+                                         Location::regOf(REG_X86_EAX),
+                                         Location::regOf(REG_X86_EAX))));
 }
 
 
@@ -53,41 +53,41 @@ void ExpArithSimplifierTest::testSimplifyBinary()
     TEST_SIMPLIFY(Binary::get(opPlus, Const::get(5), Const::get(3)),
                   Const::get(8));
 
-    TEST_SIMPLIFY(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(-4)),
-                  Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4)));
+    TEST_SIMPLIFY(Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(-4)),
+                  Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(4)));
 
     // Cancel duplicates
     TEST_SIMPLIFY(Binary::get(opMinus,
-                              Location::regOf(REG_PENT_EAX),
-                              Location::regOf(REG_PENT_EAX)),
+                              Location::regOf(REG_X86_EAX),
+                              Location::regOf(REG_X86_EAX)),
                   Const::get(0));
 
     // positive const, negative reg
     TEST_SIMPLIFY(Binary::get(opMinus,
                               Const::get(5),
-                              Location::regOf(REG_PENT_EAX)),
+                              Location::regOf(REG_X86_EAX)),
                   Binary::get(opMinus,
                               Const::get(5),
-                              Location::regOf(REG_PENT_EAX)));
+                              Location::regOf(REG_X86_EAX)));
 
     // positives + negatives + int const
     TEST_SIMPLIFY(Binary::get(opMinus,
-                              Location::regOf(REG_PENT_EAX),
+                              Location::regOf(REG_X86_EAX),
                               Binary::get(opMinus,
-                                          Location::regOf(REG_PENT_ECX),
+                                          Location::regOf(REG_X86_ECX),
                                           Binary::get(opPlus,
                                                       Binary::get(opMinus,
-                                                                  Location::regOf(REG_PENT_EBX),
-                                                                  Location::regOf(REG_PENT_EDX)),
+                                                                  Location::regOf(REG_X86_EBX),
+                                                                  Location::regOf(REG_X86_EDX)),
                                                       Const::get(-5)))),
                   Binary::get(opMinus,
                               Binary::get(opMinus,
                                           Binary::get(opPlus,
-                                                      Location::regOf(REG_PENT_EAX),
-                                                      Location::regOf(REG_PENT_EBX)),
+                                                      Location::regOf(REG_X86_EAX),
+                                                      Location::regOf(REG_X86_EBX)),
                                           Binary::get(opPlus,
-                                                      Location::regOf(REG_PENT_ECX),
-                                                      Location::regOf(REG_PENT_EDX))),
+                                                      Location::regOf(REG_X86_ECX),
+                                                      Location::regOf(REG_X86_EDX))),
                               Const::get(5)));
 
 
@@ -108,25 +108,25 @@ void ExpArithSimplifierTest::testSimplifyBinary()
     // m[(r28 + -4) + 8]
     TEST_SIMPLIFY(Location::memOf(Binary::get(opPlus,
                                               Binary::get(opPlus,
-                                                          Location::regOf(REG_PENT_ESP),
+                                                          Location::regOf(REG_X86_ESP),
                                                           Const::get(-4)),
                                               Const::get(8))),
                   Location::memOf(Binary::get(opPlus,
-                                              Location::regOf(REG_PENT_ESP),
+                                              Location::regOf(REG_X86_ESP),
                                               Const::get(4))));
 
     // r24 + m[(r28 - 4) - 4]
     TEST_SIMPLIFY(Binary::get(opPlus,
-                              Location::regOf(REG_PENT_EAX),
+                              Location::regOf(REG_X86_EAX),
                               Location::memOf(Binary::get(opMinus,
                                                           Binary::get(opMinus,
-                                                                      Location::regOf(REG_PENT_ESP),
+                                                                      Location::regOf(REG_X86_ESP),
                                                                       Const::get(4)),
                                                           Const::get(4)))),
                   Binary::get(opPlus,
-                              Location::regOf(REG_PENT_EAX),
+                              Location::regOf(REG_X86_EAX),
                               Location::memOf(Binary::get(opMinus,
-                                                          Location::regOf(REG_PENT_ESP),
+                                                          Location::regOf(REG_X86_ESP),
                                                           Const::get(8)))));
 }
 

@@ -13,11 +13,11 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/PPCSignature.h"
-#include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/SPARCSignature.h"
 #include "boomerang/db/signature/ST20Signature.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/signature/Win32Signature.h"
+#include "boomerang/db/signature/X86Signature.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -402,8 +402,8 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
         return std::make_shared<CallingConvention::Win32Signature>(*this);
     }
 
-    if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
-        return std::make_shared<CallingConvention::StdC::PentiumSignature>(*this);
+    if (CallingConvention::StdC::X86Signature::qualified(p, *this)) {
+        return std::make_shared<CallingConvention::StdC::X86Signature>(*this);
     }
 
     if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
@@ -425,16 +425,16 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 std::unique_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
 {
     switch (machine) {
-    case Machine::PENTIUM:
+    case Machine::X86:
         if (cc == CallConv::Pascal) {
-            // For now, assume the only pascal calling convention Pentium signatures will be Windows
+            // For now, assume the only pascal calling convention x86 signatures will be Windows
             return std::make_unique<CallingConvention::Win32Signature>(name);
         }
         else if (cc == CallConv::ThisCall) {
             return std::make_unique<CallingConvention::Win32TcSignature>(name);
         }
         else {
-            return std::make_unique<CallingConvention::StdC::PentiumSignature>(name);
+            return std::make_unique<CallingConvention::StdC::X86Signature>(name);
         }
 
     case Machine::SPARC: return std::make_unique<CallingConvention::StdC::SPARCSignature>(name);
@@ -500,10 +500,10 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
     }
 
     switch (machine) {
-    case Machine::PENTIUM:
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EAX))); // eax
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_ECX))); // ecx
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_PENT_EDX))); // edx
+    case Machine::X86:
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX))); // eax
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ECX))); // ecx
+        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDX))); // edx
         return true;
 
     case Machine::SPARC:

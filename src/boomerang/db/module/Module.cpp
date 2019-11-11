@@ -237,14 +237,14 @@ void Module::addWin32DbgInfo(Function *function)
         else {
             // assume we're stdc calling convention, remove r28, r24 returns
             function->setSignature(
-                Signature::instantiate(Machine::PENTIUM, CallConv::C, function->getName()));
+                Signature::instantiate(Machine::X86, CallConv::C, function->getName()));
         }
 
         // get a return type
         SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
 
         if (!rtype->isVoid()) {
-            function->getSignature()->addReturn(rtype, Location::regOf(REG_PENT_EAX));
+            function->getSignature()->addReturn(rtype, Location::regOf(REG_X86_EAX));
         }
 
         // find params and locals

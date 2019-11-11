@@ -728,7 +728,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // no need to decode again (unless it's an incomplete BB, then we do decode it). In
             // fact, mustn't decode twice, because it will muck up the coverage, but also will
             // cause subtle problems like add a call to the list of calls to be processed, then
-            // delete the call RTL (e.g. Pentium 134.perl benchmark)
+            // delete the call RTL
             if (sequentialDecode && cfg->isStartOfBB(addr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
@@ -938,7 +938,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
-        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to
+        // sometimes be extra semantics associated with a return (e.g. x86 ret instruction adds to
         // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
         // returning a value as part of the restore instruction) are assumed to appear in a
         // previous RTL. It is assumed that THE return statement will have the same semantics

@@ -35,11 +35,11 @@ list(APPEND boomerang-db-sources
     db/signature/Signature
     db/signature/Parameter
     db/signature/Return
-    db/signature/PentiumSignature
     db/signature/PPCSignature
     db/signature/SPARCSignature
     db/signature/ST20Signature
     db/signature/Win32Signature
+    db/signature/X86Signature
 )
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-db-sources ".cpp")

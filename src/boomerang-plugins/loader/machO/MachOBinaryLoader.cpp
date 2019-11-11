@@ -140,7 +140,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
 
     // Determine CPU type
     if (BMMH(header->cputype) == 0x07) {
-        machine = Machine::PENTIUM;
+        machine = Machine::X86;
     }
     else {
         machine = Machine::PPC;

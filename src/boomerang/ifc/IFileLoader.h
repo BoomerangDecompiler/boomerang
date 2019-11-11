@@ -63,10 +63,10 @@ public:
     /// Close file opened with Open()
     virtual void close() = 0;
 
-    /// Get the format (e.g. LOADFMT_ELF)
+    /// Get the format (e.g. LoadFmt::ELF)
     virtual LoadFmt getFormat() const = 0;
 
-    /// Get the expected machine (e.g. MACHINE_PENTIUM)
+    /// Get the expected machine (e.g. MACHINE::X86)
     virtual Machine getMachine() const = 0;
 
     /// \returns the address of main()/WinMain() etc.

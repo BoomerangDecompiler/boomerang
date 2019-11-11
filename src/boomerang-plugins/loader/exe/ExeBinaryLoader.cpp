@@ -228,7 +228,7 @@ LoadFmt ExeBinaryLoader::getFormat() const
 
 Machine ExeBinaryLoader::getMachine() const
 {
-    return Machine::PENTIUM;
+    return Machine::X86;
 }
 
 

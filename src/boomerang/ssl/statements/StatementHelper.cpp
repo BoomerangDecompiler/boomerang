@@ -121,7 +121,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
         case BranchType::JPAR:
         case BranchType::JNPAR: {
-            // This is Pentium specific too; see below for more notes.
+            // This is x86 specific too; see below for more notes.
 
             /*
              *              condExp
@@ -160,7 +160,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             }
 
             if (!flagsParam->getSubExp1() || !flagsParam->getSubExp2() || (mask & ~0x41) != 0) {
-                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
                 return false;
             }
 
@@ -168,7 +168,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             if (!at_opFlagsCall_List || !at_opFlagsCall_List->getSubExp1() ||
                 !at_opFlagsCall_List->getSubExp2() ||
                 !at_opFlagsCall_List->getSubExp2()->getSubExp1()) {
-                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
                 return false;
             }
 
@@ -180,7 +180,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
             switch (mask) {
             case 0:
-                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
                 return false;
 
             case 1: _op = jtCond == BranchType::JPAR ? opLess : opGtrEq; break;
@@ -235,7 +235,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                   condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone());
         }
     }
-    // ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else.
+    // ICK! This is all X86 SPECIFIC... needs to go somewhere else.
     // Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST where MASK could be a combination
     // of 1, 4, and 40, and relop could be == or ~=.  There could also be an XOR 40h after the AND
     // From MSVC 6, we can also see MASK = 0x44, 0x41, 0x5 followed by jump if (even) parity (see

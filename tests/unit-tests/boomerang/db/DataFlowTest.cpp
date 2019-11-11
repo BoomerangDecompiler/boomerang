@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "DataFlowTest.h"
 
-#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
+#include "boomerang-plugins/frontend/x86/X86FrontEnd.h"
 
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
@@ -27,9 +27,9 @@
 #include <QDebug>
 
 
-#define FRONTIER_PENTIUM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
-#define SEMI_PENTIUM        (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
-#define IFTHEN_PENTIUM      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
+#define FRONTIER_X86    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/frontier"))
+#define SEMI_X86        (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/semi"))
+#define IFTHEN_X86      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/ifthen"))
 
 
 std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
@@ -153,7 +153,7 @@ void DataFlowTest::testCalculateDominatorsComplex()
 
 void DataFlowTest::testPlacePhi()
 {
-    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_X86));
     QVERIFY(m_project.decodeBinaryFile());
 
     Prog *prog = m_project.getProg();
@@ -172,12 +172,12 @@ void DataFlowTest::testPlacePhi()
     // test!
     QVERIFY(df->placePhiFunctions());
 
-    SharedExp e = Location::regOf(REG_PENT_EAX);
+    SharedExp e = Location::regOf(REG_X86_EAX);
     QString     actualStr;
     OStream actual(&actualStr);
 
     // r24 == eax
-    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
+    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_X86_EAX));
 
     for (BBIndex bb : A_phi) {
         actual << (int)bb << " ";
@@ -189,7 +189,7 @@ void DataFlowTest::testPlacePhi()
 
 void DataFlowTest::testPlacePhi2()
 {
-    QVERIFY(m_project.loadBinaryFile(IFTHEN_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(IFTHEN_X86));
     QVERIFY(m_project.decodeBinaryFile());
 
     Prog *prog = m_project.getProg();
@@ -208,7 +208,7 @@ void DataFlowTest::testPlacePhi2()
 
     QString     actual_st;
     OStream actual(&actual_st);
-    SharedExp          e = Location::regOf(REG_PENT_EAX);
+    SharedExp          e = Location::regOf(REG_X86_EAX);
     std::set<BBIndex>& s = df->getA_phi(e);
 
     for (auto pp = s.begin(); pp != s.end(); ++pp) {
@@ -221,7 +221,7 @@ void DataFlowTest::testPlacePhi2()
 
 void DataFlowTest::testRenameVars()
 {
-    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_X86));
 
     Prog *prog = m_project.getProg();
     IFrontEnd *fe  = prog->getFrontEnd();

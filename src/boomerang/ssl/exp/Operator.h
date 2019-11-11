@@ -153,7 +153,7 @@ enum OPER
     opCF,  ///< carry flag
     opNF,  ///< negative flag
     opOF,  ///< overflow flag
-    opDF,  ///< Pentium Direction (=Down) flag
+    opDF,  ///< x86 Direction (=Down) flag
     opFZF, ///< floating point zero flag
     opFLF  ///< floating point less flag
 };

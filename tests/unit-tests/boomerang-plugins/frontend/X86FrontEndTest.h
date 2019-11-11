@@ -13,7 +13,7 @@
 #include "TestUtils.h"
 
 
-class FrontPentTest : public BoomerangTestWithPlugins
+class X86FrontEndTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
@@ -23,5 +23,4 @@ private slots:
     void test3();
     void testFindMain();
     void testBranch();
-
 };
