@@ -24,8 +24,9 @@ class RTL;
 
 /**
  * The DecodeResult struct contains all the information that results from
- * calling the decoder. This prevents excessive use of confusing
- * reference parameters.
+ * lifting a MachineInstruction.
+ *
+ * \sa IDecoder::liftInstruction
  */
 class BOOMERANG_API DecodeResult
 {
@@ -51,16 +52,20 @@ public:
     std::unique_ptr<RTL> rtl;
 
     /**
-     * The class of the decoded instruction. Will be one of the classes described in
+     * The class of the lifted instruction. Will be one of the classes described in
      * "A Transformational Approach to Binary Translation of Delayed Branches".
      * Ignored by machines with no delay slots.
      */
     IClass iclass;
 
     /**
-     * If true, don't add numBytes and decode there; instead, re-decode the current instruction.
-     * Needed for instructions like the x86 BSF/BSR, which emit branches (so numBytes needs to
-     * be carefully set for the fall through out edge after the branch)
+     * If true, the semantics of this instruction are incomplete and it must be re-lifted
+     * to retrieve all semantics. This is necessary for instructions like x86 BSF/BSR,
+     * which emit branches (these instructions need to have additional RTLs at %pc+1, %pc+2 etc.
+     * to account for the additional semantics)
+     *
+     * \warning Re-lifting must always be done until this variable is false, even if the semantics
+     * are not used. Not doing so will break lifting other instructions.
      */
     bool reDecode;
 };
