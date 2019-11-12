@@ -21,21 +21,22 @@
 #include <cstring>
 
 
-#define ST20_INS_J 0
-#define ST20_INS_LDLP 1
-
-#define ST20_INS_LDNL 3
-#define ST20_INS_LDC 4
-#define ST20_INS_LDNLP 5
-
-#define ST20_INS_LDL 7
-#define ST20_INS_ADC 8
-#define ST20_INS_CALL 9
-#define ST20_INS_CJ 10
-#define ST20_INS_AJW 11
-#define ST20_INS_EQC 12
-#define ST20_INS_STL 13
-#define ST20_INS_STNL 14
+#define ST20_FUNC_J 0
+#define ST20_FUNC_LDLP 1
+#define ST20_FUNC_PFIX 2
+#define ST20_FUNC_LDNL 3
+#define ST20_FUNC_LDC 4
+#define ST20_FUNC_LDNLP 5
+#define ST20_FUNC_NFIX 6
+#define ST20_FUNC_LDL 7
+#define ST20_FUNC_ADC 8
+#define ST20_FUNC_CALL 9
+#define ST20_FUNC_CJ 10
+#define ST20_FUNC_AJW 11
+#define ST20_FUNC_EQC 12
+#define ST20_FUNC_STL 13
+#define ST20_FUNC_STNL 14
+#define ST20_FUNC_OPR 15
 
 #define OPR_MASK (1 << 16)
 #define OPR_SIGN (1 << 17)
@@ -104,12 +105,12 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
         result.m_size++;
 
         switch (functionCode) {
-        case ST20_INS_J: { // unconditional jump
+        case ST20_FUNC_J: { // unconditional jump
             total += oper;
             const Address jumpDest = pc + result.m_size + total;
 
             result.m_addr   = pc;
-            result.m_id     = ST20_INS_J;
+            result.m_id     = ST20_FUNC_J;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "j");
@@ -121,16 +122,16 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             valid = true;
         } break;
 
-        case ST20_INS_LDLP:
-        case ST20_INS_LDNL:
-        case ST20_INS_LDC:
-        case ST20_INS_LDNLP:
-        case ST20_INS_LDL:
-        case ST20_INS_ADC:
-        case ST20_INS_AJW:
-        case ST20_INS_EQC:
-        case ST20_INS_STL:
-        case ST20_INS_STNL: {
+        case ST20_FUNC_LDLP:
+        case ST20_FUNC_LDNL:
+        case ST20_FUNC_LDC:
+        case ST20_FUNC_LDNLP:
+        case ST20_FUNC_LDL:
+        case ST20_FUNC_ADC:
+        case ST20_FUNC_AJW:
+        case ST20_FUNC_EQC:
+        case ST20_FUNC_STL:
+        case ST20_FUNC_STNL: {
             total += oper;
 
             result.m_addr   = pc;
@@ -146,21 +147,21 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             valid = true;
         } break;
 
-        case 2: { // prefix
+        case ST20_FUNC_PFIX: { // prefix
             total = (total + oper) << 4;
             continue;
         }
-        case 6: { // negative prefix
+        case ST20_FUNC_NFIX: { // negative prefix
             total = (total + ~oper) << 4;
             continue;
         }
 
-        case ST20_INS_CALL: { // call
+        case ST20_FUNC_CALL: { // call
             total += oper;
             const Address callDest = Address(pc + result.m_size + total);
 
             result.m_addr   = pc;
-            result.m_id     = ST20_INS_CALL;
+            result.m_id     = ST20_FUNC_CALL;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "call");
@@ -173,12 +174,12 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             valid = true;
         } break;
 
-        case ST20_INS_CJ: { // cond jump
+        case ST20_FUNC_CJ: { // cond jump
             total += oper;
             const Address jumpDest = pc + result.m_size + total;
 
             result.m_addr   = pc;
-            result.m_id     = ST20_INS_CJ;
+            result.m_id     = ST20_FUNC_CJ;
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "cj");
@@ -191,7 +192,7 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             valid = true;
         } break;
 
-        case 15: { // operate
+        case ST20_FUNC_OPR: { // operate
             total += oper;
             const char *insnName = getInstructionName(total);
             if (!insnName) {
@@ -420,30 +421,29 @@ std::unique_ptr<RTL> ST20Decoder::instantiateRTL(const MachineInstruction &insn)
     // Take the argument, convert it to upper case and remove any .'s
     const QString sanitizedName = QString(insn.m_templateName).remove(".").toUpper();
 
+    // Display a disassembly of this instruction if requested
     if (m_prog && m_prog->getProject()->getSettings()->debugDecoder) {
-        OStream q_cout(stdout);
-        // Display a disassembly of this instruction if requested
-        q_cout << insn.m_addr << ": " << insn.m_templateName << " ";
+        QString msg{ insn.m_addr.toString() + " " + insn.m_templateName + " " };
 
         for (const SharedExp &itd : insn.m_operands) {
             if (itd->isIntConst()) {
-                int val = itd->access<Const>()->getInt();
+                const int val = itd->access<Const>()->getInt();
 
                 if ((val > 100) || (val < -100)) {
-                    q_cout << "0x" << QString::number(val, 16);
+                    msg += "0x" + QString::number(val, 16);
                 }
                 else {
-                    q_cout << val;
+                    msg += QString::number(val);
                 }
             }
             else {
-                itd->print(q_cout);
+                msg += itd->toString();
             }
 
-            q_cout << " ";
+            msg += " ";
         }
 
-        q_cout << '\n';
+        LOG_MSG("%1", msg);
     }
 
     return m_rtlDict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
