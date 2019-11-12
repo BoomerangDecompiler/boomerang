@@ -286,7 +286,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     LOG_WARN(message);
                 }
 
-                assert(!insn.isValid());
                 break; // try next instruction in queue
             }
 

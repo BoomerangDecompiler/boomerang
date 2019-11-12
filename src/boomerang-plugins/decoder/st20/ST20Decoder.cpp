@@ -113,7 +113,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "j");
-            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
+                          qPrintable(jumpDest.toString()));
             result.m_operands.push_back(Const::get(jumpDest));
             result.m_templateName = "J";
 
@@ -163,7 +164,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "call");
-            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", callDest.value());
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
+                          qPrintable(callDest.toString()));
 
             result.m_operands.push_back(Const::get(callDest));
             result.m_templateName = "CALL";
@@ -180,7 +182,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "cj");
-            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%lx", jumpDest.value());
+            std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
+                          qPrintable(jumpDest.toString()));
 
             result.m_operands.push_back(Const::get(jumpDest));
             result.m_templateName = "CJ";
