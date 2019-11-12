@@ -125,7 +125,9 @@ private:
 
     /// Lifts a single instruction \p insn to an RTL.
     /// \returns true on success
-    bool liftInstruction(MachineInstruction &insn, DecodeResult &lifted);
+    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted);
+
+    std::unique_ptr<RTLList> liftBB(const std::list<MachineInstruction> &bbInsns);
 
     /// \returns true iff \p exp is a memof that references the address of an imported function.
     bool refersToImportedFunction(const SharedExp &exp);

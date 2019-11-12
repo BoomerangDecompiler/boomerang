@@ -196,8 +196,8 @@ bool CapstoneX86Decoder::disassembleInstruction(Address pc, ptrdiff_t delta,
     result.setGroup(MIGroup::Jump, isInstructionInGroup(m_insn, cs::CS_GRP_JUMP));
     result.setGroup(MIGroup::Call, isInstructionInGroup(m_insn, cs::CS_GRP_CALL));
     result.setGroup(MIGroup::BoolAsgn, result.m_templateName.startsWith("SET"));
-    result.setGroup(MIGroup::Ret, m_insn->id == cs::X86_INS_RET || m_insn->id == cs::X86_INS_RETF ||
-                                      m_insn->id == cs::X86_INS_RETFQ);
+    result.setGroup(MIGroup::Ret, isInstructionInGroup(m_insn, cs::CS_GRP_RET) ||
+                                      isInstructionInGroup(m_insn, cs::CS_GRP_IRET));
 
     if (result.isInGroup(MIGroup::Jump) || result.isInGroup(MIGroup::Call)) {
         assert(result.getNumOperands() > 0);

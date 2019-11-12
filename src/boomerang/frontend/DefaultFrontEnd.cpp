@@ -26,7 +26,9 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/NamedType.h"
@@ -229,10 +231,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     // add to the set of calls to be analysed in the ProcCFG, and also to call newProc()
     std::list<std::shared_ptr<CallStatement>> callList;
 
-    // Indicates whether or not the next instruction to be decoded is the lexical successor of the
-    // current one. Will be true for all NCTs and for CTIs with a fall through branch.
-    bool sequentialDecode = true;
-
     ProcCFG *cfg = proc->getCFG();
     assert(cfg);
 
@@ -246,77 +244,62 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     Address startAddr   = addr;
     Address lastAddr    = addr;
     MachineInstruction insn;
-    DecodeResult lifted;
 
     while ((addr = m_targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
-        // The list of RTLs for the current basic block
-        std::unique_ptr<RTLList> BB_rtls(new RTLList);
+        std::list<MachineInstruction> bbInsns;
 
-        // Keep decoding sequentially until a CTI without a fall through branch is decoded
+        // Indicates whether or not the next instruction to be decoded is the lexical successor of
+        // the current one. Will be true for all NCTs and for CTIs with a fall through branch.
+        bool sequentialDecode = true;
+
         while (sequentialDecode) {
-            // Decode and classify the current source instruction
             if (!disassembleInstruction(addr, insn)) {
-                // Do not throw away previously decoded instrucions before the invalid one
-                if (BB_rtls && !BB_rtls->empty()) {
-                    cfg->createBB(BBType::Fall, std::move(BB_rtls));
+                // We might have disassembled a valid instruction, but the decoder
+                // does not recognize it yet. Do not throw away previous instructionns;
+                // instead, create a new BB from them
+                if (!bbInsns.empty()) {
+                    cfg->createBB(BBType::Fall, liftBB(bbInsns));
+                    bbInsns.clear();
                 }
 
-                QString message;
-                BinaryImage *image = m_program->getBinaryFile()->getImage();
-
-                Byte insnData[4] = { 0 };
-                bool print       = true;
-                for (int i = 0; i < 4; i++) {
-                    if (!image->readNative1(addr + i, insnData[i])) {
-                        print = false;
-                        break;
-                    }
-                }
-
-                if (print) {
-                    // clang-format off
-                    message.sprintf("Encountered invalid instruction at address %s: "
-                                    "0x%02X 0x%02X 0x%02X 0x%02X",
-                                    qPrintable(addr.toString()),
-                                    insnData[0],
-                                    insnData[1],
-                                    insnData[2],
-                                    insnData[3]);
-                    // clang-format on
-                    LOG_WARN(message);
-                }
-
-                break; // try next instruction in queue
+                LOG_ERROR("Encountered invalid instruction");
             }
 
             if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1 %2 %3", addr, insn.m_mnem.data(), insn.m_opstr.data());
             }
 
-            // Need to construct a new list of RTLs if a basic block has just been finished but
-            // decoding is continuing from its lexical successor
-            if (BB_rtls == nullptr) {
-                BB_rtls.reset(new std::list<std::unique_ptr<RTL>>());
+            // classify the current instruction. If it is not a CTI,
+            // continue disassembling sequentially
+            const bool isCTI = insn.isInGroup(MIGroup::Call) || insn.isInGroup(MIGroup::Jump) ||
+                               insn.isInGroup(MIGroup::Ret);
+
+            if (!isCTI) {
+                bbInsns.push_back(insn);
+                addr += insn.m_size;
+
+                lastAddr = std::max(lastAddr, addr);
+                continue;
             }
 
-            lifted.reset();
-
+            // this is a CTI. Lift the instruction to gain access to call/jump semantics
+            DecodeResult lifted;
             if (!liftInstruction(insn, lifted)) {
-                // Alert the watchers to the problem
-                m_program->getProject()->alertBadDecode(addr);
-
-                // An invalid instruction. Most likely because a call did not return
-                // (e.g. call _exit()), etc.
-                // Best thing is to emit an INVALID BB, and continue with valid instructions
-                // Emit the RTL anyway, so we have the address and maybe some other clues
-                BB_rtls->push_back(std::make_unique<RTL>(addr));
-                cfg->createBB(BBType::Invalid, std::move(BB_rtls));
-                break; // try the next instruction in the queue
+                LOG_ERROR("Cannot lift instruction!");
+                break; // try next insruction in queue
             }
 
             // alert the watchers that we have decoded an instruction
             m_program->getProject()->alertInstructionDecoded(addr, insn.m_size);
             numBytesDecoded += insn.m_size;
+
+            // Display RTL representation if asked
+            if (m_program->getProject()->getSettings()->printRTLs) {
+                QString tgt;
+                OStream st(&tgt);
+                lifted.rtl->print(st);
+                LOG_MSG(tgt);
+            }
 
             // Check if this is an already decoded jump instruction (from a previous pass with
             // propagation etc) If so, we throw away the just decoded RTL (but we still may have
@@ -336,14 +319,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 continue;
-            }
-
-            // Display RTL representation if asked
-            if (m_program->getProject()->getSettings()->printRTLs) {
-                QString tgt;
-                OStream st(&tgt);
-                lifted.rtl->print(st);
-                LOG_MSG(tgt);
             }
 
             // Make a copy (!) of the list. This is needed temporarily to work around the following
@@ -389,10 +364,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Handle one way jumps and computed jumps separately
                     if (jumpDest != Address::INVALID) {
-                        BB_rtls->push_back(std::move(lifted.rtl));
+                        bbInsns.push_back(insn);
                         sequentialDecode = false;
 
-                        currentBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
+                        currentBB = cfg->createBB(BBType::Oneway, liftBB(bbInsns));
+                        bbInsns.clear();
 
                         // Exit the switch now if the basic block already existed
                         if (currentBB == nullptr) {
@@ -417,10 +393,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     SharedExp jumpDest = jumpStmt->getDest();
 
                     if (jumpDest == nullptr) { // Happens if already analysed (now redecoding)
-                        BB_rtls->push_back(std::move(lifted.rtl));
+                        bbInsns.push_back(insn);
 
                         // processSwitch will update num outedges
-                        currentBB = cfg->createBB(BBType::Nway, std::move(BB_rtls));
+                        currentBB = cfg->createBB(BBType::Nway, liftBB(bbInsns));
+                        bbInsns.clear();
 
                         // decode arms, set out edges, etc
                         IndirectJumpAnalyzer().processSwitch(currentBB, proc);
@@ -449,11 +426,13 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
 
                         call->setDestProc(lp);
-                        BB_rtls->push_back(
+                        auto rtls = liftBB(bbInsns);
+                        rtls->push_back(
                             std::unique_ptr<RTL>(new RTL(lifted.rtl->getAddress(), { call })));
 
-                        currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
+                        currentBB = cfg->createBB(BBType::Call, std::move(rtls));
                         appendSyntheticReturn(currentBB, proc, lifted.rtl.get());
+                        bbInsns.clear();
                         sequentialDecode = false;
 
                         if (lifted.rtl->getAddress() == proc->getEntryAddress()) {
@@ -471,11 +450,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         break;
                     }
 
-                    BB_rtls->push_back(std::move(lifted.rtl));
+                    bbInsns.push_back(insn);
 
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
-                    cfg->createBB(BBType::CompJump, std::move(BB_rtls));
+                    cfg->createBB(BBType::CompJump, liftBB(bbInsns));
+                    bbInsns.clear();
 
                     LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
@@ -485,9 +465,10 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                 case StmtType::Branch: {
                     Address jumpDest = jumpStmt->getFixedDest();
-                    BB_rtls->push_back(std::move(lifted.rtl));
 
-                    currentBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
+                    bbInsns.push_back(insn);
+
+                    currentBB = cfg->createBB(BBType::Twoway, liftBB(bbInsns));
 
                     // Stop decoding sequentially if the basic block already existed otherwise
                     // complete the basic block
@@ -560,8 +541,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Treat computed and static calls separately
                     if (call->isComputed()) {
-                        BB_rtls->push_back(std::move(lifted.rtl));
-                        currentBB = cfg->createBB(BBType::CompCall, std::move(BB_rtls));
+                        bbInsns.push_back(insn);
+                        currentBB = cfg->createBB(BBType::CompCall, liftBB(bbInsns));
 
                         // Stop decoding sequentially if the basic block already
                         // existed otherwise complete the basic block
@@ -570,6 +551,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                         else {
                             cfg->addEdge(currentBB, addr + insn.m_size);
+                            bbInsns.clear(); // start a new BB
                         }
 
                         // Add this call to the list of calls to analyse. We won't
@@ -589,14 +571,16 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                         // Call the virtual helper function. If implemented, will check for
                         // machine specific funcion calls
-                        if (isHelperFunc(callAddr, addr, *BB_rtls)) {
+                        auto bbRTLs = liftBB(bbInsns);
+
+                        if (isHelperFunc(callAddr, addr, *bbRTLs)) {
                             // We have already added to BB_rtls
                             lifted.rtl.reset(); // Discard the call semantics
                             break;
                         }
 
                         RTL *rtl = lifted.rtl.get();
-                        BB_rtls->push_back(std::move(lifted.rtl));
+                        bbInsns.push_back(insn);
 
                         // Add this non computed call site to the set of call sites which need
                         // to be analysed later.
@@ -629,7 +613,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                             // Make sure it has a return appended (so there is only one exit
                             // from the function)
-                            currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
+                            currentBB = cfg->createBB(BBType::Call, liftBB(bbInsns));
                             appendSyntheticReturn(currentBB, proc, rtl);
 
                             // Stop decoding sequentially
@@ -637,9 +621,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                         else {
                             // Create the new basic block
-                            currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                            BB_rtls   = nullptr;
-
+                            currentBB = cfg->createBB(BBType::Call, liftBB(bbInsns));
+                            bbInsns.clear();
                             if (call->isReturnAfterCall()) {
                                 // Constuct the RTLs for the new basic block
                                 std::unique_ptr<RTLList> rtls(new RTLList);
@@ -669,8 +652,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         extraProcessCall(call, *currentBB->getRTLs());
                     }
 
-                    // make sure we already moved the created RTL into a BB
-                    assert(BB_rtls == nullptr);
                     break;
                 }
 
@@ -680,7 +661,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
-                    createReturnBlock(proc, std::move(BB_rtls), std::move(lifted.rtl));
+                    createReturnBlock(proc, liftBB(bbInsns), std::move(lifted.rtl));
                     break;
 
                 case StmtType::BoolAssign:
@@ -700,11 +681,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 if (!sequentialDecode) {
                     break;
                 }
-            }
-
-            if (BB_rtls != nullptr && lifted.rtl != nullptr) {
-                // If non null, we haven't put this RTL into a the current BB as yet
-                BB_rtls->push_back(std::move(lifted.rtl));
             }
 
             if (lifted.reLift) {
@@ -727,8 +703,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // delete the call RTL
             if (sequentialDecode && cfg->isStartOfBB(addr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
-                if (BB_rtls) {
-                    BasicBlock *bb = cfg->createBB(BBType::Fall, std::move(BB_rtls));
+                if (!bbInsns.empty()) {
+                    BasicBlock *bb = cfg->createBB(BBType::Fall, liftBB(bbInsns));
 
                     // Add an out edge to this address
                     if (bb) {
@@ -804,7 +780,7 @@ bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &ins
 }
 
 
-bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &lifted)
+bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
     const bool ok = m_decoder->liftInstruction(insn, lifted);
 
@@ -819,6 +795,22 @@ bool DefaultFrontEnd::liftInstruction(MachineInstruction &insn, DecodeResult &li
     }
 
     return true;
+}
+
+
+std::unique_ptr<RTLList> DefaultFrontEnd::liftBB(const std::list<MachineInstruction> &bbInsns)
+{
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    DecodeResult lifted;
+
+    for (const MachineInstruction &bbInsn : bbInsns) {
+        if (liftInstruction(bbInsn, lifted)) {
+            bbRTLs->push_back(std::move(lifted.rtl));
+            assert(!lifted.reLift); // fix: BSF/BSR etc.
+        }
+    }
+
+    return bbRTLs;
 }
 
 
@@ -935,11 +927,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 {
     ProcCFG *cfg = proc->getCFG();
 
-    // Add the RTL to the list; this has the semantics for the return instruction as well as the
-    // ReturnStatement The last Statement may get replaced with a GotoStatement
-    if (BB_rtls == nullptr) {
-        BB_rtls.reset(new RTLList); // In case no other semantics
-    }
+    assert(BB_rtls != nullptr);
 
     RTL *retRTL = returnRTL.get();
     BB_rtls->push_back(std::move(returnRTL));
