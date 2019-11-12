@@ -30,6 +30,7 @@ enum class MIGroup
     Jump,
     Computed,
     BoolAsgn,
+    Ret,
     COUNT
 };
 
