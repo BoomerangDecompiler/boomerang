@@ -1,3 +1,3 @@
-gcc_pent.h
-stat_pent.h
-uname_pent.h
+gcc_x86.h
+stat_x86.h
+uname_x86.h
