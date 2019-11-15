@@ -13,6 +13,7 @@ list(APPEND boomerang-db-sources
     db/DebugInfo
     db/DefCollector
     db/Global
+    db/GraphNode
     db/Prog
     db/UseCollector
 

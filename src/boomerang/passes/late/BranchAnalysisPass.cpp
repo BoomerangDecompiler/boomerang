@@ -53,7 +53,7 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
         }
 
         BasicBlock *b = a->getSuccessor(BELSE);
-        if (!b->isType(BBType::Twoway)) {
+        if (!b || !b->isType(BBType::Twoway)) {
             continue;
         }
         else if (!isOnlyBranch(b)) {

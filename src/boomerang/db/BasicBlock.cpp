@@ -41,13 +41,12 @@ BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function 
 
 
 BasicBlock::BasicBlock(const BasicBlock &bb)
-    : m_function(bb.m_function)
+    : GraphNode(bb)
+    , m_function(bb.m_function)
     , m_lowAddr(bb.m_lowAddr)
     , m_highAddr(bb.m_highAddr)
     , m_bbType(bb.m_bbType)
-    // m_labelNeeded is initialized to false, not copied
-    , m_predecessors(bb.m_predecessors)
-    , m_successors(bb.m_successors)
+// m_labelNeeded is initialized to false, not copied
 {
     if (bb.m_listOfRTLs) {
         // make a deep copy of the RTL list
@@ -73,13 +72,13 @@ BasicBlock::~BasicBlock()
 
 BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
 {
+    GraphNode::operator=(bb);
+
     m_function = bb.m_function;
     m_lowAddr  = bb.m_lowAddr;
     m_highAddr = bb.m_highAddr;
     m_bbType   = bb.m_bbType;
     // m_labelNeeded is initialized to false, not copied
-    m_predecessors = bb.m_predecessors;
-    m_successors   = bb.m_successors;
 
     if (bb.m_listOfRTLs) {
         // make a deep copy of the RTL list
@@ -152,14 +151,14 @@ void BasicBlock::print(OStream &os) const
     os << ":\n";
     os << "  in edges: ";
 
-    for (BasicBlock *bb : m_predecessors) {
+    for (BasicBlock *bb : getPredecessors()) {
         os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
     }
 
     os << "\n";
     os << "  out edges: ";
 
-    for (BasicBlock *bb : m_successors) {
+    for (BasicBlock *bb : getSuccessors()) {
         os << bb->getLowAddr() << " ";
     }
 
@@ -196,6 +195,7 @@ const RTLList *BasicBlock::getRTLs() const
     return m_listOfRTLs.get();
 }
 
+
 RTL *BasicBlock::getLastRTL()
 {
     return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr;
@@ -205,92 +205,6 @@ RTL *BasicBlock::getLastRTL()
 const RTL *BasicBlock::getLastRTL() const
 {
     return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr;
-}
-
-
-const std::vector<BasicBlock *> &BasicBlock::getPredecessors() const
-{
-    return m_predecessors;
-}
-
-
-const std::vector<BasicBlock *> &BasicBlock::getSuccessors() const
-{
-    return m_successors;
-}
-
-
-void BasicBlock::setPredecessor(int i, BasicBlock *predecessor)
-{
-    assert(Util::inRange(i, 0, getNumPredecessors()));
-    m_predecessors[i] = predecessor;
-}
-
-
-void BasicBlock::setSuccessor(int i, BasicBlock *successor)
-{
-    assert(Util::inRange(i, 0, getNumSuccessors()));
-    m_successors[i] = successor;
-}
-
-
-BasicBlock *BasicBlock::getPredecessor(int i)
-{
-    return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
-}
-
-
-const BasicBlock *BasicBlock::getPredecessor(int i) const
-{
-    return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
-}
-
-
-BasicBlock *BasicBlock::getSuccessor(int i)
-{
-    return Util::inRange(i, 0, getNumSuccessors()) ? m_successors[i] : nullptr;
-}
-
-
-const BasicBlock *BasicBlock::getSuccessor(int i) const
-{
-    return Util::inRange(i, 0, getNumSuccessors()) ? m_successors[i] : nullptr;
-}
-
-
-void BasicBlock::addPredecessor(BasicBlock *predecessor)
-{
-    m_predecessors.push_back(predecessor);
-}
-
-
-void BasicBlock::addSuccessor(BasicBlock *successor)
-{
-    m_successors.push_back(successor);
-}
-
-
-void BasicBlock::removePredecessor(BasicBlock *pred)
-{
-    // Only remove a single predecessor (prevents issues with double edges)
-    for (auto it = m_predecessors.begin(); it != m_predecessors.end(); ++it) {
-        if (*it == pred) {
-            m_predecessors.erase(it);
-            return;
-        }
-    }
-}
-
-
-void BasicBlock::removeSuccessor(BasicBlock *succ)
-{
-    // Only remove a single successor (prevents issues with double edges)
-    for (auto it = m_successors.begin(); it != m_successors.end(); ++it) {
-        if (*it == succ) {
-            m_successors.erase(it);
-            return;
-        }
-    }
 }
 
 
@@ -600,18 +514,6 @@ void BasicBlock::simplify()
 
         assert(static_cast<UserProc *>(m_function)->getCFG()->isWellFormed());
     }
-}
-
-
-bool BasicBlock::isPredecessorOf(const BasicBlock *bb) const
-{
-    return std::find(m_successors.begin(), m_successors.end(), bb) != m_successors.end();
-}
-
-
-bool BasicBlock::isSuccessorOf(const BasicBlock *bb) const
-{
-    return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
 }
 
 

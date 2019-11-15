@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/db/GraphNode.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/StatementList.h"
@@ -60,7 +61,7 @@ enum class BBType
  * During decompilation, a special RTL with a zero address is prepended;
  * this RTL contains implicit assigns and phi assigns.
  */
-class BOOMERANG_API BasicBlock
+class BOOMERANG_API BasicBlock : public GraphNode<BasicBlock>
 {
 public:
     typedef RTLList::iterator RTLIterator;
@@ -127,61 +128,6 @@ public:
     /// \returns true if the instructions of this BB have not been decoded yet.
     inline bool isIncomplete() const { return getHiAddr() == Address::INVALID; }
 
-    // predecessor / successor functions
-
-    inline int getNumPredecessors() const { return m_predecessors.size(); }
-    inline int getNumSuccessors() const { return m_successors.size(); }
-
-    /// \returns all predecessors of this BB.
-    const std::vector<BasicBlock *> &getPredecessors() const;
-
-    /// \returns all successors of this BB.
-    const std::vector<BasicBlock *> &getSuccessors() const;
-
-    /// \returns the \p i-th predecessor of this BB.
-    /// Returns nullptr if \p i is out of range.
-    BasicBlock *getPredecessor(int i);
-    const BasicBlock *getPredecessor(int i) const;
-
-    /// \returns the \p i-th successor of this BB.
-    /// Returns nullptr if \p i is out of range.
-    BasicBlock *getSuccessor(int i);
-    const BasicBlock *getSuccessor(int i) const;
-
-    /// Change the \p i-th predecessor of this BB.
-    /// \param i index (0-based)
-    void setPredecessor(int i, BasicBlock *predecessor);
-
-    /// Change the \p i-th successor of this BB.
-    /// \param i index (0-based)
-    void setSuccessor(int i, BasicBlock *successor);
-
-    /// Add a predecessor to this BB.
-    void addPredecessor(BasicBlock *predecessor);
-
-    /// Add a successor to this BB.
-    void addSuccessor(BasicBlock *successor);
-
-    /// Remove a predecessor BB.
-    void removePredecessor(BasicBlock *predecessor);
-
-    /// Remove a successor BB
-    void removeSuccessor(BasicBlock *successor);
-
-    /// Removes all successor BBs.
-    /// Called when noreturn call is found
-    void removeAllSuccessors() { m_successors.clear(); }
-
-    /// removes all predecessor BBs.
-    void removeAllPredecessors() { m_predecessors.clear(); }
-
-    /// \returns true if this BB is a (direct) predecessor of \p bb,
-    /// i.e. there is an edge from this BB to \p bb
-    bool isPredecessorOf(const BasicBlock *bb) const;
-
-    /// \returns true if this BB is a (direct) successor of \p bb,
-    /// i.e. there is an edge from \p bb to this BB.
-    bool isSuccessorOf(const BasicBlock *bb) const;
 
     // RTL and statement related
 public:
@@ -293,8 +239,4 @@ protected:
     Address m_highAddr = Address::INVALID;
 
     BBType m_bbType = BBType::Invalid; ///< type of basic block
-
-    /* in-edges and out-edges */
-    std::vector<BasicBlock *> m_predecessors; ///< Vector of in-edges
-    std::vector<BasicBlock *> m_successors;   ///< Vector of out-edges
 };

@@ -2754,6 +2754,10 @@ void CCodeGenerator::emitCodeForStmt(const SharedConstStmt &st)
 std::list<std::pair<SharedExp, const BasicBlock *>>
 CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const SwitchInfo *psi)
 {
+    if (!caseHead) {
+        return {};
+    }
+
     using CaseEntry = std::pair<SharedExp, const BasicBlock *>;
     std::list<CaseEntry> result;
 
@@ -2770,12 +2774,14 @@ CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const Swi
         }
 
         const BasicBlock *realSucc = origSucc;
-        while (realSucc->getNumSuccessors() == 1 &&
+        while (realSucc && realSucc->getNumSuccessors() == 1 &&
                (realSucc->isEmpty() || realSucc->isEmptyJump())) {
             realSucc = realSucc->getSuccessor(0);
         }
 
-        result.push_back({ caseVal, realSucc });
+        if (realSucc) {
+            result.push_back({ caseVal, realSucc });
+        }
     }
 
     result.sort([](const CaseEntry &left, const CaseEntry &right) {
