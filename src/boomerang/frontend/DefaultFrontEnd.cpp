@@ -253,9 +253,24 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         bool sequentialDecode = true;
 
         while (sequentialDecode) {
+            BasicBlock *existingBB = cfg->getBBStartingAt(addr);
+            if (existingBB) {
+                if (!bbInsns.empty()) {
+                    // if bbInsns is not empty, the previous instruction was not a CTI.
+                    // Complete the BB as a fallthrough
+                    BasicBlock *newBB = cfg->createBB(BBType::Fall, liftBB(bbInsns));
+                    bbInsns.clear();
+                    cfg->addEdge(newBB, existingBB);
+                }
+
+                if (!existingBB->isIncomplete()) {
+                    break; // do not disassemble the BB twice
+                }
+            }
+
             if (!disassembleInstruction(addr, insn)) {
-                // We might have disassembled a valid instruction, but the decoder
-                // does not recognize it yet. Do not throw away previous instructionns;
+                // We might have disassembled a valid instruction, but the disassembler
+                // does not recognize it. Do not throw away previous instructions;
                 // instead, create a new BB from them
                 if (!bbInsns.empty()) {
                     cfg->createBB(BBType::Fall, liftBB(bbInsns));
@@ -263,11 +278,16 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 LOG_ERROR("Encountered invalid instruction");
+                break; // try next instruction in queue
             }
 
             if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1 %2 %3", addr, insn.m_mnem.data(), insn.m_opstr.data());
             }
+
+            // alert the watchers that we have decoded an instruction
+            numBytesDecoded += insn.m_size;
+            m_program->getProject()->alertInstructionDecoded(addr, insn.m_size);
 
             // classify the current instruction. If it is not a CTI,
             // continue disassembling sequentially
@@ -289,21 +309,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 break; // try next insruction in queue
             }
 
-            // alert the watchers that we have decoded an instruction
-            m_program->getProject()->alertInstructionDecoded(addr, insn.m_size);
-            numBytesDecoded += insn.m_size;
-
-            // Display RTL representation if asked
-            if (m_program->getProject()->getSettings()->printRTLs) {
-                QString tgt;
-                OStream st(&tgt);
-                lifted.rtl->print(st);
-                LOG_MSG(tgt);
-            }
-
             // Check if this is an already decoded jump instruction (from a previous pass with
-            // propagation etc) If so, we throw away the just decoded RTL (but we still may have
-            // needed to calculate the number of bytes.. ick.)
+            // propagation etc). If so, we throw away the just decoded RTL
+            // (but we still may have needed to calculate the number of bytes.. ick.)
             std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(addr);
 
             if (ff != m_previouslyDecoded.end()) {
@@ -396,7 +404,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         bbInsns.push_back(insn);
 
                         // processSwitch will update num outedges
-                        currentBB = cfg->createBB(BBType::Nway, liftBB(bbInsns));
+                        std::unique_ptr<RTLList> bbRTLs = liftBB(bbInsns);
+                        bbRTLs->back()->back()          = jumpStmt;
+                        currentBB = cfg->createBB(BBType::Nway, std::move(bbRTLs));
                         bbInsns.clear();
 
                         // decode arms, set out edges, etc
@@ -460,8 +470,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
                     sequentialDecode = false;
-                    break;
-                }
+                } break;
 
                 case StmtType::Branch: {
                     Address jumpDest = jumpStmt->getFixedDest();
@@ -469,6 +478,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     bbInsns.push_back(insn);
 
                     currentBB = cfg->createBB(BBType::Twoway, liftBB(bbInsns));
+                    bbInsns.clear();
 
                     // Stop decoding sequentially if the basic block already existed otherwise
                     // complete the basic block
@@ -651,18 +661,16 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     if (currentBB && currentBB->getRTLs()) {
                         extraProcessCall(call, *currentBB->getRTLs());
                     }
+                } break;
 
-                    break;
-                }
-
-                case StmtType::Ret:
+                case StmtType::Ret: {
                     // Stop decoding sequentially
                     sequentialDecode = false;
 
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
                     createReturnBlock(proc, liftBB(bbInsns), std::move(lifted.rtl));
-                    break;
+                } break;
 
                 case StmtType::BoolAssign:
                 // This is just an ordinary instruction; no control transfer
@@ -690,37 +698,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             addr += insn.m_size;
-
-            if (addr > lastAddr) {
-                lastAddr = addr;
-            }
-
-            // If sequentially decoding, check if the next address happens to be the start of an
-            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and
-            // no need to decode again (unless it's an incomplete BB, then we do decode it). In
-            // fact, mustn't decode twice, because it will muck up the coverage, but also will
-            // cause subtle problems like add a call to the list of calls to be processed, then
-            // delete the call RTL
-            if (sequentialDecode && cfg->isStartOfBB(addr)) {
-                // Create the fallthrough BB, if there are any RTLs at all
-                if (!bbInsns.empty()) {
-                    BasicBlock *bb = cfg->createBB(BBType::Fall, liftBB(bbInsns));
-
-                    // Add an out edge to this address
-                    if (bb) {
-                        cfg->addEdge(bb, addr);
-                    }
-                }
-
-                // Pick a new address to decode from, if the BB is complete
-                if (!cfg->isStartOfIncompleteBB(addr)) {
-                    sequentialDecode = false;
-                }
-            }
+            lastAddr = std::max(lastAddr, addr);
         } // while sequentialDecode
-
-        sequentialDecode = true;
-    } // while getNextAddress() != Address::INVALID
+    }     // while getNextAddress() != Address::INVALID
 
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
