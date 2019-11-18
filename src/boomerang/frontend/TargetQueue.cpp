@@ -19,7 +19,7 @@ TargetQueue::TargetQueue(bool traceDecoder)
 }
 
 
-void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
+void TargetQueue::pushAddress(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
 {
     if (cfg->isStartOfBB(newAddr)) {
         // BB is already complete or the start address is already in the queue.
@@ -48,7 +48,7 @@ void TargetQueue::initial(Address addr)
 }
 
 
-Address TargetQueue::getNextAddress(const ProcCFG &cfg)
+Address TargetQueue::popAddress(const ProcCFG &cfg)
 {
     while (!m_targets.empty()) {
         Address address = m_targets.front();

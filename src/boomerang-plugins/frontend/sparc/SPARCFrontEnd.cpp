@@ -98,7 +98,7 @@ void SPARCFrontEnd::createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCF
         return;
     }
 
-    tq.visit(cfg, dest, newBB);
+    tq.pushAddress(cfg, dest, newBB);
     cfg->addEdge(newBB, dest);
 }
 
@@ -460,7 +460,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address
         assert(newBB);
 
         // Visit the target of the branch
-        tq.visit(cfg, jumpDest, newBB);
+        tq.pushAddress(cfg, jumpDest, newBB);
         std::unique_ptr<RTLList> orphanBBRTLs(new RTLList);
 
         // Add a branch from the orphan instruction to the dest of the branch.
@@ -520,7 +520,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Addre
         assert(newBB);
 
         // Visit the target of the branch
-        tq.visit(cfg, jumpDest, newBB);
+        tq.pushAddress(cfg, jumpDest, newBB);
 
         std::unique_ptr<RTLList> orphanRTL(new RTLList);
 
@@ -580,7 +580,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
     // Get the next address from which to continue decoding and go from
     // there. Exit the loop if there are no more addresses or they all
     // correspond to locations that have been decoded.
-    while ((pc = _targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
+    while ((pc = _targetQueue.popAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::unique_ptr<RTLList> BB_rtls(new RTLList);
 

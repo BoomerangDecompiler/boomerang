@@ -25,6 +25,7 @@ class BOOMERANG_API TargetQueue
 public:
     TargetQueue(bool traceDecoder);
 
+public:
     /**
      * Seed the queue with an initial address.
      * \note     Can be some targets already in the queue now
@@ -47,7 +48,7 @@ public:
      * \param   newBB   set to the lower part of the BB if the address already exists
      *          as a non explicit label (BB has to be split)
      */
-    void visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB);
+    void pushAddress(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB);
 
     /**
      * Return the next target from the queue of non-processed targets.
@@ -55,7 +56,7 @@ public:
      * \returns The next address to process, or Address::INVALID if none
      *          (targets is empty)
      */
-    Address getNextAddress(const ProcCFG &cfg);
+    Address popAddress(const ProcCFG &cfg);
 
 private:
     bool m_traceDecoder;

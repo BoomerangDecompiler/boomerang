@@ -243,7 +243,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     Address lastAddr    = addr;
     MachineInstruction insn;
 
-    while ((addr = m_targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
+    while ((addr = m_targetQueue.popAddress(*cfg)) != Address::INVALID) {
         std::list<MachineInstruction> bbInsns;
 
         // Indicates whether or not the next instruction to be decoded is the lexical successor of
@@ -330,7 +330,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 s->simplify();
             }
 
-
             for (SharedStmt s : sl) {
                 switch (s->getKind()) {
                 case StmtType::Goto: {
@@ -355,7 +354,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Add the out edge if it is to a destination within the procedure
                     if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                        m_targetQueue.visit(cfg, jumpDest, currentBB);
+                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
                         cfg->addEdge(currentBB, jumpDest);
                     }
                     else {
@@ -387,7 +386,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     const Address jumpDest = jump->getFixedDest();
 
                     if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                        m_targetQueue.visit(cfg, jumpDest, currentBB);
+                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
                         cfg->addEdge(currentBB, jumpDest);
                     }
                     else {
@@ -817,7 +816,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 
             // Visit the return instruction. This will be needed in most cases to split the
             // return BB (if it has other instructions before the return instruction).
-            m_targetQueue.visit(cfg, retAddr, newBB);
+            m_targetQueue.pushAddress(cfg, retAddr, newBB);
         }
     }
 
