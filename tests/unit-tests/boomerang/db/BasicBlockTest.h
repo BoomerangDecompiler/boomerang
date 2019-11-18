@@ -44,6 +44,7 @@ private slots:
     void testAddImplicitOverPhi();
 
     void testRemoveRTL();
+    void testCompleteBB();
     void testGetStmt();
     void testGetCallDestProc();
     void testGetCond();

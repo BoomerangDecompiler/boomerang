@@ -126,7 +126,7 @@ public:
     Address getHiAddr() const;
 
     /// \returns true if the instructions of this BB have not been decoded yet.
-    inline bool isIncomplete() const { return getHiAddr() == Address::INVALID; }
+    inline bool isIncomplete() const { return m_highAddr == Address::INVALID; }
 
 
     // RTL and statement related
@@ -144,7 +144,7 @@ public:
      * Update the RTL list of this basic block. Takes ownership of the pointer.
      * \param rtls a list of RTLs
      */
-    void setRTLs(std::unique_ptr<RTLList> rtls);
+    void completeBB(std::unique_ptr<RTLList> rtls);
 
     /**
      * Get first/next statement this BB
@@ -232,8 +232,8 @@ public:
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
-    Function *m_function = nullptr;
-    std::unique_ptr<RTLList> m_listOfRTLs; ///< Ptr to list of RTLs
+    Function *m_function                  = nullptr;
+    std::unique_ptr<RTLList> m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;

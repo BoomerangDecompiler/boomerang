@@ -35,8 +35,10 @@ BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function 
     : m_function(function)
     , m_bbType(bbType)
 {
+    assert(bbRTLs);
+
     // Set the RTLs. This also updates the low and the high address of the BB.
-    setRTLs(std::move(bbRTLs));
+    completeBB(std::move(bbRTLs));
 }
 
 
@@ -60,7 +62,7 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
         while (srcIt != endIt) {
             *destIt++ = std::make_unique<RTL>(**srcIt++);
         }
-        setRTLs(std::move(newList));
+        completeBB(std::move(newList));
     }
 }
 
@@ -92,21 +94,21 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
         while (srcIt != endIt) {
             *destIt++ = std::make_unique<RTL>(**srcIt++);
         }
-        setRTLs(std::move(newList));
+        completeBB(std::move(newList));
     }
 
     return *this;
 }
 
 
-void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
+void BasicBlock::completeBB(std::unique_ptr<RTLList> rtls)
 {
+    assert(m_listOfRTLs == nullptr);
+    assert(rtls != nullptr);
+    assert(!rtls->empty());
+
     m_listOfRTLs = std::move(rtls);
     updateBBAddresses();
-
-    if (!m_listOfRTLs) {
-        return;
-    }
 
     bool firstRTL = true;
 

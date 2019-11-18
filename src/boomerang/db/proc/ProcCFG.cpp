@@ -113,7 +113,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             }
             else {
                 // Fill in the details, and return it
-                currentBB->setRTLs(std::move(bbRTLs));
+                currentBB->completeBB(std::move(bbRTLs));
                 currentBB->setType(bbType);
             }
 
@@ -550,7 +550,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
         it = bb->getRTLs()->erase(it);
     }
 
-    _newBB->setRTLs(std::move(highRTLs));
+    _newBB->completeBB(std::move(highRTLs));
     bb->updateBBAddresses();
     _newBB->updateBBAddresses();
 
