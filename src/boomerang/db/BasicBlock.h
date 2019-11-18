@@ -112,6 +112,8 @@ public:
      */
     void completeBB(const std::vector<MachineInstruction> &bbInsns);
 
+    void clearIR();
+
 public:
     /**
      * Print the whole BB to the given stream

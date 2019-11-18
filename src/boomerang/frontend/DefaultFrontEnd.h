@@ -93,9 +93,6 @@ public:
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString &name) override;
 
-    /// \copydoc IFrontEnd::saveDecodedRTL
-    void saveDecodedRTL(Address a, RTL *rtl) override;
-
 protected:
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
@@ -169,8 +166,4 @@ protected:
 
     /// Map from address to meaningful name
     std::map<Address, QString> m_refHints;
-
-    /// Map from address to previously decoded RTLs for decoded indirect control transfer
-    /// instructions
-    std::map<Address, RTL *> m_previouslyDecoded;
 };

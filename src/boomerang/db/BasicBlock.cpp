@@ -74,6 +74,12 @@ void BasicBlock::completeBB(const std::vector<MachineInstruction> &insns)
 }
 
 
+void BasicBlock::clearIR()
+{
+    m_ir.m_listOfRTLs.reset();
+}
+
+
 QString BasicBlock::toString() const
 {
     QString tgt;

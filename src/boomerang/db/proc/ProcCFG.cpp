@@ -35,18 +35,13 @@ ProcCFG::~ProcCFG()
 }
 
 
-void ProcCFG::clear()
+void ProcCFG::clearIR()
 {
-    // Don't delete the BBs; this will delete any CaseStatements we want to save for the re-decode.
-    // Just let them leak since we do not use a garbage collection any more.
-    // A better idea would be to save the CaseStatements explicitly and delete the BBs afterwards.
-    // But this has to wait until the decoder redesign.
-
-    m_bbStartMap.clear();
     m_implicitMap.clear();
-    m_entryBB    = nullptr;
-    m_exitBB     = nullptr;
-    m_wellFormed = true;
+
+    for (BasicBlock *bb : *this) {
+        bb->clearIR();
+    }
 }
 
 

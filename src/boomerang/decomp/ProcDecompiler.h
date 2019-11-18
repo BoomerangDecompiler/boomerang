@@ -61,16 +61,6 @@ private:
     void printCallStack();
 
     /**
-     * Copy the RTLs for the already decoded Indirect Control Transfer instructions,
-     * and decode any new targets in this CFG.
-     *
-     * Note that we have to delay the new target decoding till now,
-     * because otherwise we will attempt to decode nested switch statements
-     * without having any SSA renaming, propagation, etc
-     */
-    void saveDecodedICTs(UserProc *proc);
-
-    /**
      * Re-decompile \p proc from scratch. The proc must be at the top of the call stack
      * (i.e. the one that is currently decompiled).
      */

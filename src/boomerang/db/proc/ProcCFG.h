@@ -75,8 +75,8 @@ public:
     UserProc *getProc() { return m_myProc; }
     const UserProc *getProc() const { return m_myProc; }
 
-    /// Remove all basic blocks from the CFG
-    void clear();
+    /// Remove all IRFragments from all BasicBlocks in the CFG
+    void clearIR();
 
     /// \returns the number of (complete and incomplete) BBs in this CFG.
     int getNumBBs() const { return m_bbStartMap.size(); }

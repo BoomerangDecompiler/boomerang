@@ -236,9 +236,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     // Initialise the queue of control flow targets that have yet to be decoded.
     m_targetQueue.initial(addr);
 
-    // Clear the pointer used by the caller prologue code to access the last call rtl of this
-    // procedure decoder.resetLastCall();
-
     int numBytesDecoded = 0;
     Address startAddr   = addr;
     Address lastAddr    = addr;
@@ -758,12 +755,6 @@ bool DefaultFrontEnd::isNoReturnCallDest(const QString &name) const
 void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
 {
     m_refHints[addr] = name;
-}
-
-
-void DefaultFrontEnd::saveDecodedRTL(Address a, RTL *rtl)
-{
-    m_previouslyDecoded[a] = rtl;
 }
 
 

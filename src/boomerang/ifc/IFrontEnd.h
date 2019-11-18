@@ -92,11 +92,4 @@ public:
 
     /// Add a "hint" that an instruction at \p addr references a named global
     virtual void addRefHint(Address addr, const QString &name) = 0;
-
-    /**
-     * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case
-     * statements and decoded indirect call statements in a new decode following analysis of such
-     * instructions. The CFG is incomplete in these cases, and needs to be restarted from scratch
-     */
-    virtual void saveDecodedRTL(Address a, RTL *rtl) = 0;
 };
