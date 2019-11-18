@@ -89,9 +89,9 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
         case BBType::Oneway: of << "oneway"; break;
 
         case BBType::Twoway:
-            if (bb->getCond()) {
+            if (bb->getIR()->getCond()) {
                 of << "\\n";
-                bb->getCond()->print(of);
+                bb->getIR()->getCond()->print(of);
                 of << "\" shape=diamond];\n";
                 continue;
             }
@@ -102,7 +102,7 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 
         case BBType::Nway: {
             of << "nway";
-            SharedExp de = bb->getDest();
+            SharedExp de = bb->getIR()->getDest();
 
             if (de) {
                 of << "\\n";
@@ -115,7 +115,7 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 
         case BBType::Call: {
             of << "call";
-            Function *dest = bb->getCallDestProc();
+            Function *dest = bb->getIR()->getCallDestProc();
 
             if (dest) {
                 of << "\\n" << dest->getName();

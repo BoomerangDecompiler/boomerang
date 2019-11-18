@@ -60,11 +60,11 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             continue;
         }
 
-        assert(a->getLastStmt()->isBranch());
-        assert(b->getLastStmt()->isBranch());
+        assert(a->getIR()->getLastStmt()->isBranch());
+        assert(b->getIR()->getLastStmt()->isBranch());
 
-        std::shared_ptr<BranchStatement> aBranch = a->getLastStmt()->as<BranchStatement>();
-        std::shared_ptr<BranchStatement> bBranch = b->getLastStmt()->as<BranchStatement>();
+        std::shared_ptr<BranchStatement> aBranch = a->getIR()->getLastStmt()->as<BranchStatement>();
+        std::shared_ptr<BranchStatement> bBranch = b->getIR()->getLastStmt()->as<BranchStatement>();
 
         // A: branch to D if cond1
         // B: branch to D if cond2
@@ -181,16 +181,17 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
 
 bool BranchAnalysisPass::isOnlyBranch(BasicBlock *bb) const
 {
-    const RTLList *rtls = bb->getRTLs();
+    const RTLList *rtls = bb->getIR()->getRTLs();
     if (!rtls || rtls->empty()) {
         return false;
     }
 
     StatementList::reverse_iterator sIt;
-    BasicBlock::RTLRIterator rIt;
+    IRFragment::RTLRIterator rIt;
     bool last = true;
 
-    for (SharedStmt s = bb->getLastStmt(rIt, sIt); s != nullptr; s = bb->getPrevStmt(rIt, sIt)) {
+    for (SharedStmt s = bb->getIR()->getLastStmt(rIt, sIt); s != nullptr;
+         s            = bb->getIR()->getPrevStmt(rIt, sIt)) {
         if (!last) {
             return false; // there are other statements beside the last branch
         }

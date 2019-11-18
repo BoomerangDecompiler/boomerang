@@ -160,7 +160,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             Address nextAddr      = (*mi).first;
             bool nextIsIncomplete = nextBB->isIncomplete();
 
-            if (nextAddr <= currentBB->getRTLs()->back()->getAddress()) {
+            if (nextAddr <= currentBB->getIR()->getRTLs()->back()->getAddress()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it
                 // doesn't create a new BB for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
@@ -286,7 +286,8 @@ void ProcCFG::removeBB(BasicBlock *bb)
     RTLList::iterator rit;
     StatementList::iterator sit;
 
-    for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+    for (SharedStmt s = bb->getIR()->getFirstStmt(rit, sit); s;
+         s            = bb->getIR()->getNextStmt(rit, sit)) {
         if (s->isCall()) {
             std::shared_ptr<CallStatement> call = s->as<CallStatement>();
             if (call->getDestProc() && !call->getDestProc()->isLib()) {
@@ -303,7 +304,7 @@ void ProcCFG::removeBB(BasicBlock *bb)
         if (it->second == bb) {
             // We have to redo the data-flow now
             for (BasicBlock *otherBB : *this) {
-                otherBB->clearPhis();
+                otherBB->getIR()->clearPhis();
             }
 
             m_bbStartMap.erase(it);
@@ -406,7 +407,7 @@ void ProcCFG::simplify()
     LOG_VERBOSE("Simplifying CFG ...");
 
     for (BasicBlock *bb : *this) {
-        bb->simplify();
+        bb->getIR()->simplify();
     }
 }
 
@@ -420,7 +421,7 @@ BasicBlock *ProcCFG::findRetNode()
             return bb;
         }
         else if (bb->getType() == BBType::Call) {
-            const Function *callee = bb->getCallDestProc();
+            const Function *callee = bb->getIR()->getCallDestProc();
             if (callee && !callee->isLib() && callee->isNoReturn()) {
                 retNode = bb; // use noreturn calls if the proc does not return
             }
@@ -448,7 +449,7 @@ SharedStmt ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
     exp = exp->clone();
 
     // A use with no explicit definition. Create a new implicit assignment
-    std::shared_ptr<ImplicitAssign> def = m_entryBB->addImplicitAssign(exp);
+    std::shared_ptr<ImplicitAssign> def = m_entryBB->getIR()->addImplicitAssign(exp);
 
     // Remember it for later so we don't insert more than one implicit assignment for any one
     // location We don't clone the copy in the map. So if the location is a m[...], the same type
@@ -503,13 +504,14 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 
     // First find which RTL has the split address; note that this could fail
     // (e.g. jump into the middle of an instruction, or some weird delay slot effects)
-    for (splitIt = bb->getRTLs()->begin(); splitIt != bb->getRTLs()->end(); ++splitIt) {
+    for (splitIt = bb->getIR()->getRTLs()->begin(); splitIt != bb->getIR()->getRTLs()->end();
+         ++splitIt) {
         if ((*splitIt)->getAddress() == splitAddr) {
             break;
         }
     }
 
-    if (splitIt == bb->getRTLs()->end()) {
+    if (splitIt == bb->getIR()->getRTLs()->end()) {
         LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getLowAddr(), splitAddr);
         return bb;
     }
@@ -517,8 +519,8 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     if (_newBB && !_newBB->isIncomplete()) {
         // we already have a BB for the high part. Delete overlapping RTLs and adjust edges.
 
-        while (splitIt != bb->getRTLs()->end()) {
-            splitIt = bb->getRTLs()->erase(splitIt); // deletes RTLs
+        while (splitIt != bb->getIR()->getRTLs()->end()) {
+            splitIt = bb->getIR()->getRTLs()->erase(splitIt); // deletes RTLs
         }
 
         bb->updateBBAddresses();
@@ -544,10 +546,10 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     // We don't want to "deep copy" the RTLs themselves,
     // because we want to transfer ownership from the original BB to the "high" part
     std::unique_ptr<RTLList> highRTLs(new RTLList);
-    for (RTLList::iterator it = splitIt; it != bb->getRTLs()->end();) {
+    for (RTLList::iterator it = splitIt; it != bb->getIR()->getRTLs()->end();) {
         highRTLs->push_back(std::move(*it));
         assert(*it == nullptr);
-        it = bb->getRTLs()->erase(it);
+        it = bb->getIR()->getRTLs()->erase(it);
     }
 
     _newBB->completeBB(std::move(highRTLs));

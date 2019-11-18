@@ -30,7 +30,7 @@ bool StringInstructionProcessor::processStringInstructions()
     std::list<std::pair<RTL *, BasicBlock *>> stringInstructions;
 
     for (BasicBlock *bb : *m_proc->getCFG()) {
-        RTLList *bbRTLs = bb->getRTLs();
+        RTLList *bbRTLs = bb->getIR()->getRTLs();
 
         if (bbRTLs == nullptr) {
             continue;
@@ -105,13 +105,13 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
 {
     Address stringAddr         = stringRTL->getAddress();
     RTLList::iterator stringIt = std::find_if(
-        bb->getRTLs()->begin(), bb->getRTLs()->end(),
+        bb->getIR()->getRTLs()->begin(), bb->getIR()->getRTLs()->end(),
         [stringRTL](const std::unique_ptr<RTL> &ptr) { return stringRTL == ptr.get(); });
 
-    assert(stringIt != bb->getRTLs()->end());
+    assert(stringIt != bb->getIR()->getRTLs()->end());
 
-    const bool haveA = (stringIt != bb->getRTLs()->begin());
-    const bool haveB = (std::next(stringIt) != bb->getRTLs()->end());
+    const bool haveA = (stringIt != bb->getIR()->getRTLs()->begin());
+    const bool haveB = (std::next(stringIt) != bb->getIR()->getRTLs()->end());
     BasicBlock *aBB  = nullptr;
     BasicBlock *bBB  = nullptr;
 
@@ -123,7 +123,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         bb  = m_proc->getCFG()->splitBB(aBB, stringAddr);
         assert(aBB->getLowAddr() < bb->getLowAddr());
     }
-    stringIt = bb->getRTLs()->begin();
+    stringIt = bb->getIR()->getRTLs()->begin();
     if (haveB) {
         Address splitAddr = (*std::next(stringIt))->getAddress();
         bBB               = m_proc->getCFG()->splitBB(bb, splitAddr);
@@ -135,8 +135,8 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         bBB = bb->getSuccessor(0);
     }
 
-    assert(bb->getRTLs()->size() == 1); // only the string instruction
-    assert(bb->getRTLs()->front()->getAddress() == stringAddr);
+    assert(bb->getIR()->getRTLs()->size() == 1); // only the string instruction
+    assert(bb->getIR()->getRTLs()->front()->getAddress() == stringAddr);
 
     // Make an RTL for the skip and the rpt branch instructions.
     std::unique_ptr<RTLList> skipBBRTLs(new RTLList);

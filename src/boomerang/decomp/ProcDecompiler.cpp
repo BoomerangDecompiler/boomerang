@@ -80,7 +80,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
             }
 
             // The call Statement will be in the last RTL in this BB
-            SharedStmt hl = bb->getRTLs()->back()->getHlStmt();
+            SharedStmt hl = bb->getIR()->getRTLs()->back()->getHlStmt();
 
             if (!hl->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
@@ -637,9 +637,9 @@ void ProcDecompiler::printCallStack()
 void ProcDecompiler::saveDecodedICTs(UserProc *proc)
 {
     for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator rrit;
+        IRFragment::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        SharedStmt last = bb->getLastStmt(rrit, srit);
+        SharedStmt last = bb->getIR()->getLastStmt(rrit, srit);
 
         if (last == nullptr) {
             continue; // e.g. a BB with just a NOP in it
@@ -649,7 +649,7 @@ void ProcDecompiler::saveDecodedICTs(UserProc *proc)
             continue;
         }
 
-        RTL *rtl = bb->getLastRTL();
+        RTL *rtl = bb->getIR()->getLastRTL();
 
         if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("Saving high level switch statement:\n%1", rtl);
@@ -697,7 +697,7 @@ bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
     bool change = false;
     for (BasicBlock *bb : *proc->getCFG()) {
         if (bb->isType(BBType::CompCall)) {
-            std::shared_ptr<CallStatement> call = bb->getLastStmt()->as<CallStatement>();
+            std::shared_ptr<CallStatement> call = bb->getIR()->getLastStmt()->as<CallStatement>();
             const bool converted                = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();

@@ -73,9 +73,10 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
 
     const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
 
-    if (bb->getRTLs()) {
+    if (bb->getIR()->getRTLs()) {
         // For all statements in this BB in reverse order
-        for (auto rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
+        for (auto rit = bb->getIR()->getRTLs()->rbegin(); rit != bb->getIR()->getRTLs()->rend();
+             ++rit) {
             for (auto sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 SharedStmt s = *sit;
                 LocationSet defs;
@@ -131,11 +132,11 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
         liveout.makeUnion(m_liveIn[currBB]); // add successor liveIn to this liveout set.
 
         // The first RTL will have the phi functions, if any
-        if (!currBB->getRTLs() || currBB->getRTLs()->empty()) {
+        if (!currBB->getIR()->getRTLs() || currBB->getIR()->getRTLs()->empty()) {
             continue;
         }
 
-        RTL *phiRTL = currBB->getRTLs()->front().get();
+        RTL *phiRTL = currBB->getIR()->getRTLs()->front().get();
         assert(phiRTL);
 
         for (SharedStmt st : *phiRTL) {

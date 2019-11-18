@@ -125,9 +125,10 @@ void UserProc::numberStatements() const
     int stmtNumber = 0;
 
     for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLIterator rit;
+        IRFragment::RTLIterator rit;
         StatementList::iterator sit;
-        for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt s = bb->getIR()->getFirstStmt(rit, sit); s;
+             s            = bb->getIR()->getNextStmt(rit, sit)) {
             s->setNumber(++stmtNumber);
         }
     }
@@ -137,7 +138,7 @@ void UserProc::numberStatements() const
 void UserProc::getStatements(StatementList &stmts) const
 {
     for (const BasicBlock *bb : *m_cfg) {
-        bb->appendStatementsTo(stmts);
+        bb->getIR()->appendStatementsTo(stmts);
     }
 
     for (SharedStmt s : stmts) {
@@ -182,7 +183,7 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
         return false;
     }
 
-    for (auto &rtl : *bb->getRTLs()) {
+    for (auto &rtl : *bb->getIR()->getRTLs()) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -216,7 +217,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
     if (s) {
         // Insert the new assignment directly after s,
         // or near the end of the existing BB if s has been removed already.
-        for (auto &rtl : *bb->getRTLs()) {
+        for (auto &rtl : *bb->getIR()->getRTLs()) {
             for (auto it = rtl->begin(); it != rtl->end(); ++it) {
                 if (*it == s) {
                     rtl->insert(++it, as);
@@ -226,7 +227,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         }
     }
 
-    auto &lastRTL = bb->getRTLs()->back();
+    auto &lastRTL = bb->getIR()->getRTLs()->back();
     if (lastRTL->empty() || lastRTL->back()->isAssignment()) {
         lastRTL->append(as);
     }
@@ -243,7 +244,7 @@ bool UserProc::insertStatementAfter(const SharedStmt &afterThis, const SharedStm
     assert(!afterThis->isBranch());
 
     for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
+        RTLList *rtls = bb->getIR()->getRTLs();
 
         if (rtls == nullptr) {
             continue; // e.g. bb is (as yet) invalid
@@ -271,7 +272,7 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
     SharedExp newRhs = rhs->propagateAll();
 
     for (BasicBlock *bb : *m_cfg) {
-        for (const auto &rtl : *bb->getRTLs()) {
+        for (const auto &rtl : *bb->getIR()->getRTLs()) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
                 if (*ss == orig) {
                     // convert *ss to an Assign
@@ -821,11 +822,11 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs)
 {
     assert(cs);
 
-    BasicBlock::RTLRIterator rrit;
+    IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *m_cfg) {
-        SharedStmt s = bb->getLastStmt(rrit, srit);
+        SharedStmt s = bb->getIR()->getLastStmt(rrit, srit);
         if (!s || !s->isCall()) {
             continue;
         }
@@ -1619,7 +1620,7 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
     }
 
     if (exitbb->getNumPredecessors() == 1) {
-        SharedStmt s = exitbb->getPredecessor(0)->getLastStmt();
+        SharedStmt s = exitbb->getPredecessor(0)->getIR()->getLastStmt();
 
         if (!s || !s->isCall()) {
             return false;

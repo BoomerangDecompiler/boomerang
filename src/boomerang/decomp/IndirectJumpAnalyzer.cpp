@@ -290,12 +290,12 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
         if (!pred->isType(BBType::Twoway)) {               // look for a two-way BB
             continue;                                      // Ignore all others
         }
-        else if (pred->isEmpty() || !pred->getLastStmt()->isBranch()) {
+        else if (pred->getIR()->isEmpty() || !pred->getIR()->getLastStmt()->isBranch()) {
             continue;
         }
 
-        const std::shared_ptr<const BranchStatement> lastStmt = pred->getLastStmt()
-                                                                    ->as<const BranchStatement>();
+        const std::shared_ptr<const BranchStatement>
+            lastStmt                 = pred->getIR()->getLastStmt()->as<const BranchStatement>();
         SharedConstExp lastCondition = lastStmt->getCondExpr();
         if (lastCondition->getArity() != 2) {
             continue;
@@ -332,7 +332,7 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
 
 void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 {
-    RTL *lastRTL         = bb->getLastRTL();
+    RTL *lastRTL         = bb->getIR()->getLastRTL();
     const SwitchInfo *si = lastRTL->getHlStmt()->as<CaseStatement>()->getSwitchInfo();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
@@ -444,8 +444,8 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
 bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
 {
-    assert(!bb->getRTLs()->empty());
-    RTL *lastRTL = bb->getLastRTL();
+    assert(!bb->getIR()->getRTLs()->empty());
+    RTL *lastRTL = bb->getIR()->getLastRTL();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
@@ -657,8 +657,8 @@ static const std::vector<std::pair<const SharedConstExp, IndCallPattern>> hlCall
 bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
 {
     Prog *prog = proc->getProg();
-    assert(!bb->getRTLs()->empty());
-    RTL *lastRTL = bb->getLastRTL();
+    assert(!bb->getIR()->getRTLs()->empty());
+    RTL *lastRTL = bb->getIR()->getLastRTL();
 
     if (prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: COMPCALL:");

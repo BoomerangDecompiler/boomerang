@@ -2199,7 +2199,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
         writeBB(bb);
 
         // write the 'while' predicate
-        SharedExp cond = bb->getCond();
+        SharedExp cond = bb->getIR()->getCond();
 
         if (bb->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(bb)) {
             cond = Unary::get(opLNot, cond)->simplify();
@@ -2264,7 +2264,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             const BasicBlock *myHead  = m_analyzer.getLoopHead(myLatch);
             assert(myLatch->isType(BBType::Twoway));
 
-            SharedExp cond = myLatch->getCond();
+            SharedExp cond = myLatch->getIR()->getCond();
             if (myLatch->getSuccessor(BELSE) == myHead) {
                 addPostTestedLoopEnd(Unary::get(opLNot, cond)->simplify());
             }
@@ -2375,7 +2375,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
 
     if (m_analyzer.getCondType(bb) == CondType::Case) {
         // The CaseStatement will be in the last RTL this BB
-        RTL *last                         = bb->getRTLs()->back().get();
+        RTL *last                         = bb->getIR()->getRTLs()->back().get();
         std::shared_ptr<CaseStatement> cs = last->getHlStmt()->as<CaseStatement>();
         psi                               = cs->getSwitchInfo();
 
@@ -2383,7 +2383,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
         addCaseCondHeader(psi->switchExp);
     }
     else {
-        SharedExp cond = bb->getCond();
+        SharedExp cond = bb->getIR()->getCond();
 
         if (!cond) {
             cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
@@ -2522,8 +2522,8 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
 
         if (bb->getType() == BBType::CompJump) {
-            assert(!bb->getRTLs()->empty());
-            RTL *lastRTL = bb->getRTLs()->back().get();
+            assert(!bb->getIR()->getRTLs()->empty());
+            RTL *lastRTL = bb->getIR()->getRTLs()->back().get();
             assert(!lastRTL->empty());
 
             std::shared_ptr<GotoStatement> gs = lastRTL->back()->as<GotoStatement>();
@@ -2543,17 +2543,17 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     if (bb->getNumSuccessors() > 1) {
         const BasicBlock *other = bb->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
-        std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(bb->getDest());
+        std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(bb->getIR()->getDest());
 
         if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
             std::swap(other, succ);
             LOG_MSG("Taken branch is first out edge");
         }
 
-        SharedExp cond = bb->getCond();
+        SharedExp cond = bb->getIR()->getCond();
 
         if (cond) {
-            addIfCondHeader(bb->getCond());
+            addIfCondHeader(bb->getIR()->getCond());
 
             if (isGenerated(other)) {
                 emitGotoAndLabel(bb, other);
@@ -2638,8 +2638,8 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
     // The actual label can then be generated now or back patched later
     addLabel(bb);
 
-    if (bb->getRTLs()) {
-        for (const auto &rtl : *(bb->getRTLs())) {
+    if (bb->getIR()->getRTLs()) {
+        for (const auto &rtl : *(bb->getIR()->getRTLs())) {
             if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
                 LOG_MSG("%1", rtl->getAddress());
             }
@@ -2775,7 +2775,7 @@ CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const Swi
 
         const BasicBlock *realSucc = origSucc;
         while (realSucc && realSucc->getNumSuccessors() == 1 &&
-               (realSucc->isEmpty() || realSucc->isEmptyJump())) {
+               (realSucc->getIR()->isEmpty() || realSucc->getIR()->isEmptyJump())) {
             realSucc = realSucc->getSuccessor(0);
         }
 

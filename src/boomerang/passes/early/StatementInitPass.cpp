@@ -23,12 +23,12 @@ StatementInitPass::StatementInitPass()
 
 bool StatementInitPass::execute(UserProc *proc)
 {
-    BasicBlock::RTLIterator rit;
+    IRFragment::RTLIterator rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
-             stmt            = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt stmt = bb->getIR()->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = bb->getIR()->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);

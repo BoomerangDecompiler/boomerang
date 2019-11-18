@@ -303,7 +303,7 @@ bool DataFlow::placePhiFunctions()
     m_defStmts.clear();  // and the map from variable to defining Stmt
 
     for (BasicBlock *bb : *m_proc->getCFG()) {
-        bb->clearPhis();
+        bb->getIR()->clearPhis();
     }
 
     // Set the sizes of needed vectors
@@ -319,11 +319,12 @@ bool DataFlow::placePhiFunctions()
     // We need to create m_definedAt[n] for all n
     // Recreate each call because propagation and other changes make old data invalid
     for (std::size_t n = 0; n < numBB; n++) {
-        BasicBlock::RTLIterator rit;
+        IRFragment::RTLIterator rit;
         StatementList::iterator sit;
         BasicBlock *bb = m_BBs[n];
 
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt stmt = bb->getIR()->getFirstStmt(rit, sit); stmt;
+             stmt            = bb->getIR()->getNextStmt(rit, sit)) {
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
@@ -374,7 +375,7 @@ bool DataFlow::placePhiFunctions()
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                m_BBs[y]->addPhi(a->clone());
+                m_BBs[y]->getIR()->addPhi(a->clone());
 
                 // A_phi[a] <- A_phi[a] U {y}
                 m_A_phi[a].insert(y);

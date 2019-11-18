@@ -100,16 +100,16 @@ void UserProcTest::testInsertAssignAfter()
     QVERIFY(as->getProc() == &proc);
     QVERIFY(as->getBB() == entryBB);
 
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 1);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
+    QVERIFY(proc.getEntryBB()->getIR()->getRTLs()->front()->size() == 1);
+    QVERIFY(*proc.getEntryBB()->getIR()->getRTLs()->front()->begin() == as);
 
     std::shared_ptr<Assign> as2 = proc.insertAssignAfter(as, Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_EDX));
     QVERIFY(as2 != nullptr);
     QVERIFY(as->getProc() == &proc);
     QVERIFY(as->getBB() == entryBB);
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 2);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
-    QVERIFY(*std::next(proc.getEntryBB()->getRTLs()->front()->begin()) == as2);
+    QVERIFY(proc.getEntryBB()->getIR()->getRTLs()->front()->size() == 2);
+    QVERIFY(*proc.getEntryBB()->getIR()->getRTLs()->front()->begin() == as);
+    QVERIFY(*std::next(proc.getEntryBB()->getIR()->getRTLs()->front()->begin()) == as2);
 }
 
 
@@ -127,9 +127,9 @@ void UserProcTest::testInsertStatementAfter()
 
     proc.insertStatementAfter(as, as2);
     QVERIFY(as2->getBB() == entryBB);
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 2);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
-    QVERIFY(*std::next(proc.getEntryBB()->getRTLs()->front()->begin()) == as2);
+    QVERIFY(proc.getEntryBB()->getIR()->getRTLs()->front()->size() == 2);
+    QVERIFY(*proc.getEntryBB()->getIR()->getRTLs()->front()->begin() == as);
+    QVERIFY(*std::next(proc.getEntryBB()->getIR()->getRTLs()->front()->begin()) == as2);
 }
 
 
@@ -736,7 +736,7 @@ void UserProcTest::testAllPhisHaveDefs()
     QVERIFY(ias != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    std::shared_ptr<PhiAssign> phi1 = bb->addPhi(Location::regOf(REG_X86_EDX));
+    std::shared_ptr<PhiAssign> phi1 = bb->getIR()->addPhi(Location::regOf(REG_X86_EDX));
     QVERIFY(phi1 != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 

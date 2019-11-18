@@ -54,11 +54,12 @@ bool BlockVarRenamePass::renameBlockVars(
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     // For each statement S in block n
-    BasicBlock::RTLIterator rit;
+    IRFragment::RTLIterator rit;
     StatementList::iterator sit;
     BasicBlock *bb = proc->getDataFlow()->nodeToBB(n);
 
-    for (SharedStmt S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (SharedStmt S = bb->getIR()->getFirstStmt(rit, sit); S;
+         S            = bb->getIR()->getNextStmt(rit, sit)) {
         {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
@@ -220,7 +221,8 @@ bool BlockVarRenamePass::renameBlockVars(
     // For each successor Y of block n
     for (BasicBlock *Ybb : bb->getSuccessors()) {
         // For each phi-function in Y
-        for (SharedStmt St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+        for (SharedStmt St = Ybb->getIR()->getFirstStmt(rit, sit); St;
+             St            = Ybb->getIR()->getNextStmt(rit, sit)) {
             if (!St->isPhi()) {
                 continue;
             }
@@ -262,10 +264,11 @@ bool BlockVarRenamePass::renameBlockVars(
     // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my
     // algorithm to process the statments in the BB *backwards*. (It is not important in Appel's
     // algorithm, since he always pushes a definition for every variable defined on the Stacks).
-    BasicBlock::RTLRIterator rrit;
+    IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (SharedStmt S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
+    for (SharedStmt S = bb->getIR()->getLastStmt(rrit, srit); S;
+         S            = bb->getIR()->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs, assumeABICompliance);

@@ -658,8 +658,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                     }
 
-                    if (currentBB && currentBB->getRTLs()) {
-                        extraProcessCall(call, *currentBB->getRTLs());
+                    if (currentBB && currentBB->getIR()->getRTLs()) {
+                        extraProcessCall(call, *currentBB->getIR()->getRTLs());
                     }
                 } break;
 
@@ -933,7 +933,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         BasicBlock *retBB = proc->getCFG()->findRetNode();
         assert(retBB);
 
-        if (retBB->getFirstStmt()->isReturn()) {
+        if (retBB->getIR()->getFirstStmt()->isReturn()) {
             // ret node has no semantics, clearly we need to keep ours
             assert(!retRTL->empty());
             retRTL->pop_back();

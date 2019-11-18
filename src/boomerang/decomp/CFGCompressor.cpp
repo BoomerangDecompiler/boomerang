@@ -42,7 +42,7 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
     for (BasicBlock *bb : *cfg) {
         // Check if the BB can be removed
         if (bb->getNumSuccessors() == 1 && bb != cfg->getEntryBB() &&
-            (bb->isEmpty() || bb->isEmptyJump())) {
+            (bb->getIR()->isEmpty() || bb->getIR()->isEmptyJump())) {
             bbsToRemove.push_back(bb);
         }
     }

@@ -14,6 +14,7 @@ list(APPEND boomerang-db-sources
     db/DefCollector
     db/Global
     db/GraphNode
+    db/IRFragment
     db/Prog
     db/UseCollector
 

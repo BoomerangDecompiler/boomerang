@@ -542,10 +542,10 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
     bool ch = false;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator rrit;
+        IRFragment::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
         std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
-            bb->getLastStmt(rrit, srit));
+            bb->getIR()->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

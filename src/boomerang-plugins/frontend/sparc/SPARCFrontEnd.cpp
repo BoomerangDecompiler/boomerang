@@ -338,7 +338,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
         return false;
     }
 
-    SharedStmt last = newBB->getLastRTL()->back();
+    SharedStmt last = newBB->getIR()->getLastRTL()->back();
 
     // Do extra processing for for special types of DD
     if (last->getKind() == StmtType::Call) {
@@ -354,7 +354,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
             // list of RTLs proc->setEpilogue(new CalleeEpilogue("__dummy",std::list<QString>()));
             // Set the return location; this is now always %o0
             // setReturnLocations(proc->getEpilogue(), 8 /* %o0 */);
-            newBB->removeRTL(delayRTL);
+            newBB->getIR()->removeRTL(delayRTL);
 
             // Add this call to the list of calls to analyse. We won't be able to analyse its
             // callee(s), of course.
