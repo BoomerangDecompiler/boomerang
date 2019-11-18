@@ -26,6 +26,36 @@ IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
 }
 
 
+IRFragment::IRFragment(const IRFragment &other)
+{
+    *this = other;
+}
+
+
+IRFragment &IRFragment::operator=(const IRFragment &other)
+{
+    m_bb = other.m_bb;
+
+    if (other.m_listOfRTLs) {
+        // make a deep copy of the RTL list
+        std::unique_ptr<RTLList> newList(new RTLList());
+        newList->resize(other.m_listOfRTLs->size());
+
+        RTLList::const_iterator srcIt = other.m_listOfRTLs->begin();
+        RTLList::const_iterator endIt = other.m_listOfRTLs->end();
+        RTLList::iterator destIt      = newList->begin();
+
+        while (srcIt != endIt) {
+            *destIt++ = std::make_unique<RTL>(**srcIt++);
+        }
+
+        m_listOfRTLs = std::move(newList);
+    }
+
+    return *this;
+}
+
+
 RTL *IRFragment::getLastRTL()
 {
     return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr;

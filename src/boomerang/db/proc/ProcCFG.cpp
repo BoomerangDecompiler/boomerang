@@ -68,61 +68,46 @@ bool ProcCFG::hasBB(const BasicBlock *bb) const
 }
 
 
-BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
+BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstruction> &bbInsns)
 {
-    assert(!bbRTLs->empty());
+    assert(!bbInsns.empty());
 
-    // First find the native address of the first RTL
-    // Can't use BasicBlock::getLowAddr(), since we don't yet have a BB!
-    Address startAddr = bbRTLs->front()->getAddress();
-
-    // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a
-    // delayed branch only, with its delay instruction moved in front of it (with 0 address). Note:
-    // it is possible to see two RTLs with zero address with SPARC: jmpl %o0, %o1. There will be one
-    // for the delay instr (if not a NOP), and one for the side effect of copying %o7 to %o1. Note
-    // that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the
-    // map, but they have no RTLs with a non zero address.
-    if (startAddr.isZero() && (bbRTLs->size() > 1)) {
-        RTLList::iterator next = std::next(bbRTLs->begin());
-        startAddr              = (*next)->getAddress();
-    }
+    // First find the native address of the first instruction
+    Address startAddr = bbInsns.front().m_addr;
 
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here
     // already If it is zero, this is a special BB for handling delayed branches or the like
-    bool mustCreateBB       = true;
-    BBStartMap::iterator mi = m_bbStartMap.end();
-    BasicBlock *currentBB   = nullptr;
+    bool mustCreateBB     = true;
+    BasicBlock *currentBB = nullptr;
 
-    if (!startAddr.isZero()) {
-        mi = m_bbStartMap.find(startAddr);
+    BBStartMap::iterator mi = m_bbStartMap.find(startAddr);
 
-        if ((mi != m_bbStartMap.end()) && mi->second) {
-            currentBB = mi->second;
+    if ((mi != m_bbStartMap.end()) && mi->second) {
+        currentBB = mi->second;
 
-            // It should be incomplete, or the BB there should be zero
-            // (we have called ensureBBExists() but not yet created the BB for it).
-            // Else we have duplicated BBs.
-            // Note: this can happen with forward jumps into the middle of a loop,
-            // so not error
-            if (!currentBB->isIncomplete()) {
-                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
-                            currentBB->getLowAddr());
+        // It should be incomplete, or the BB there should be zero
+        // (we have called ensureBBExists() but not yet created the BB for it).
+        // Else we have duplicated BBs.
+        // Note: this can happen with forward jumps into the middle of a loop,
+        // so not error
+        if (!currentBB->isIncomplete()) {
+            LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
+                        currentBB->getLowAddr());
 
-                // we automatically destroy bbRTLs
-                return nullptr;
-            }
-            else {
-                // Fill in the details, and return it
-                currentBB->completeBB(std::move(bbRTLs));
-                currentBB->setType(bbType);
-            }
-
-            mustCreateBB = false;
+            // we automatically destroy bbRTLs
+            return nullptr;
         }
+        else {
+            // Fill in the details, and return it
+            currentBB->completeBB(bbInsns);
+            currentBB->setType(bbType);
+        }
+
+        mustCreateBB = false;
     }
 
     if (mustCreateBB) {
-        currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
+        currentBB = new BasicBlock(bbType, bbInsns, m_myProc);
 
         // Note that currentBB->getLowAddr() == startAddr
         if (startAddr == Address::INVALID) {
@@ -133,7 +118,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
         mi = m_bbStartMap.find(startAddr);
     }
 
-    if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
+    if (mi != m_bbStartMap.end()) {
         //
         //  Existing   New         +---+ "low" part of new
         //            +---+        +---+
@@ -160,7 +145,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             Address nextAddr      = (*mi).first;
             bool nextIsIncomplete = nextBB->isIncomplete();
 
-            if (nextAddr <= currentBB->getIR()->getRTLs()->back()->getAddress()) {
+            if (nextAddr <= currentBB->getHiAddr()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it
                 // doesn't create a new BB for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
@@ -192,6 +177,13 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
     assert(currentBB);
     return currentBB;
+}
+
+
+BasicBlock *ProcCFG::createBB(BBType bbType, const std::list<MachineInstruction> &insns)
+{
+    std::vector<MachineInstruction> bbInsns(insns.begin(), insns.end());
+    return createBB(bbType, bbInsns);
 }
 
 
@@ -500,18 +492,17 @@ void ProcCFG::removeImplicitAssign(SharedExp x)
 
 BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */)
 {
-    RTLList::iterator splitIt;
+    std::vector<MachineInstruction>::iterator splitIt;
 
     // First find which RTL has the split address; note that this could fail
     // (e.g. jump into the middle of an instruction, or some weird delay slot effects)
-    for (splitIt = bb->getIR()->getRTLs()->begin(); splitIt != bb->getIR()->getRTLs()->end();
-         ++splitIt) {
-        if ((*splitIt)->getAddress() == splitAddr) {
+    for (splitIt = bb->getInsns().begin(); splitIt != bb->getInsns().end(); ++splitIt) {
+        if (splitIt->m_addr == splitAddr) {
             break;
         }
     }
 
-    if (splitIt == bb->getIR()->getRTLs()->end()) {
+    if (splitIt == bb->getInsns().end()) {
         LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getLowAddr(), splitAddr);
         return bb;
     }
@@ -519,8 +510,8 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     if (_newBB && !_newBB->isIncomplete()) {
         // we already have a BB for the high part. Delete overlapping RTLs and adjust edges.
 
-        while (splitIt != bb->getIR()->getRTLs()->end()) {
-            splitIt = bb->getIR()->getRTLs()->erase(splitIt); // deletes RTLs
+        while (splitIt != bb->getInsns().end()) {
+            splitIt = bb->getInsns().erase(splitIt); // deletes RTLs
         }
 
         bb->updateBBAddresses();
@@ -530,6 +521,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
         for (BasicBlock *succ : bb->getSuccessors()) {
             succ->removePredecessor(bb);
         }
+
         bb->removeAllSuccessors();
         addEdge(bb, _newBB);
         bb->setType(BBType::Fall);
@@ -545,14 +537,10 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     // just complete it with the "high" RTLs from the original BB.
     // We don't want to "deep copy" the RTLs themselves,
     // because we want to transfer ownership from the original BB to the "high" part
-    std::unique_ptr<RTLList> highRTLs(new RTLList);
-    for (RTLList::iterator it = splitIt; it != bb->getIR()->getRTLs()->end();) {
-        highRTLs->push_back(std::move(*it));
-        assert(*it == nullptr);
-        it = bb->getIR()->getRTLs()->erase(it);
-    }
+    std::vector<MachineInstruction> highInsns(splitIt, bb->getInsns().end());
+    bb->getInsns().erase(splitIt, bb->getInsns().end());
 
-    _newBB->completeBB(std::move(highRTLs));
+    _newBB->completeBB(highInsns);
     bb->updateBBAddresses();
     _newBB->updateBBAddresses();
 

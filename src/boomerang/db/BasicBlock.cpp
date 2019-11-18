@@ -9,19 +9,6 @@
 #pragma endregion License
 #include "BasicBlock.h"
 
-#include "boomerang/db/proc/ProcCFG.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/ssl/statements/CaseStatement.h"
-#include "boomerang/ssl/statements/ImplicitAssign.h"
-#include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/util/log/Log.h"
-
 
 BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)
@@ -32,41 +19,28 @@ BasicBlock::BasicBlock(Address lowAddr, Function *function)
 }
 
 
-BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function *function)
+BasicBlock::BasicBlock(BBType bbType, const std::vector<MachineInstruction> &insns,
+                       Function *function)
     : m_function(function)
     , m_ir(this, nullptr)
     , m_bbType(bbType)
 {
-    assert(bbRTLs);
+    assert(!insns.empty());
 
     // Set the RTLs. This also updates the low and the high address of the BB.
-    completeBB(std::move(bbRTLs));
+    completeBB(insns);
 }
 
 
 BasicBlock::BasicBlock(const BasicBlock &bb)
     : GraphNode(bb)
     , m_function(bb.m_function)
-    , m_ir(this, nullptr)
+    , m_ir(bb.m_ir)
     , m_lowAddr(bb.m_lowAddr)
     , m_highAddr(bb.m_highAddr)
     , m_bbType(bb.m_bbType)
 // m_labelNeeded is initialized to false, not copied
 {
-    if (bb.m_ir.m_listOfRTLs) {
-        // make a deep copy of the RTL list
-        std::unique_ptr<RTLList> newList(new RTLList());
-        newList->resize(bb.m_ir.m_listOfRTLs->size());
-
-        RTLList::const_iterator srcIt = bb.m_ir.m_listOfRTLs->begin();
-        RTLList::const_iterator endIt = bb.m_ir.m_listOfRTLs->end();
-        RTLList::iterator destIt      = newList->begin();
-
-        while (srcIt != endIt) {
-            *destIt++ = std::make_unique<RTL>(**srcIt++);
-        }
-        completeBB(std::move(newList));
-    }
 }
 
 
@@ -80,53 +54,22 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
     GraphNode::operator=(bb);
 
     m_function = bb.m_function;
+    m_ir       = bb.m_ir;
     m_lowAddr  = bb.m_lowAddr;
     m_highAddr = bb.m_highAddr;
     m_bbType   = bb.m_bbType;
     // m_labelNeeded is initialized to false, not copied
 
-    if (bb.m_ir.m_listOfRTLs) {
-        // make a deep copy of the RTL list
-        std::unique_ptr<RTLList> newList(new RTLList());
-        newList->resize(bb.m_ir.m_listOfRTLs->size());
-
-        RTLList::const_iterator srcIt = bb.m_ir.m_listOfRTLs->begin();
-        RTLList::const_iterator endIt = bb.m_ir.m_listOfRTLs->end();
-        RTLList::iterator destIt      = newList->begin();
-
-        while (srcIt != endIt) {
-            *destIt++ = std::make_unique<RTL>(**srcIt++);
-        }
-        completeBB(std::move(newList));
-    }
-
     return *this;
 }
 
 
-void BasicBlock::completeBB(std::unique_ptr<RTLList> rtls)
+void BasicBlock::completeBB(const std::vector<MachineInstruction> &insns)
 {
-    assert(m_ir.m_listOfRTLs == nullptr);
-    assert(rtls != nullptr);
-    assert(!rtls->empty());
+    assert(!insns.empty());
+    assert(m_insns.empty());
 
-    m_ir.m_listOfRTLs = std::move(rtls);
-    updateBBAddresses();
-
-    bool firstRTL = true;
-
-    for (auto &rtl : *m_ir.m_listOfRTLs) {
-        for (const SharedStmt &stmt : *rtl) {
-            assert(stmt != nullptr);
-            stmt->setBB(this);
-        }
-
-        if (!firstRTL) {
-            assert(rtl->getAddress() != Address::ZERO);
-        }
-
-        firstRTL = false;
-    }
+    m_insns = insns;
 }
 
 

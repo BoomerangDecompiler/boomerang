@@ -141,7 +141,7 @@ private:
      * \param proc    the enclosing UserProc
      * \param callRTL the current RTL with the call instruction
      */
-    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
+    //     void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
 
     /**
      * Change a jump to a call if the jump destination is an impoted function.

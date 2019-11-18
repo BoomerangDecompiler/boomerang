@@ -222,8 +222,6 @@ bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 
 bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
-    BasicBlock *currentBB;
-
     LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative
@@ -258,7 +256,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 if (!bbInsns.empty()) {
                     // if bbInsns is not empty, the previous instruction was not a CTI.
                     // Complete the BB as a fallthrough
-                    BasicBlock *newBB = cfg->createBB(BBType::Fall, liftBB(bbInsns));
+                    BasicBlock *newBB = cfg->createBB(BBType::Fall, bbInsns);
                     bbInsns.clear();
                     cfg->addEdge(newBB, existingBB);
                 }
@@ -273,11 +271,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 // does not recognize it. Do not throw away previous instructions;
                 // instead, create a new BB from them
                 if (!bbInsns.empty()) {
-                    cfg->createBB(BBType::Fall, liftBB(bbInsns));
-                    bbInsns.clear();
+                    cfg->createBB(BBType::Fall, bbInsns);
                 }
 
                 LOG_ERROR("Encountered invalid instruction");
+                sequentialDecode = false;
                 break; // try next instruction in queue
             }
 
@@ -295,8 +293,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                insn.isInGroup(MIGroup::Ret);
 
             if (!isCTI) {
-                bbInsns.push_back(insn);
                 addr += insn.m_size;
+                bbInsns.push_back(insn);
 
                 lastAddr = std::max(lastAddr, addr);
                 continue;
@@ -306,39 +304,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             DecodeResult lifted;
             if (!liftInstruction(insn, lifted)) {
                 LOG_ERROR("Cannot lift instruction!");
-                break; // try next insruction in queue
+
+                // try next insruction in queue
+                sequentialDecode = false;
+                break;
             }
 
-            // Check if this is an already decoded jump instruction (from a previous pass with
-            // propagation etc). If so, we throw away the just decoded RTL
-            // (but we still may have needed to calculate the number of bytes.. ick.)
-            std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(addr);
-
-            if (ff != m_previouslyDecoded.end()) {
-                lifted.rtl.reset(ff->second);
-            }
-
-            if (!lifted.rtl) {
-                // This can happen if an instruction is "cancelled",
-                // e.g. call to __main in a hppa program.
-                // Just ignore the whole instruction
-                if (insn.m_size > 0) {
-                    addr += insn.m_size;
-                }
-
-                continue;
-            }
-
-            // Make a copy (!) of the list. This is needed temporarily to work around the following
-            // problem. We are currently iterating an RTL, which could be a return instruction. The
-            // RTL is passed to createReturnBlock; if this is not the first return statement, it
-            // will get cleared, and this will cause problems with the current iteration. The
-            // effects seem to be worse for MSVC/Windows. This problem will likely be easier to cope
-            // with when the RTLs are removed, and there are special Statements to mark the start of
-            // instructions (and their native address).
-            // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL
-            // followed by a return if it points to the start of a known procedure
-            RTL::StmtList sl(lifted.rtl->getStatements());
+            bbInsns.push_back(insn);
+            const RTL::StmtList &sl = lifted.rtl->getStatements();
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 SharedStmt s = *ss;
@@ -355,152 +328,77 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 s->simplify();
-                std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(
-                    s);
+            }
 
-                // Check for a call to an already existing procedure (including self recursive
-                // jumps), or to the PLT (note that a LibProc entry for the PLT function may not yet
-                // exist)
-                if (s->getKind() == StmtType::Goto) {
-                    preprocessProcGoto(ss, jumpStmt->getFixedDest(), sl, lifted.rtl.get());
-                    s = *ss; // *ss can be changed within processProc
-                }
 
+            for (SharedStmt s : sl) {
                 switch (s->getKind()) {
                 case StmtType::Goto: {
-                    Address jumpDest = jumpStmt->getFixedDest();
+                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                    assert(jump != nullptr);
+                    const Address jumpDest = jump->getFixedDest();
+                    sequentialDecode       = false;
 
-                    // Handle one way jumps and computed jumps separately
-                    if (jumpDest != Address::INVALID) {
-                        bbInsns.push_back(insn);
-                        sequentialDecode = false;
+                    // computed unconditional jumps have CaseStatement as last statement
+                    // and not Goto
+                    if (jumpDest == Address::INVALID) {
+                        break;
+                    }
 
-                        currentBB = cfg->createBB(BBType::Oneway, liftBB(bbInsns));
-                        bbInsns.clear();
+                    // Static unconditional jump
+                    BasicBlock *currentBB = cfg->createBB(BBType::Oneway, bbInsns);
 
-                        // Exit the switch now if the basic block already existed
-                        if (currentBB == nullptr) {
-                            break;
-                        }
+                    // Exit the switch now if the basic block already existed
+                    if (currentBB == nullptr) {
+                        break;
+                    }
 
-                        // Add the out edge if it is to a destination within the
-                        // procedure
-                        if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                            m_targetQueue.visit(cfg, jumpDest, currentBB);
-                            cfg->addEdge(currentBB, jumpDest);
-                        }
-                        else {
-                            LOG_WARN("Goto instruction at address %1 branches beyond end of "
-                                     "section, to %2",
-                                     addr, jumpDest);
-                        }
+                    // Add the out edge if it is to a destination within the procedure
+                    if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                        m_targetQueue.visit(cfg, jumpDest, currentBB);
+                        cfg->addEdge(currentBB, jumpDest);
+                    }
+                    else {
+                        LOG_WARN("Goto instruction at address %1 branches beyond end of "
+                                 "section, to %2",
+                                 addr, jumpDest);
                     }
                 } break;
 
                 case StmtType::Case: {
-                    SharedExp jumpDest = jumpStmt->getDest();
-
-                    if (jumpDest == nullptr) { // Happens if already analysed (now redecoding)
-                        bbInsns.push_back(insn);
-
-                        // processSwitch will update num outedges
-                        std::unique_ptr<RTLList> bbRTLs = liftBB(bbInsns);
-                        bbRTLs->back()->back()          = jumpStmt;
-                        currentBB = cfg->createBB(BBType::Nway, std::move(bbRTLs));
-                        bbInsns.clear();
-
-                        // decode arms, set out edges, etc
-                        IndirectJumpAnalyzer().processSwitch(currentBB, proc);
-                        sequentialDecode = false; // Don't decode after the jump
-                        break;                    // Just leave it alone
-                    }
-
-                    // Check for indirect calls to library functions, especially in Win32 programs
-                    if (refersToImportedFunction(jumpDest)) {
-                        LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.",
-                                    jumpStmt);
-
-                        // jump to a library function
-                        // replace with a call ret
-                        const BinarySymbol
-                            *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
-                                jumpDest->access<Const, 1>()->getAddr());
-                        assert(sym != nullptr);
-                        QString func = sym->getName();
-                        std::shared_ptr<CallStatement> call(new CallStatement);
-                        call->setDest(jumpDest->clone());
-                        LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
-
-                        if (lp == nullptr) {
-                            LOG_FATAL("getLibraryProc() returned nullptr");
-                        }
-
-                        call->setDestProc(lp);
-                        auto rtls = liftBB(bbInsns);
-                        rtls->push_back(
-                            std::unique_ptr<RTL>(new RTL(lifted.rtl->getAddress(), { call })));
-
-                        currentBB = cfg->createBB(BBType::Call, std::move(rtls));
-                        appendSyntheticReturn(currentBB, proc, lifted.rtl.get());
-                        bbInsns.clear();
-                        sequentialDecode = false;
-
-                        if (lifted.rtl->getAddress() == proc->getEntryAddress()) {
-                            // it's a thunk
-                            // Proc *lp = prog->findProc(func.c_str());
-                            func = "__imp_" + func;
-                            proc->setName(func);
-                            // lp->setName(func.c_str());
-                            m_program->getProject()->alertSignatureUpdated(proc);
-                        }
-
-                        callList.push_back(call);
-                        ss = sl.end();
-                        ss--; // get out of the loop
-                        break;
-                    }
-
-                    bbInsns.push_back(insn);
-
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
-                    cfg->createBB(BBType::CompJump, liftBB(bbInsns));
-                    bbInsns.clear();
-
-                    LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
-
+                    cfg->createBB(BBType::CompJump, bbInsns);
                     sequentialDecode = false;
                 } break;
 
                 case StmtType::Branch: {
-                    Address jumpDest = jumpStmt->getFixedDest();
-
-                    bbInsns.push_back(insn);
-
-                    currentBB = cfg->createBB(BBType::Twoway, liftBB(bbInsns));
-                    bbInsns.clear();
+                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                    BasicBlock *currentBB               = cfg->createBB(BBType::Twoway, bbInsns);
 
                     // Stop decoding sequentially if the basic block already existed otherwise
                     // complete the basic block
                     if (currentBB == nullptr) {
                         sequentialDecode = false;
+                        break;
+                    }
+
+                    // Add the out edge if it is to a destination within the section
+                    const Address jumpDest = jump->getFixedDest();
+
+                    if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                        m_targetQueue.visit(cfg, jumpDest, currentBB);
+                        cfg->addEdge(currentBB, jumpDest);
                     }
                     else {
-                        // Add the out edge if it is to a destination within the section
-                        if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                            m_targetQueue.visit(cfg, jumpDest, currentBB);
-                            cfg->addEdge(currentBB, jumpDest);
-                        }
-                        else {
-                            LOG_WARN("Branch instruction at address %1 branches beyond end of "
-                                     "section, to %2",
-                                     addr, jumpDest);
-                            currentBB->setType(BBType::Oneway);
-                        }
-
-                        // Add the fall-through outedge
-                        cfg->addEdge(currentBB, addr + insn.m_size);
+                        LOG_WARN("Branch instruction at address %1 branches beyond end of "
+                                 "section, to %2",
+                                 addr, jumpDest);
+                        currentBB->setType(BBType::Oneway);
                     }
+
+                    // Add the fall-through outedge
+                    cfg->addEdge(currentBB, addr + insn.m_size);
                 } break;
 
                 case StmtType::Call: {
@@ -509,11 +407,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     // Check for a dynamic linked library function
                     if (refersToImportedFunction(call->getDest())) {
                         // Dynamic linked proc pointers are treated as static.
-                        Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                        QString name       = m_program->getBinaryFile()
-                                           ->getSymbols()
-                                           ->findSymbolByAddress(linkedAddr)
-                                           ->getName();
+                        const Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
+                        const QString name       = m_program->getBinaryFile()
+                                                 ->getSymbols()
+                                                 ->findSymbolByAddress(linkedAddr)
+                                                 ->getName();
 
                         Function *function = proc->getProg()->getOrCreateLibraryProc(name);
                         call->setDestProc(function);
@@ -551,8 +449,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Treat computed and static calls separately
                     if (call->isComputed()) {
-                        bbInsns.push_back(insn);
-                        currentBB = cfg->createBB(BBType::CompCall, liftBB(bbInsns));
+                        BasicBlock *currentBB = cfg->createBB(BBType::CompCall, bbInsns);
 
                         // Stop decoding sequentially if the basic block already
                         // existed otherwise complete the basic block
@@ -562,6 +459,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         else {
                             cfg->addEdge(currentBB, addr + insn.m_size);
                             bbInsns.clear(); // start a new BB
+                            sequentialDecode = true;
                         }
 
                         // Add this call to the list of calls to analyse. We won't
@@ -570,7 +468,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     }
                     else {
                         // Static call
-                        Address callAddr = call->getFixedDest();
+
+                        const Address callAddr = call->getFixedDest();
 
                         // Calls with 0 offset (i.e. call the next instruction) are simply
                         // pushing the PC to the stack. Treat these as non-control flow
@@ -578,19 +477,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         if (callAddr == addr + insn.m_size) {
                             break;
                         }
-
-                        // Call the virtual helper function. If implemented, will check for
-                        // machine specific funcion calls
-                        auto bbRTLs = liftBB(bbInsns);
-
-                        if (isHelperFunc(callAddr, addr, *bbRTLs)) {
-                            // We have already added to BB_rtls
-                            lifted.rtl.reset(); // Discard the call semantics
-                            break;
-                        }
-
-                        RTL *rtl = lifted.rtl.get();
-                        bbInsns.push_back(insn);
 
                         // Add this non computed call site to the set of call sites which need
                         // to be analysed later.
@@ -623,59 +509,35 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                             // Make sure it has a return appended (so there is only one exit
                             // from the function)
-                            currentBB = cfg->createBB(BBType::Call, liftBB(bbInsns));
-                            appendSyntheticReturn(currentBB, proc, rtl);
-
-                            // Stop decoding sequentially
+                            cfg->createBB(BBType::Call, bbInsns);
                             sequentialDecode = false;
                         }
                         else {
                             // Create the new basic block
-                            currentBB = cfg->createBB(BBType::Call, liftBB(bbInsns));
+                            BasicBlock *currentBB = cfg->createBB(BBType::Call, bbInsns);
+
+                            // Add the fall through edge if the block didn't
+                            // already exist
+                            if (currentBB != nullptr) {
+                                cfg->addEdge(currentBB, addr + insn.m_size);
+                            }
+
+                            // start a new bb
                             bbInsns.clear();
-                            if (call->isReturnAfterCall()) {
-                                // Constuct the RTLs for the new basic block
-                                std::unique_ptr<RTLList> rtls(new RTLList);
-                                rtls->push_back(std::unique_ptr<RTL>(
-                                    new RTL(rtl->getAddress() + 1,
-                                            { std::make_shared<ReturnStatement>() })));
-                                BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
-
-                                // Add out edge from call to return
-                                cfg->addEdge(currentBB, returnBB);
-
-                                // Mike: do we need to set return locations?
-                                // This ends the function
-                                sequentialDecode = false;
-                            }
-                            else {
-                                // Add the fall through edge if the block didn't
-                                // already exist
-                                if (currentBB != nullptr) {
-                                    cfg->addEdge(currentBB, addr + insn.m_size);
-                                }
-                            }
+                            sequentialDecode = true;
                         }
-                    }
-
-                    if (currentBB && currentBB->getIR()->getRTLs()) {
-                        extraProcessCall(call, *currentBB->getIR()->getRTLs());
                     }
                 } break;
 
                 case StmtType::Ret: {
-                    // Stop decoding sequentially
+                    cfg->createBB(BBType::Ret, bbInsns);
                     sequentialDecode = false;
-
-                    // Create the list of RTLs for the next basic block and
-                    // continue with the next instruction.
-                    createReturnBlock(proc, liftBB(bbInsns), std::move(lifted.rtl));
                 } break;
 
                 case StmtType::BoolAssign:
-                // This is just an ordinary instruction; no control transfer
-                // Fall through
-                // FIXME: Do we need to do anything here?
+                    // This is just an ordinary instruction; no control transfer
+                    // Fall through
+                    // FIXME: Do we need to do anything here?
                 case StmtType::Assign:
                 case StmtType::PhiAssign:
                 case StmtType::ImpAssign:
@@ -692,9 +554,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             if (lifted.reLift) {
-                // Special case: redecode the last instruction, without advancing addr by
-                // numBytes
-                continue;
+                DecodeResult dummyLifted;
+                bool ok;
+                do {
+                    ok = m_decoder->liftInstruction(insn, dummyLifted);
+                } while (ok && dummyLifted.reLift);
             }
 
             addr += insn.m_size;
@@ -702,6 +566,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         } // while sequentialDecode
     }     // while getNextAddress() != Address::INVALID
 
+
+    LOG_MSG("%1", cfg->toString());
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
         Address dest = callStmt->getFixedDest();
@@ -916,7 +782,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
-        newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
+        //         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
         if (newBB) {
             SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
             proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
@@ -943,7 +809,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         }
 
         retRTL->append(std::make_shared<GotoStatement>(retAddr));
-        newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
+        //         newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
 
         if (newBB) {
             cfg->ensureBBExists(retAddr, retBB);
@@ -982,16 +848,16 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 }
 
 
-void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
-{
-    std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(
-        new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
-    BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
-
-    assert(callBB->getNumSuccessors() == 0);
-    proc->getCFG()->addEdge(callBB, retBB);
-}
+// void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
+// {
+//     std::unique_ptr<RTLList> ret_rtls(new RTLList);
+//     std::unique_ptr<RTL> retRTL(
+//         new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
+//     BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
+//
+//     assert(callBB->getNumSuccessors() == 0);
+//     proc->getCFG()->addEdge(callBB, retBB);
+// }
 
 
 void DefaultFrontEnd::preprocessProcGoto(RTL::StmtList::iterator ss, Address dest,

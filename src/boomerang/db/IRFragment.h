@@ -26,22 +26,6 @@ using RTLList   = std::list<std::unique_ptr<RTL>>;
 using SharedExp = std::shared_ptr<Exp>;
 
 
-/// Kinds of basic block nodes
-/// reordering these will break the save files - trent
-enum class BBType
-{
-    Invalid  = -1, ///< invalid instruction
-    Fall     = 0,  ///< fall-through node
-    Oneway   = 1,  ///< unconditional branch (jmp)
-    Twoway   = 2,  ///< conditional branch   (jXX)
-    Nway     = 3,  ///< case branch          (jmp [off + 4*eax])
-    Call     = 4,  ///< procedure call       (call)
-    Ret      = 5,  ///< return               (ret)
-    CompJump = 6,  ///< computed jump
-    CompCall = 7,  ///< computed call        (call [eax + 0x14])
-};
-
-
 /**
  *
  */
@@ -53,6 +37,12 @@ public:
 
 public:
     IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls);
+    IRFragment(const IRFragment &);
+    IRFragment(IRFragment &&) = default;
+    ~IRFragment()             = default;
+
+    IRFragment &operator=(const IRFragment &);
+    IRFragment &operator=(IRFragment &&) = default;
 
 public:
     /// \returns all RTLs that are part of this BB.

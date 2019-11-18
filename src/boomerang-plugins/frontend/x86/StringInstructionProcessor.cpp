@@ -160,8 +160,10 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     const bool entryBBNeedsUpdate = !haveA && bb == m_proc->getCFG()->getEntryBB();
     m_proc->getCFG()->removeBB(bb);
 
-    BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
-    BasicBlock *rptBB  = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
+    BasicBlock
+        *skipBB = nullptr; // m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
+    BasicBlock
+        *rptBB = nullptr; // m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
 
     assert(skipBB && rptBB);
 

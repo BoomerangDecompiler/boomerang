@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
@@ -102,7 +103,8 @@ public:
      * \returns the newly created BB, or the exisitng BB if the new BB is the same as
      * another exising complete BB.
      */
-    BasicBlock *createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs);
+    BasicBlock *createBB(BBType bbType, const std::vector<MachineInstruction> &bbInsns);
+    BasicBlock *createBB(BBType bbType, const std::list<MachineInstruction> &bbInsns);
 
     /**
      * Creates a new incomplete BB at address \p startAddr.

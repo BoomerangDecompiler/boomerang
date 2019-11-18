@@ -12,15 +12,31 @@
 
 #include "boomerang/db/GraphNode.h"
 #include "boomerang/db/IRFragment.h"
+#include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 
 #include <vector>
 
 
+class OStream;
 class RTL;
 
-class OStream;
+
+/// Kinds of basic block nodes
+/// reordering these will break the save files - trent
+enum class BBType
+{
+    Invalid  = -1, ///< invalid instruction
+    Fall     = 0,  ///< fall-through node
+    Oneway   = 1,  ///< unconditional branch (jmp)
+    Twoway   = 2,  ///< conditional branch   (jXX)
+    Nway     = 3,  ///< case branch          (jmp [off + 4*eax])
+    Call     = 4,  ///< procedure call       (call)
+    Ret      = 5,  ///< return               (ret)
+    CompJump = 6,  ///< computed jump
+    CompCall = 7,  ///< computed call        (call [eax + 0x14])
+};
 
 
 // index of the "then" branch of conditional jumps
@@ -59,7 +75,7 @@ public:
      * \param rtls     rtl statements that will be contained in this BasicBlock
      * \param function Function this BasicBlock belongs to.
      */
-    BasicBlock(BBType bbType, std::unique_ptr<RTLList> rtls, Function *function);
+    BasicBlock(BBType bbType, const std::vector<MachineInstruction> &bbInsns, Function *function);
 
     BasicBlock(const BasicBlock &other);
     BasicBlock(BasicBlock &&other) = delete;
@@ -104,11 +120,14 @@ public:
     IRFragment *getIR() { return &m_ir; }
     const IRFragment *getIR() const { return &m_ir; }
 
+    std::vector<MachineInstruction> &getInsns() { return m_insns; }
+    const std::vector<MachineInstruction> &getInsns() const { return m_insns; }
+
     /**
      * Update the RTL list of this basic block. Takes ownership of the pointer.
      * \param rtls a list of RTLs
      */
-    void completeBB(std::unique_ptr<RTLList> rtls);
+    void completeBB(const std::vector<MachineInstruction> &bbInsns);
 
     /// Update the high and low address of this BB if the RTL list has changed.
     void updateBBAddresses();
@@ -124,6 +143,8 @@ public:
     QString toString() const;
 
 protected:
+    std::vector<MachineInstruction> m_insns;
+
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
 
