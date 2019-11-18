@@ -78,6 +78,9 @@ public:
     /// Update the high and low address of this BB if the RTL list has changed.
     void updateBBAddresses();
 
+    /// \returns true if the instructions of this BB have not been decoded yet.
+    inline bool isIncomplete() const { return m_highAddr == Address::INVALID; }
+
 public:
     /**
      * Get first/next statement this BB

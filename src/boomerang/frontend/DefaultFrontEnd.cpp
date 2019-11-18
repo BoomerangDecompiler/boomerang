@@ -261,7 +261,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     cfg->addEdge(newBB, existingBB);
                 }
 
-                if (!existingBB->isIncomplete()) {
+                if (!existingBB->getIR()->isIncomplete()) {
                     break; // do not disassemble the BB twice
                 }
             }

@@ -90,7 +90,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
         // Else we have duplicated BBs.
         // Note: this can happen with forward jumps into the middle of a loop,
         // so not error
-        if (!currentBB->isIncomplete()) {
+        if (!currentBB->getIR()->isIncomplete()) {
             LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
                         currentBB->getIR()->getLowAddr());
 
@@ -143,7 +143,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
         if (mi != m_bbStartMap.end()) {
             BasicBlock *nextBB    = (*mi).second;
             Address nextAddr      = (*mi).first;
-            bool nextIsIncomplete = nextBB->isIncomplete();
+            bool nextIsIncomplete = nextBB->getIR()->isIncomplete();
 
             if (nextAddr <= currentBB->getIR()->getHiAddr()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it
@@ -217,7 +217,7 @@ bool ProcCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
         createIncompleteBB(addr);
         return false;
     }
-    else if (overlappingBB->isIncomplete()) {
+    else if (overlappingBB->getIR()->isIncomplete()) {
         return false;
     }
     else if (overlappingBB && overlappingBB->getIR()->getLowAddr() < addr) {
@@ -250,7 +250,7 @@ bool ProcCFG::isStartOfIncompleteBB(Address addr) const
 {
     const BasicBlock *bb = getBBStartingAt(addr);
 
-    return bb && bb->isIncomplete();
+    return bb && bb->getIR()->isIncomplete();
 }
 
 
@@ -344,7 +344,7 @@ void ProcCFG::addEdge(BasicBlock *sourceBB, Address addr)
 bool ProcCFG::isWellFormed() const
 {
     for (const BasicBlock *bb : *this) {
-        if (bb->isIncomplete()) {
+        if (bb->getIR()->isIncomplete()) {
             m_wellFormed = false;
             LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete",
                       bb->getIR()->getLowAddr());
@@ -509,7 +509,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
         return bb;
     }
 
-    if (_newBB && !_newBB->isIncomplete()) {
+    if (_newBB && !_newBB->getIR()->isIncomplete()) {
         // we already have a BB for the high part. Delete overlapping RTLs and adjust edges.
 
         while (splitIt != bb->getInsns().end()) {

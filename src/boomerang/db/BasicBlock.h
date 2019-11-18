@@ -94,9 +94,6 @@ public:
     inline const Function *getFunction() const { return m_function; }
     inline Function *getFunction() { return m_function; }
 
-    /// \returns true if the instructions of this BB have not been decoded yet.
-    inline bool isIncomplete() const { return m_ir.m_highAddr == Address::INVALID; }
-
 public:
     IRFragment *getIR() { return &m_ir; }
     const IRFragment *getIR() const { return &m_ir; }
