@@ -94,6 +94,11 @@ public:
     inline const Function *getFunction() const { return m_function; }
     inline Function *getFunction() { return m_function; }
 
+    inline Address getLowAddr() const { return m_lowAddr; }
+    inline Address getHiAddr() const { return m_highAddr; }
+
+    inline bool isComplete() const { return !m_insns.empty(); }
+
 public:
     IRFragment *getIR() { return &m_ir; }
     const IRFragment *getIR() const { return &m_ir; }
@@ -122,6 +127,9 @@ protected:
 
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
+
+    Address m_lowAddr  = Address::ZERO;
+    Address m_highAddr = Address::INVALID;
 
     IRFragment m_ir; ///< For now, this is a single fragment, there may be more in the future
 

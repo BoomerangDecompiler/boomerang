@@ -15,6 +15,7 @@ BasicBlock::BasicBlock(Address lowAddr, Function *function)
     , m_ir(this, lowAddr)
     , m_bbType(BBType::Invalid)
 {
+    m_lowAddr = lowAddr;
 }
 
 
@@ -34,6 +35,8 @@ BasicBlock::BasicBlock(BBType bbType, const std::vector<MachineInstruction> &ins
 BasicBlock::BasicBlock(const BasicBlock &bb)
     : GraphNode(bb)
     , m_function(bb.m_function)
+    , m_lowAddr(bb.m_lowAddr)
+    , m_highAddr(bb.m_highAddr)
     , m_ir(bb.m_ir)
     , m_bbType(bb.m_bbType)
 {
@@ -52,6 +55,8 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
     m_function = bb.m_function;
     m_ir       = bb.m_ir;
     m_bbType   = bb.m_bbType;
+    m_lowAddr  = bb.m_lowAddr;
+    m_highAddr = bb.m_highAddr;
 
     return *this;
 }
@@ -63,6 +68,9 @@ void BasicBlock::completeBB(const std::vector<MachineInstruction> &insns)
     assert(m_insns.empty());
 
     m_insns = insns;
+
+    m_lowAddr  = m_insns.front().m_addr;
+    m_highAddr = m_insns.back().m_addr + m_insns.back().m_size;
 }
 
 
@@ -89,18 +97,18 @@ void BasicBlock::print(OStream &os) const
     case BBType::Invalid: os << "Invalid BB"; break;
     }
 
-    os << ":\n";
+    os << "@[" << getLowAddr() << "," << getHiAddr() << "):\n";
     os << "  in edges: ";
 
     for (BasicBlock *bb : getPredecessors()) {
-        os << bb->getIR()->getHiAddr() << "(" << bb->getIR()->getLowAddr() << ") ";
+        os << bb->getLowAddr() << " ";
     }
 
     os << "\n";
     os << "  out edges: ";
 
     for (BasicBlock *bb : getSuccessors()) {
-        os << bb->getIR()->getLowAddr() << " ";
+        os << bb->getLowAddr() << " ";
     }
 
     os << "\n";

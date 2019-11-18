@@ -75,6 +75,8 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
     // First find the native address of the first instruction
     Address startAddr = bbInsns.front().m_addr;
 
+    assert(startAddr != Address::INVALID);
+
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here
     // already If it is zero, this is a special BB for handling delayed branches or the like
     bool mustCreateBB     = true;
@@ -90,9 +92,9 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
         // Else we have duplicated BBs.
         // Note: this can happen with forward jumps into the middle of a loop,
         // so not error
-        if (!currentBB->getIR()->isIncomplete()) {
+        if (currentBB->isComplete()) {
             LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
-                        currentBB->getIR()->getLowAddr());
+                        currentBB->getLowAddr());
 
             // we automatically destroy bbRTLs
             return nullptr;
@@ -143,9 +145,9 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
         if (mi != m_bbStartMap.end()) {
             BasicBlock *nextBB    = (*mi).second;
             Address nextAddr      = (*mi).first;
-            bool nextIsIncomplete = nextBB->getIR()->isIncomplete();
+            bool nextIsIncomplete = !nextBB->isComplete();
 
-            if (nextAddr <= currentBB->getIR()->getHiAddr()) {
+            if (nextAddr < currentBB->getHiAddr()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it
                 // doesn't create a new BB for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
@@ -158,7 +160,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, const std::vector<MachineInstructio
                 }
 
                 LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
-                            currentBB->getIR()->getLowAddr());
+                            currentBB->getLowAddr());
                 return nullptr;
             }
         }
@@ -201,13 +203,13 @@ bool ProcCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
     BBStartMap::iterator itExistingBB = m_bbStartMap.lower_bound(addr);
 
     BasicBlock *overlappingBB = nullptr;
-    if (itExistingBB != m_bbStartMap.end() && itExistingBB->second->getIR()->getLowAddr() == addr) {
+    if (itExistingBB != m_bbStartMap.end() && itExistingBB->second->getLowAddr() == addr) {
         overlappingBB = itExistingBB->second;
     }
     else if (itExistingBB != m_bbStartMap.begin()) {
         --itExistingBB;
-        if (itExistingBB->second->getIR()->getLowAddr() <= addr &&
-            itExistingBB->second->getIR()->getHiAddr() >= addr) {
+        if (itExistingBB->second->getLowAddr() <= addr &&
+            itExistingBB->second->getHiAddr() > addr) {
             overlappingBB = itExistingBB->second;
         }
     }
@@ -217,10 +219,10 @@ bool ProcCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
         createIncompleteBB(addr);
         return false;
     }
-    else if (overlappingBB->getIR()->isIncomplete()) {
+    else if (!overlappingBB->isComplete()) {
         return false;
     }
-    else if (overlappingBB && overlappingBB->getIR()->getLowAddr() < addr) {
+    else if (overlappingBB && overlappingBB->getLowAddr() < addr) {
         splitBB(overlappingBB, addr);
         BasicBlock *highBB = getBBStartingAt(addr);
 
@@ -250,7 +252,7 @@ bool ProcCFG::isStartOfIncompleteBB(Address addr) const
 {
     const BasicBlock *bb = getBBStartingAt(addr);
 
-    return bb && bb->getIR()->isIncomplete();
+    return bb && !bb->isComplete();
 }
 
 
@@ -290,7 +292,7 @@ void ProcCFG::removeBB(BasicBlock *bb)
     }
 
     BBStartMap::iterator firstIt, lastIt;
-    std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getIR()->getLowAddr());
+    std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getLowAddr());
 
     for (auto it = firstIt; it != lastIt; ++it) {
         if (it->second == bb) {
@@ -305,7 +307,7 @@ void ProcCFG::removeBB(BasicBlock *bb)
         }
     }
 
-    LOG_WARN("Tried to remove BB at address %1; does not exist in CFG", bb->getIR()->getLowAddr());
+    LOG_WARN("Tried to remove BB at address %1; does not exist in CFG", bb->getLowAddr());
     delete bb;
 }
 
@@ -344,16 +346,15 @@ void ProcCFG::addEdge(BasicBlock *sourceBB, Address addr)
 bool ProcCFG::isWellFormed() const
 {
     for (const BasicBlock *bb : *this) {
-        if (bb->getIR()->isIncomplete()) {
+        if (!bb->isComplete()) {
             m_wellFormed = false;
-            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete",
-                      bb->getIR()->getLowAddr());
+            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
             return false;
         }
         else if (bb->getFunction() != m_myProc) {
             m_wellFormed = false;
             LOG_ERROR("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
-                      bb->getIR()->getLowAddr(), m_myProc->getName());
+                      bb->getLowAddr(), m_myProc->getName());
             return false;
         }
 
@@ -361,7 +362,7 @@ bool ProcCFG::isWellFormed() const
             if (!pred->isPredecessorOf(bb)) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          pred->getIR()->getLowAddr(), bb->getIR()->getLowAddr());
+                          pred->getLowAddr(), bb->getLowAddr());
                 return false;
             }
             else if (pred->getFunction() != bb->getFunction()) {
@@ -377,7 +378,7 @@ bool ProcCFG::isWellFormed() const
             if (!succ->isSuccessorOf(bb)) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          bb->getIR()->getLowAddr(), succ->getIR()->getLowAddr());
+                          bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
             else if (succ->getFunction() != bb->getFunction()) {
@@ -392,16 +393,6 @@ bool ProcCFG::isWellFormed() const
 
     m_wellFormed = true;
     return true;
-}
-
-
-void ProcCFG::simplify()
-{
-    LOG_VERBOSE("Simplifying CFG ...");
-
-    for (BasicBlock *bb : *this) {
-        bb->getIR()->simplify();
-    }
 }
 
 
@@ -504,12 +495,11 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     }
 
     if (splitIt == bb->getInsns().end()) {
-        LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getIR()->getLowAddr(),
-                 splitAddr);
+        LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getLowAddr(), splitAddr);
         return bb;
     }
 
-    if (_newBB && !_newBB->getIR()->isIncomplete()) {
+    if (_newBB && _newBB->isComplete()) {
         // we already have a BB for the high part. Delete overlapping RTLs and adjust edges.
 
         while (splitIt != bb->getInsns().end()) {
@@ -588,16 +578,16 @@ QString ProcCFG::toString() const
 void ProcCFG::insertBB(BasicBlock *bb)
 {
     assert(bb != nullptr);
-    assert(bb->getIR()->getLowAddr() != Address::INVALID);
-    if (bb->getIR()->getLowAddr() != Address::ZERO) {
-        auto it = m_bbStartMap.find(bb->getIR()->getLowAddr());
+    assert(bb->getLowAddr() != Address::INVALID);
+    if (bb->getLowAddr() != Address::ZERO) {
+        auto it = m_bbStartMap.find(bb->getLowAddr());
         if (it != m_bbStartMap.end()) {
             // replace it
             it->second = bb;
         }
         else {
             // just insert it
-            m_bbStartMap.insert({ bb->getIR()->getLowAddr(), bb });
+            m_bbStartMap.insert({ bb->getLowAddr(), bb });
         }
     }
     else {

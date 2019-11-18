@@ -190,9 +190,6 @@ public:
      */
     bool isWellFormed() const;
 
-    /// Simplify all the expressions in the CFG
-    void simplify();
-
     BasicBlock *findRetNode();
 
     // Implicit assignments
