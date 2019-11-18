@@ -77,72 +77,18 @@ void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
-    Address returnAddress = Address::INVALID;
-
     // The nodes
     for (BasicBlock *bb : *cfg) {
         of << "       "
-           << "bb" << bb->getIR()->getLowAddr() << " ["
-           << "label=\"" << bb->getIR()->getLowAddr() << " ";
+           << "bb" << bb->getLowAddr();
+        of << "[label=\"";
 
-        switch (bb->getType()) {
-        case BBType::Oneway: of << "oneway"; break;
-
-        case BBType::Twoway:
-            if (bb->getIR()->getCond()) {
-                of << "\\n";
-                bb->getIR()->getCond()->print(of);
-                of << "\" shape=diamond];\n";
-                continue;
-            }
-            else {
-                of << "twoway";
-            }
-            break;
-
-        case BBType::Nway: {
-            of << "nway";
-            SharedExp de = bb->getIR()->getDest();
-
-            if (de) {
-                of << "\\n";
-                of << de;
-            }
-
-            of << "\" shape=trapezium];\n";
-            continue;
+        for (const MachineInstruction &insn : bb->getInsns()) {
+            of << insn.m_addr.toString() << " " << insn.m_mnem.data() << " " << insn.m_opstr.data()
+               << "\\l";
         }
 
-        case BBType::Call: {
-            of << "call";
-            Function *dest = bb->getIR()->getCallDestProc();
-
-            if (dest) {
-                of << "\\n" << dest->getName();
-            }
-
-            break;
-        }
-
-        case BBType::Ret:
-            of << "ret\" shape=triangle];\n";
-            // Remember the (unique) return BB's address
-            returnAddress = bb->getIR()->getLowAddr();
-            continue;
-
-        case BBType::Fall: of << "fall"; break;
-        case BBType::CompJump: of << "compjump"; break;
-        case BBType::CompCall: of << "compcall"; break;
-        case BBType::Invalid: of << "invalid"; break;
-        }
-
-        of << "\"];\n";
-    }
-
-    // Force the one return node to be at the bottom (max rank).
-    // Otherwise, with all its in-edges, it will end up in the middle
-    if (!returnAddress.isZero()) {
-        of << "{rank=max; bb" << returnAddress << "}\n";
+        of << "\", shape=rectangle];\n";
     }
 
     // Close the subgraph
@@ -153,8 +99,8 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
         for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
             BasicBlock *dstBB = srcBB->getSuccessor(j);
 
-            of << "       bb" << srcBB->getIR()->getLowAddr() << " -> ";
-            of << "bb" << dstBB->getIR()->getLowAddr();
+            of << "       bb" << srcBB->getLowAddr() << " -> ";
+            of << "bb" << dstBB->getLowAddr();
 
             if (srcBB->getType() == BBType::Twoway) {
                 if (j == 0) {

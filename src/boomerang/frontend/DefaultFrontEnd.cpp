@@ -32,6 +32,7 @@
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/NamedType.h"
+#include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -565,8 +566,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         } // while sequentialDecode
     }     // while getNextAddress() != Address::INVALID
 
-
-    LOG_MSG("%1", cfg->toString());
+    CFGDotWriter().writeCFG({ proc }, "cfg-" + proc->getName() + ".dot");
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
         Address dest = callStmt->getFixedDest();
