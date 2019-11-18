@@ -19,6 +19,13 @@
 #include "boomerang/util/log/Log.h"
 
 
+IRFragment::IRFragment(BasicBlock *bb, Address lowAddr)
+    : m_bb(bb)
+    , m_lowAddr(lowAddr)
+{
+}
+
+
 IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
     : m_bb(bb)
     , m_listOfRTLs(std::move(rtls))
@@ -34,7 +41,9 @@ IRFragment::IRFragment(const IRFragment &other)
 
 IRFragment &IRFragment::operator=(const IRFragment &other)
 {
-    m_bb = other.m_bb;
+    m_bb       = other.m_bb;
+    m_lowAddr  = other.m_lowAddr;
+    m_highAddr = other.m_highAddr;
 
     if (other.m_listOfRTLs) {
         // make a deep copy of the RTL list
@@ -352,8 +361,53 @@ void IRFragment::removeRTL(RTL *rtl)
 
     if (it != m_listOfRTLs->end()) {
         m_listOfRTLs->erase(it);
-        m_bb->updateBBAddresses();
+        updateBBAddresses();
     }
+}
+
+
+Address IRFragment::getLowAddr() const
+{
+    return m_lowAddr;
+}
+
+
+Address IRFragment::getHiAddr() const
+{
+    return m_highAddr;
+}
+
+
+void IRFragment::updateBBAddresses()
+{
+    if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
+        m_highAddr = Address::INVALID;
+        return;
+    }
+
+    Address a = m_listOfRTLs->front()->getAddress();
+
+    if (a.isZero() && (m_listOfRTLs->size() > 1)) {
+        RTLList::iterator it = m_listOfRTLs->begin();
+        Address add2         = (*++it)->getAddress();
+
+        // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A
+        // better solution would be to change orphan BBs' addresses to Address::INVALID, but I
+        // suspect that this will cause many problems. MVE
+        if (add2 < Address(0x10)) {
+            // Assume that 0 is the real address
+            m_lowAddr = Address::ZERO;
+        }
+        else {
+            m_lowAddr = add2;
+        }
+    }
+    else {
+        m_lowAddr = a;
+    }
+
+    assert(m_listOfRTLs != nullptr);
+    m_highAddr = m_listOfRTLs->back()->getAddress();
 }
 
 
@@ -444,7 +498,7 @@ SharedExp IRFragment::getDest() const
     SharedStmt lastStmt = lastRTL->getHlStmt();
     if (!lastStmt) {
         if (getNumSuccessors() > 0) {
-            return Const::get(m_bb->getSuccessor(BTHEN)->getLowAddr());
+            return Const::get(m_bb->getSuccessor(BTHEN)->getIR()->getLowAddr());
         }
         else {
             return nullptr;
@@ -464,7 +518,7 @@ SharedExp IRFragment::getDest() const
         return lastStmt->as<GotoStatement>()->getDest();
     }
 
-    LOG_ERROR("Last statement of BB at address %1 is not a goto!", m_bb->getLowAddr());
+    LOG_ERROR("Last statement of BB at address %1 is not a goto!", m_bb->getIR()->getLowAddr());
     return nullptr;
 }
 

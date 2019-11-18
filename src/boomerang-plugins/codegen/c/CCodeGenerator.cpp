@@ -828,9 +828,9 @@ void CCodeGenerator::addGoto(const BasicBlock *bb)
     OStream s(&tgt);
 
     indent(s, m_indent);
-    s << "goto bb0x" << QString::number(bb->getLowAddr().value(), 16) << ";";
+    s << "goto bb0x" << QString::number(bb->getIR()->getLowAddr().value(), 16) << ";";
     appendLine(tgt);
-    m_usedLabels.insert(bb->getLowAddr().value());
+    m_usedLabels.insert(bb->getIR()->getLowAddr().value());
 }
 
 
@@ -861,7 +861,7 @@ void CCodeGenerator::addLabel(const BasicBlock *bb)
     QString tgt;
     OStream s(&tgt);
 
-    s << "bb0x" << QString::number(bb->getLowAddr().value(), 16) << ":";
+    s << "bb0x" << QString::number(bb->getIR()->getLowAddr().value(), 16) << ":";
     appendLine(tgt);
 }
 
@@ -2519,7 +2519,8 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
 
     // return if this doesn't have any out edges (emit a warning)
     if (bb->getNumSuccessors() == 0) {
-        LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
+        LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getIR()->getLowAddr(),
+                 proc->getName());
 
         if (bb->getType() == BBType::CompJump) {
             assert(!bb->getIR()->getRTLs()->empty());
@@ -2545,7 +2546,8 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         LOG_MSG("Found seq with more than one outedge!");
         std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(bb->getIR()->getDest());
 
-        if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
+        if (constDest && constDest->isIntConst() &&
+            (constDest->getAddr() == succ->getIR()->getLowAddr())) {
             std::swap(other, succ);
             LOG_MSG("Taken branch is first out edge");
         }
@@ -2631,7 +2633,7 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
 void CCodeGenerator::writeBB(const BasicBlock *bb)
 {
     if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
-        LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
+        LOG_MSG("Generating code for BB at address %1", bb->getIR()->getLowAddr());
     }
 
     // Allocate space for a label to be generated for this node and add this to the generated code.
@@ -2814,7 +2816,7 @@ CCodeGenerator::computeOptimalCaseOrdering(const BasicBlock *caseHead, const Swi
         }
 
         // No fallthrough found; compare by address
-        return leftBB->getLowAddr() < rightBB->getLowAddr();
+        return leftBB->getIR()->getLowAddr() < rightBB->getIR()->getLowAddr();
     });
 
     return result;

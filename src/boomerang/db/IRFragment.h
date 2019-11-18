@@ -36,6 +36,7 @@ public:
     typedef RTLList::reverse_iterator RTLRIterator;
 
 public:
+    IRFragment(BasicBlock *bb, Address lowAddr);
     IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls);
     IRFragment(const IRFragment &);
     IRFragment(IRFragment &&) = default;
@@ -53,6 +54,29 @@ public:
     const RTL *getLastRTL() const;
 
     void removeRTL(RTL *rtl);
+
+public:
+    /**
+     * \returns the lowest real address associated with this fragement.
+     * \note although this is usually the address of the first RTL, it is not
+     * always so. For example, if the BB contains just a delayed branch,and the delay
+     * instruction for the branch does not affect the branch, so the delay instruction
+     * is copied in front of the branch instruction. Its address will be
+     * UpdateAddress()'ed to 0, since it is "not really there", so the low address
+     * for this BB will be the address of the branch.
+     * \sa updateBBAddresses
+     */
+    Address getLowAddr() const;
+
+    /**
+     * Get the highest address associated with this BB.
+     * This is always the address associated with the last RTL.
+     * \sa updateBBAddresses
+     */
+    Address getHiAddr() const;
+
+    /// Update the high and low address of this BB if the RTL list has changed.
+    void updateBBAddresses();
 
 public:
     /**
@@ -129,4 +153,7 @@ public:
 public:
     BasicBlock *m_bb;
     std::unique_ptr<RTLList> m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+
+    Address m_lowAddr  = Address::ZERO;
+    Address m_highAddr = Address::INVALID;
 };

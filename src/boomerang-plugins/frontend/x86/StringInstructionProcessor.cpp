@@ -121,13 +121,13 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     if (haveA) {
         aBB = bb;
         bb  = m_proc->getCFG()->splitBB(aBB, stringAddr);
-        assert(aBB->getLowAddr() < bb->getLowAddr());
+        assert(aBB->getIR()->getLowAddr() < bb->getIR()->getLowAddr());
     }
     stringIt = bb->getIR()->getRTLs()->begin();
     if (haveB) {
         Address splitAddr = (*std::next(stringIt))->getAddress();
         bBB               = m_proc->getCFG()->splitBB(bb, splitAddr);
-        assert(bb->getLowAddr() < bBB->getLowAddr());
+        assert(bb->getIR()->getLowAddr() < bBB->getIR()->getLowAddr());
     }
     else {
         // this means the original BB has a fallthrough branch to its successor.

@@ -94,27 +94,8 @@ public:
     inline const Function *getFunction() const { return m_function; }
     inline Function *getFunction() { return m_function; }
 
-    /**
-     * \returns the lowest real address associated with this BB.
-     * \note although this is usually the address of the first RTL, it is not
-     * always so. For example, if the BB contains just a delayed branch,and the delay
-     * instruction for the branch does not affect the branch, so the delay instruction
-     * is copied in front of the branch instruction. Its address will be
-     * UpdateAddress()'ed to 0, since it is "not really there", so the low address
-     * for this BB will be the address of the branch.
-     * \sa updateBBAddresses
-     */
-    Address getLowAddr() const;
-
-    /**
-     * Get the highest address associated with this BB.
-     * This is always the address associated with the last RTL.
-     * \sa updateBBAddresses
-     */
-    Address getHiAddr() const;
-
     /// \returns true if the instructions of this BB have not been decoded yet.
-    inline bool isIncomplete() const { return m_highAddr == Address::INVALID; }
+    inline bool isIncomplete() const { return m_ir.m_highAddr == Address::INVALID; }
 
 public:
     IRFragment *getIR() { return &m_ir; }
@@ -128,9 +109,6 @@ public:
      * \param rtls a list of RTLs
      */
     void completeBB(const std::vector<MachineInstruction> &bbInsns);
-
-    /// Update the high and low address of this BB if the RTL list has changed.
-    void updateBBAddresses();
 
 public:
     /**
@@ -149,9 +127,6 @@ protected:
     Function *m_function = nullptr;
 
     IRFragment m_ir; ///< For now, this is a single fragment, there may be more in the future
-
-    Address m_lowAddr  = Address::ZERO;
-    Address m_highAddr = Address::INVALID;
 
     BBType m_bbType = BBType::Invalid; ///< type of basic block
 };

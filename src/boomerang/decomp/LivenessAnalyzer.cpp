@@ -209,7 +209,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
 
             if (bb->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
                 LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3", ref, st,
-                        bb->getLowAddr());
+                        bb->getIR()->getLowAddr());
             }
         }
     }

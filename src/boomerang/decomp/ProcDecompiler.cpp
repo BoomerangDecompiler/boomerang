@@ -84,7 +84,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
             if (!hl->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
-                         bb->getLowAddr(), hl);
+                         bb->getIR()->getLowAddr(), hl);
                 continue;
             }
 
@@ -655,7 +655,7 @@ void ProcDecompiler::saveDecodedICTs(UserProc *proc)
             LOG_MSG("Saving high level switch statement:\n%1", rtl);
         }
 
-        proc->getProg()->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
+        proc->getProg()->getFrontEnd()->saveDecodedRTL(bb->getIR()->getHiAddr(), rtl);
     }
 }
 

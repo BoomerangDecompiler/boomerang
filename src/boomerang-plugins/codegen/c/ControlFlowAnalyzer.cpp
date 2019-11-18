@@ -136,8 +136,8 @@ const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmP
     }
 
     if (giveup >= GIVEUP) {
-        LOG_VERBOSE("Failed to find commonPDom for %1 and %2", oldCurImmPDom->getLowAddr(),
-                    oldSuccImmPDom->getLowAddr());
+        LOG_VERBOSE("Failed to find commonPDom for %1 and %2", oldCurImmPDom->getIR()->getLowAddr(),
+                    oldSuccImmPDom->getIR()->getLowAddr());
 
         return oldCurImmPDom; // no change
     }

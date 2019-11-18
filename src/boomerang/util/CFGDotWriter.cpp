@@ -82,8 +82,8 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
     // The nodes
     for (BasicBlock *bb : *cfg) {
         of << "       "
-           << "bb" << bb->getLowAddr() << " ["
-           << "label=\"" << bb->getLowAddr() << " ";
+           << "bb" << bb->getIR()->getLowAddr() << " ["
+           << "label=\"" << bb->getIR()->getLowAddr() << " ";
 
         switch (bb->getType()) {
         case BBType::Oneway: of << "oneway"; break;
@@ -127,7 +127,7 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
         case BBType::Ret:
             of << "ret\" shape=triangle];\n";
             // Remember the (unique) return BB's address
-            returnAddress = bb->getLowAddr();
+            returnAddress = bb->getIR()->getLowAddr();
             continue;
 
         case BBType::Fall: of << "fall"; break;
@@ -153,8 +153,8 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
         for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
             BasicBlock *dstBB = srcBB->getSuccessor(j);
 
-            of << "       bb" << srcBB->getLowAddr() << " -> ";
-            of << "bb" << dstBB->getLowAddr();
+            of << "       bb" << srcBB->getIR()->getLowAddr() << " -> ";
+            of << "bb" << dstBB->getIR()->getLowAddr();
 
             if (srcBB->getType() == BBType::Twoway) {
                 if (j == 0) {

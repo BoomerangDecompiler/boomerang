@@ -30,7 +30,7 @@ bool BasicBlock::BBComparator::operator()(const BasicBlock *bb1, const BasicBloc
     // special case: in test code, we have statements that do not belong to BBs.
     // Thus, bb is nullptr
     if (bb1 && bb2) {
-        return bb1->getLowAddr() < bb2->getLowAddr();
+        return bb1->getIR()->getLowAddr() < bb2->getIR()->getLowAddr();
     }
     else {
         // compare pointers

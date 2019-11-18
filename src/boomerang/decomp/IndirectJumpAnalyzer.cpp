@@ -325,7 +325,7 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
         }
     }
 
-    LOG_WARN("Could not find number of cases for n-way at address %1", bb->getLowAddr());
+    LOG_WARN("Could not find number of cases for n-way at address %1", bb->getIR()->getLowAddr());
     return 1; // Bald faced guess if all else fails
 }
 
@@ -434,8 +434,8 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
     for (Address dest : dests) {
         count++;
-        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)", bb->getHiAddr(),
-                    count, dests.size(), dest);
+        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)",
+                    bb->getIR()->getHiAddr(), count, dests.size(), dest);
 
         prog->decodeFragment(proc, dest);
     }
@@ -520,7 +520,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
             }
 
             if (swi->numTableEntries <= 0) {
-                LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
+                LOG_WARN("Switch analysis failure at address %1", bb->getIR()->getLowAddr());
                 return false;
             }
 
