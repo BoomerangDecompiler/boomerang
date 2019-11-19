@@ -115,6 +115,15 @@ void ProcCFG::removeFragment(IRFragment *frag)
 }
 
 
+IRFragment *ProcCFG::getFragmentByAddr(Address addr)
+{
+    auto it = std::find_if(m_fragmentSet.begin(), m_fragmentSet.end(),
+                           [addr](IRFragment *frag) { return frag->getLowAddr() == addr; });
+
+    return it != m_fragmentSet.end() ? *it : nullptr;
+}
+
+
 void ProcCFG::addEdge(IRFragment *sourceBB, IRFragment *destBB)
 {
     if (!sourceBB || !destBB) {
@@ -266,4 +275,17 @@ QString ProcCFG::toString() const
     OStream os(&result);
     print(os);
     return result;
+}
+
+
+void ProcCFG::setEntryAndExitFragment(IRFragment *entryFrag)
+{
+    m_entryFrag = entryFrag;
+
+    for (IRFragment *frag : *this) {
+        if (frag->isType(FragType::Ret)) {
+            m_exitFrag = frag;
+            return;
+        }
+    }
 }

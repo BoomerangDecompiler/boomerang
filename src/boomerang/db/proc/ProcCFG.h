@@ -103,6 +103,9 @@ public:
     /// \note \p bb is invalid after this function returns.
     void removeFragment(IRFragment *frag);
 
+    /// \returns the fragment that starts at \p addr
+    IRFragment *getFragmentByAddr(Address addr);
+
     /**
      * Add an edge from \p sourceBB to \p destBB.
      * \param sourceBB the start of the edge.

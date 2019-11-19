@@ -548,7 +548,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         } // while sequentialDecode
     }     // while getNextAddress() != Address::INVALID
 
-    CFGDotWriter().writeCFG({ proc }, "cfg-" + proc->getName() + ".dot");
+    CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
 
     m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
 

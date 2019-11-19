@@ -43,7 +43,7 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
             of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data() << "\\l";
         }
 
-        of << "\"];\n";
+        of << "\", shape=rectangle];\n";
     }
 
     of << "\n";

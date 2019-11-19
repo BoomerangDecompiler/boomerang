@@ -109,10 +109,8 @@ IRFragment *UserProc::getEntryBB()
 
 void UserProc::setEntryBB()
 {
-    assert(false); // FIXME
-
-    //     IRFragment *entryBB = m_cfg->get->getBBStartingAt(m_entryAddress);
-    //     m_cfg->setEntryAndExitBB(entryBB);
+    IRFragment *entryBB = m_cfg->getFragmentByAddr(m_entryAddress);
+    m_cfg->setEntryAndExitFragment(entryBB);
 }
 
 
