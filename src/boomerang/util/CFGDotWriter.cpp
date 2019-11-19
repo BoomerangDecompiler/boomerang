@@ -78,14 +78,17 @@ void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
     // The nodes
-    for (BasicBlock *bb : *cfg) {
+    for (IRFragment *bb : *cfg) {
         of << "       "
            << "bb" << bb->getLowAddr();
         of << "[label=\"";
 
-        for (const MachineInstruction &insn : bb->getInsns()) {
-            of << insn.m_addr.toString() << " " << insn.m_mnem.data() << " " << insn.m_opstr.data()
-               << "\\l";
+        IRFragment::RTLIterator rit;
+        StatementList::iterator sit;
+
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
+            stmt->print(of);
+            of << "\\l";
         }
 
         of << "\", shape=rectangle];\n";
@@ -95,14 +98,14 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
     of << "}\n";
 
     // Now the edges
-    for (BasicBlock *srcBB : *cfg) {
+    for (IRFragment *srcBB : *cfg) {
         for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
-            BasicBlock *dstBB = srcBB->getSuccessor(j);
+            IRFragment *dstBB = srcBB->getSuccessor(j);
 
             of << "       bb" << srcBB->getLowAddr() << " -> ";
             of << "bb" << dstBB->getLowAddr();
 
-            if (srcBB->getType() == BBType::Twoway) {
+            if (srcBB->isType(FragType::Twoway)) {
                 if (j == 0) {
                     of << " [color=\"green\"]"; // cond == true
                 }

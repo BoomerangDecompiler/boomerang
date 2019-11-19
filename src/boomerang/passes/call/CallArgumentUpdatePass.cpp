@@ -28,10 +28,10 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
     proc->getProg()->getProject()->alertDecompiling(proc);
 
-    for (BasicBlock *bb : *proc->getCFG()) {
+    for (IRFragment *bb : *proc->getCFG()) {
         IRFragment::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
-        SharedStmt s = bb->getIR()->getLastStmt(rrit, srit);
+        SharedStmt s = bb->getLastStmt(rrit, srit);
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (!s || !s->isCall()) {

@@ -255,7 +255,7 @@ void PhiAssign::simplify()
 }
 
 
-void PhiAssign::putAt(BasicBlock *bb, const SharedStmt &def, SharedExp e)
+void PhiAssign::putAt(IRFragment *bb, const SharedStmt &def, SharedExp e)
 {
     assert(e); // should be something surely
 
@@ -271,14 +271,14 @@ void PhiAssign::putAt(BasicBlock *bb, const SharedStmt &def, SharedExp e)
 }
 
 
-SharedConstStmt PhiAssign::getStmtAt(BasicBlock *idx) const
+SharedConstStmt PhiAssign::getStmtAt(IRFragment *idx) const
 {
     PhiDefs::const_iterator it = m_defs.find(idx);
     return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
-SharedStmt PhiAssign::getStmtAt(BasicBlock *idx)
+SharedStmt PhiAssign::getStmtAt(IRFragment *idx)
 {
     PhiDefs::iterator it = m_defs.find(idx);
     return (it != m_defs.end()) ? it->second->getDef() : nullptr;

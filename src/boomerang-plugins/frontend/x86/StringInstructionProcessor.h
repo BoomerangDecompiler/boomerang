@@ -13,7 +13,7 @@
 #include <memory>
 
 
-class BasicBlock;
+class IRFragment;
 class BranchStatement;
 class UserProc;
 class RTL;
@@ -59,7 +59,7 @@ private:
      * S is an RTL with 6 statements representing one string instruction (so this function is highly
      * specialised for the job of replacing the %SKIP and %RPT parts of string instructions)
      */
-    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL,
+    IRFragment *splitForBranch(IRFragment *bb, RTL *stringRTL,
                                std::shared_ptr<BranchStatement> skipBranch,
                                std::shared_ptr<BranchStatement> rptBranch);
 

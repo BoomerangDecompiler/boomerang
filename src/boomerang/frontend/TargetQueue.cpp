@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "TargetQueue.h"
 
-#include "boomerang/db/proc/ProcCFG.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -19,7 +19,7 @@ TargetQueue::TargetQueue(bool traceDecoder)
 }
 
 
-void TargetQueue::pushAddress(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
+void TargetQueue::pushAddress(LowLevelCFG *cfg, Address newAddr, BasicBlock *&newBB)
 {
     if (cfg->isStartOfBB(newAddr)) {
         // BB is already complete or the start address is already in the queue.
@@ -48,7 +48,7 @@ void TargetQueue::initial(Address addr)
 }
 
 
-Address TargetQueue::popAddress(const ProcCFG &cfg)
+Address TargetQueue::popAddress(const LowLevelCFG &cfg)
 {
     while (!m_targets.empty()) {
         Address address = m_targets.front();

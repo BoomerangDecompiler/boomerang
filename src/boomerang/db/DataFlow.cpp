@@ -11,7 +11,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -55,9 +55,9 @@ void DataFlow::dfs(BBIndex myIdx, BBIndex parentIdx)
     N++;
 
     // Recurse to successors
-    BasicBlock *bb = m_BBs[myIdx];
+    IRFragment *bb = m_BBs[myIdx];
 
-    for (BasicBlock *succ : bb->getSuccessors()) {
+    for (IRFragment *succ : bb->getSuccessors()) {
         dfs(m_indices[succ], myIdx);
     }
 }
@@ -66,8 +66,8 @@ void DataFlow::dfs(BBIndex myIdx, BBIndex parentIdx)
 bool DataFlow::calculateDominators()
 {
     ProcCFG *cfg            = m_proc->getCFG();
-    BasicBlock *entryBB     = cfg->getEntryBB();
-    const std::size_t numBB = cfg->getNumBBs();
+    IRFragment *entryBB     = cfg->getEntryBB();
+    const std::size_t numBB = cfg->getNumFragments();
 
     if (!entryBB || numBB == 0) {
         return false; // nothing to do
@@ -86,7 +86,7 @@ bool DataFlow::calculateDominators()
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
+        for (IRFragment *pred : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(pred) == m_indices.end()) {
                 LOG_ERROR("BB not in indices: ", pred->toString());
                 return false;
@@ -202,9 +202,9 @@ void DataFlow::computeDF(BBIndex n)
     std::set<BBIndex> S;
     // This loop computes DF_local[n]
     // for each node y in succ(n)
-    BasicBlock *bb = m_BBs[n];
+    IRFragment *bb = m_BBs[n];
 
-    for (BasicBlock *b : bb->getSuccessors()) {
+    for (IRFragment *b : bb->getSuccessors()) {
         BBIndex y = m_indices[b];
 
         if (m_idom[y] != n) {
@@ -302,13 +302,13 @@ bool DataFlow::placePhiFunctions()
     m_definedAt.clear(); // and A_orig,
     m_defStmts.clear();  // and the map from variable to defining Stmt
 
-    for (BasicBlock *bb : *m_proc->getCFG()) {
-        bb->getIR()->clearPhis();
+    for (IRFragment *bb : *m_proc->getCFG()) {
+        bb->clearPhis();
     }
 
     // Set the sizes of needed vectors
     const std::size_t numIndices = m_indices.size();
-    const std::size_t numBB      = m_proc->getCFG()->getNumBBs();
+    const std::size_t numBB      = m_proc->getCFG()->getNumFragments();
     assert(numIndices == numBB);
     Q_UNUSED(numIndices);
 
@@ -321,10 +321,9 @@ bool DataFlow::placePhiFunctions()
     for (std::size_t n = 0; n < numBB; n++) {
         IRFragment::RTLIterator rit;
         StatementList::iterator sit;
-        BasicBlock *bb = m_BBs[n];
+        IRFragment *bb = m_BBs[n];
 
-        for (SharedStmt stmt = bb->getIR()->getFirstStmt(rit, sit); stmt;
-             stmt            = bb->getIR()->getNextStmt(rit, sit)) {
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
@@ -375,7 +374,7 @@ bool DataFlow::placePhiFunctions()
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                m_BBs[y]->getIR()->addPhi(a->clone());
+                m_BBs[y]->addPhi(a->clone());
 
                 // A_phi[a] <- A_phi[a] U {y}
                 m_A_phi[a].insert(y);
@@ -435,7 +434,7 @@ void DataFlow::convertImplicits()
 void DataFlow::allocateData()
 {
     ProcCFG *cfg             = m_proc->getCFG();
-    const std::size_t numBBs = cfg->getNumBBs();
+    const std::size_t numBBs = cfg->getNumFragments();
 
     m_BBs.assign(numBBs, nullptr);
     m_indices.clear();
@@ -461,7 +460,7 @@ void DataFlow::allocateData()
     // because sometimes a BB can be unreachable
     // (so relying on in-edges doesn't work)
     std::size_t i = 0;
-    for (BasicBlock *bb : *cfg) {
+    for (IRFragment *bb : *cfg) {
         m_BBs[i++] = bb;
     }
 
@@ -473,7 +472,7 @@ void DataFlow::allocateData()
 
 void DataFlow::recalcSpanningTree()
 {
-    BasicBlock *entryBB = m_proc->getEntryBB();
+    IRFragment *entryBB = m_proc->getEntryBB();
     assert(entryBB);
     const BBIndex entryIndex = pbbToNode(entryBB);
     assert(entryIndex != BBINDEX_INVALID);

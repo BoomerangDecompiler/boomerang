@@ -24,8 +24,8 @@ BBSimplifyPass::BBSimplifyPass()
 
 bool BBSimplifyPass::execute(UserProc *proc)
 {
-    for (BasicBlock *bb : *proc->getCFG()) {
-        bb->getIR()->simplify();
+    for (IRFragment *bb : *proc->getCFG()) {
+        bb->simplify();
     }
 
     return true;

@@ -19,7 +19,7 @@
 #include <memory>
 
 
-class BasicBlock;
+class IRFragment;
 class Function;
 class UserProc;
 class Exp;
@@ -126,11 +126,11 @@ public:
     virtual SharedStmt clone() const = 0;
 
     /// \returns the BB that this statement is part of.
-    BasicBlock *getBB() { return m_bb; }
-    const BasicBlock *getBB() const { return m_bb; }
+    IRFragment *getBB() { return m_bb; }
+    const IRFragment *getBB() const { return m_bb; }
 
     /// Changes the BB that this statment is part of.
-    void setBB(BasicBlock *bb) { m_bb = bb; }
+    void setBB(IRFragment *bb) { m_bb = bb; }
 
     /// \returns the procedure this statement is part of.
     UserProc *getProc() const { return m_proc; }
@@ -308,7 +308,7 @@ private:
     bool replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def);
 
 protected:
-    BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
+    IRFragment *m_bb = nullptr; ///< contains a pointer to the enclosing BB
     UserProc *m_proc = nullptr; ///< procedure containing this statement
     int m_number     = -1;      ///< Statement number for printing
 

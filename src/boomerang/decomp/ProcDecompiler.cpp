@@ -74,21 +74,21 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
     if (project->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
-        for (BasicBlock *bb : *proc->getCFG()) {
-            if (bb->getType() != BBType::Call) {
+        for (IRFragment *bb : *proc->getCFG()) {
+            if (!bb->isType(FragType::Call)) {
                 continue;
             }
 
             // The call Statement will be in the last RTL in this BB
-            if (!bb->getIR()->getRTLs()) {
+            if (!bb->getRTLs()) {
                 continue; // not lifted yet
             }
 
-            SharedStmt hl = bb->getIR()->getRTLs()->back()->getHlStmt();
+            SharedStmt hl = bb->getRTLs()->back()->getHlStmt();
 
             if (!hl->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
-                         bb->getIR()->getLowAddr(), hl);
+                         bb->getLowAddr(), hl);
                 continue;
             }
 
@@ -447,7 +447,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     bool changed = false;
     IndirectJumpAnalyzer analyzer;
 
-    for (BasicBlock *bb : *proc->getCFG()) {
+    for (IRFragment *bb : *proc->getCFG()) {
         changed |= analyzer.decodeIndirectJmp(bb, proc);
     }
 
@@ -647,7 +647,7 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 
     // decode from scratch
     proc->removeRetStmt();
-    proc->getCFG()->clearIR();
+    proc->getCFG()->clear();
 
     if (!proc->getProg()->reDecode(proc)) {
         return ProcStatus::Undecoded;
@@ -669,9 +669,9 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
 {
     bool change = false;
-    for (BasicBlock *bb : *proc->getCFG()) {
-        if (bb->isType(BBType::CompCall)) {
-            std::shared_ptr<CallStatement> call = bb->getIR()->getLastStmt()->as<CallStatement>();
+    for (IRFragment *bb : *proc->getCFG()) {
+        if (bb->isType(FragType::CompCall)) {
+            std::shared_ptr<CallStatement> call = bb->getLastStmt()->as<CallStatement>();
             const bool converted                = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();

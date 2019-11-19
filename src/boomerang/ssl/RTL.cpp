@@ -156,7 +156,7 @@ void RTL::simplify()
 
                 LOG_VERBOSE("Replacing branch with true condition with goto at %1 %2", getAddress(),
                             *it);
-                BasicBlock *bb = (*it)->getBB();
+                IRFragment *bb = (*it)->getBB();
                 *it = std::make_shared<GotoStatement>(s->as<BranchStatement>()->getFixedDest());
                 (*it)->setBB(bb);
             }

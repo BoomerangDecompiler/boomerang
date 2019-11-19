@@ -12,6 +12,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -225,7 +226,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
     LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
-    ProcCFG *cfg = proc->getCFG();
+    LowLevelCFG *cfg = proc->getProg()->getCFG();
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -254,8 +255,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     cfg->addEdge(newBB, existingBB);
                 }
 
-                if (!existingBB->getIR()->isIncomplete()) {
-                    break; // do not disassemble the BB twice
+                if (existingBB->isComplete()) {
+                    break; // do not disassemble BB twice
                 }
             }
 
@@ -561,7 +562,9 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
 {
     std::list<std::shared_ptr<CallStatement>> callList;
 
-    ProcCFG *cfg = proc->getCFG();
+    LowLevelCFG *cfg = proc->getProg()->getCFG();
+    ProcCFG *procCFG = proc->getCFG();
+
     DecodeResult lifted;
 
     for (BasicBlock *currentBB : *cfg) {
@@ -633,9 +636,10 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
 
                         std::unique_ptr<RTL> rtl(new RTL(lifted.rtl->getAddress(), { call }));
                         bbRTLs->push_back(std::move(rtl));
-                        currentBB->setIR(std::move(bbRTLs));
 
-                        appendSyntheticReturn(currentBB, proc, lifted.rtl.get());
+                        IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
+                                                                       currentBB);
+                        appendSyntheticReturn(callFrag);
 
                         if (lifted.rtl->getAddress() == proc->getEntryAddress()) {
                             // it's a thunk
@@ -653,7 +657,8 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
                     bbRTLs->push_back(std::move(lifted.rtl));
-                    currentBB->setIR(std::move(bbRTLs));
+
+                    procCFG->createFragment(std::move(bbRTLs), currentBB);
                     LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr,
                                  jumpDest);
                 } break;
@@ -699,7 +704,10 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                     // Treat computed and static calls separately
                     if (call->isComputed()) {
                         bbRTLs->push_back(std::move(lifted.rtl));
-                        currentBB->setIR(std::move(bbRTLs));
+
+                        IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
+                                                                       currentBB);
+                        extraProcessCall(callFrag);
 
                         // Add this call to the list of calls to analyse. We won't
                         // be able to analyse it's callee(s), of course.
@@ -717,7 +725,6 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                             break;
                         }
 
-                        RTL *rtl = lifted.rtl.get();
                         bbRTLs->push_back(std::move(lifted.rtl));
 
                         // Add this non computed call site to the set of call sites which need
@@ -751,50 +758,31 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                             // Make sure it has a return appended (so there is only one exit
                             // from the function)
-                            currentBB->setIR(std::move(bbRTLs));
-                            appendSyntheticReturn(currentBB, proc, rtl);
+                            IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
+                                                                           currentBB);
+                            appendSyntheticReturn(callFrag);
+                            extraProcessCall(callFrag);
                         }
                         else {
                             // Create the new basic block
-                            currentBB->setIR(std::move(bbRTLs));
+                            IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
+                                                                           currentBB);
 
                             if (call->isReturnAfterCall()) {
-                                assert(false); // FIXME
-
-                                //                                 // Constuct the RTLs for the new
-                                //                                 basic block
-                                //                                 std::unique_ptr<RTLList> rtls(new
-                                //                                 RTLList);
-                                //                                 rtls->push_back(std::unique_ptr<RTL>(
-                                //                                     new RTL(rtl->getAddress() +
-                                //                                     1,
-                                //                                             {
-                                //                                             std::make_shared<ReturnStatement>()
-                                //                                             })));
-                                //
-                                //                                 BasicBlock *returnBB =
-                                //                                 cfg->createBB(BBType::Ret,
-                                //                                 std::move(rtls));
-                                //
-                                //                                 // Add out edge from call to
-                                //                                 return cfg->addEdge(currentBB,
-                                //                                 returnBB);
-
-                                // Mike: do we need to set return locations?
-                                // This ends the function
+                                appendSyntheticReturn(callFrag);
                             }
-                        }
-                    }
 
-                    if (currentBB && currentBB->getIR()->getRTLs()) {
-                        extraProcessCall(call, *currentBB->getIR()->getRTLs());
+                            extraProcessCall(callFrag);
+                        }
                     }
                 } break;
 
                 case StmtType::Ret: {
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
-                    createReturnBlock(proc, std::move(bbRTLs), std::move(lifted.rtl));
+                    bbRTLs->push_back(std::move(lifted.rtl));
+                    IRFragment *retFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
+                    createReturnBlock(retFrag);
                 } break;
 
                 case StmtType::Goto:
@@ -820,7 +808,7 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
         }
 
         if (bbRTLs != nullptr) {
-            currentBB->setIR(std::move(bbRTLs));
+            procCFG->createFragment(std::move(bbRTLs), currentBB);
         }
     }
 
@@ -911,7 +899,7 @@ std::unique_ptr<RTLList> DefaultFrontEnd::liftBB(const std::list<MachineInstruct
 }
 
 
-void DefaultFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &, const RTLList &)
+void DefaultFrontEnd::extraProcessCall(IRFragment *)
 {
 }
 
@@ -1013,25 +1001,21 @@ void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
 }
 
 
-BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls,
-                                               std::unique_ptr<RTL> returnRTL)
+IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
 {
-    ProcCFG *cfg = proc->getCFG();
+    assert(!origFrag->getFunction()->isLib());
+    UserProc *proc   = static_cast<UserProc *>(origFrag->getFunction());
+    ProcCFG *procCFG = proc->getCFG();
 
-    assert(BB_rtls != nullptr);
 
-    RTL *retRTL = returnRTL.get();
-    BB_rtls->push_back(std::move(returnRTL));
-    Address retAddr   = proc->getRetAddr();
-    BasicBlock *newBB = nullptr;
+    assert(origFrag->getLastStmt()->isReturn());
+
+    const Address retAddr = proc->getRetAddr();
+    RTL *retRTL           = origFrag->getRTLs()->back().get();
 
     if (retAddr == Address::INVALID) {
-        // Create the basic block
-        //         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
-        if (newBB) {
-            SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
-            proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
-        }
+        // We have not added a return statement yet. Do it now.
+        proc->setRetStmt(retRTL->back()->as<ReturnStatement>(), retRTL->getAddress());
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
@@ -1041,34 +1025,17 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         // previous RTL. It is assumed that THE return statement will have the same semantics
         // (NOTE: may not always be valid). To avoid this assumption, we need branches to
         // statements, not just to native addresses (RTLs).
-        BasicBlock *retBB = proc->getCFG()->findRetNode();
-        assert(retBB);
+        IRFragment *retFrag = procCFG->findRetNode();
 
-        if (retBB->getIR()->getFirstStmt()->isReturn()) {
-            // ret node has no semantics, clearly we need to keep ours
-            assert(!retRTL->empty());
-            retRTL->pop_back();
-        }
-        else {
-            retRTL->clear();
-        }
+        // assume the return statement is the last statement
+        retRTL->back() = std::make_shared<GotoStatement>(retAddr);
 
-        retRTL->append(std::make_shared<GotoStatement>(retAddr));
-        //         newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
-
-        if (newBB) {
-            cfg->ensureBBExists(retAddr, retBB);
-            cfg->addEdge(newBB, retBB);
-
-            // Visit the return instruction. This will be needed in most cases to split the
-            // return BB (if it has other instructions before the return instruction).
-            m_targetQueue.pushAddress(cfg, retAddr, newBB);
-        }
+        // TODO: split ret bb if needed and add out edges
+        assert(false);
+        procCFG->addEdge(origFrag, retFrag);
     }
 
-    // make sure the RTLs have been moved into the BB
-    assert(BB_rtls == nullptr);
-    return newBB;
+    return origFrag;
 }
 
 
@@ -1093,15 +1060,20 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 }
 
 
-void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
+void DefaultFrontEnd::appendSyntheticReturn(IRFragment *callFrag)
 {
-    std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(
-        new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
-    BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
+    assert(callFrag->getNumSuccessors() == 0);
+    auto bbRTLs = std::make_unique<RTLList>();
+    std::unique_ptr<RTL> rtl(
+        new RTL(callFrag->getHiAddr(), { std::make_shared<ReturnStatement>() }));
 
-    assert(callBB->getNumSuccessors() == 0);
-    proc->getCFG()->addEdge(callBB, retBB);
+    bbRTLs->push_back(std::move(rtl));
+
+    UserProc *proc      = static_cast<UserProc *>(callFrag->getFunction());
+    IRFragment *retFrag = proc->getCFG()->createFragment(std::move(bbRTLs), callFrag->getBB());
+    retFrag             = createReturnBlock(retFrag);
+
+    proc->getCFG()->addEdge(callFrag, retFrag);
 }
 
 

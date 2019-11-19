@@ -19,6 +19,16 @@
 #include "boomerang/util/log/Log.h"
 
 
+bool IRFragment::BBComparator::operator()(const IRFragment *bb1, const IRFragment *bb2) const
+{
+    if (bb1 && bb2) {
+        return bb1->getLowAddr() < bb2->getLowAddr();
+    }
+
+    return bb1 < bb2;
+}
+
+
 IRFragment::IRFragment(BasicBlock *bb, Address lowAddr)
     : m_bb(bb)
     , m_lowAddr(lowAddr)
@@ -62,6 +72,18 @@ IRFragment &IRFragment::operator=(const IRFragment &other)
     }
 
     return *this;
+}
+
+
+Function *IRFragment::getFunction()
+{
+    return m_bb ? m_bb->getFunction() : nullptr;
+}
+
+
+const Function *IRFragment::getFunction() const
+{
+    return m_bb ? m_bb->getFunction() : nullptr;
 }
 
 
@@ -240,7 +262,7 @@ void IRFragment::appendStatementsTo(StatementList &stmts) const
 
     for (const auto &rtl : *rtls) {
         for (SharedStmt &st : *rtl) {
-            assert(st->getBB() == m_bb);
+            assert(st->getBB() == this);
             stmts.append(st);
         }
     }
@@ -273,7 +295,7 @@ std::shared_ptr<ImplicitAssign> IRFragment::addImplicitAssign(const SharedExp &l
 
     // no phi or implicit assigning to the LHS already
     std::shared_ptr<ImplicitAssign> newImplicit(new ImplicitAssign(lhs));
-    newImplicit->setBB(m_bb);
+    newImplicit->setBB(this);
     newImplicit->setProc(static_cast<UserProc *>(m_bb->getFunction()));
 
     m_listOfRTLs->front()->append(newImplicit);
@@ -309,7 +331,7 @@ std::shared_ptr<PhiAssign> IRFragment::addPhi(const SharedExp &usedExp)
     }
 
     std::shared_ptr<PhiAssign> phi(new PhiAssign(usedExp));
-    phi->setBB(m_bb);
+    phi->setBB(this);
     phi->setProc(static_cast<UserProc *>(m_bb->getFunction()));
 
     m_listOfRTLs->front()->append(phi);
@@ -498,7 +520,7 @@ SharedExp IRFragment::getDest() const
     SharedStmt lastStmt = lastRTL->getHlStmt();
     if (!lastStmt) {
         if (getNumSuccessors() > 0) {
-            return Const::get(m_bb->getSuccessor(BTHEN)->getIR()->getLowAddr());
+            return Const::get(m_bb->getSuccessor(BTHEN)->getLowAddr());
         }
         else {
             return nullptr;
@@ -518,7 +540,7 @@ SharedExp IRFragment::getDest() const
         return lastStmt->as<GotoStatement>()->getDest();
     }
 
-    LOG_ERROR("Last statement of BB at address %1 is not a goto!", m_bb->getIR()->getLowAddr());
+    LOG_ERROR("Last statement of BB at address %1 is not a goto!", m_bb->getLowAddr());
     return nullptr;
 }
 
@@ -586,4 +608,51 @@ void IRFragment::simplify()
 
         assert(static_cast<UserProc *>(m_bb->getFunction())->getCFG()->isWellFormed());
     }
+}
+
+
+void IRFragment::print(OStream &os) const
+{
+    switch (getType()) {
+    case FragType::Oneway: os << "Oneway Fragment"; break;
+    case FragType::Twoway: os << "Twoway Fragment"; break;
+    case FragType::Nway: os << "Nway Fragment"; break;
+    case FragType::Call: os << "Call Fragment"; break;
+    case FragType::Ret: os << "Ret Fragment"; break;
+    case FragType::Fall: os << "Fall Fragment"; break;
+    case FragType::CompJump: os << "Computed jump Fragment"; break;
+    case FragType::CompCall: os << "Computed call Fragment"; break;
+    case FragType::Invalid: os << "Invalid Fragment"; break;
+    }
+
+    os << ":\n";
+    os << "  in edges: ";
+
+    for (IRFragment *bb : getPredecessors()) {
+        os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
+    }
+
+    os << "\n";
+    os << "  out edges: ";
+
+    for (IRFragment *bb : getSuccessors()) {
+        os << bb->getLowAddr() << " ";
+    }
+
+    os << "\n";
+
+    if (m_listOfRTLs) { // Can be null if e.g. INVALID
+        for (auto &rtl : *m_listOfRTLs) {
+            rtl->print(os);
+        }
+    }
+}
+
+
+QString IRFragment::toString() const
+{
+    QString result;
+    OStream os(&result);
+    print(os);
+    return result;
 }

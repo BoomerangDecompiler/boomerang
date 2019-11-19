@@ -16,6 +16,9 @@
 #include <unordered_set>
 
 
+class IRFragment;
+
+
 /**
  * Class X86FrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
@@ -46,8 +49,7 @@ public:
 protected:
     /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                  const RTLList &BB_rtls) override;
+    virtual void extraProcessCall(IRFragment *callFrag) override;
 
 private:
     /**
@@ -73,17 +75,17 @@ private:
      */
     bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
-    bool isOverlappedRegsProcessed(const BasicBlock *bb) const
+    bool isOverlappedRegsProcessed(const IRFragment *bb) const
     {
         return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
     }
 
-    bool isFloatProcessed(const BasicBlock *bb) const
+    bool isFloatProcessed(const IRFragment *bb) const
     {
         return m_floatProcessed.find(bb) != m_floatProcessed.end();
     }
 
 private:
-    std::unordered_set<const BasicBlock *> m_overlappedRegsProcessed;
-    std::unordered_set<const BasicBlock *> m_floatProcessed;
+    std::unordered_set<const IRFragment *> m_overlappedRegsProcessed;
+    std::unordered_set<const IRFragment *> m_floatProcessed;
 };

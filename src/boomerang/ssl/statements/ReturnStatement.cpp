@@ -397,10 +397,9 @@ void ReturnStatement::updateModifieds()
 
     m_modifieds.clear();
 
-    if ((m_bb->getNumPredecessors() == 1) &&
-        m_bb->getPredecessors()[0]->getIR()->getLastStmt()->isCall()) {
+    if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessor(0)->getLastStmt()->isCall()) {
         std::shared_ptr<CallStatement>
-            call = m_bb->getPredecessors()[0]->getIR()->getLastStmt()->as<CallStatement>();
+            call = m_bb->getPredecessor(0)->getLastStmt()->as<CallStatement>();
 
         IFrontEnd *fe = m_proc->getProg()->getFrontEnd();
         if (call->getDestProc() && fe->isNoReturnCallDest(call->getDestProc()->getName())) {

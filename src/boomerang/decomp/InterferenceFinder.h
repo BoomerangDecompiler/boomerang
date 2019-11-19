@@ -16,7 +16,7 @@
 #include <set>
 
 
-class BasicBlock;
+class IRFragment;
 class ProcCFG;
 class ConnectionGraph;
 
@@ -32,10 +32,10 @@ public:
     void findInterferences(ConnectionGraph &interferences);
 
 private:
-    void appendBBs(std::list<BasicBlock *> &worklist, std::set<BasicBlock *> &workset);
+    void appendBBs(std::list<IRFragment *> &worklist, std::set<IRFragment *> &workset);
 
-    void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *> &workList,
-                           std::set<BasicBlock *> &workSet);
+    void updateWorkListRev(IRFragment *currBB, std::list<IRFragment *> &workList,
+                           std::set<IRFragment *> &workSet);
 
 private:
     ProcCFG *m_cfg;

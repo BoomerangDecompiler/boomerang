@@ -13,7 +13,7 @@
 #include "boomerang/core/BoomerangAPI.h"
 
 
-class BasicBlock;
+class IRFragment;
 class UserProc;
 
 
@@ -29,7 +29,7 @@ public:
      * If the function needs to be re-decompiled because of a significant change
      * (e.g. new switch arms discovered), this function returns true.
      */
-    bool decodeIndirectJmp(BasicBlock *bb, UserProc *proc);
+    bool decodeIndirectJmp(IRFragment *bb, UserProc *proc);
 
     /**
      * Called when a switch has been identified. Visits the destinations of the switch,
@@ -40,7 +40,7 @@ public:
      * in the CFG. This caused problems when there were nested switch statements. Now only called
      * when re-decoding a switch statement
      */
-    void processSwitch(BasicBlock *bb, UserProc *proc);
+    void processSwitch(IRFragment *bb, UserProc *proc);
 
     /**
      * Find the number of cases for this switch statement. Assumes that there is a compare and
@@ -53,12 +53,12 @@ public:
      * (of e.g. ubyte) that is indexed by the actual switch value, then the value from that array is
      * used as an index into the array of code pointers.
      */
-    int findNumCases(const BasicBlock *bb);
+    int findNumCases(const IRFragment *bb);
 
 private:
     /// Analyze a basic block ending with a computed jump.
-    bool analyzeCompJump(BasicBlock *bb, UserProc *proc);
+    bool analyzeCompJump(IRFragment *bb, UserProc *proc);
 
     /// Analyze a basic block ending with a computed call.
-    bool analyzeCompCall(BasicBlock *bb, UserProc *proc);
+    bool analyzeCompCall(IRFragment *bb, UserProc *proc);
 };

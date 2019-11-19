@@ -10,20 +10,15 @@
 #include "BasicBlock.h"
 
 
-BasicBlock::BasicBlock(Address lowAddr, Function *function)
-    : m_function(function)
-    , m_ir(this, lowAddr)
-    , m_bbType(BBType::Invalid)
+BasicBlock::BasicBlock(Address lowAddr)
+    : m_bbType(BBType::Invalid)
 {
     m_lowAddr = lowAddr;
 }
 
 
-BasicBlock::BasicBlock(BBType bbType, const std::vector<MachineInstruction> &insns,
-                       Function *function)
-    : m_function(function)
-    , m_ir(this, nullptr)
-    , m_bbType(bbType)
+BasicBlock::BasicBlock(BBType bbType, const std::vector<MachineInstruction> &insns)
+    : m_bbType(bbType)
 {
     assert(!insns.empty());
 
@@ -37,7 +32,6 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
     , m_function(bb.m_function)
     , m_lowAddr(bb.m_lowAddr)
     , m_highAddr(bb.m_highAddr)
-    , m_ir(bb.m_ir)
     , m_bbType(bb.m_bbType)
 {
 }
@@ -53,7 +47,6 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
     GraphNode::operator=(bb);
 
     m_function = bb.m_function;
-    m_ir       = bb.m_ir;
     m_bbType   = bb.m_bbType;
     m_lowAddr  = bb.m_lowAddr;
     m_highAddr = bb.m_highAddr;
@@ -71,12 +64,6 @@ void BasicBlock::completeBB(const std::vector<MachineInstruction> &insns)
 
     m_lowAddr  = m_insns.front().m_addr;
     m_highAddr = m_insns.back().m_addr + m_insns.back().m_size;
-}
-
-
-void BasicBlock::clearIR()
-{
-    m_ir.m_listOfRTLs.reset();
 }
 
 
@@ -118,10 +105,4 @@ void BasicBlock::print(OStream &os) const
     }
 
     os << "\n";
-
-    if (m_ir.m_listOfRTLs) { // Can be null if e.g. INVALID
-        for (auto &rtl : *m_ir.m_listOfRTLs) {
-            rtl->print(os);
-        }
-    }
 }

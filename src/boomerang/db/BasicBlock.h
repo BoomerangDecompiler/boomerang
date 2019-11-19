@@ -45,7 +45,6 @@ enum class BBType
 // index of the "else" branch of conditional jumps
 #define BELSE 1
 
-
 /**
  * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions
  * ended by a Control Transfer Instruction (CTI).
@@ -67,7 +66,7 @@ public:
      * Creates an incomplete BB.
      * \param function Enclosing function
      */
-    BasicBlock(Address lowAddr, Function *function);
+    BasicBlock(Address lowAddr);
 
     /**
      * Creates a complete BB.
@@ -75,7 +74,7 @@ public:
      * \param rtls     rtl statements that will be contained in this BasicBlock
      * \param function Function this BasicBlock belongs to.
      */
-    BasicBlock(BBType bbType, const std::vector<MachineInstruction> &bbInsns, Function *function);
+    BasicBlock(BBType bbType, const std::vector<MachineInstruction> &bbInsns);
 
     BasicBlock(const BasicBlock &other);
     BasicBlock(BasicBlock &&other) = delete;
@@ -100,11 +99,6 @@ public:
     inline bool isComplete() const { return !m_insns.empty(); }
 
 public:
-    IRFragment *getIR() { return &m_ir; }
-    const IRFragment *getIR() const { return &m_ir; }
-
-    void setIR(std::unique_ptr<RTLList> ir) { m_ir.m_listOfRTLs = std::move(ir); }
-
     std::vector<MachineInstruction> &getInsns() { return m_insns; }
     const std::vector<MachineInstruction> &getInsns() const { return m_insns; }
 
@@ -113,8 +107,6 @@ public:
      * \param rtls a list of RTLs
      */
     void completeBB(const std::vector<MachineInstruction> &bbInsns);
-
-    void clearIR();
 
 public:
     /**
@@ -134,8 +126,6 @@ protected:
 
     Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;
-
-    IRFragment m_ir; ///< For now, this is a single fragment, there may be more in the future
 
     BBType m_bbType = BBType::Invalid; ///< type of basic block
 };

@@ -101,7 +101,7 @@ void UserProc::setDecoded()
 }
 
 
-BasicBlock *UserProc::getEntryBB()
+IRFragment *UserProc::getEntryBB()
 {
     return m_cfg->getEntryBB();
 }
@@ -109,8 +109,10 @@ BasicBlock *UserProc::getEntryBB()
 
 void UserProc::setEntryBB()
 {
-    BasicBlock *entryBB = m_cfg->getBBStartingAt(m_entryAddress);
-    m_cfg->setEntryAndExitBB(entryBB);
+    assert(false); // FIXME
+
+    //     IRFragment *entryBB = m_cfg->get->getBBStartingAt(m_entryAddress);
+    //     m_cfg->setEntryAndExitBB(entryBB);
 }
 
 
@@ -124,11 +126,10 @@ void UserProc::numberStatements() const
 {
     int stmtNumber = 0;
 
-    for (BasicBlock *bb : *m_cfg) {
+    for (IRFragment *bb : *m_cfg) {
         IRFragment::RTLIterator rit;
         StatementList::iterator sit;
-        for (SharedStmt s = bb->getIR()->getFirstStmt(rit, sit); s;
-             s            = bb->getIR()->getNextStmt(rit, sit)) {
+        for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             s->setNumber(++stmtNumber);
         }
     }
@@ -137,8 +138,8 @@ void UserProc::numberStatements() const
 
 void UserProc::getStatements(StatementList &stmts) const
 {
-    for (const BasicBlock *bb : *m_cfg) {
-        bb->getIR()->appendStatementsTo(stmts);
+    for (const IRFragment *bb : *m_cfg) {
+        bb->appendStatementsTo(stmts);
     }
 
     for (SharedStmt s : stmts) {
@@ -178,12 +179,12 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
     }
 
     // remove from BB/RTL
-    BasicBlock *bb = stmt->getBB(); // Get our enclosing BB
+    IRFragment *bb = stmt->getBB(); // Get our enclosing BB
     if (!bb) {
         return false;
     }
 
-    for (auto &rtl : *bb->getIR()->getRTLs()) {
+    for (auto &rtl : *bb->getRTLs()) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -198,7 +199,7 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
 
 std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left, SharedExp right)
 {
-    BasicBlock *bb = nullptr;
+    IRFragment *bb = nullptr;
     std::shared_ptr<Assign> as(new Assign(left, right));
 
     if (s == nullptr) {
@@ -217,7 +218,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
     if (s) {
         // Insert the new assignment directly after s,
         // or near the end of the existing BB if s has been removed already.
-        for (auto &rtl : *bb->getIR()->getRTLs()) {
+        for (auto &rtl : *bb->getRTLs()) {
             for (auto it = rtl->begin(); it != rtl->end(); ++it) {
                 if (*it == s) {
                     rtl->insert(++it, as);
@@ -227,7 +228,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         }
     }
 
-    auto &lastRTL = bb->getIR()->getRTLs()->back();
+    auto &lastRTL = bb->getRTLs()->back();
     if (lastRTL->empty() || lastRTL->back()->isAssignment()) {
         lastRTL->append(as);
     }
@@ -243,8 +244,8 @@ bool UserProc::insertStatementAfter(const SharedStmt &afterThis, const SharedStm
 {
     assert(!afterThis->isBranch());
 
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getIR()->getRTLs();
+    for (IRFragment *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
 
         if (rtls == nullptr) {
             continue; // e.g. bb is (as yet) invalid
@@ -271,8 +272,8 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
     // I believe we always want to propagate to these ex-phi's; check!
     SharedExp newRhs = rhs->propagateAll();
 
-    for (BasicBlock *bb : *m_cfg) {
-        for (const auto &rtl : *bb->getIR()->getRTLs()) {
+    for (IRFragment *bb : *m_cfg) {
+        for (const auto &rtl : *bb->getRTLs()) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
                 if (*ss == orig) {
                     // convert *ss to an Assign
@@ -825,8 +826,8 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs)
     IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (BasicBlock *bb : *m_cfg) {
-        SharedStmt s = bb->getIR()->getLastStmt(rrit, srit);
+    for (IRFragment *bb : *m_cfg) {
+        SharedStmt s = bb->getLastStmt(rrit, srit);
         if (!s || !s->isCall()) {
             continue;
         }
@@ -1613,14 +1614,14 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
         return false;
     }
 
-    BasicBlock *exitbb = m_cfg->getExitBB();
+    IRFragment *exitbb = m_cfg->getExitFragment();
 
     if (exitbb == nullptr) {
         return true;
     }
 
     if (exitbb->getNumPredecessors() == 1) {
-        SharedStmt s = exitbb->getPredecessor(0)->getIR()->getLastStmt();
+        SharedStmt s = exitbb->getPredecessor(0)->getLastStmt();
 
         if (!s || !s->isCall()) {
             return false;

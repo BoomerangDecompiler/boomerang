@@ -11,7 +11,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
@@ -27,7 +27,7 @@
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of
  * locations in \p ls.
  * Also check for type conflicts when using DFA type analysis
- * This is a helper function that is not directly declared in the BasicBlock class
+ * This is a helper function.
  */
 void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc *proc)
 {
@@ -61,7 +61,7 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
 }
 
 
-bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserProc *myProc)
+bool LivenessAnalyzer::calcLiveness(IRFragment *bb, ConnectionGraph &ig, UserProc *myProc)
 {
     // Start with the liveness at the bottom of the BB
     LocationSet liveLocs, phiLocs;
@@ -73,10 +73,9 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
 
     const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
 
-    if (bb->getIR()->getRTLs()) {
+    if (bb->getRTLs()) {
         // For all statements in this BB in reverse order
-        for (auto rit = bb->getIR()->getRTLs()->rbegin(); rit != bb->getIR()->getRTLs()->rend();
-             ++rit) {
+        for (auto rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
             for (auto sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 SharedStmt s = *sit;
                 LocationSet defs;
@@ -121,22 +120,22 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
 }
 
 
-void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, LocationSet &phiLocs)
+void LivenessAnalyzer::getLiveOut(IRFragment *bb, LocationSet &liveout, LocationSet &phiLocs)
 {
     ProcCFG *cfg = static_cast<UserProc *>(bb->getFunction())->getCFG();
 
     liveout.clear();
 
-    for (BasicBlock *currBB : bb->getSuccessors()) {
+    for (IRFragment *currBB : bb->getSuccessors()) {
         // First add the non-phi liveness
         liveout.makeUnion(m_liveIn[currBB]); // add successor liveIn to this liveout set.
 
         // The first RTL will have the phi functions, if any
-        if (!currBB->getIR()->getRTLs() || currBB->getIR()->getRTLs()->empty()) {
+        if (!currBB->getRTLs() || currBB->getRTLs()->empty()) {
             continue;
         }
 
-        RTL *phiRTL = currBB->getIR()->getRTLs()->front().get();
+        RTL *phiRTL = currBB->getRTLs()->front().get();
         assert(phiRTL);
 
         for (SharedStmt st : *phiRTL) {
@@ -150,7 +149,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
             std::shared_ptr<PhiAssign> pa = st->as<PhiAssign>();
 
             for (const auto &v : pa->getDefs()) {
-                if (!cfg->hasBB(v.first)) {
+                if (!cfg->hasFragment(v.first)) {
                     LOG_WARN("Someone removed the BB that defined the PHI! Need to update "
                              "PhiAssign defs");
                 }
@@ -161,8 +160,8 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
             SharedStmt def = pa->getStmtAt(bb);
 
             if (!def) {
-                std::set<BasicBlock *> tried{ bb };
-                std::deque<BasicBlock *> to_visit(bb->getPredecessors().begin(),
+                std::set<IRFragment *> tried{ bb };
+                std::deque<IRFragment *> to_visit(bb->getPredecessors().begin(),
                                                   bb->getPredecessors().end());
 
                 // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is
@@ -171,7 +170,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                 //  BB2 33 - transfers control to BB3
                 //  BB3 40 - r10 = phi { 1 }
                 while (!to_visit.empty()) {
-                    BasicBlock *pbb = to_visit.back();
+                    IRFragment *pbb = to_visit.back();
 
                     if (tried.find(pbb) != tried.end()) {
                         to_visit.pop_back();
@@ -187,7 +186,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
                     tried.insert(pbb);
                     to_visit.pop_back();
 
-                    for (BasicBlock *pred : pbb->getPredecessors()) {
+                    for (IRFragment *pred : pbb->getPredecessors()) {
                         if (tried.find(pred) != tried.end()) { // already tried
                             continue;
                         }
@@ -209,7 +208,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
 
             if (bb->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
                 LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3", ref, st,
-                        bb->getIR()->getLowAddr());
+                        bb->getLowAddr());
             }
         }
     }

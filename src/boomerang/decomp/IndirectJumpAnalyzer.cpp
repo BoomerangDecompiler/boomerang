@@ -11,6 +11,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
@@ -227,7 +228,7 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
 }
 
 
-bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::decodeIndirectJmp(IRFragment *bb, UserProc *proc)
 {
 #if CHECK_REAL_PHI_LOOPS
     RTLList::iterator rit;
@@ -272,10 +273,10 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
     }
 #endif
 
-    if (bb->isType(BBType::CompJump)) {
+    if (bb->isType(FragType::CompJump)) {
         return analyzeCompJump(bb, proc);
     }
-    else if (bb->isType(BBType::CompCall)) {
+    else if (bb->isType(FragType::CompCall)) {
         return analyzeCompCall(bb, proc);
     }
 
@@ -283,19 +284,19 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 }
 
 
-int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
+int IndirectJumpAnalyzer::findNumCases(const IRFragment *bb)
 {
     // should actually search from the statement to i
-    for (const BasicBlock *pred : bb->getPredecessors()) { // For each in-edge
-        if (!pred->isType(BBType::Twoway)) {               // look for a two-way BB
+    for (const IRFragment *pred : bb->getPredecessors()) { // For each in-edge
+        if (!pred->isType(FragType::Twoway)) {             // look for a two-way BB
             continue;                                      // Ignore all others
         }
-        else if (pred->getIR()->isEmpty() || !pred->getIR()->getLastStmt()->isBranch()) {
+        else if (pred->isEmpty() || !pred->getLastStmt()->isBranch()) {
             continue;
         }
 
-        const std::shared_ptr<const BranchStatement>
-            lastStmt                 = pred->getIR()->getLastStmt()->as<const BranchStatement>();
+        const std::shared_ptr<const BranchStatement> lastStmt = pred->getLastStmt()
+                                                                    ->as<const BranchStatement>();
         SharedConstExp lastCondition = lastStmt->getCondExpr();
         if (lastCondition->getArity() != 2) {
             continue;
@@ -325,14 +326,14 @@ int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
         }
     }
 
-    LOG_WARN("Could not find number of cases for n-way at address %1", bb->getIR()->getLowAddr());
+    LOG_WARN("Could not find number of cases for n-way at address %1", bb->getLowAddr());
     return 1; // Bald faced guess if all else fails
 }
 
 
-void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
+void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
 {
-    RTL *lastRTL         = bb->getIR()->getLastRTL();
+    RTL *lastRTL         = bb->getLastRTL();
     const SwitchInfo *si = lastRTL->getHlStmt()->as<CaseStatement>()->getSwitchInfo();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
@@ -345,10 +346,9 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     const int numCases = si->upperBound - si->lowerBound + 1;
 
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    bb->setType(BBType::Nway);
+    bb->setType(FragType::Nway);
 
     Prog *prog               = proc->getProg();
-    ProcCFG *cfg             = proc->getCFG();
     const BinaryImage *image = prog->getBinaryFile()->getImage();
 
     // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
@@ -362,7 +362,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     // The switch statement is emitted assuming one out-edge for each switch value, which is assumed
     // to be lowerBound+i for the ith zero-based case. It may be that the code for case 5 above will
     // be a goto to the code for case 3, but a smarter back end could group them
-    std::list<Address> dests;
+    std::list<std::pair<IRFragment *, Address>> dests;
 
     for (int i = 0; i < numCases; i++) {
         // Get the destination address from the switch table.
@@ -397,12 +397,10 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
         }
 
         if (switchDestination < prog->getLimitTextHigh()) {
-            cfg->addEdge(bb, switchDestination);
-
             // Remember to decode the newly discovered switch code arms, if necessary
             // Don't do it right now, in case there are recursive switch statements (e.g.
             // app7win.exe from hackthissite.org)
-            dests.push_back(switchDestination);
+            dests.push_back({ bb, switchDestination });
         }
         else {
             LOG_MSG("Switch table entry branches to past end of text section %1",
@@ -418,7 +416,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
             // remove all table elements at index i and above
             while (numToRemove > 0) {
-                BasicBlock *succ = bb->getSuccessor(i);
+                IRFragment *succ = bb->getSuccessor(i);
                 if (succ) {
                     bb->removeSuccessor(succ);
                     succ->removePredecessor(bb);
@@ -432,20 +430,25 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     // Decode the newly discovered switch code arms, if any, and if not already decoded
     int count = 0;
 
-    for (Address dest : dests) {
+    for (auto &[src, dest] : dests) {
         count++;
-        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)",
-                    bb->getIR()->getHiAddr(), count, dests.size(), dest);
+        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)", bb->getHiAddr(),
+                    count, dests.size(), dest);
 
         prog->decodeFragment(proc, dest);
+
+        LowLevelCFG *cfg  = proc->getProg()->getCFG();
+        BasicBlock *srcBB = cfg->getBBStartingAt(src->getLowAddr());
+
+        cfg->addEdge(srcBB, dest);
     }
 }
 
 
-bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
 {
-    assert(!bb->getIR()->getRTLs()->empty());
-    RTL *lastRTL = bb->getIR()->getLastRTL();
+    assert(!bb->getRTLs()->empty());
+    RTL *lastRTL = bb->getLastRTL();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
@@ -520,7 +523,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(BasicBlock *bb, UserProc *proc)
             }
 
             if (swi->numTableEntries <= 0) {
-                LOG_WARN("Switch analysis failure at address %1", bb->getIR()->getLowAddr());
+                LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
                 return false;
             }
 
@@ -654,11 +657,11 @@ static const std::vector<std::pair<const SharedConstExp, IndCallPattern>> hlCall
 // clang-format on
 
 
-bool IndirectJumpAnalyzer::analyzeCompCall(BasicBlock *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *bb, UserProc *proc)
 {
     Prog *prog = proc->getProg();
-    assert(!bb->getIR()->getRTLs()->empty());
-    RTL *lastRTL = bb->getIR()->getLastRTL();
+    assert(!bb->getRTLs()->empty());
+    RTL *lastRTL = bb->getLastRTL();
 
     if (prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: COMPCALL:");

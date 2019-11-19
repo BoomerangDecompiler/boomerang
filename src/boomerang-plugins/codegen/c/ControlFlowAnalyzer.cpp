@@ -9,9 +9,16 @@
 #pragma endregion License
 #include "ControlFlowAnalyzer.h"
 
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/util/log/Log.h"
+
+
+// index of the "then" branch of conditional jumps
+#define BTHEN 0
+
+// index of the "else" branch of conditional jumps
+#define BELSE 1
 
 
 ControlFlowAnalyzer::ControlFlowAnalyzer()
@@ -51,7 +58,7 @@ void ControlFlowAnalyzer::setTimeStamps()
     time = 1;
     updateRevLoopStamps(findEntryBB(), time);
 
-    BasicBlock *retNode = findExitBB();
+    IRFragment *retNode = findExitBB();
     assert(retNode);
     m_revPostOrdering.clear();
     updateRevOrder(retNode);
@@ -62,9 +69,9 @@ void ControlFlowAnalyzer::updateImmedPDom()
 {
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = m_revPostOrdering.size() - 1; i >= 0; i--) {
-        const BasicBlock *bb = m_revPostOrdering[i];
+        const IRFragment *bb = m_revPostOrdering[i];
 
-        for (BasicBlock *succ : bb->getSuccessors()) {
+        for (IRFragment *succ : bb->getSuccessors()) {
             if (getRevOrd(succ) > getRevOrd(bb)) {
                 setImmPDom(bb, findCommonPDom(getImmPDom(bb), succ));
             }
@@ -72,22 +79,22 @@ void ControlFlowAnalyzer::updateImmedPDom()
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (const BasicBlock *bb : m_postOrdering) {
+    for (const IRFragment *bb : m_postOrdering) {
         if (bb->getNumSuccessors() <= 1) {
             continue;
         }
 
         for (auto &succ : bb->getSuccessors()) {
-            BasicBlock *succNode = succ;
+            IRFragment *succNode = succ;
             setImmPDom(bb, findCommonPDom(getImmPDom(bb), succNode));
         }
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (const BasicBlock *bb : m_postOrdering) {
+    for (const IRFragment *bb : m_postOrdering) {
         if (bb->getNumSuccessors() > 1) {
             for (auto &succ : bb->getSuccessors()) {
-                BasicBlock *succNode = succ;
+                IRFragment *succNode = succ;
 
                 if (isBackEdge(bb, succNode) && (bb->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
@@ -103,8 +110,8 @@ void ControlFlowAnalyzer::updateImmedPDom()
 }
 
 
-const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmPDom,
-                                                      const BasicBlock *succImmPDom)
+const IRFragment *ControlFlowAnalyzer::findCommonPDom(const IRFragment *currImmPDom,
+                                                      const IRFragment *succImmPDom)
 {
     if (!currImmPDom) {
         return succImmPDom;
@@ -118,8 +125,8 @@ const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmP
         return currImmPDom; // ordering hasn't been done
     }
 
-    const BasicBlock *oldCurImmPDom  = currImmPDom;
-    const BasicBlock *oldSuccImmPDom = succImmPDom;
+    const IRFragment *oldCurImmPDom  = currImmPDom;
+    const IRFragment *oldSuccImmPDom = succImmPDom;
 
     int giveup = 0;
 #define GIVEUP 10000
@@ -136,8 +143,8 @@ const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmP
     }
 
     if (giveup >= GIVEUP) {
-        LOG_VERBOSE("Failed to find commonPDom for %1 and %2", oldCurImmPDom->getIR()->getLowAddr(),
-                    oldSuccImmPDom->getIR()->getLowAddr());
+        LOG_VERBOSE("Failed to find commonPDom for %1 and %2", oldCurImmPDom->getLowAddr(),
+                    oldSuccImmPDom->getLowAddr());
 
         return oldCurImmPDom; // no change
     }
@@ -149,15 +156,15 @@ const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmP
 void ControlFlowAnalyzer::structConds()
 {
     // Process the nodes in order
-    for (const BasicBlock *currNode : m_postOrdering) {
+    for (const IRFragment *currNode : m_postOrdering) {
         if (currNode->getNumSuccessors() <= 1) {
             // not an if/case condition
             continue;
         }
 
-        // if the current conditional header is a two way node and has a back edge, then it
-        // won't have a follow
-        if (hasBackEdge(currNode) && (currNode->getType() == BBType::Twoway)) {
+        // if the current conditional header is a two way node and has a back edge,
+        // then it won't have a follow
+        if (hasBackEdge(currNode) && currNode->isType(FragType::Twoway)) {
             setStructType(currNode, StructType::Cond);
             continue;
         }
@@ -177,22 +184,22 @@ void ControlFlowAnalyzer::structConds()
 }
 
 
-void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *&loopNodes)
+void ControlFlowAnalyzer::determineLoopType(const IRFragment *header, bool *&loopNodes)
 {
     assert(getLatchNode(header));
 
     // if the latch node is a two way node then this must be a post tested loop
-    if (getLatchNode(header)->getType() == BBType::Twoway) {
+    if (getLatchNode(header)->isType(FragType::Twoway)) {
         setLoopType(header, LoopType::PostTested);
 
         // if the head of the loop is a two way node and the loop spans more than one block  then it
         // must also be a conditional header
-        if ((header->getType() == BBType::Twoway) && (header != getLatchNode(header))) {
+        if (header->isType(FragType::Twoway) && (header != getLatchNode(header))) {
             setStructType(header, StructType::LoopCond);
         }
     }
     // otherwise it is either a pretested or endless loop
-    else if (header->getType() == BBType::Twoway) {
+    else if (header->isType(FragType::Twoway)) {
         // if the header is a two way node then it must have a conditional follow (since it can't
         // have any backedges leading from it). If this follow is within the loop then this must be
         // an endless loop
@@ -213,12 +220,12 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *&loo
 }
 
 
-void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNodes)
+void ControlFlowAnalyzer::findLoopFollow(const IRFragment *header, bool *&loopNodes)
 {
     assert(getStructType(header) == StructType::Loop ||
            getStructType(header) == StructType::LoopCond);
     const LoopType loopType = getLoopType(header);
-    const BasicBlock *latch = getLatchNode(header);
+    const IRFragment *latch = getLatchNode(header);
 
     if (loopType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop
@@ -242,12 +249,12 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
     }
     else {
         // endless loop
-        const BasicBlock *follow = nullptr;
+        const IRFragment *follow = nullptr;
 
         // traverse the ordering array between the header and latch nodes.
-        // BasicBlock * latch = header->getLatchNode(); initialized at function start
+        // IRFragment * latch = header->getLatchNode(); initialized at function start
         for (int i = getPostOrdering(header) - 1; i > getPostOrdering(latch); i--) {
-            const BasicBlock *&desc = m_postOrdering[i];
+            const IRFragment *&desc = m_postOrdering[i];
             // the follow for an endless loop will have the following
             // properties:
             //   i) it will have a parent that is a conditional header inside the loop whose follow
@@ -273,7 +280,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
                 else {
                     // otherwise find the child (if any) of the conditional header that isn't inside
                     // the same loop
-                    const BasicBlock *succ = desc->getSuccessor(BTHEN);
+                    const IRFragment *succ = desc->getSuccessor(BTHEN);
 
                     if (loopNodes[getPostOrdering(succ)]) {
                         if (!loopNodes[getPostOrdering(desc->getSuccessor(BELSE))]) {
@@ -302,7 +309,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
 }
 
 
-void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *&loopNodes)
+void ControlFlowAnalyzer::tagNodesInLoop(const IRFragment *header, bool *&loopNodes)
 {
     // Traverse the ordering structure from the header to the latch node tagging the nodes
     // determined to be within the loop. These are nodes that satisfy the following:
@@ -314,7 +321,7 @@ void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *&loopNo
     //    OR
     //  iii) curNode is the latch node
 
-    const BasicBlock *latch = getLatchNode(header);
+    const IRFragment *latch = getLatchNode(header);
     assert(latch);
 
     for (int i = getPostOrdering(header) - 1; i >= getPostOrdering(latch); i--) {
@@ -331,8 +338,8 @@ void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *&loopNo
 void ControlFlowAnalyzer::structLoops()
 {
     for (int i = m_postOrdering.size() - 1; i >= 0; i--) {
-        const BasicBlock *currNode = m_postOrdering[i]; // the current node under investigation
-        const BasicBlock *latch    = nullptr;           // the latching node of the loop
+        const IRFragment *currNode = m_postOrdering[i]; // the current node under investigation
+        const IRFragment *latch    = nullptr;           // the latching node of the loop
 
         // If the current node has at least one back edge into it, it is a loop header. If there are
         // numerous back edges into the header, determine which one comes form the proper latching
@@ -345,7 +352,7 @@ void ControlFlowAnalyzer::structLoops()
         //    vi) has a lower ordering than all other suitable candiates
         // If no nodes meet the above criteria, then the current node is not a loop header
 
-        for (const BasicBlock *pred : currNode->getPredecessors()) {
+        for (const IRFragment *pred : currNode->getPredecessors()) {
             if ((getCaseHead(pred) == getCaseHead(currNode)) &&                      // ii)
                 (getLoopHead(pred) == getLoopHead(currNode)) &&                      // iii)
                 (!latch || (getPostOrdering(latch) > getPostOrdering(pred))) &&      // vi)
@@ -395,18 +402,18 @@ void ControlFlowAnalyzer::structLoops()
 
 void ControlFlowAnalyzer::checkConds()
 {
-    for (const BasicBlock *currNode : m_postOrdering) {
+    for (const IRFragment *currNode : m_postOrdering) {
         // consider only conditional headers that have a follow and aren't case headers
         if (((getStructType(currNode) == StructType::Cond) ||
              (getStructType(currNode) == StructType::LoopCond)) &&
             getCondFollow(currNode) && (getCondType(currNode) != CondType::Case)) {
             // define convenient aliases for the relevant loop and case heads and the out edges
-            const BasicBlock *myLoopHead = (getStructType(currNode) == StructType::LoopCond)
+            const IRFragment *myLoopHead = (getStructType(currNode) == StructType::LoopCond)
                                                ? currNode
                                                : getLoopHead(currNode);
-            const BasicBlock *follLoopHead = getLoopHead(getCondFollow(currNode));
-            const BasicBlock *bbThen       = currNode->getSuccessor(BTHEN);
-            const BasicBlock *bbElse       = currNode->getSuccessor(BELSE);
+            const IRFragment *follLoopHead = getLoopHead(getCondFollow(currNode));
+            const IRFragment *bbThen       = currNode->getSuccessor(BTHEN);
+            const IRFragment *bbElse       = currNode->getSuccessor(BELSE);
 
             // analyse whether this is a jump into/outof a loop
             if (myLoopHead != follLoopHead) {
@@ -448,9 +455,9 @@ void ControlFlowAnalyzer::checkConds()
             if ((getUnstructType(currNode) == UnstructType::Structured) &&
                 ((getCaseHead(currNode) != getCaseHead(bbThen)) ||
                  (getCaseHead(currNode) != getCaseHead(bbElse)))) {
-                const BasicBlock *myCaseHead   = getCaseHead(currNode);
-                const BasicBlock *thenCaseHead = getCaseHead(bbThen);
-                const BasicBlock *elseCaseHead = getCaseHead(bbElse);
+                const IRFragment *myCaseHead   = getCaseHead(currNode);
+                const IRFragment *thenCaseHead = getCaseHead(bbThen);
+                const IRFragment *elseCaseHead = getCaseHead(bbElse);
 
                 if ((thenCaseHead == myCaseHead) &&
                     (!myCaseHead || (elseCaseHead != getCondFollow(myCaseHead)))) {
@@ -487,13 +494,13 @@ void ControlFlowAnalyzer::checkConds()
 }
 
 
-bool ControlFlowAnalyzer::isBackEdge(const BasicBlock *source, const BasicBlock *dest) const
+bool ControlFlowAnalyzer::isBackEdge(const IRFragment *source, const IRFragment *dest) const
 {
     return dest == source || isAncestorOf(dest, source);
 }
 
 
-bool ControlFlowAnalyzer::isCaseOption(const BasicBlock *bb) const
+bool ControlFlowAnalyzer::isCaseOption(const IRFragment *bb) const
 {
     if (!getCaseHead(bb)) {
         return false;
@@ -509,7 +516,7 @@ bool ControlFlowAnalyzer::isCaseOption(const BasicBlock *bb) const
 }
 
 
-bool ControlFlowAnalyzer::isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const
+bool ControlFlowAnalyzer::isAncestorOf(const IRFragment *bb, const IRFragment *other) const
 {
     return (m_info[bb].m_preOrderID < m_info[other].m_preOrderID &&
             m_info[bb].m_postOrderID > m_info[other].m_postOrderID) ||
@@ -518,7 +525,7 @@ bool ControlFlowAnalyzer::isAncestorOf(const BasicBlock *bb, const BasicBlock *o
 }
 
 
-void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
+void ControlFlowAnalyzer::updateLoopStamps(const IRFragment *bb, int &time)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
@@ -526,7 +533,7 @@ void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
     m_info[bb].m_preOrderID = time;
 
     // recurse on unvisited children and set inedges for all children
-    for (const BasicBlock *succ : bb->getSuccessors()) {
+    for (const IRFragment *succ : bb->getSuccessors()) {
         // set the in edge from this child to its parent (the current node)
         // (not done here, might be a problem)
         // outEdges[i]->inEdges.Add(this);
@@ -546,7 +553,7 @@ void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
 }
 
 
-void ControlFlowAnalyzer::updateRevLoopStamps(const BasicBlock *bb, int &time)
+void ControlFlowAnalyzer::updateRevLoopStamps(const IRFragment *bb, int &time)
 {
     // timestamp the current node with the current time and set its traversed flag
     setTravType(bb, TravType::DFS_RNum);
@@ -564,13 +571,13 @@ void ControlFlowAnalyzer::updateRevLoopStamps(const BasicBlock *bb, int &time)
 }
 
 
-void ControlFlowAnalyzer::updateRevOrder(const BasicBlock *bb)
+void ControlFlowAnalyzer::updateRevOrder(const IRFragment *bb)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
     setTravType(bb, TravType::DFS_PDom);
 
     // recurse on unvisited children
-    for (const BasicBlock *pred : bb->getPredecessors()) {
+    for (const IRFragment *pred : bb->getPredecessors()) {
         if (getTravType(pred) != TravType::DFS_PDom) {
             updateRevOrder(pred);
         }
@@ -583,8 +590,8 @@ void ControlFlowAnalyzer::updateRevOrder(const BasicBlock *bb)
 }
 
 
-void ControlFlowAnalyzer::setCaseHead(const BasicBlock *bb, const BasicBlock *head,
-                                      const BasicBlock *follow)
+void ControlFlowAnalyzer::setCaseHead(const IRFragment *bb, const IRFragment *head,
+                                      const IRFragment *follow)
 {
     assert(!getCaseHead(bb));
 
@@ -597,7 +604,7 @@ void ControlFlowAnalyzer::setCaseHead(const BasicBlock *bb, const BasicBlock *he
 
     // if this is a nested case header, then it's member nodes
     // will already have been tagged so skip straight to its follow
-    if (bb->isType(BBType::Nway) && (bb != head)) {
+    if (bb->isType(FragType::Nway) && (bb != head)) {
         if (getCondFollow(bb) && (getTravType(getCondFollow(bb)) != TravType::DFS_Case) &&
             (getCondFollow(bb) != follow)) {
             setCaseHead(bb, head, follow);
@@ -608,7 +615,7 @@ void ControlFlowAnalyzer::setCaseHead(const BasicBlock *bb, const BasicBlock *he
         //   i) isn't on a back-edge,
         //  ii) hasn't already been traversed in a case tagging traversal and,
         // iii) isn't the follow node.
-        for (BasicBlock *succ : bb->getSuccessors()) {
+        for (IRFragment *succ : bb->getSuccessors()) {
             if (!isBackEdge(bb, succ) && (getTravType(succ) != TravType::DFS_Case) &&
                 (succ != follow)) {
                 setCaseHead(succ, head, follow);
@@ -618,12 +625,12 @@ void ControlFlowAnalyzer::setCaseHead(const BasicBlock *bb, const BasicBlock *he
 }
 
 
-void ControlFlowAnalyzer::setStructType(const BasicBlock *bb, StructType structType)
+void ControlFlowAnalyzer::setStructType(const IRFragment *bb, StructType structType)
 {
     // if this is a conditional header, determine exactly which type of conditional header it is
     // (i.e. switch, if-then, if-then-else etc.)
     if (structType == StructType::Cond) {
-        if (bb->isType(BBType::Nway)) {
+        if (bb->isType(FragType::Nway)) {
             m_info[bb].m_conditionHeaderType = CondType::Case;
         }
         else if (getCondFollow(bb) == bb->getSuccessor(BELSE)) {
@@ -641,7 +648,7 @@ void ControlFlowAnalyzer::setStructType(const BasicBlock *bb, StructType structT
 }
 
 
-void ControlFlowAnalyzer::setUnstructType(const BasicBlock *bb, UnstructType unstructType)
+void ControlFlowAnalyzer::setUnstructType(const IRFragment *bb, UnstructType unstructType)
 {
     assert((m_info[bb].m_structuringType == StructType::Cond ||
             m_info[bb].m_structuringType == StructType::LoopCond) &&
@@ -650,7 +657,7 @@ void ControlFlowAnalyzer::setUnstructType(const BasicBlock *bb, UnstructType uns
 }
 
 
-UnstructType ControlFlowAnalyzer::getUnstructType(const BasicBlock *bb) const
+UnstructType ControlFlowAnalyzer::getUnstructType(const IRFragment *bb) const
 {
     assert((m_info[bb].m_structuringType == StructType::Cond ||
             m_info[bb].m_structuringType == StructType::LoopCond));
@@ -661,7 +668,7 @@ UnstructType ControlFlowAnalyzer::getUnstructType(const BasicBlock *bb) const
 }
 
 
-void ControlFlowAnalyzer::setLoopType(const BasicBlock *bb, LoopType l)
+void ControlFlowAnalyzer::setLoopType(const IRFragment *bb, LoopType l)
 {
     assert(getStructType(bb) == StructType::Loop || getStructType(bb) == StructType::LoopCond);
     m_info[bb].m_loopHeaderType = l;
@@ -675,29 +682,29 @@ void ControlFlowAnalyzer::setLoopType(const BasicBlock *bb, LoopType l)
 }
 
 
-LoopType ControlFlowAnalyzer::getLoopType(const BasicBlock *bb) const
+LoopType ControlFlowAnalyzer::getLoopType(const IRFragment *bb) const
 {
     assert(getStructType(bb) == StructType::Loop || getStructType(bb) == StructType::LoopCond);
     return m_info[bb].m_loopHeaderType;
 }
 
 
-void ControlFlowAnalyzer::setCondType(const BasicBlock *bb, CondType condType)
+void ControlFlowAnalyzer::setCondType(const IRFragment *bb, CondType condType)
 {
     assert(getStructType(bb) == StructType::Cond || getStructType(bb) == StructType::LoopCond);
     m_info[bb].m_conditionHeaderType = condType;
 }
 
 
-CondType ControlFlowAnalyzer::getCondType(const BasicBlock *bb) const
+CondType ControlFlowAnalyzer::getCondType(const IRFragment *bb) const
 {
     assert(getStructType(bb) == StructType::Cond || getStructType(bb) == StructType::LoopCond);
     return m_info[bb].m_conditionHeaderType;
 }
 
 
-bool ControlFlowAnalyzer::isBBInLoop(const BasicBlock *bb, const BasicBlock *header,
-                                     const BasicBlock *latch) const
+bool ControlFlowAnalyzer::isBBInLoop(const IRFragment *bb, const IRFragment *header,
+                                     const IRFragment *latch) const
 {
     assert(getLatchNode(header) == latch);
     assert(header == latch || ((m_info[header].m_preOrderID > m_info[latch].m_preOrderID &&
@@ -721,10 +728,10 @@ bool ControlFlowAnalyzer::isBBInLoop(const BasicBlock *bb, const BasicBlock *hea
 }
 
 
-bool ControlFlowAnalyzer::hasBackEdge(const BasicBlock *bb) const
+bool ControlFlowAnalyzer::hasBackEdge(const IRFragment *bb) const
 {
     return std::any_of(bb->getSuccessors().begin(), bb->getSuccessors().end(),
-                       [this, bb](const BasicBlock *succ) { return isBackEdge(bb, succ); });
+                       [this, bb](const IRFragment *succ) { return isBackEdge(bb, succ); });
 }
 
 
@@ -736,13 +743,13 @@ void ControlFlowAnalyzer::unTraverse()
 }
 
 
-BasicBlock *ControlFlowAnalyzer::findEntryBB() const
+IRFragment *ControlFlowAnalyzer::findEntryBB() const
 {
     return m_cfg->getEntryBB();
 }
 
 
-BasicBlock *ControlFlowAnalyzer::findExitBB() const
+IRFragment *ControlFlowAnalyzer::findExitBB() const
 {
     return m_cfg->findRetNode();
 }

@@ -10,6 +10,7 @@
 #include "CFGCompressor.h"
 
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Statement.h"
@@ -37,24 +38,24 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
 
 bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
 {
-    std::deque<BasicBlock *> bbsToRemove;
+    std::deque<IRFragment *> fragsToRemove;
 
-    for (BasicBlock *bb : *cfg) {
+    for (IRFragment *frag : *cfg) {
         // Check if the BB can be removed
-        if (bb->getNumSuccessors() == 1 && bb != cfg->getEntryBB() &&
-            (bb->getIR()->isEmpty() || bb->getIR()->isEmptyJump())) {
-            bbsToRemove.push_back(bb);
+        if (frag->getNumSuccessors() == 1 && frag != cfg->getEntryFragment() &&
+            (frag->isEmpty() || frag->isEmptyJump())) {
+            fragsToRemove.push_back(frag);
         }
     }
 
     bool bbsRemoved = false;
 
-    while (!bbsToRemove.empty()) {
-        BasicBlock *bb = bbsToRemove.front();
-        bbsToRemove.pop_front();
+    while (!fragsToRemove.empty()) {
+        IRFragment *bb = fragsToRemove.front();
+        fragsToRemove.pop_front();
 
         assert(bb->getNumSuccessors() == 1);
-        BasicBlock *succ = bb->getSuccessor(0); // the one and only successor
+        IRFragment *succ = bb->getSuccessor(0); // the one and only successor
 
         if (succ == bb) {
             continue;
@@ -63,7 +64,7 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
         succ->removePredecessor(bb);
         bb->removeSuccessor(succ);
 
-        for (BasicBlock *pred : bb->getPredecessors()) {
+        for (IRFragment *pred : bb->getPredecessors()) {
             for (int i = 0; i < pred->getNumSuccessors(); i++) {
                 if (pred->getSuccessor(i) == bb) {
                     pred->setSuccessor(i, succ);
@@ -73,7 +74,7 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
         }
 
         bb->removeAllPredecessors();
-        cfg->removeBB(bb);
+        cfg->removeFragment(bb);
         bbsRemoved = true;
     }
 
@@ -83,14 +84,14 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
 
 bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
 {
-    std::deque<BasicBlock *> orphans;
+    std::deque<IRFragment *> orphans;
 
-    for (BasicBlock *potentialOrphan : *cfg) {
+    for (IRFragment *potentialOrphan : *cfg) {
         if (potentialOrphan == cfg->getEntryBB()) {
-            // don't remove entry BasicBlock
+            // don't remove entry fragment
             continue;
         }
-        else if (potentialOrphan->isType(BBType::Ret)) {
+        else if (potentialOrphan->isType(FragType::Ret)) {
             // Don't remove the ReturnStatement for noreturn functions
             continue;
         }
@@ -103,15 +104,15 @@ bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
     const bool bbsRemoved = !orphans.empty();
 
     while (!orphans.empty()) {
-        BasicBlock *b = orphans.front();
+        IRFragment *b = orphans.front();
         orphans.pop_front();
 
-        for (BasicBlock *child : b->getSuccessors()) {
+        for (IRFragment *child : b->getSuccessors()) {
             child->removePredecessor(b);
             b->removeSuccessor(child);
         }
 
-        cfg->removeBB(b);
+        cfg->removeFragment(b);
     }
 
     return bbsRemoved;

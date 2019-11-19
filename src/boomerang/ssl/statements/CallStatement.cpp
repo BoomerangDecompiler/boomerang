@@ -542,8 +542,8 @@ bool CallStatement::tryConvertToDirect()
 
     // 4
     m_isComputed = false;
-    assert(m_bb->getType() == BBType::CompCall);
-    m_bb->setType(BBType::Call);
+    assert(m_bb->isType(FragType::CompCall));
+    m_bb->setType(FragType::Call);
     m_proc->addCallee(m_procDest);
 
     LOG_VERBOSE("Result of convertToDirect: true");

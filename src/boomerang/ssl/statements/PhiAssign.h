@@ -34,7 +34,7 @@
 class BOOMERANG_API PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, std::shared_ptr<RefExp>, BasicBlock::BBComparator> PhiDefs;
+    typedef std::map<IRFragment *, std::shared_ptr<RefExp>, IRFragment::BBComparator> PhiDefs;
     typedef MapValueIterator<PhiDefs> iterator;
     typedef MapValueConstIterator<PhiDefs> const_iterator;
     typedef MapValueReverseIterator<PhiDefs> reverse_iterator;
@@ -113,11 +113,11 @@ public:
     //
 
     /// Get statement at index \p idx
-    SharedStmt getStmtAt(BasicBlock *bb);
-    SharedConstStmt getStmtAt(BasicBlock *bb) const;
+    SharedStmt getStmtAt(IRFragment *bb);
+    SharedConstStmt getStmtAt(IRFragment *bb) const;
 
     /// Update the statement at index \p idx
-    void putAt(BasicBlock *idx, const SharedStmt &d, SharedExp e);
+    void putAt(IRFragment *idx, const SharedStmt &d, SharedExp e);
 
     size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs &getDefs() { return m_defs; }

@@ -129,7 +129,7 @@ public:
      * \note (not always the first BB)
      * \returns   Pointer to the entry point BB, or nullptr if not found
      */
-    BasicBlock *getEntryBB();
+    IRFragment *getEntryBB();
 
     /// Set the entry BB for this procedure (constructor has the entry address)
     void setEntryBB();

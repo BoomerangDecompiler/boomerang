@@ -24,7 +24,7 @@ StatementInitPass::StatementInitPass()
 
 bool StatementInitPass::execute(UserProc *proc)
 {
-    proc->getCFG()->clearIR();
+    proc->getCFG()->clear();
     if (!proc->getProg()->getFrontEnd()->liftProc(proc)) {
         return false;
     }
@@ -32,9 +32,9 @@ bool StatementInitPass::execute(UserProc *proc)
     IRFragment::RTLIterator rit;
     StatementList::iterator sit;
 
-    for (BasicBlock *bb : *proc->getCFG()) {
-        for (SharedStmt stmt = bb->getIR()->getFirstStmt(rit, sit); stmt != nullptr;
-             stmt            = bb->getIR()->getNextStmt(rit, sit)) {
+    for (IRFragment *bb : *proc->getCFG()) {
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = bb->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);
@@ -46,10 +46,10 @@ bool StatementInitPass::execute(UserProc *proc)
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
                 if ((bb->getNumSuccessors() == 1) && call->getDestProc() &&
                     call->getDestProc()->isNoReturn()) {
-                    BasicBlock *nextBB = bb->getSuccessor(0);
+                    IRFragment *nextBB = bb->getSuccessor(0);
 
-                    if ((nextBB != proc->getCFG()->getExitBB()) ||
-                        (proc->getCFG()->getExitBB()->getNumPredecessors() != 1)) {
+                    if ((nextBB != proc->getCFG()->getExitFragment()) ||
+                        (proc->getCFG()->getExitFragment()->getNumPredecessors() != 1)) {
                         nextBB->removePredecessor(bb);
                         bb->removeAllSuccessors();
                     }

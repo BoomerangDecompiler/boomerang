@@ -26,6 +26,22 @@ using RTLList   = std::list<std::unique_ptr<RTL>>;
 using SharedExp = std::shared_ptr<Exp>;
 
 
+/// Kinds of basic block nodes
+/// reordering these will break the save files - trent
+enum class FragType
+{
+    Invalid  = -1, ///< invalid instruction
+    Fall     = 0,  ///< fall-through node
+    Oneway   = 1,  ///< unconditional branch (jmp)
+    Twoway   = 2,  ///< conditional branch   (jXX)
+    Nway     = 3,  ///< case branch          (jmp [off + 4*eax])
+    Call     = 4,  ///< procedure call       (call)
+    Ret      = 5,  ///< return               (ret)
+    CompJump = 6,  ///< computed jump
+    CompCall = 7,  ///< computed call        (call [eax + 0x14])
+};
+
+
 /**
  * Holds the IR for a single BasicBlock.
  */
@@ -34,6 +50,14 @@ class BOOMERANG_API IRFragment : public GraphNode<IRFragment>
 public:
     typedef RTLList::iterator RTLIterator;
     typedef RTLList::reverse_iterator RTLRIterator;
+
+public:
+    class BBComparator
+    {
+    public:
+        /// \returns bb1->getLowAddr() < bb2->getLowAddr();
+        bool operator()(const IRFragment *bb1, const IRFragment *bb2) const;
+    };
 
 public:
     IRFragment(BasicBlock *bb, Address lowAddr);
@@ -46,6 +70,17 @@ public:
     IRFragment &operator=(IRFragment &&) = default;
 
 public:
+    BasicBlock *getBB() { return m_bb; }
+    const BasicBlock *getBB() const { return m_bb; }
+
+    /// \returns the type of the BasicBlock
+    inline FragType getType() const { return m_fragType; }
+    inline bool isType(FragType type) const { return m_fragType == type; }
+    inline void setType(FragType type) { m_fragType = type; }
+
+    Function *getFunction();
+    const Function *getFunction() const;
+
     /// \returns all RTLs that are part of this BB.
     RTLList *getRTLs() { return m_listOfRTLs.get(); }
     const RTLList *getRTLs() const { return m_listOfRTLs.get(); }
@@ -154,9 +189,16 @@ public:
     void simplify();
 
 public:
+    void print(OStream &os) const;
+
+    QString toString() const;
+
+public:
     BasicBlock *m_bb;
     std::unique_ptr<RTLList> m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;
+
+    FragType m_fragType = FragType::Invalid;
 };

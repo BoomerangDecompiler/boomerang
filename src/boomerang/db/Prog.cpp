@@ -13,6 +13,7 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/DebugInfo.h"
 #include "boomerang/db/Global.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"

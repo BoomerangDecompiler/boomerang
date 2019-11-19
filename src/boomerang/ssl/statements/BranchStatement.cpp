@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "BranchStatement.h"
 
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -65,7 +65,7 @@ void BranchStatement::setCondExpr(SharedExp pe)
 }
 
 
-BasicBlock *BranchStatement::getFallBB() const
+IRFragment *BranchStatement::getFallBB() const
 {
     if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return nullptr;
@@ -75,13 +75,13 @@ BasicBlock *BranchStatement::getFallBB() const
 }
 
 
-void BranchStatement::setFallBB(BasicBlock *destBB)
+void BranchStatement::setFallBB(IRFragment *destBB)
 {
     if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_bb->getSuccessor(BELSE);
+    IRFragment *oldDestBB = m_bb->getSuccessor(BELSE);
     if (destBB != oldDestBB) {
         oldDestBB->removePredecessor(m_bb);
         m_bb->setSuccessor(BELSE, destBB);
@@ -90,7 +90,7 @@ void BranchStatement::setFallBB(BasicBlock *destBB)
 }
 
 
-BasicBlock *BranchStatement::getTakenBB() const
+IRFragment *BranchStatement::getTakenBB() const
 {
     if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return nullptr;
@@ -100,13 +100,13 @@ BasicBlock *BranchStatement::getTakenBB() const
 }
 
 
-void BranchStatement::setTakenBB(BasicBlock *destBB)
+void BranchStatement::setTakenBB(IRFragment *destBB)
 {
     if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_bb->getSuccessor(BTHEN);
+    IRFragment *oldDestBB = m_bb->getSuccessor(BTHEN);
     if (destBB != oldDestBB) {
         oldDestBB->removePredecessor(m_bb);
         m_bb->setSuccessor(BTHEN, destBB);

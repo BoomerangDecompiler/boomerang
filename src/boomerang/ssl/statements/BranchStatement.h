@@ -13,6 +13,13 @@
 #include "boomerang/ssl/statements/GotoStatement.h"
 
 
+// index of the "then" branch of conditional jumps
+#define BTHEN 0
+
+// index of the "else" branch of conditional jumps
+#define BELSE 1
+
+
 /**
  * BranchStatement has a condition Exp in addition to the destination of the jump.
  */
@@ -63,13 +70,13 @@ public:
     void setCondExpr(SharedExp pe);
 
     /// \returns the destination BB of a taken conditional jump
-    BasicBlock *getTakenBB() const;
+    IRFragment *getTakenBB() const;
 
     /// \returns the destination BB of the fallthrough branch of a conditional jump
-    BasicBlock *getFallBB() const;
+    IRFragment *getFallBB() const;
 
-    void setTakenBB(BasicBlock *bb);
-    void setFallBB(BasicBlock *bb);
+    void setTakenBB(IRFragment *bb);
+    void setFallBB(IRFragment *bb);
 
     /// \copydoc GotoStatement::print
     void print(OStream &os) const override;

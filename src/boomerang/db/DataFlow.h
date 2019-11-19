@@ -17,7 +17,7 @@
 #include <unordered_map>
 
 
-class BasicBlock;
+class IRFragment;
 class PhiAssign;
 
 
@@ -65,21 +65,21 @@ public:
     // for testing
 public:
     /// \note can only be called after \ref calculateDominators()
-    const BasicBlock *getSemiDominator(const BasicBlock *bb) const
+    const IRFragment *getSemiDominator(const IRFragment *bb) const
     {
         return nodeToBB(getSemi(pbbToNode(bb)));
     }
 
     /// \note can only be called after \ref calculateDominators()
-    const BasicBlock *getDominator(const BasicBlock *bb) const
+    const IRFragment *getDominator(const IRFragment *bb) const
     {
         return nodeToBB(getIdom(pbbToNode(bb)));
     }
 
     /// \note can only be called after \ref calculateDominators()
-    std::set<const BasicBlock *> getDominanceFrontier(const BasicBlock *bb) const
+    std::set<const IRFragment *> getDominanceFrontier(const IRFragment *bb) const
     {
-        std::set<const BasicBlock *> ret;
+        std::set<const IRFragment *> ret;
         for (int idx : m_DF.at(pbbToNode(bb))) {
             ret.insert(nodeToBB(idx));
         }
@@ -88,12 +88,12 @@ public:
     }
 
 public:
-    const BasicBlock *nodeToBB(BBIndex node) const { return m_BBs.at(node); }
-    BasicBlock *nodeToBB(BBIndex node) { return m_BBs.at(node); }
+    const IRFragment *nodeToBB(BBIndex node) const { return m_BBs.at(node); }
+    IRFragment *nodeToBB(BBIndex node) { return m_BBs.at(node); }
 
-    BBIndex pbbToNode(const BasicBlock *bb) const
+    BBIndex pbbToNode(const IRFragment *bb) const
     {
-        return m_indices.at(const_cast<BasicBlock *>(bb));
+        return m_indices.at(const_cast<IRFragment *>(bb));
     }
 
     std::set<BBIndex> &getDF(int node) { return m_DF[node]; }
@@ -135,8 +135,8 @@ private:
     /* Dominance Frontier Data */
 
     /* These first two are not from Appel; they map PBBs to indices */
-    std::vector<BasicBlock *> m_BBs;                     ///< Maps index -> BasicBlock
-    std::unordered_map<BasicBlock *, BBIndex> m_indices; ///< Maps BasicBlock -> index
+    std::vector<IRFragment *> m_BBs;                     ///< Maps index -> IRFragment
+    std::unordered_map<IRFragment *, BBIndex> m_indices; ///< Maps IRFragment -> index
 
     /// Calculating the dominance frontier
 

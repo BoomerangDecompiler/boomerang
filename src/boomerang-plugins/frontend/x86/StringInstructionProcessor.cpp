@@ -27,10 +27,10 @@ StringInstructionProcessor::StringInstructionProcessor(UserProc *proc)
 
 bool StringInstructionProcessor::processStringInstructions()
 {
-    std::list<std::pair<RTL *, BasicBlock *>> stringInstructions;
+    std::list<std::pair<RTL *, IRFragment *>> stringInstructions;
 
-    for (BasicBlock *bb : *m_proc->getCFG()) {
-        RTLList *bbRTLs = bb->getIR()->getRTLs();
+    for (IRFragment *bb : *m_proc->getCFG()) {
+        RTLList *bbRTLs = bb->getRTLs();
 
         if (bbRTLs == nullptr) {
             continue;
@@ -67,7 +67,7 @@ bool StringInstructionProcessor::processStringInstructions()
 
     for (auto p : stringInstructions) {
         RTL *skipRTL   = p.first;
-        BasicBlock *bb = p.second;
+        IRFragment *bb = p.second;
 
         std::shared_ptr<BranchStatement> skipBranch(new BranchStatement);
 
@@ -99,35 +99,35 @@ bool StringInstructionProcessor::processStringInstructions()
 }
 
 
-BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL,
+IRFragment *StringInstructionProcessor::splitForBranch(IRFragment *bb, RTL *stringRTL,
                                                        std::shared_ptr<BranchStatement> skipBranch,
                                                        std::shared_ptr<BranchStatement> rptBranch)
 {
     Address stringAddr         = stringRTL->getAddress();
     RTLList::iterator stringIt = std::find_if(
-        bb->getIR()->getRTLs()->begin(), bb->getIR()->getRTLs()->end(),
+        bb->getRTLs()->begin(), bb->getRTLs()->end(),
         [stringRTL](const std::unique_ptr<RTL> &ptr) { return stringRTL == ptr.get(); });
 
-    assert(stringIt != bb->getIR()->getRTLs()->end());
+    assert(stringIt != bb->getRTLs()->end());
 
-    const bool haveA = (stringIt != bb->getIR()->getRTLs()->begin());
-    const bool haveB = (std::next(stringIt) != bb->getIR()->getRTLs()->end());
-    BasicBlock *aBB  = nullptr;
-    BasicBlock *bBB  = nullptr;
+    const bool haveA = (stringIt != bb->getRTLs()->begin());
+    const bool haveB = (std::next(stringIt) != bb->getRTLs()->end());
+    IRFragment *aBB  = nullptr;
+    IRFragment *bBB  = nullptr;
 
-    const std::vector<BasicBlock *> oldPredecessors = bb->getPredecessors();
-    const std::vector<BasicBlock *> oldSuccessors   = bb->getSuccessors();
+    const std::vector<IRFragment *> oldPredecessors = bb->getPredecessors();
+    const std::vector<IRFragment *> oldSuccessors   = bb->getSuccessors();
 
     if (haveA) {
         aBB = bb;
-        bb  = m_proc->getCFG()->splitBB(aBB, stringAddr);
-        assert(aBB->getIR()->getLowAddr() < bb->getIR()->getLowAddr());
+        bb  = m_proc->getCFG()->splitFragment(aBB, stringAddr);
+        assert(aBB->getLowAddr() < bb->getLowAddr());
     }
-    stringIt = bb->getIR()->getRTLs()->begin();
+    stringIt = bb->getRTLs()->begin();
     if (haveB) {
         Address splitAddr = (*std::next(stringIt))->getAddress();
-        bBB               = m_proc->getCFG()->splitBB(bb, splitAddr);
-        assert(bb->getIR()->getLowAddr() < bBB->getIR()->getLowAddr());
+        bBB               = m_proc->getCFG()->splitFragment(bb, splitAddr);
+        assert(bb->getLowAddr() < bBB->getLowAddr());
     }
     else {
         // this means the original BB has a fallthrough branch to its successor.
@@ -135,8 +135,8 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         bBB = bb->getSuccessor(0);
     }
 
-    assert(bb->getIR()->getRTLs()->size() == 1); // only the string instruction
-    assert(bb->getIR()->getRTLs()->front()->getAddress() == stringAddr);
+    assert(bb->getRTLs()->size() == 1); // only the string instruction
+    assert(bb->getRTLs()->front()->getAddress() == stringAddr);
 
     // Make an RTL for the skip and the rpt branch instructions.
     std::unique_ptr<RTLList> skipBBRTLs(new RTLList);
@@ -152,28 +152,28 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     bb->removeAllPredecessors();
 
     // remove connection between the string instruction and the B part
-    for (BasicBlock *succ : oldSuccessors) {
+    for (IRFragment *succ : oldSuccessors) {
         bb->removeSuccessor(succ);
         succ->removePredecessor(bb);
     }
 
     const bool entryBBNeedsUpdate = !haveA && bb == m_proc->getCFG()->getEntryBB();
-    m_proc->getCFG()->removeBB(bb);
+    m_proc->getCFG()->removeFragment(bb);
 
-    BasicBlock
+    IRFragment
         *skipBB = nullptr; // m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
-    BasicBlock
+    IRFragment
         *rptBB = nullptr; // m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
 
     assert(skipBB && rptBB);
 
     if (haveA) {
         aBB->removeAllSuccessors();
-        aBB->setType(BBType::Fall);
+        aBB->setType(FragType::Fall);
         m_proc->getCFG()->addEdge(aBB, skipBB);
     }
     else {
-        for (BasicBlock *pred : oldPredecessors) {
+        for (IRFragment *pred : oldPredecessors) {
             for (int i = 0; i < pred->getNumSuccessors(); i++) {
                 if (pred->getSuccessor(i) == bb) {
                     pred->setSuccessor(i, skipBB);
@@ -190,7 +190,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     m_proc->getCFG()->addEdge(rptBB, rptBB);
 
     if (entryBBNeedsUpdate) {
-        m_proc->getCFG()->setEntryAndExitBB(skipBB);
+        m_proc->getCFG()->setEntryAndExitFragment(skipBB);
     }
 
     return haveB ? bBB : rptBB;

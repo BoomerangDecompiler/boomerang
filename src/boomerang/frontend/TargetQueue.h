@@ -15,7 +15,7 @@
 #include <queue>
 
 
-class ProcCFG;
+class LowLevelCFG;
 class BasicBlock;
 
 
@@ -48,7 +48,7 @@ public:
      * \param   newBB   set to the lower part of the BB if the address already exists
      *          as a non explicit label (BB has to be split)
      */
-    void pushAddress(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB);
+    void pushAddress(LowLevelCFG *cfg, Address newAddr, BasicBlock *&newBB);
 
     /**
      * Return the next target from the queue of non-processed targets.
@@ -56,7 +56,7 @@ public:
      * \returns The next address to process, or Address::INVALID if none
      *          (targets is empty)
      */
-    Address popAddress(const ProcCFG &cfg);
+    Address popAddress(const LowLevelCFG &cfg);
 
 private:
     bool m_traceDecoder;

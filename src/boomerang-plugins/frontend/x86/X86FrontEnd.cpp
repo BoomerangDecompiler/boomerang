@@ -298,7 +298,7 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
         }
     }
 
-    std::set<BasicBlock *> bbs;
+    std::set<IRFragment *> bbs;
 
     for (SharedStmt s : stmts) {
         if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
@@ -328,12 +328,14 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                   const RTLList &BB_rtls)
+void X86FrontEnd::extraProcessCall(IRFragment *callFrag)
 {
+    const std::shared_ptr<CallStatement> call = callFrag->getLastStmt()->as<CallStatement>();
     if (!call->getDestProc()) {
         return;
     }
+
+    const RTLList &BB_rtls = *callFrag->getRTLs();
 
     // looking for function pointers
     auto calledSig = call->getDestProc()->getSignature();
@@ -479,8 +481,7 @@ void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
         bool found    = false;
         int pushcount = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin();
-             itr != BB_rtls.rend() && !found; ++itr) {
+        for (auto itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

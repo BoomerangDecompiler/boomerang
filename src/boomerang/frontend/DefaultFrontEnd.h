@@ -78,8 +78,7 @@ public:
 
     /// Do extra processing of call instructions.
     /// Does nothing by default.
-    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                  const RTLList &BB_rtls);
+    virtual void extraProcessCall(IRFragment *callFrag);
 
     /// Disassemble and lift a single instruction at address \p addr
     /// \returns true on success
@@ -105,8 +104,7 @@ protected:
      *                  (including a ReturnStatement as the last statement)
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> bb_rtls,
-                                  std::unique_ptr<RTL> returnRTL);
+    IRFragment *createReturnBlock(IRFragment *origFrag);
 
     /**
      * Given the dest of a call, determine if this is a machine specific helper function with
@@ -141,7 +139,7 @@ private:
      * \param proc    the enclosing UserProc
      * \param callRTL the current RTL with the call instruction
      */
-    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
+    void appendSyntheticReturn(IRFragment *callFrag);
 
     /**
      * Change a jump to a call if the jump destination is an imported function.
