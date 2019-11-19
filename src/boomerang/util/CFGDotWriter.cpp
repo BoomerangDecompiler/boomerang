@@ -12,6 +12,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/ProcCFG.h"
@@ -30,6 +31,47 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
 
     OStream of(&tgt);
     of << "digraph ProcCFG {\n";
+
+    of << "subgraph LLCFG {\n";
+
+    const LowLevelCFG *cfg = prog->getCFG();
+
+    for (const BasicBlock *bb : *cfg) {
+        of << "    bb" << bb->getLowAddr() << "[label=\"";
+
+        for (const MachineInstruction &insn : bb->getInsns()) {
+            of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data() << "\\l";
+        }
+
+        of << "\"];\n";
+    }
+
+    of << "\n";
+
+    // edges
+    for (const BasicBlock *srcBB : *cfg) {
+        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
+            const BasicBlock *dstBB = srcBB->getSuccessor(j);
+
+            of << "       bb" << srcBB->getLowAddr() << " -> ";
+            of << "bb" << dstBB->getLowAddr();
+
+            if (srcBB->isType(BBType::Twoway)) {
+                if (j == 0) {
+                    of << " [color=\"green\"]"; // cond == true
+                }
+                else {
+                    of << " [color=\"red\"]"; // cond == false
+                }
+            }
+            else {
+                of << " [color=\"black\"];\n"; // normal connection
+            }
+        }
+    }
+
+    of << "}\n";
+    of << "\n";
 
     for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
