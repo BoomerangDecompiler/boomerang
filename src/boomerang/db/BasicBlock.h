@@ -103,6 +103,8 @@ public:
     IRFragment *getIR() { return &m_ir; }
     const IRFragment *getIR() const { return &m_ir; }
 
+    void setIR(std::unique_ptr<RTLList> ir) { m_ir.m_listOfRTLs = std::move(ir); }
+
     std::vector<MachineInstruction> &getInsns() { return m_insns; }
     const std::vector<MachineInstruction> &getInsns() const { return m_insns; }
 

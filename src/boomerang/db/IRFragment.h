@@ -27,7 +27,7 @@ using SharedExp = std::shared_ptr<Exp>;
 
 
 /**
- *
+ * Holds the IR for a single BasicBlock.
  */
 class BOOMERANG_API IRFragment : public GraphNode<IRFragment>
 {

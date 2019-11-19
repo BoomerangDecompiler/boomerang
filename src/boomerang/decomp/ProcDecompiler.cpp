@@ -80,6 +80,10 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
             }
 
             // The call Statement will be in the last RTL in this BB
+            if (!bb->getIR()->getRTLs()) {
+                continue; // not lifted yet
+            }
+
             SharedStmt hl = bb->getIR()->getRTLs()->back()->getHlStmt();
 
             if (!hl->isCall()) {

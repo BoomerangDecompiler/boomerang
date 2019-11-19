@@ -80,6 +80,10 @@ public:
      */
     virtual bool processProc(UserProc *proc, Address addr) = 0;
 
+    /// Lift all instructions for a proc.
+    /// \returns true on success, false on failure
+    [[nodiscard]] virtual bool liftProc(UserProc *proc) = 0;
+
 public:
     /// Locate the entry address of "main", returning a native address
     virtual Address findMainEntryPoint(bool &gotMain) = 0;

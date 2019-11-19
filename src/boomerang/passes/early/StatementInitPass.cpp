@@ -10,10 +10,11 @@
 #include "StatementInitPass.h"
 
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/CFGCompressor.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-
 
 StatementInitPass::StatementInitPass()
     : IPass("StatementInit", PassID::StatementInit)
@@ -23,6 +24,11 @@ StatementInitPass::StatementInitPass()
 
 bool StatementInitPass::execute(UserProc *proc)
 {
+    proc->getCFG()->clearIR();
+    if (!proc->getProg()->getFrontEnd()->liftProc(proc)) {
+        return false;
+    }
+
     IRFragment::RTLIterator rit;
     StatementList::iterator sit;
 

@@ -73,6 +73,9 @@ public:
     /// \copydoc IFrontEnd::processProc
     bool processProc(UserProc *proc, Address addr) override;
 
+    /// \copydoc IFrontEnd::processProc
+    bool liftProc(UserProc *proc) override;
+
     /// Do extra processing of call instructions.
     /// Does nothing by default.
     virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
@@ -138,10 +141,10 @@ private:
      * \param proc    the enclosing UserProc
      * \param callRTL the current RTL with the call instruction
      */
-    //     void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
+    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
 
     /**
-     * Change a jump to a call if the jump destination is an impoted function.
+     * Change a jump to a call if the jump destination is an imported function.
      * \sa refersToImportedFunction
      */
     void preprocessProcGoto(RTL::StmtList::iterator ss, Address dest, const RTL::StmtList &sl,
