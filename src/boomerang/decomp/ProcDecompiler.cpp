@@ -649,10 +649,6 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
     proc->removeRetStmt();
     proc->getCFG()->clear();
 
-    if (!proc->getProg()->reDecode(proc)) {
-        return ProcStatus::Undecoded;
-    }
-
     proc->getDataFlow()->setRenameLocalsParams(false); // Start again with memofs
     proc->setStatus(ProcStatus::Visited);              // Back to only visited progress
 
