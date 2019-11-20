@@ -59,6 +59,9 @@ IRFragment *ProcCFG::createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *b
     IRFragment *frag = new IRFragment(bb, std::move(rtls));
     m_fragmentSet.insert(frag);
 
+    frag->setType((FragType)bb->getType());
+    frag->updateBBAddresses();
+    LOG_MSG("%1", frag->toString());
     return frag;
 }
 

@@ -120,17 +120,21 @@ void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
     // The nodes
-    for (IRFragment *bb : *cfg) {
+    for (IRFragment *frag : *cfg) {
         of << "       "
-           << "bb" << bb->getLowAddr();
+           << "frag" << frag->getLowAddr();
         of << "[label=\"";
 
         IRFragment::RTLIterator rit;
         StatementList::iterator sit;
 
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
-            stmt->print(of);
-            of << "\\l";
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            QString str;
+            OStream temp(&str);
+            stmt->print(temp);
+            str.replace('\n', "\\l");
+            of << str << "\\l";
         }
 
         of << "\", shape=rectangle];\n";
@@ -144,8 +148,8 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
         for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
             IRFragment *dstBB = srcBB->getSuccessor(j);
 
-            of << "       bb" << srcBB->getLowAddr() << " -> ";
-            of << "bb" << dstBB->getLowAddr();
+            of << "       frag" << srcBB->getLowAddr() << " -> ";
+            of << "frag" << dstBB->getLowAddr();
 
             if (srcBB->isType(FragType::Twoway)) {
                 if (j == 0) {

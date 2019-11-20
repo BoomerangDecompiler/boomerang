@@ -36,6 +36,8 @@
 #include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/util/log/Log.h"
 
+#include <stack>
+
 
 DefaultFrontEnd::DefaultFrontEnd(Project *project)
     : IFrontEnd(project)
@@ -548,7 +550,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         } // while sequentialDecode
     }     // while getNextAddress() != Address::INVALID
 
-    CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
+    tagFunctionBBs(proc);
 
     m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
 
@@ -828,6 +830,19 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
         }
     }
 
+    // add edges for fragments
+    for (IRFragment *frag : *procCFG) {
+        const BasicBlock *bb = frag->getBB();
+
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            IRFragment *succFragment = procCFG->getFragmentByAddr(succ->getLowAddr());
+            procCFG->addEdge(frag, succFragment);
+        }
+    }
+
+    procCFG->setEntryAndExitFragment(procCFG->getFragmentByAddr(proc->getEntryAddress()));
+
+    CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
     return true;
 }
 
@@ -1011,7 +1026,7 @@ IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
     assert(origFrag->getLastStmt()->isReturn());
 
     const Address retAddr = proc->getRetAddr();
-    RTL *retRTL           = origFrag->getRTLs()->back().get();
+    RTL *retRTL           = origFrag->getLastRTL();
 
     if (retAddr == Address::INVALID) {
         // We have not added a return statement yet. Do it now.
@@ -1030,8 +1045,7 @@ IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
         // assume the return statement is the last statement
         retRTL->back() = std::make_shared<GotoStatement>(retAddr);
 
-        // TODO: split ret bb if needed and add out edges
-        assert(false);
+        retFrag = procCFG->splitFragment(retFrag, retAddr);
         procCFG->addEdge(origFrag, retFrag);
     }
 
@@ -1194,4 +1208,29 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
     }
 
     return jmpStmt->getDest()->access<Const, 1>()->getAddr();
+}
+
+
+void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
+{
+    std::set<BasicBlock *> visited;
+    std::stack<BasicBlock *> toVisit;
+
+    BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress());
+
+    toVisit.push(entryBB);
+
+    while (!toVisit.empty()) {
+        BasicBlock *current = toVisit.top();
+        toVisit.pop();
+        visited.insert(current);
+
+        current->setProc(proc);
+
+        for (BasicBlock *succ : current->getSuccessors()) {
+            if (visited.find(succ) == visited.end()) {
+                toVisit.push(succ);
+            }
+        }
+    }
 }

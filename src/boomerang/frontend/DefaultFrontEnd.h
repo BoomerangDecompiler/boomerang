@@ -158,6 +158,9 @@ private:
      */
     Address getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc);
 
+    /// After disassembly, tag all the BBs that are part of \p proc
+    void tagFunctionBBs(UserProc *proc);
+
 protected:
     IDecoder *m_decoder      = nullptr;
     BinaryFile *m_binaryFile = nullptr;
