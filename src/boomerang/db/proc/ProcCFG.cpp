@@ -261,11 +261,10 @@ void ProcCFG::removeImplicitAssign(SharedExp x)
 void ProcCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
-    assert(false); // FIXME
 
-    //     for (IRFragment */*bb*/ : *this) {
-    //         bb->print(out);
-    //     }
+    for (IRFragment *bb : *this) {
+        bb->print(out);
+    }
 
     out << '\n';
 }

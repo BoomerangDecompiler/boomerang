@@ -40,7 +40,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
 
-    if (proc->getStatus() >= ProcStatus::Visited) {
+    if (proc->getStatus() < ProcStatus::Visited) {
         LOG_MSG("Visiting procedure '%1'", proc->getName());
     }
     else {
@@ -72,6 +72,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         printCallStack();
     }
 
+    earlyDecompile(proc);
+
     if (project->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
         for (IRFragment *bb : *proc->getCFG()) {
@@ -92,7 +94,6 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                 continue;
             }
 
-            assert(hl->isCall());
             std::shared_ptr<CallStatement> call = hl->as<CallStatement>();
             UserProc *callee                    = dynamic_cast<UserProc *>(call->getDestProc());
 
@@ -117,8 +118,6 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     if (proc->getStatus() != ProcStatus::InCycle) {
         project->alertDecompiling(proc);
         LOG_MSG("Decompiling procedure '%1'", proc->getName());
-
-        earlyDecompile(proc);
         middleDecompile(proc);
 
         if (project->getSettings()->verboseOutput) {

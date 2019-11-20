@@ -38,23 +38,52 @@ bool StatementInitPass::execute(UserProc *proc)
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
             stmt->setBB(bb);
+        }
+    }
 
-            if (stmt->isCall()) {
-                std::shared_ptr<CallStatement> call = stmt->as<CallStatement>();
-                call->setSigArguments();
 
-                // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if ((bb->getNumSuccessors() == 1) && call->getDestProc() &&
-                    call->getDestProc()->isNoReturn()) {
-                    IRFragment *nextBB = bb->getSuccessor(0);
+    for (IRFragment *bb : *proc->getCFG()) {
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = bb->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
 
-                    if ((nextBB != proc->getCFG()->getExitFragment()) ||
-                        (proc->getCFG()->getExitFragment()->getNumPredecessors() != 1)) {
-                        nextBB->removePredecessor(bb);
-                        bb->removeAllSuccessors();
-                    }
-                }
+            // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
+            if (!stmt->isCall()) {
+                continue;
             }
+
+            std::shared_ptr<CallStatement> call = stmt->as<CallStatement>();
+            call->setSigArguments();
+
+            if ((bb->getNumSuccessors() != 1)) {
+                continue;
+            }
+
+            Function *destProc = call->getDestProc();
+            if (!destProc) {
+                continue;
+            }
+
+            if (!destProc->isLib() &&
+                static_cast<UserProc *>(destProc)->getStatus() != ProcStatus::Visited) {
+                continue; // Proc was not visited yet - We cannot know if it will return
+            }
+
+            if (!destProc->isNoReturn()) {
+                continue;
+            }
+
+
+            IRFragment *nextBB = bb->getSuccessor(0);
+
+            // Do not remove the only predecessor of a return fragment
+            if ((nextBB == proc->getCFG()->getExitFragment()) &&
+                proc->getCFG()->getExitFragment()->getNumPredecessors() == 1) {
+                continue;
+            }
+
+            nextBB->removePredecessor(bb);
+            bb->removeAllSuccessors();
         }
     }
 
