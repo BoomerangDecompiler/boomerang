@@ -226,7 +226,7 @@ bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 
 bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
-    LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
+    LOG_MSG("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
     LowLevelCFG *cfg = proc->getProg()->getCFG();
     assert(cfg);
@@ -570,6 +570,10 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     DecodeResult lifted;
 
     for (BasicBlock *currentBB : *cfg) {
+        if (currentBB->getFunction() != proc) {
+            continue;
+        }
+
         std::unique_ptr<RTLList> bbRTLs(new RTLList);
 
         for (const MachineInstruction &insn : currentBB->getInsns()) {
@@ -1024,13 +1028,14 @@ IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
 
 
     assert(origFrag->getLastStmt()->isReturn());
-
-    const Address retAddr = proc->getRetAddr();
     RTL *retRTL           = origFrag->getLastRTL();
+    IRFragment *retFrag   = procCFG->findRetNode(); // the one and only return fragment
+    const Address retAddr = proc->getRetAddr();
 
     if (retAddr == Address::INVALID) {
         // We have not added a return statement yet. Do it now.
         proc->setRetStmt(retRTL->back()->as<ReturnStatement>(), retRTL->getAddress());
+        //         assert(procCFG->findRetNode() != nullptr);
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
@@ -1040,7 +1045,6 @@ IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
         // previous RTL. It is assumed that THE return statement will have the same semantics
         // (NOTE: may not always be valid). To avoid this assumption, we need branches to
         // statements, not just to native addresses (RTLs).
-        IRFragment *retFrag = procCFG->findRetNode();
 
         // assume the return statement is the last statement
         retRTL->back() = std::make_shared<GotoStatement>(retAddr);
@@ -1217,7 +1221,6 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
     std::stack<BasicBlock *> toVisit;
 
     BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress());
-
     toVisit.push(entryBB);
 
     while (!toVisit.empty()) {
@@ -1225,7 +1228,8 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
         toVisit.pop();
         visited.insert(current);
 
-        current->setProc(proc);
+        assert(current->getFunction() == nullptr || current->getFunction() == proc);
+        current->setFunction(proc);
 
         for (BasicBlock *succ : current->getSuccessors()) {
             if (visited.find(succ) == visited.end()) {

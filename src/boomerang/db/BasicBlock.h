@@ -88,7 +88,7 @@ public:
     inline bool isType(BBType type) const { return m_bbType == type; }
     inline void setType(BBType bbType) { m_bbType = bbType; }
 
-    void setProc(Function *proc) { m_function = proc; }
+    void setFunction(Function *proc) { m_function = proc; }
 
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
     inline const Function *getFunction() const { return m_function; }

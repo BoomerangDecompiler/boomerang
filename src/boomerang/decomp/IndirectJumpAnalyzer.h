@@ -11,10 +11,12 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Address.h"
 
 
 class IRFragment;
 class UserProc;
+class BasicBlock;
 
 
 /**
@@ -61,4 +63,8 @@ private:
 
     /// Analyze a basic block ending with a computed call.
     bool analyzeCompCall(IRFragment *bb, UserProc *proc);
+
+    /// Decode the destination of an analyzed switch jump
+    /// \returns true if a new BasibBlock was decoded
+    bool createCompJumDest(BasicBlock *sourceBB, Address destAddr);
 };

@@ -39,4 +39,5 @@ public:
 
 private:
     void writeCFG(const ProcCFG *cfg, OStream &os);
+    void writeCFG(const UserProc *proc, OStream &os);
 };

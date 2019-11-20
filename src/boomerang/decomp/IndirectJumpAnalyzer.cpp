@@ -447,6 +447,8 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
 
 bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
 {
+    bool foundNewBBs = false;
+
     assert(!bb->getRTLs()->empty());
     RTL *lastRTL = bb->getLastRTL();
 
@@ -519,6 +521,13 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                         swi->numTableEntries = entryIdx;
                         break;
                     }
+
+                    // decode the additional switch arms
+                    const LowLevelCFG *cfg = proc->getProg()->getCFG();
+                    if (!cfg->isStartOfBB(switchEntryAddr)) {
+                        foundNewBBs = true;
+                        proc->getProg()->getFrontEnd()->decodeFragment(proc, switchEntryAddr);
+                    }
                 }
             }
 
@@ -540,15 +549,14 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
             swi->switchExp = expr;
             lastStmt->setDest(nullptr);
 
-            const bool hasEntries = swi->numTableEntries != 0;
             lastStmt->setSwitchInfo(std::move(swi));
-            return hasEntries;
+            return foundNewBBs;
         }
     }
     else {
         // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at
         // the leaves of the phi tree. Basically, a location with a reference, e.g. m[r28{-} -
-        // 16]{87}
+        // 16]{87} (-> x86/asgngoto)
         if (jumpDest->isSubscript()) {
             SharedExp sub = jumpDest->getSubExp1();
 
@@ -558,7 +566,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                 std::list<int> dests;
                 findConstantValues(jumpDest->access<RefExp>()->getDef(), dests);
                 // The switch info wants an array of native addresses
-                size_t num_dests = dests.size();
+                std::size_t num_dests = dests.size();
 
                 if (num_dests > 0) {
                     int *destArray = new int[num_dests];
@@ -574,7 +582,13 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     swi->numTableEntries = static_cast<int>(num_dests);
                     lastStmt->setDest(nullptr);
                     lastStmt->setSwitchInfo(std::move(swi));
-                    return true;
+
+                    for (int dest : dests) {
+                        Address switchEntryAddr = Address(dest);
+                        foundNewBBs |= createCompJumDest(bb->getBB(), switchEntryAddr);
+                    }
+
+                    return foundNewBBs;
                 }
             }
         }
@@ -864,4 +878,25 @@ bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *bb, UserProc *proc)
     }
 
     return false;
+}
+
+
+bool IndirectJumpAnalyzer::createCompJumDest(BasicBlock *sourceBB, Address destAddr)
+{
+    Prog *prog           = sourceBB->getFunction()->getProg();
+    LowLevelCFG *cfg     = prog->getCFG();
+    const bool canDecode = !cfg->isStartOfBB(destAddr) || cfg->isStartOfIncompleteBB(destAddr);
+
+    if (!canDecode) {
+        return false;
+    }
+
+    BasicBlock *dummy = nullptr;
+    cfg->ensureBBExists(destAddr, dummy);
+    BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr);
+
+    cfg->addEdge(sourceBB, destBB);
+    prog->getFrontEnd()->decodeFragment(static_cast<UserProc *>(sourceBB->getFunction()), destAddr);
+
+    return true;
 }

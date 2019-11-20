@@ -311,9 +311,6 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
     }
     else if (insnID == "LBZU" || insnID == "LHZU" || insnID == "LWZU" || insnID == "LFSU" ||
              insnID == "LFDU" || insnID == "LHAU" || insnID == "STFSU" || insnID == "STFDU") {
-        const QString msg = insn.m_operands[1]->toString();
-        LOG_MSG("%1", msg);
-
         const SharedExp srcBase = Location::regOf(
             insn.m_operands[1]->access<Const, 1, 1, 1>()->getInt());
         const SharedExp offset = Const::get(insn.m_operands[1]->access<Const, 1, 2>()->getInt());

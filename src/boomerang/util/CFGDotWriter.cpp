@@ -32,47 +32,6 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
     OStream of(&tgt);
     of << "digraph ProcCFG {\n";
 
-    of << "subgraph LLCFG {\n";
-
-    const LowLevelCFG *cfg = prog->getCFG();
-
-    for (const BasicBlock *bb : *cfg) {
-        of << "    bb" << bb->getLowAddr() << "[label=\"";
-
-        for (const MachineInstruction &insn : bb->getInsns()) {
-            of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data() << "\\l";
-        }
-
-        of << "\", shape=rectangle];\n";
-    }
-
-    of << "\n";
-
-    // edges
-    for (const BasicBlock *srcBB : *cfg) {
-        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
-            const BasicBlock *dstBB = srcBB->getSuccessor(j);
-
-            of << "       bb" << srcBB->getLowAddr() << " -> ";
-            of << "bb" << dstBB->getLowAddr();
-
-            if (srcBB->isType(BBType::Twoway)) {
-                if (j == 0) {
-                    of << " [color=\"green\"]"; // cond == true
-                }
-                else {
-                    of << " [color=\"red\"]"; // cond == false
-                }
-            }
-            else {
-                of << " [color=\"black\"];\n"; // normal connection
-            }
-        }
-    }
-
-    of << "}\n";
-    of << "\n";
-
     for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
             if (func->isLib()) {
@@ -86,10 +45,21 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
             }
 
             // Subgraph for the proc name
-            of << "\nsubgraph cluster_" << p->getName() << " {\n"
-               << "       color=gray;\n    label=" << p->getName() << ";\n";
+            of << "  subgraph cluster_" << p->getName() << " {\n";
+            of << "    color=gray;\n";
+            of << "    label=" << p->getName() << ";\n";
+            of << "\n";
+
+            of << "    subgraph cluster_llcfg {\n";
+            writeCFG(p, of);
+            of << "    }\n";
+            of << "\n";
+
             // Generate dotty CFG for this proc
+            of << "    subgraph cluster_hlcfg {\n";
             writeCFG(p->getCFG(), of);
+            of << "    }\n";
+            of << "  }\n";
         }
     }
 
@@ -117,13 +87,60 @@ void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 }
 
 
+void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
+{
+    const LowLevelCFG *cfg = proc->getProg()->getCFG();
+
+    for (const BasicBlock *bb : *cfg) {
+        if (bb->getFunction() != proc) {
+            continue;
+        }
+
+        of << "      bb" << bb->getLowAddr() << "[shape=rectangle, label=\"";
+
+        for (const MachineInstruction &insn : bb->getInsns()) {
+            of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data() << "\\l";
+        }
+
+        of << "\"];\n";
+    }
+
+    of << "\n";
+
+    // edges
+    for (const BasicBlock *srcBB : *cfg) {
+        if (srcBB->getFunction() != proc) {
+            continue;
+        }
+
+        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
+            const BasicBlock *dstBB = srcBB->getSuccessor(j);
+
+            of << "      bb" << srcBB->getLowAddr() << " -> bb" << dstBB->getLowAddr();
+
+            if (srcBB->isType(BBType::Twoway)) {
+                if (j == 0) {
+                    of << " [color=\"green\"];\n"; // cond == true
+                }
+                else {
+                    of << " [color=\"red\"];\n"; // cond == false
+                }
+            }
+            else {
+                of << " [color=\"black\"];\n"; // normal connection
+            }
+        }
+    }
+
+    of << "\n";
+}
+
+
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
     // The nodes
     for (IRFragment *frag : *cfg) {
-        of << "       "
-           << "frag" << frag->getLowAddr();
-        of << "[label=\"";
+        of << "      frag" << frag->getLowAddr() << "[shape=rectangle, label=\"";
 
         IRFragment::RTLIterator rit;
         StatementList::iterator sit;
@@ -134,29 +151,29 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
             OStream temp(&str);
             stmt->print(temp);
             str.replace('\n', "\\l");
+            str.replace('%', "\\%");
+            str.replace('\"', "\\\"");
             of << str << "\\l";
         }
 
-        of << "\", shape=rectangle];\n";
+        of << "\"];\n";
     }
 
-    // Close the subgraph
-    of << "}\n";
+    of << "\n";
 
     // Now the edges
     for (IRFragment *srcBB : *cfg) {
         for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
             IRFragment *dstBB = srcBB->getSuccessor(j);
 
-            of << "       frag" << srcBB->getLowAddr() << " -> ";
-            of << "frag" << dstBB->getLowAddr();
+            of << "      frag" << srcBB->getLowAddr() << " -> frag" << dstBB->getLowAddr();
 
             if (srcBB->isType(FragType::Twoway)) {
                 if (j == 0) {
-                    of << " [color=\"green\"]"; // cond == true
+                    of << " [color=\"green\"];\n"; // cond == true
                 }
                 else {
-                    of << " [color=\"red\"]"; // cond == false
+                    of << " [color=\"red\"];\n"; // cond == false
                 }
             }
             else {
