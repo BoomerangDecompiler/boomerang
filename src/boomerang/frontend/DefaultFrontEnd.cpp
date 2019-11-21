@@ -845,8 +845,6 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     }
 
     procCFG->setEntryAndExitFragment(procCFG->getFragmentByAddr(proc->getEntryAddress()));
-
-    CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
     return true;
 }
 

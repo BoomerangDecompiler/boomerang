@@ -34,7 +34,7 @@
 class BOOMERANG_API PhiAssign : public Assignment
 {
 public:
-    typedef std::map<IRFragment *, std::shared_ptr<RefExp>, IRFragment::BBComparator> PhiDefs;
+    typedef std::map<IRFragment *, std::shared_ptr<RefExp>, Util::ptrCompare<IRFragment>> PhiDefs;
     typedef MapValueIterator<PhiDefs> iterator;
     typedef MapValueConstIterator<PhiDefs> const_iterator;
     typedef MapValueReverseIterator<PhiDefs> reverse_iterator;

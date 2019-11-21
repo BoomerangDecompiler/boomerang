@@ -72,6 +72,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         printCallStack();
     }
 
+    PassManager::get()->executePass(PassID::StatementInit, proc);
+
     earlyDecompile(proc);
 
     if (project->getSettings()->decodeChildren) {
@@ -246,7 +248,6 @@ void ProcDecompiler::earlyDecompile(UserProc *proc)
     project->alertStartDecompile(proc);
     project->alertDecompileDebugPoint(proc, "Before Initialize");
 
-    PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::BBSimplify, proc); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, proc);
 

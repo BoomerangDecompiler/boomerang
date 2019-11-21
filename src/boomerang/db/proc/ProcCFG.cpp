@@ -57,7 +57,10 @@ bool ProcCFG::hasFragment(const IRFragment *frag) const
 IRFragment *ProcCFG::createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb)
 {
     IRFragment *frag = new IRFragment(bb, std::move(rtls));
-    m_fragmentSet.insert(frag);
+
+    bool inserted;
+    std::tie(std::ignore, inserted) = m_fragmentSet.insert(frag);
+    assert(inserted);
 
     frag->setType((FragType)bb->getType());
     frag->updateBBAddresses();
@@ -105,14 +108,29 @@ void ProcCFG::removeFragment(IRFragment *frag)
 
     auto it = m_fragmentSet.find(frag);
 
-    if (it != m_fragmentSet.end()) {
-        frag->clearPhis();
-        m_fragmentSet.erase(it);
+    if (it == m_fragmentSet.end()) {
+        LOG_WARN("Tried to remove fragment at address %1; does not exist in CFG",
+                 frag->getLowAddr());
+
         delete frag;
         return;
     }
 
-    LOG_WARN("Tried to remove fragment at address %1; does not exist in CFG", frag->getLowAddr());
+    for (IRFragment *pred : frag->getPredecessors()) {
+        pred->removeSuccessor(frag);
+    }
+
+    for (IRFragment *succ : frag->getSuccessors()) {
+        succ->removePredecessor(frag);
+    }
+
+    frag->removeAllPredecessors();
+    frag->removeAllSuccessors();
+
+    frag->clearPhis();
+
+    assert(*it == frag);
+    m_fragmentSet.erase(it);
     delete frag;
 }
 

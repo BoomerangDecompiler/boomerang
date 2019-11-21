@@ -41,7 +41,6 @@ bool StatementInitPass::execute(UserProc *proc)
         }
     }
 
-
     for (IRFragment *bb : *proc->getCFG()) {
         for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
              stmt            = bb->getNextStmt(rit, sit)) {
@@ -92,6 +91,5 @@ bool StatementInitPass::execute(UserProc *proc)
     // since all BBs must be reachable from the entry BB for data-flow analysis
     // to work.
     CFGCompressor().compressCFG(proc->getCFG());
-
     return true;
 }

@@ -25,20 +25,6 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-bool BasicBlock::BBComparator::operator()(const BasicBlock *bb1, const BasicBlock *bb2) const
-{
-    // special case: in test code, we have statements that do not belong to BBs.
-    // Thus, bb is nullptr
-    if (bb1 && bb2) {
-        return bb1->getLowAddr() < bb2->getLowAddr();
-    }
-    else {
-        // compare pointers
-        return bb1 < bb2;
-    }
-}
-
-
 SharedStmt PhiAssign::clone() const
 {
     std::shared_ptr<PhiAssign> pa(new PhiAssign(m_type, m_lhs));

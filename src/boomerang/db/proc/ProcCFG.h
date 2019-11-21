@@ -16,6 +16,7 @@
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/MapIterators.h"
+#include "boomerang/util/Util.h"
 
 #include <list>
 #include <map>
@@ -41,7 +42,7 @@ enum class BBType;
  */
 class BOOMERANG_API ProcCFG
 {
-    typedef std::set<IRFragment *> FragmentSet;
+    typedef std::set<IRFragment *, Util::ptrCompare<IRFragment>> FragmentSet;
     typedef std::map<SharedConstExp, SharedStmt, lessExpStar> ExpStatementMap;
 
 public:

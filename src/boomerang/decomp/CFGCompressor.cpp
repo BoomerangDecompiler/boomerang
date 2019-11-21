@@ -22,9 +22,8 @@
 bool CFGCompressor::compressCFG(ProcCFG *cfg)
 {
     // FIXME: The below was working while we still had reaching definitions. It seems to me that it
-    // would be easy to search the BB for definitions between the two branches (so we don't need
-    // reaching defs, just the SSA property of
-    //  unique definition).
+    // would be easy to search the BB for definitions between the two branches
+    // (so we don't need reaching defs, just the SSA property of unique definition).
     //
     // Look in CVS for old code.
 
@@ -51,30 +50,30 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
     bool bbsRemoved = false;
 
     while (!fragsToRemove.empty()) {
-        IRFragment *bb = fragsToRemove.front();
+        IRFragment *frag = fragsToRemove.front();
         fragsToRemove.pop_front();
 
-        assert(bb->getNumSuccessors() == 1);
-        IRFragment *succ = bb->getSuccessor(0); // the one and only successor
+        assert(frag->getNumSuccessors() == 1);
+        IRFragment *succ = frag->getSuccessor(0); // the one and only successor
 
-        if (succ == bb) {
+        if (succ == frag) {
             continue;
         }
 
-        succ->removePredecessor(bb);
-        bb->removeSuccessor(succ);
+        succ->removePredecessor(frag);
+        frag->removeSuccessor(succ);
 
-        for (IRFragment *pred : bb->getPredecessors()) {
+        for (IRFragment *pred : frag->getPredecessors()) {
             for (int i = 0; i < pred->getNumSuccessors(); i++) {
-                if (pred->getSuccessor(i) == bb) {
+                if (pred->getSuccessor(i) == frag) {
                     pred->setSuccessor(i, succ);
                     succ->addPredecessor(pred);
                 }
             }
         }
 
-        bb->removeAllPredecessors();
-        cfg->removeFragment(bb);
+        frag->removeAllPredecessors();
+        cfg->removeFragment(frag);
         bbsRemoved = true;
     }
 

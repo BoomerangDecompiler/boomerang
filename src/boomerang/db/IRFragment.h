@@ -52,14 +52,6 @@ public:
     typedef RTLList::reverse_iterator RTLRIterator;
 
 public:
-    class BBComparator
-    {
-    public:
-        /// \returns bb1->getLowAddr() < bb2->getLowAddr();
-        bool operator()(const IRFragment *bb1, const IRFragment *bb2) const;
-    };
-
-public:
     IRFragment(BasicBlock *bb, Address lowAddr);
     IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls);
     IRFragment(const IRFragment &);
@@ -68,6 +60,8 @@ public:
 
     IRFragment &operator=(const IRFragment &);
     IRFragment &operator=(IRFragment &&) = default;
+
+    bool operator<(const IRFragment &rhs) const;
 
 public:
     BasicBlock *getBB() { return m_bb; }

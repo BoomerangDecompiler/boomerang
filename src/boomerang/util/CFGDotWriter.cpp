@@ -138,6 +138,10 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
 
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
+    if (cfg->getNumFragments() > 0) {
+        cfg->getProc()->numberStatements();
+    }
+
     // The nodes
     for (IRFragment *frag : *cfg) {
         of << "      frag" << frag->getLowAddr() << "[shape=rectangle, label=\"";

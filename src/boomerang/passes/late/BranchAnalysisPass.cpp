@@ -42,7 +42,7 @@ bool BranchAnalysisPass::execute(UserProc *proc)
 
 bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
 {
-    std::set<IRFragment *, IRFragment::BBComparator> bbsToRemove;
+    std::set<IRFragment *, Util::ptrCompare<IRFragment>> bbsToRemove;
 
     for (IRFragment *a : *proc->getCFG()) {
         if (!a->isType(FragType::Twoway)) {

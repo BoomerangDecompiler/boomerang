@@ -19,16 +19,6 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool IRFragment::BBComparator::operator()(const IRFragment *bb1, const IRFragment *bb2) const
-{
-    if (bb1 && bb2) {
-        return bb1->getLowAddr() < bb2->getLowAddr();
-    }
-
-    return bb1 < bb2;
-}
-
-
 IRFragment::IRFragment(BasicBlock *bb, Address lowAddr)
     : m_bb(bb)
     , m_lowAddr(lowAddr)
@@ -72,6 +62,16 @@ IRFragment &IRFragment::operator=(const IRFragment &other)
     }
 
     return *this;
+}
+
+
+bool IRFragment::operator<(const IRFragment &rhs) const
+{
+    if (m_bb && rhs.m_bb) {
+        return m_bb->getLowAddr() < rhs.m_bb->getLowAddr();
+    }
+
+    return m_bb < rhs.m_bb;
 }
 
 
@@ -614,15 +614,15 @@ void IRFragment::simplify()
 void IRFragment::print(OStream &os) const
 {
     switch (getType()) {
-    case FragType::Oneway: os << "Oneway Fragment"; break;
-    case FragType::Twoway: os << "Twoway Fragment"; break;
-    case FragType::Nway: os << "Nway Fragment"; break;
-    case FragType::Call: os << "Call Fragment"; break;
-    case FragType::Ret: os << "Ret Fragment"; break;
-    case FragType::Fall: os << "Fall Fragment"; break;
-    case FragType::CompJump: os << "Computed jump Fragment"; break;
-    case FragType::CompCall: os << "Computed call Fragment"; break;
-    case FragType::Invalid: os << "Invalid Fragment"; break;
+    case FragType::Oneway: os << "Oneway BB"; break;
+    case FragType::Twoway: os << "Twoway BB"; break;
+    case FragType::Nway: os << "Nway BB"; break;
+    case FragType::Call: os << "Call BB"; break;
+    case FragType::Ret: os << "Ret BB"; break;
+    case FragType::Fall: os << "Fall BB"; break;
+    case FragType::CompJump: os << "Computed jump BB"; break;
+    case FragType::CompCall: os << "Computed call BB"; break;
+    case FragType::Invalid: os << "Invalid BB"; break;
     }
 
     os << ":\n";
