@@ -66,5 +66,7 @@ private:
 
     /// Decode the destination of an analyzed switch jump
     /// \returns true if a new BasibBlock was decoded
-    bool createCompJumDest(BasicBlock *sourceBB, Address destAddr);
+    bool createCompJumpDest(BasicBlock *sourceBB, int destIdx, Address destAddr);
+
+    void addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB);
 };

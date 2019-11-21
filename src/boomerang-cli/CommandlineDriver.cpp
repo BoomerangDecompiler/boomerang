@@ -547,7 +547,6 @@ int CommandlineDriver::decompile(const QString &fname, const QString &pname)
         return 1;
     }
 
-
     if (m_project->getSettings()->stopBeforeDecompile) {
         return 0;
     }

@@ -426,22 +426,6 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
             break;
         }
     }
-
-    // Decode the newly discovered switch code arms, if any, and if not already decoded
-    int count = 0;
-
-    for (auto &[src, dest] : dests) {
-        count++;
-        LOG_VERBOSE("Decoding switch at %1: destination %2 of %3 (Address %4)", bb->getHiAddr(),
-                    count, dests.size(), dest);
-
-        prog->decodeFragment(proc, dest);
-
-        LowLevelCFG *cfg  = proc->getProg()->getCFG();
-        BasicBlock *srcBB = cfg->getBBStartingAt(src->getLowAddr());
-
-        cfg->addEdge(srcBB, dest);
-    }
 }
 
 
@@ -523,11 +507,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     }
 
                     // decode the additional switch arms
-                    const LowLevelCFG *cfg = proc->getProg()->getCFG();
-                    if (!cfg->isStartOfBB(switchEntryAddr)) {
-                        foundNewBBs = true;
-                        proc->getProg()->getFrontEnd()->decodeFragment(proc, switchEntryAddr);
-                    }
+                    foundNewBBs |= createCompJumpDest(bb->getBB(), entryIdx, switchEntryAddr);
                 }
             }
 
@@ -550,6 +530,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
             lastStmt->setDest(nullptr);
 
             lastStmt->setSwitchInfo(std::move(swi));
+            processSwitch(bb, proc);
             return foundNewBBs;
         }
     }
@@ -583,11 +564,13 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     lastStmt->setDest(nullptr);
                     lastStmt->setSwitchInfo(std::move(swi));
 
+                    int i = 0;
                     for (int dest : dests) {
                         Address switchEntryAddr = Address(dest);
-                        foundNewBBs |= createCompJumDest(bb->getBB(), switchEntryAddr);
+                        foundNewBBs |= createCompJumpDest(bb->getBB(), i++, switchEntryAddr);
                     }
 
+                    processSwitch(bb, proc);
                     return foundNewBBs;
                 }
             }
@@ -881,13 +864,15 @@ bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *bb, UserProc *proc)
 }
 
 
-bool IndirectJumpAnalyzer::createCompJumDest(BasicBlock *sourceBB, Address destAddr)
+bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx, Address destAddr)
 {
     Prog *prog           = sourceBB->getFunction()->getProg();
     LowLevelCFG *cfg     = prog->getCFG();
     const bool canDecode = !cfg->isStartOfBB(destAddr) || cfg->isStartOfIncompleteBB(destAddr);
 
     if (!canDecode) {
+        BasicBlock *destBB = cfg->getBBStartingAt(destAddr);
+        addCFGEdge(sourceBB, destIdx, destBB);
         return false;
     }
 
@@ -895,8 +880,19 @@ bool IndirectJumpAnalyzer::createCompJumDest(BasicBlock *sourceBB, Address destA
     cfg->ensureBBExists(destAddr, dummy);
     BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr);
 
-    cfg->addEdge(sourceBB, destBB);
+    addCFGEdge(sourceBB, destIdx, destBB);
     prog->getFrontEnd()->decodeFragment(static_cast<UserProc *>(sourceBB->getFunction()), destAddr);
 
     return true;
+}
+
+
+void IndirectJumpAnalyzer::addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB)
+{
+    while (destIdx >= sourceBB->getNumSuccessors()) {
+        sourceBB->addSuccessor(nullptr);
+    }
+
+    sourceBB->setSuccessor(destIdx, destBB);
+    destBB->addPredecessor(sourceBB);
 }

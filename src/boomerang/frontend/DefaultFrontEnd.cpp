@@ -613,10 +613,6 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                 case StmtType::Case: {
                     SharedExp jumpDest = jumpStmt->getDest();
 
-                    if (jumpDest == nullptr) {
-                        break;
-                    }
-
                     // Check for indirect calls to library functions, especially in Win32 programs
                     if (refersToImportedFunction(jumpDest)) {
                         LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.",
@@ -787,8 +783,7 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
                     bbRTLs->push_back(std::move(lifted.rtl));
-                    IRFragment *retFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
-                    createReturnBlock(retFrag);
+                    createReturnBlock(std::move(bbRTLs), currentBB);
                 } break;
 
                 case StmtType::Goto:
@@ -1018,22 +1013,22 @@ void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
 }
 
 
-IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
+IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs, BasicBlock *retBB)
 {
-    assert(!origFrag->getFunction()->isLib());
-    UserProc *proc   = static_cast<UserProc *>(origFrag->getFunction());
-    ProcCFG *procCFG = proc->getCFG();
+    UserProc *proc = static_cast<UserProc *>(retBB->getFunction());
+    ProcCFG *cfg   = proc->getCFG();
 
-
-    assert(origFrag->getLastStmt()->isReturn());
-    RTL *retRTL           = origFrag->getLastRTL();
-    IRFragment *retFrag   = procCFG->findRetNode(); // the one and only return fragment
-    const Address retAddr = proc->getRetAddr();
+    RTL *retRTL         = newRTLs->back().get();
+    Address retAddr     = proc->getRetAddr();
+    IRFragment *newFrag = nullptr;
 
     if (retAddr == Address::INVALID) {
-        // We have not added a return statement yet. Do it now.
-        proc->setRetStmt(retRTL->back()->as<ReturnStatement>(), retRTL->getAddress());
-        //         assert(procCFG->findRetNode() != nullptr);
+        // Create the basic block
+        newFrag = cfg->createFragment(std::move(newRTLs), retBB);
+        if (newFrag) {
+            SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
+            proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
+        }
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
@@ -1043,15 +1038,29 @@ IRFragment *DefaultFrontEnd::createReturnBlock(IRFragment *origFrag)
         // previous RTL. It is assumed that THE return statement will have the same semantics
         // (NOTE: may not always be valid). To avoid this assumption, we need branches to
         // statements, not just to native addresses (RTLs).
+        IRFragment *origRetFrag = proc->getCFG()->findRetNode();
+        assert(origRetFrag);
 
-        // assume the return statement is the last statement
-        retRTL->back() = std::make_shared<GotoStatement>(retAddr);
+        if (origRetFrag->getFirstStmt()->isReturn()) {
+            // ret node has no semantics, clearly we need to keep ours
+            assert(!retRTL->empty());
+            retRTL->pop_back();
+        }
+        else {
+            retRTL->clear();
+        }
 
-        retFrag = procCFG->splitFragment(retFrag, retAddr);
-        procCFG->addEdge(origFrag, retFrag);
+        retRTL->append(std::make_shared<GotoStatement>(retAddr));
+        newFrag = cfg->createFragment(std::move(newRTLs), retBB);
+
+        if (newFrag) {
+            // make sure the return fragment only consists of a single RTL
+            origRetFrag = cfg->splitFragment(origRetFrag, retAddr);
+            cfg->addEdge(newFrag, origRetFrag);
+        }
     }
 
-    return origFrag;
+    return newFrag;
 }
 
 
@@ -1086,9 +1095,7 @@ void DefaultFrontEnd::appendSyntheticReturn(IRFragment *callFrag)
     bbRTLs->push_back(std::move(rtl));
 
     UserProc *proc      = static_cast<UserProc *>(callFrag->getFunction());
-    IRFragment *retFrag = proc->getCFG()->createFragment(std::move(bbRTLs), callFrag->getBB());
-    retFrag             = createReturnBlock(retFrag);
-
+    IRFragment *retFrag = createReturnBlock(std::move(bbRTLs), callFrag->getBB());
     proc->getCFG()->addEdge(callFrag, retFrag);
 }
 

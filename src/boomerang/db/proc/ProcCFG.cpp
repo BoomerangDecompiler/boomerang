@@ -50,17 +50,14 @@ bool ProcCFG::hasFragment(const IRFragment *frag) const
         return false;
     }
 
-    return m_fragmentSet.find(const_cast<IRFragment *>(frag)) != m_fragmentSet.end();
+    return findFragment(frag) != m_fragmentSet.end();
 }
 
 
 IRFragment *ProcCFG::createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb)
 {
     IRFragment *frag = new IRFragment(bb, std::move(rtls));
-
-    bool inserted;
-    std::tie(std::ignore, inserted) = m_fragmentSet.insert(frag);
-    assert(inserted);
+    m_fragmentSet.insert(frag);
 
     frag->setType((FragType)bb->getType());
     frag->updateBBAddresses();
@@ -77,7 +74,12 @@ IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
         // cannot split
         return nullptr;
     }
+    else if (it == frag->getRTLs()->begin()) {
+        // no need to split
+        return frag;
+    }
 
+    // move RTLs with addr >= splitAddr to new list
     std::unique_ptr<RTLList> newRTLs(new RTLList);
     std::for_each(it, frag->getRTLs()->end(),
                   [&newRTLs](std::unique_ptr<RTL> &rtl) { newRTLs->push_back(std::move(rtl)); });
@@ -85,8 +87,14 @@ IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
 
     IRFragment *newFrag = createFragment(std::move(newRTLs), frag->getBB());
     newFrag->setType(frag->getType());
-    frag->setType(FragType::Fall);
 
+    frag->setType(FragType::Fall);
+    addEdge(frag, newFrag);
+
+    frag->updateBBAddresses();
+    newFrag->updateBBAddresses();
+
+    assert(frag->getHiAddr() < splitAddr);
     return newFrag;
 }
 
@@ -106,7 +114,7 @@ void ProcCFG::removeFragment(IRFragment *frag)
         }
     }
 
-    auto it = m_fragmentSet.find(frag);
+    auto it = findFragment(frag);
 
     if (it == m_fragmentSet.end()) {
         LOG_WARN("Tried to remove fragment at address %1; does not exist in CFG",
@@ -307,4 +315,18 @@ void ProcCFG::setEntryAndExitFragment(IRFragment *entryFrag)
             return;
         }
     }
+}
+
+
+ProcCFG::FragmentSet::iterator ProcCFG::findFragment(const IRFragment *frag) const
+{
+    auto [from, to] = m_fragmentSet.equal_range(const_cast<IRFragment *>(frag));
+
+    for (auto it = from; it != to; ++it) {
+        if (*it == frag) {
+            return it;
+        }
+    }
+
+    return m_fragmentSet.end();
 }

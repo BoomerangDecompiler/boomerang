@@ -104,7 +104,7 @@ protected:
      *                  (including a ReturnStatement as the last statement)
      * \returns  Pointer to the newly created BB
      */
-    IRFragment *createReturnBlock(IRFragment *origFrag);
+    IRFragment *createReturnBlock(std::unique_ptr<RTLList> rtls, BasicBlock *retBB);
 
     /**
      * Given the dest of a call, determine if this is a machine specific helper function with

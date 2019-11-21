@@ -42,7 +42,8 @@ enum class BBType;
  */
 class BOOMERANG_API ProcCFG
 {
-    typedef std::set<IRFragment *, Util::ptrCompare<IRFragment>> FragmentSet;
+    // FIXME order is undefined if two fragments come from the same BB
+    typedef std::multiset<IRFragment *, Util::ptrCompare<IRFragment>> FragmentSet;
     typedef std::map<SharedConstExp, SharedStmt, lessExpStar> ExpStatementMap;
 
 public:
@@ -145,6 +146,9 @@ public:
     void print(OStream &out) const;
 
     QString toString() const;
+
+private:
+    FragmentSet::iterator findFragment(const IRFragment *frag) const;
 
 private:
     UserProc *m_myProc = nullptr;      ///< Procedure to which this CFG belongs.
