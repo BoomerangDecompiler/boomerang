@@ -71,7 +71,7 @@ regression_tests = [
     #"OSX/twoproc2",
     #"OSX/uns",
 
-    #"x86/asgngoto",
+    "x86/asgngoto",
     "x86/branch",
     "x86/branch-linux",
     "x86/bswap",

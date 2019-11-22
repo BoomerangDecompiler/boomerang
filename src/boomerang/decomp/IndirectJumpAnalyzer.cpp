@@ -376,8 +376,7 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
             }
         }
         else if (si->switchType == SwitchType::F) {
-            Address::value_type *entry = reinterpret_cast<Address::value_type *>(
-                si->tableAddr.value());
+            const int *entry  = reinterpret_cast<int *>(si->tableAddr.value());
             switchDestination = Address(entry[i]);
         }
         else if (!image->readNativeAddr4(si->tableAddr + 4 * i, switchDestination)) {
@@ -554,6 +553,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     std::copy(dests.begin(), dests.end(), destArray);
 
                     std::unique_ptr<SwitchInfo> swi(new SwitchInfo);
+
                     swi->switchType = SwitchType::F; // The "Fortran" form
                     swi->switchExp  = jumpDest;
                     // WARN: HACK HACK HACK Abuse the tableAddr member as a pointer
@@ -561,7 +561,8 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     swi->lowerBound      = 1; // Not used, except to compute
                     swi->upperBound      = static_cast<int>(num_dests); // the number of options
                     swi->numTableEntries = static_cast<int>(num_dests);
-                    lastStmt->setDest(nullptr);
+
+                    lastStmt->setDest(jumpDest);
                     lastStmt->setSwitchInfo(std::move(swi));
 
                     int i = 0;
@@ -872,8 +873,7 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
 
     if (!canDecode) {
         BasicBlock *destBB = cfg->getBBStartingAt(destAddr);
-        addCFGEdge(sourceBB, destIdx, destBB);
-        return false;
+        return addCFGEdge(sourceBB, destIdx, destBB);
     }
 
     BasicBlock *dummy = nullptr;
@@ -887,12 +887,17 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
 }
 
 
-void IndirectJumpAnalyzer::addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB)
+bool IndirectJumpAnalyzer::addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB)
 {
     while (destIdx >= sourceBB->getNumSuccessors()) {
         sourceBB->addSuccessor(nullptr);
     }
 
-    sourceBB->setSuccessor(destIdx, destBB);
+    const bool newEdge = sourceBB->getSuccessor(destIdx) != destBB;
+    if (newEdge) {
+        sourceBB->setSuccessor(destIdx, destBB);
+    }
+
     destBB->addPredecessor(sourceBB);
+    return newEdge;
 }

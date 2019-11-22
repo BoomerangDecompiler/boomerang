@@ -68,5 +68,5 @@ private:
     /// \returns true if a new BasibBlock was decoded
     bool createCompJumpDest(BasicBlock *sourceBB, int destIdx, Address destAddr);
 
-    void addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB);
+    bool addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB);
 };
