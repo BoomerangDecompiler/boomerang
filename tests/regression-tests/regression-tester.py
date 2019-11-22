@@ -23,7 +23,7 @@ regression_tests = [
     #"elf32-ppc/hello",
     #"elf32-ppc/minmax",
     #"elf32-ppc/switch",
-    #"elf/hello-clang4-dynamic",
+    "elf/hello-clang4-dynamic",
 
     #"OSX/banner",
     #"OSX/branch",
