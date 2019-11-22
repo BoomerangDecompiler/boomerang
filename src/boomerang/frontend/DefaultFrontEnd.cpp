@@ -226,7 +226,7 @@ bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 
 bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
-    LOG_MSG("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
+    LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
     LowLevelCFG *cfg = proc->getProg()->getCFG();
     assert(cfg);

@@ -99,7 +99,7 @@ regression_tests = [
     "x86/paramchain",
     "x86/phi2",
     "x86/printpi",
-    #"x86/recursion",
+    "x86/recursion",
     #"x86/regalias",
     #"x86/regalias2",
     "x86/restoredparam",

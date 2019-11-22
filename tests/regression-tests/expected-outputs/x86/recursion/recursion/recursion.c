@@ -100,12 +100,10 @@ __size32 h(int param1)
     int eax; 		// r24
     int ecx; 		// r25
     int edx; 		// r26
-    int local2; 		// m[esp - 28]
 
     eax = printf("h(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 0) {
-        local2 = param1 - 1;
-        eax = i(param1 - 1); /* Warning: also results in ecx, edx */
+        eax = i(param1 - 1);
     }
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }
@@ -168,11 +166,9 @@ __size32 g(union { int; __size32 *; } param1)
 __size32 i(int param1)
 {
     int eax; 		// r24
-    int ecx; 		// r25
-    int edx; 		// r26
 
-    eax = printf("i(%d)\n", param1); /* Warning: also results in ecx, edx */
-    return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+    eax = printf("i(%d)\n", param1);
+    return eax;
 }
 
 /** address: 0x080485a4 */
