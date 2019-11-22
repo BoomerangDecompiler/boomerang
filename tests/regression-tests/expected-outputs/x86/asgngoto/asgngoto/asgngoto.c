@@ -35,10 +35,10 @@ void MAIN__(char param1)
 {
     __size32 local4; 		// m[esp - 16]
 
-    s_wsle();
+    s_wsle(0x8049afc);
     do_lio(0x80489ac, 0x80489a8, "Input num:Input out of rangeTwo!Three!Four!", 10);
     e_wsle();
-    s_rsle();
+    s_rsle(0x8049b10);
     do_lio(0x80489b0, 0x80489a8, &param1, 4);
     e_rsle();
     local4 = 0x8048760;
@@ -53,22 +53,22 @@ void MAIN__(char param1)
     }
     switch(local4) {
     case 0x8048760:
-        s_wsle();
+        s_wsle(0x8049b24);
         do_lio(0x80489ac, 0x80489a8, "Input out of rangeTwo!Three!Four!", 18);
         e_wsle();
         break;
     case 0x8048793:
-        s_wsle();
+        s_wsle(0x8049b38);
         do_lio(0x80489ac, 0x80489a8, "Two!Three!Four!", 4);
         e_wsle();
         break;
     case 0x80487c3:
-        s_wsle();
+        s_wsle(0x8049b4c);
         do_lio(0x80489ac, 0x80489a8, "Three!Four!", 6);
         e_wsle();
         break;
     case 0x80487f3:
-        s_wsle();
+        s_wsle(0x8049b60);
         do_lio(0x80489ac, 0x80489a8, "Four!", 5);
         e_wsle();
         break;
