@@ -16,7 +16,7 @@ int main()
     float b;
 
     scanf("%f", &b);
-    printf("a is %f, b is %f\n", a, b);
+    printf("a is %f, b is %f\n", (double)a, (double)b);
 
     if (a == b) printf("Equal\n");
     if (a != b) printf("Not Equal\n");
