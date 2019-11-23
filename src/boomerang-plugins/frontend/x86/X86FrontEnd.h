@@ -43,6 +43,9 @@ public:
     /// \copydoc IFrontEnd::processProc
     bool processProc(UserProc *proc, Address addr) override;
 
+    /// \copydoc IFrontEnd::liftProc
+    bool liftProc(UserProc *proc) override;
+
     /// \copydoc IFrontEnd::getMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
 

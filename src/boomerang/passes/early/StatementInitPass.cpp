@@ -36,15 +36,6 @@ bool StatementInitPass::execute(UserProc *proc)
         for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
              stmt            = bb->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
-            stmt->setProc(proc);
-            stmt->setBB(bb);
-        }
-    }
-
-    for (IRFragment *bb : *proc->getCFG()) {
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
-             stmt            = bb->getNextStmt(rit, sit)) {
-            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
 
             // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
             if (!stmt->isCall()) {

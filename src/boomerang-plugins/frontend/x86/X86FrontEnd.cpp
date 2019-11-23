@@ -45,12 +45,21 @@ bool X86FrontEnd::processProc(UserProc *function, Address addr)
     // This will get done twice; no harm
     function->setEntryBB();
 
+    return true;
+}
+
+
+bool X86FrontEnd::liftProc(UserProc *proc)
+{
+    if (!DefaultFrontEnd::liftProc(proc)) {
+        return false;
+    }
 
     // Process away %rpt and %skip
-    processStringInst(function);
+    processStringInst(proc);
 
     // Process code for side effects of overlapped registers
-    processOverlapped(function);
+    processOverlapped(proc);
 
     return true;
 }

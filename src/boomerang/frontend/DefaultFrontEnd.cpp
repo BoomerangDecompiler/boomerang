@@ -840,6 +840,18 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     }
 
     procCFG->setEntryAndExitFragment(procCFG->getFragmentByAddr(proc->getEntryAddress()));
+
+    IRFragment::RTLIterator rit;
+    StatementList::iterator sit;
+
+    for (IRFragment *bb : *procCFG) {
+        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = bb->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setBB(bb);
+        }
+    }
     return true;
 }
 
