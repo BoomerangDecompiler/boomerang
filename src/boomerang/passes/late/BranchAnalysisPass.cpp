@@ -26,29 +26,29 @@ BranchAnalysisPass::BranchAnalysisPass()
 
 bool BranchAnalysisPass::execute(UserProc *proc)
 {
-    bool removedBBs = doBranchAnalysis(proc);
+    bool removedFragments = doBranchAnalysis(proc);
     fixUglyBranches(proc);
 
-    if (removedBBs) {
+    if (removedFragments) {
         // redo the data flow
         PassManager::get()->executePass(PassID::Dominators, proc);
         PassManager::get()->executePass(PassID::PhiPlacement, proc);
         PassManager::get()->executePass(PassID::BlockVarRename, proc);
     }
 
-    return removedBBs;
+    return removedFragments;
 }
 
 
 bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
 {
-    std::set<IRFragment *, Util::ptrCompare<IRFragment>> bbsToRemove;
+    std::set<IRFragment *, Util::ptrCompare<IRFragment>> fragsToRemove;
 
     for (IRFragment *a : *proc->getCFG()) {
         if (!a->isType(FragType::Twoway)) {
             continue;
         }
-        else if (bbsToRemove.find(a) != bbsToRemove.end()) {
+        else if (fragsToRemove.find(a) != fragsToRemove.end()) {
             continue;
         }
 
@@ -79,7 +79,7 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
                                                   bBranch->getCondExpr());
 
             aBranch->setCondExpr(newCond->clone()->simplify());
-            aBranch->setFallBB(bBranch->getFallBB());
+            aBranch->setFallFragment(bBranch->getFallFragment());
 
             assert(b->getNumPredecessors() == 0);
             assert(b->getNumSuccessors() == 2);
@@ -93,7 +93,7 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             succ1->removePredecessor(b);
             succ2->removePredecessor(b);
 
-            bbsToRemove.insert(b);
+            fragsToRemove.insert(b);
         }
 
         // A: branch to C if cond1
@@ -110,8 +110,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
 
             aBranch->setCondExpr(newCond->clone()->simplify());
             aBranch->setDest(bBranch->getFixedDest());
-            aBranch->setTakenBB(bBranch->getTakenBB());
-            aBranch->setFallBB(bBranch->getFallBB());
+            aBranch->setTakenFragment(bBranch->getTakenFragment());
+            aBranch->setFallFragment(bBranch->getFallFragment());
 
             assert(b->getNumPredecessors() == 0);
             assert(b->getNumSuccessors() == 2);
@@ -125,16 +125,16 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             succ1->removePredecessor(b);
             succ2->removePredecessor(b);
 
-            bbsToRemove.insert(b);
+            fragsToRemove.insert(b);
         }
     }
 
-    const bool removedBBs = !bbsToRemove.empty();
-    for (IRFragment *bb : bbsToRemove) {
+    const bool removedFragments = !fragsToRemove.empty();
+    for (IRFragment *bb : fragsToRemove) {
         proc->getCFG()->removeFragment(bb);
     }
 
-    return removedBBs;
+    return removedFragments;
 }
 
 
@@ -179,9 +179,9 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
 }
 
 
-bool BranchAnalysisPass::isOnlyBranch(IRFragment *bb) const
+bool BranchAnalysisPass::isOnlyBranch(IRFragment *frag) const
 {
-    const RTLList *rtls = bb->getRTLs();
+    const RTLList *rtls = frag->getRTLs();
     if (!rtls || rtls->empty()) {
         return false;
     }
@@ -190,7 +190,8 @@ bool BranchAnalysisPass::isOnlyBranch(IRFragment *bb) const
     IRFragment::RTLRIterator rIt;
     bool last = true;
 
-    for (SharedStmt s = bb->getLastStmt(rIt, sIt); s != nullptr; s = bb->getPrevStmt(rIt, sIt)) {
+    for (SharedStmt s = frag->getLastStmt(rIt, sIt); s != nullptr;
+         s            = frag->getPrevStmt(rIt, sIt)) {
         if (!last) {
             return false; // there are other statements beside the last branch
         }

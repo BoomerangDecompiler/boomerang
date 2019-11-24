@@ -70,9 +70,9 @@ SharedStmt Assign::clone() const
         m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members
-    asgn->m_bb     = m_bb;
-    asgn->m_proc   = m_proc;
-    asgn->m_number = m_number;
+    asgn->m_fragment = m_fragment;
+    asgn->m_proc     = m_proc;
+    asgn->m_number   = m_number;
 
     return asgn;
 }

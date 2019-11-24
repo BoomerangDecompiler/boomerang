@@ -78,21 +78,21 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
     if (project->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
-        for (IRFragment *bb : *proc->getCFG()) {
-            if (!bb->isType(FragType::Call)) {
+        for (IRFragment *frag : *proc->getCFG()) {
+            if (!frag->isType(FragType::Call)) {
                 continue;
             }
 
-            // The call Statement will be in the last RTL in this BB
-            if (!bb->getRTLs()) {
+            // The call statement will be in the last RTL in this fragment
+            if (!frag->getRTLs()) {
                 continue; // not lifted yet
             }
 
-            SharedStmt hl = bb->getRTLs()->back()->getHlStmt();
+            SharedStmt hl = frag->getRTLs()->back()->getHlStmt();
 
             if (!hl->isCall()) {
-                LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
-                         bb->getLowAddr(), hl);
+                LOG_WARN("Fragment at address %1 is a CALL but last stmt is not a call: %2",
+                         frag->getLowAddr(), hl);
                 continue;
             }
 
@@ -248,7 +248,8 @@ void ProcDecompiler::earlyDecompile(UserProc *proc)
     project->alertStartDecompile(proc);
     project->alertDecompileDebugPoint(proc, "Before Initialize");
 
-    PassManager::get()->executePass(PassID::BBSimplify, proc); // Remove branches with false guards
+    // Remove branches with false guards
+    PassManager::get()->executePass(PassID::FragSimplify, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
 
     proc->debugPrintAll("After Initialize");
@@ -265,8 +266,8 @@ void ProcDecompiler::earlyDecompile(UserProc *proc)
     PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::GlobalConstReplace, proc);
 
-    // First placement of phi functions, renaming, and initial propagation. This is mostly for the
-    // stack pointer
+    // First placement of phi functions, renaming, and initial propagation.
+    // This is mostly for the stack pointer.
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of
     // propagation here, since the status == check had been knobbled below. Hopefully, one call to
     // placing phi functions etc will be equivalent to depth 0 in the old scheme
@@ -447,8 +448,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     bool changed = false;
     IndirectJumpAnalyzer analyzer;
 
-    for (IRFragment *bb : *proc->getCFG()) {
-        changed |= analyzer.decodeIndirectJmp(bb, proc);
+    for (IRFragment *frag : *proc->getCFG()) {
+        changed |= analyzer.decodeIndirectJmp(frag, proc);
     }
 
     if (changed) {
@@ -665,9 +666,9 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
 {
     bool change = false;
-    for (IRFragment *bb : *proc->getCFG()) {
-        if (bb->isType(FragType::CompCall)) {
-            std::shared_ptr<CallStatement> call = bb->getLastStmt()->as<CallStatement>();
+    for (IRFragment *frag : *proc->getCFG()) {
+        if (frag->isType(FragType::CompCall)) {
+            std::shared_ptr<CallStatement> call = frag->getLastStmt()->as<CallStatement>();
             const bool converted                = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();

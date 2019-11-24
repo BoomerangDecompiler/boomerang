@@ -20,9 +20,8 @@
 class IRFragment;
 class PhiAssign;
 
-
-typedef std::size_t BBIndex;
-static constexpr const BBIndex BBINDEX_INVALID = ((BBIndex)-1);
+typedef std::size_t FragIndex;
+static constexpr const FragIndex INDEX_INVALID = FragIndex(-1);
 
 
 /**
@@ -65,60 +64,60 @@ public:
     // for testing
 public:
     /// \note can only be called after \ref calculateDominators()
-    const IRFragment *getSemiDominator(const IRFragment *bb) const
+    const IRFragment *getSemiDominator(const IRFragment *frag) const
     {
-        return nodeToBB(getSemi(pbbToNode(bb)));
+        return idxToFrag(getSemi(fragToIdx(frag)));
     }
 
     /// \note can only be called after \ref calculateDominators()
-    const IRFragment *getDominator(const IRFragment *bb) const
+    const IRFragment *getDominator(const IRFragment *frag) const
     {
-        return nodeToBB(getIdom(pbbToNode(bb)));
+        return idxToFrag(getIdom(fragToIdx(frag)));
     }
 
     /// \note can only be called after \ref calculateDominators()
-    std::set<const IRFragment *> getDominanceFrontier(const IRFragment *bb) const
+    std::set<const IRFragment *> getDominanceFrontier(const IRFragment *frag) const
     {
         std::set<const IRFragment *> ret;
-        for (int idx : m_DF.at(pbbToNode(bb))) {
-            ret.insert(nodeToBB(idx));
+        for (FragIndex idx : m_DF.at(fragToIdx(frag))) {
+            ret.insert(idxToFrag(idx));
         }
 
         return ret;
     }
 
 public:
-    const IRFragment *nodeToBB(BBIndex node) const { return m_BBs.at(node); }
-    IRFragment *nodeToBB(BBIndex node) { return m_BBs.at(node); }
+    const IRFragment *idxToFrag(FragIndex node) const { return m_frags.at(node); }
+    IRFragment *idxToFrag(FragIndex node) { return m_frags.at(node); }
 
-    BBIndex pbbToNode(const IRFragment *bb) const
+    FragIndex fragToIdx(const IRFragment *frag) const
     {
-        return m_indices.at(const_cast<IRFragment *>(bb));
+        return m_indices.at(const_cast<IRFragment *>(frag));
     }
 
-    std::set<BBIndex> &getDF(int node) { return m_DF[node]; }
-    BBIndex getIdom(BBIndex node) const { return m_idom[node]; }
-    BBIndex getSemi(BBIndex node) const { return m_semi[node]; }
-    std::set<BBIndex> &getA_phi(SharedExp e) { return m_A_phi[e]; }
+    std::set<FragIndex> &getDF(FragIndex node) { return m_DF[node]; }
+    FragIndex getIdom(FragIndex node) const { return m_idom[node]; }
+    FragIndex getSemi(FragIndex node) const { return m_semi[node]; }
+    std::set<FragIndex> &getA_phi(SharedExp e) { return m_A_phi[e]; }
 
 private:
     void recalcSpanningTree();
 
     /// depth first search
-    /// \param myIdx index of the current BB
-    /// \param parentIdx index of the parent of the current BB
-    void dfs(BBIndex myIdx, BBIndex parentIdx);
+    /// \param myIdx index of the current fragment
+    /// \param parentIdx index of the parent of the current fragment
+    void dfs(FragIndex myIdx, FragIndex parentIdx);
 
     /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time
     /// per operation (overall O(N log N))
-    BBIndex getAncestorWithLowestSemi(BBIndex v);
+    FragIndex getAncestorWithLowestSemi(FragIndex v);
 
-    void link(BBIndex p, BBIndex n);
+    void link(FragIndex p, FragIndex n);
 
-    void computeDF(BBIndex n);
+    void computeDF(FragIndex n);
 
     /// \return true if \p n dominates \p w.
-    bool doesDominate(BBIndex n, BBIndex w);
+    bool doesDominate(FragIndex n, FragIndex w);
 
     bool canRenameLocalsParams() const { return renameLocalsAndParams; }
 
@@ -127,50 +126,51 @@ private:
 private:
     void allocateData();
 
-    bool isAncestorOf(BBIndex n, BBIndex parent) const;
+    bool isAncestorOf(FragIndex n, FragIndex parent) const;
 
 private:
     UserProc *m_proc = nullptr;
 
     /* Dominance Frontier Data */
 
-    /* These first two are not from Appel; they map PBBs to indices */
-    std::vector<IRFragment *> m_BBs;                     ///< Maps index -> IRFragment
-    std::unordered_map<IRFragment *, BBIndex> m_indices; ///< Maps IRFragment -> index
+    // These first two are not from Appel; they map fragments to indices and back
+    std::vector<IRFragment *> m_frags;                     ///< Maps index -> IRFragment
+    std::unordered_map<IRFragment *, FragIndex> m_indices; ///< Maps IRFragment -> index
 
     /// Calculating the dominance frontier
 
-    /// Order number of BB n during a depth first search.
+    /// Order number of fragment n during a depth first search.
     /// If there is a path from a to b in the ProcCFG, then a is an ancestor of b
-    /// if dfnum[a] < dfnum[b]. If BB a has not yet been visited, m_dfnum[a] will be -1.
+    /// if dfnum[a] < dfnum[b]. If fragment a has not yet been visited, m_dfnum[a] will be -1.
     std::vector<int> m_dfnum;
 
-    std::vector<BBIndex> m_ancestor; ///< Immediate unique ancestor in the depth first spanning tree
-    std::vector<BBIndex> m_semi;     ///< Semi-dominator of n
-    std::vector<BBIndex> m_idom;     ///< Immediate dominator
+    std::vector<FragIndex>
+        m_ancestor;                ///< Immediate unique ancestor in the depth first spanning tree
+    std::vector<FragIndex> m_semi; ///< Semi-dominator of n
+    std::vector<FragIndex> m_idom; ///< Immediate dominator
 
-    std::vector<BBIndex> m_samedom;          ///< ? To do with deferring
-    std::vector<BBIndex> m_vertex;           ///< ?
-    std::vector<BBIndex> m_parent;           ///< Parent in the dominator tree?
-    std::vector<BBIndex> m_best;             ///< Improves ancestorWithLowestSemi
-    std::vector<std::set<BBIndex>> m_bucket; ///< Deferred calculation?
-    std::vector<std::set<BBIndex>> m_DF;     ///< Dominance frontier for every node n
-    std::size_t N = 0;                       ///< Current node number in algorithm
+    std::vector<FragIndex> m_samedom;          ///< ? To do with deferring
+    std::vector<FragIndex> m_vertex;           ///< ?
+    std::vector<FragIndex> m_parent;           ///< Parent in the dominator tree?
+    std::vector<FragIndex> m_best;             ///< Improves ancestorWithLowestSemi
+    std::vector<std::set<FragIndex>> m_bucket; ///< Deferred calculation?
+    std::vector<std::set<FragIndex>> m_DF;     ///< Dominance frontier for every node n
+    std::size_t N = 0;                         ///< Current node number in algorithm
 
     /*
      * Inserting phi-functions
      */
-    /// Array of sets of locations defined in BB n
+    /// Array of sets of locations defined in fragment n
     std::vector<ExSet> m_definedAt; // was: m_A_orig
 
-    /// For a given expression e, stores the BBs needing a phi for e
-    std::map<SharedExp, std::set<BBIndex>, lessExpStar> m_A_phi;
+    /// For a given expression e, stores the fragments needing a phi for e
+    std::map<SharedExp, std::set<FragIndex>, lessExpStar> m_A_phi;
 
-    /// For a given expression e, stores the BBs where e is defined
-    std::map<SharedExp, std::set<BBIndex>, lessExpStar> m_defsites;
+    /// For a given expression e, stores the fragments where e is defined
+    std::map<SharedExp, std::set<FragIndex>, lessExpStar> m_defsites;
 
     /// Set of block numbers defining all variables
-    std::set<BBIndex> m_defallsites;
+    std::set<FragIndex> m_defallsites;
 
     /// A Boomerang requirement: Statements defining particular subscripted locations
     std::map<SharedExp, SharedStmt, lessExpStar> m_defStmts;

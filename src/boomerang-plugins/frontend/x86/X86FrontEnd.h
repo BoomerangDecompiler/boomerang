@@ -72,20 +72,20 @@ private:
      *
      * \param dest the destination of this call
      * \param addr the address of this call instruction
-     * \param lrtl a list of RTL pointers for this BB
+     * \param lrtl a list of RTL pointers for this fragment
      *
      * \returns true if a helper function is converted; false otherwise
      */
     bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
-    bool isOverlappedRegsProcessed(const IRFragment *bb) const
+    bool isOverlappedRegsProcessed(const IRFragment *frag) const
     {
-        return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
+        return m_overlappedRegsProcessed.find(frag) != m_overlappedRegsProcessed.end();
     }
 
-    bool isFloatProcessed(const IRFragment *bb) const
+    bool isFloatProcessed(const IRFragment *frag) const
     {
-        return m_floatProcessed.find(bb) != m_floatProcessed.end();
+        return m_floatProcessed.find(frag) != m_floatProcessed.end();
     }
 
 private:

@@ -186,7 +186,7 @@ void ProcCFGTest::testSetEntryAndExitBB()
     ProcCFG *cfg = proc.getCFG();
     cfg->setEntryAndExitBB(nullptr);
 
-    QVERIFY(cfg->getEntryBB() == nullptr);
+    QVERIFY(cfg->getEntryFragment() == nullptr);
     QVERIFY(cfg->getExitBB()  == nullptr);
 
     BasicBlock *bb1 = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 4));

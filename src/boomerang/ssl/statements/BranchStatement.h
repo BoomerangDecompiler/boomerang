@@ -69,14 +69,14 @@ public:
     /// \param pe Pointer to Exp to set
     void setCondExpr(SharedExp pe);
 
-    /// \returns the destination BB of a taken conditional jump
-    IRFragment *getTakenBB() const;
+    /// \returns the destination fragment of a taken conditional jump
+    IRFragment *getTakenFragment() const;
 
-    /// \returns the destination BB of the fallthrough branch of a conditional jump
-    IRFragment *getFallBB() const;
+    /// \returns the destination fragment of the fallthrough branch of a conditional jump
+    IRFragment *getFallFragment() const;
 
-    void setTakenBB(IRFragment *bb);
-    void setFallBB(IRFragment *bb);
+    void setTakenFragment(IRFragment *frag);
+    void setFallFragment(IRFragment *frag);
 
     /// \copydoc GotoStatement::print
     void print(OStream &os) const override;

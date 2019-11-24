@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "BBSimplifyPass.h"
+#include "FragSimplifyPass.h"
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -16,16 +16,16 @@
 #include "boomerang/util/log/Log.h"
 
 
-BBSimplifyPass::BBSimplifyPass()
-    : IPass("BBSimplify", PassID::BBSimplify)
+FragSimplifyPass::FragSimplifyPass()
+    : IPass("FragSimplify", PassID::FragSimplify)
 {
 }
 
 
-bool BBSimplifyPass::execute(UserProc *proc)
+bool FragSimplifyPass::execute(UserProc *proc)
 {
-    for (IRFragment *bb : *proc->getCFG()) {
-        bb->simplify();
+    for (IRFragment *frag : *proc->getCFG()) {
+        frag->simplify();
     }
 
     return true;

@@ -26,12 +26,12 @@ public:
     LivenessAnalyzer() = default;
 
     // Liveness
-    bool calcLiveness(IRFragment *bb, ConnectionGraph &ig, UserProc *proc);
+    bool calcLiveness(IRFragment *frag, ConnectionGraph &ig, UserProc *proc);
 
     /// Locations that are live at the end of this BB are the union of the locations that are live
     /// at the start of its successors. \p live gets all the livenesses,
     /// and phiLocs gets a subset of these, which are due to phi statements at the top of successors
-    void getLiveOut(IRFragment *bb, LocationSet &live, LocationSet &phiLocs);
+    void getLiveOut(IRFragment *frag, LocationSet &live, LocationSet &phiLocs);
 
 private:
     ///< Set of locations live at fragment start

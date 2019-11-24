@@ -166,13 +166,13 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
     of << "\n";
 
     // Now the edges
-    for (IRFragment *srcBB : *cfg) {
-        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
-            IRFragment *dstBB = srcBB->getSuccessor(j);
+    for (IRFragment *srcFrag : *cfg) {
+        for (int j = 0; j < srcFrag->getNumSuccessors(); j++) {
+            IRFragment *dstFrag = srcFrag->getSuccessor(j);
 
-            of << "      frag" << srcBB->getLowAddr() << " -> frag" << dstBB->getLowAddr();
+            of << "      frag" << srcFrag->getLowAddr() << " -> frag" << dstFrag->getLowAddr();
 
-            if (srcBB->isType(FragType::Twoway)) {
+            if (srcFrag->isType(FragType::Twoway)) {
                 if (j == 0) {
                     of << " [color=\"green\"];\n"; // cond == true
                 }

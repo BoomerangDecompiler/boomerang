@@ -156,9 +156,9 @@ void RTL::simplify()
 
                 LOG_VERBOSE("Replacing branch with true condition with goto at %1 %2", getAddress(),
                             *it);
-                IRFragment *bb = (*it)->getBB();
+                IRFragment *frag = (*it)->getFragment();
                 *it = std::make_shared<GotoStatement>(s->as<BranchStatement>()->getFixedDest());
-                (*it)->setBB(bb);
+                (*it)->setFragment(frag);
             }
         }
         else if (s->isAssign()) {

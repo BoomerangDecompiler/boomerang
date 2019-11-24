@@ -32,12 +32,12 @@ bool StatementInitPass::execute(UserProc *proc)
     IRFragment::RTLIterator rit;
     StatementList::iterator sit;
 
-    for (IRFragment *bb : *proc->getCFG()) {
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
-             stmt            = bb->getNextStmt(rit, sit)) {
+    for (IRFragment *frag : *proc->getCFG()) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
 
-            // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
+            // Remove out edges of fragments of noreturn calls (e.g. call fragments to abort())
             if (!stmt->isCall()) {
                 continue;
             }
@@ -45,7 +45,7 @@ bool StatementInitPass::execute(UserProc *proc)
             std::shared_ptr<CallStatement> call = stmt->as<CallStatement>();
             call->setSigArguments();
 
-            if ((bb->getNumSuccessors() != 1)) {
+            if ((frag->getNumSuccessors() != 1)) {
                 continue;
             }
 
@@ -64,22 +64,22 @@ bool StatementInitPass::execute(UserProc *proc)
             }
 
 
-            IRFragment *nextBB = bb->getSuccessor(0);
+            IRFragment *nextFrag = frag->getSuccessor(0);
 
             // Do not remove the only predecessor of a return fragment
-            if ((nextBB == proc->getCFG()->getExitFragment()) &&
+            if ((nextFrag == proc->getCFG()->getExitFragment()) &&
                 proc->getCFG()->getExitFragment()->getNumPredecessors() == 1) {
                 continue;
             }
 
-            nextBB->removePredecessor(bb);
-            bb->removeAllSuccessors();
+            nextFrag->removePredecessor(frag);
+            frag->removeAllSuccessors();
         }
     }
 
     // Removing out edges of noreturn calls might sever paths between
-    // the entry BB and other (now orphaned) BBs. We have to remove these BBs
-    // since all BBs must be reachable from the entry BB for data-flow analysis
+    // the entry fragment and other (now orphaned) fragments. We have to remove these fragments
+    // since all fragments must be reachable from the entry fragment for data-flow analysis
     // to work.
     CFGCompressor().compressCFG(proc->getCFG());
     return true;

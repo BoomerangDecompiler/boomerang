@@ -124,15 +124,13 @@ public:
         return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end();
     }
 
-    /**
-     * Get the BB with the entry point address for this procedure.
-     * \note (not always the first BB)
-     * \returns   Pointer to the entry point BB, or nullptr if not found
-     */
-    IRFragment *getEntryBB();
+    /// Get the fragment with the entry point address for this procedure.
+    /// \note (not always the first fragment)
+    /// \returns   Pointer to the entry point fragment, or nullptr if not found
+    IRFragment *getEntryFragment();
 
-    /// Set the entry BB for this procedure (constructor has the entry address)
-    void setEntryBB();
+    /// Set the entry fragment for this procedure (constructor has the entry address)
+    void setEntryFragment();
 
     /// Decompile this procedure, and all callees.
     void decompileRecursive();
@@ -153,8 +151,7 @@ public:
     std::shared_ptr<Assign> insertAssignAfter(SharedStmt s, SharedExp left, SharedExp right);
 
     /// Insert statement \p stmt after statement \p afterThis.
-    /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
-    /// So this is an inefficient linear search!
+    /// \returns true if successfully inserted.
     bool insertStatementAfter(const SharedStmt &afterThis, const SharedStmt &stmt);
 
     /// Searches for the phi assignment \p orig and if found, replaces the RHS with \p newRhs

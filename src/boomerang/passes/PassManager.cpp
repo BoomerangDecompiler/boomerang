@@ -17,7 +17,7 @@
 #include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/passes/dataflow/DominatorPass.h"
 #include "boomerang/passes/dataflow/PhiPlacementPass.h"
-#include "boomerang/passes/early/BBSimplifyPass.h"
+#include "boomerang/passes/early/FragSimplifyPass.h"
 #include "boomerang/passes/early/GlobalConstReplacePass.h"
 #include "boomerang/passes/early/StatementInitPass.h"
 #include "boomerang/passes/early/StatementPropagationPass.h"
@@ -59,7 +59,7 @@ PassManager::PassManager()
     registerPass(PassID::StatementInit, std::make_unique<StatementInitPass>());
     registerPass(PassID::GlobalConstReplace, std::make_unique<GlobalConstReplacePass>());
     registerPass(PassID::StatementPropagation, std::make_unique<StatementPropagationPass>());
-    registerPass(PassID::BBSimplify, std::make_unique<BBSimplifyPass>());
+    registerPass(PassID::FragSimplify, std::make_unique<FragSimplifyPass>());
     registerPass(PassID::CallAndPhiFix, std::make_unique<CallAndPhiFixPass>());
     registerPass(PassID::SPPreservation, std::make_unique<SPPreservationPass>());
     registerPass(PassID::PreservationAnalysis, std::make_unique<PreservationAnalysisPass>());

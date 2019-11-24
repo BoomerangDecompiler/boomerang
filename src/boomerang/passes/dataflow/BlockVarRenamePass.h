@@ -29,7 +29,7 @@ public:
     bool execute(UserProc *proc) override;
 
 private:
-    bool renameBlockVars(UserProc *proc, int n,
+    bool renameBlockVars(UserProc *proc, std::size_t n,
                          std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &stacks);
 
     /// For all expressions in \p stmt, replace \p var with var{varDef}

@@ -30,57 +30,55 @@ void InterferenceFinder::findInterferences(ConnectionGraph &ig)
         return;
     }
 
-    std::list<IRFragment *> workList; // List of BBs still to be processed
+    std::list<IRFragment *> workList; // List of fragments still to be processed
     std::set<IRFragment *> workSet;   // Set of the same; used for quick membership test
-    appendBBs(workList, workSet);
+    appendFrags(workList, workSet);
 
     int count = 0;
 
-    while (!workList.empty() && count++ < 100000) {
-        IRFragment *currBB = workList.back();
+    while (!workList.empty() && count++ < 1E5) {
+        IRFragment *currFrag = workList.back();
         workList.erase(--workList.end());
-        workSet.erase(currBB);
+        workSet.erase(currFrag);
 
         // Calculate live locations and interferences
-        assert(currBB->getFunction() && !currBB->getFunction()->isLib());
-        bool change = m_livenessAna.calcLiveness(currBB, ig,
-                                                 static_cast<UserProc *>(currBB->getFunction()));
+        assert(currFrag->getFunction() && !currFrag->getFunction()->isLib());
+        bool change = m_livenessAna.calcLiveness(currFrag, ig,
+                                                 static_cast<UserProc *>(currFrag->getFunction()));
 
         if (!change) {
             continue;
         }
 
-        if (currBB->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
-            SharedStmt last = currBB->getLastStmt();
+        if (currFrag->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
+            SharedStmt last = currFrag->getLastStmt();
 
             LOG_MSG("Revisiting BB ending with stmt %1 due to change",
                     last ? QString::number(last->getNumber(), 10) : "<none>");
         }
 
-        updateWorkListRev(currBB, workList, workSet);
+        updateWorkListRev(currFrag, workList, workSet);
     }
 }
 
 
-void InterferenceFinder::updateWorkListRev(IRFragment *currBB, std::list<IRFragment *> &workList,
+void InterferenceFinder::updateWorkListRev(IRFragment *currFrag, std::list<IRFragment *> &workList,
                                            std::set<IRFragment *> &workSet)
 {
-    // Insert inedges of currBB into the worklist, unless already there
-    for (IRFragment *currIn : currBB->getPredecessors()) {
-        if (workSet.find(currIn) == workSet.end()) {
-            workList.push_front(currIn);
-            workSet.insert(currIn);
+    // Insert inedges of currFrag into the worklist, unless already there
+    for (IRFragment *pred : currFrag->getPredecessors()) {
+        if (workSet.find(pred) == workSet.end()) {
+            workList.push_front(pred);
+            workSet.insert(pred);
         }
     }
 }
 
 
-void InterferenceFinder::appendBBs(std::list<IRFragment *> &worklist,
-                                   std::set<IRFragment *> &workset)
+void InterferenceFinder::appendFrags(std::list<IRFragment *> &workList,
+                                     std::set<IRFragment *> &workSet)
 {
-    // Append my list of BBs to the worklist
-    worklist.insert(worklist.end(), m_cfg->begin(), m_cfg->end());
+    workList.insert(workList.end(), m_cfg->begin(), m_cfg->end());
 
-    // Do the same for the workset
-    std::copy(m_cfg->begin(), m_cfg->end(), std::inserter(workset, workset.end()));
+    std::copy(m_cfg->begin(), m_cfg->end(), std::inserter(workSet, workSet.end()));
 }

@@ -71,7 +71,7 @@ enum class TravType : uint8_t
 };
 
 
-enum class SBBType : uint8_t
+enum class StructFragType : uint8_t
 {
     None,        ///< not structured
     PreTestLoop, ///< header of a loop
@@ -79,16 +79,14 @@ enum class SBBType : uint8_t
     EndlessLoop,
     JumpInOutLoop, ///< an unstructured jump in or out of a loop
     JumpIntoCase,  ///< an unstructured jump into a case statement
-    IfGoto,        ///< unstructured conditional
     IfThen,        ///< conditional with then clause
     IfThenElse,    ///< conditional with then and else clauses
-    IfElse,        ///< conditional with else clause only
     Case           ///< case statement (switch)
 };
 
 
 /// Holds all information about control Flow Structure.
-struct BBStructInfo
+struct FragStructInfo
 {
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
     int m_postOrderIndex    = -1; ///< node's position within the ordering structure
@@ -103,8 +101,9 @@ struct BBStructInfo
     TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
 
     /* high level structuring */
-    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as
-    SBBType m_structType   = SBBType::None; ///< structured type of this node
+    StructFragType
+        m_loopCondType = StructFragType::None; ///< type of conditional to treat this loop header as
+    StructFragType m_structType = StructFragType::None; ///< structured type of this node
 
     /// the structuring class (Loop, Cond, etc)
     StructType m_structuringType = StructType::Seq;
@@ -143,94 +142,101 @@ public:
     bool isBackEdge(const IRFragment *source, const IRFragment *dest) const;
 
 public:
-    inline bool isLatchNode(const IRFragment *bb) const
+    inline bool isLatchNode(const IRFragment *frag) const
     {
-        const IRFragment *loopHead = getLoopHead(bb);
+        const IRFragment *loopHead = getLoopHead(frag);
         if (!loopHead) {
             return false;
         }
 
-        return getLatchNode(loopHead) == bb;
+        return getLatchNode(loopHead) == frag;
     }
 
-    inline const IRFragment *getLatchNode(const IRFragment *bb) const
+    inline const IRFragment *getLatchNode(const IRFragment *frag) const
     {
-        return m_info[bb].m_latchNode;
+        return m_info[frag].m_latchNode;
     }
 
-    inline const IRFragment *getLoopHead(const IRFragment *bb) const
+    inline const IRFragment *getLoopHead(const IRFragment *frag) const
     {
-        return m_info[bb].m_loopHead;
+        return m_info[frag].m_loopHead;
     }
 
-    inline const IRFragment *getLoopFollow(const IRFragment *bb) const
+    inline const IRFragment *getLoopFollow(const IRFragment *frag) const
     {
-        return m_info[bb].m_loopFollow;
+        return m_info[frag].m_loopFollow;
     }
 
-    inline const IRFragment *getCondFollow(const IRFragment *bb) const
+    inline const IRFragment *getCondFollow(const IRFragment *frag) const
     {
-        return m_info[bb].m_condFollow;
+        return m_info[frag].m_condFollow;
     }
 
-    inline const IRFragment *getCaseHead(const IRFragment *bb) const
+    inline const IRFragment *getCaseHead(const IRFragment *frag) const
     {
-        return m_info[bb].m_caseHead;
+        return m_info[frag].m_caseHead;
     }
 
-    TravType getTravType(const IRFragment *bb) const { return m_info[bb].m_travType; }
-    StructType getStructType(const IRFragment *bb) const { return m_info[bb].m_structuringType; }
-    CondType getCondType(const IRFragment *bb) const;
-    UnstructType getUnstructType(const IRFragment *bb) const;
-    LoopType getLoopType(const IRFragment *bb) const;
+    TravType getTravType(const IRFragment *frag) const { return m_info[frag].m_travType; }
+    StructType getStructType(const IRFragment *frag) const
+    {
+        return m_info[frag].m_structuringType;
+    }
+    CondType getCondType(const IRFragment *frag) const;
+    UnstructType getUnstructType(const IRFragment *frag) const;
+    LoopType getLoopType(const IRFragment *frag) const;
 
-    void setTravType(const IRFragment *bb, TravType type) { m_info[bb].m_travType = type; }
-    void setStructType(const IRFragment *bb, StructType s);
+    void setTravType(const IRFragment *frag, TravType type) { m_info[frag].m_travType = type; }
+    void setStructType(const IRFragment *frag, StructType s);
 
-    bool isCaseOption(const IRFragment *bb) const;
+    bool isCaseOption(const IRFragment *frag) const;
 
 private:
-    void updateLoopStamps(const IRFragment *bb, int &time);
-    void updateRevLoopStamps(const IRFragment *bb, int &time);
-    void updateRevOrder(const IRFragment *bb);
+    void updateLoopStamps(const IRFragment *frag, int &time);
+    void updateRevLoopStamps(const IRFragment *frag, int &time);
+    void updateRevOrder(const IRFragment *frag);
 
-    void setLoopHead(const IRFragment *bb, const IRFragment *head) { m_info[bb].m_loopHead = head; }
-    void setLatchNode(const IRFragment *bb, const IRFragment *latch)
+    void setLoopHead(const IRFragment *frag, const IRFragment *head)
     {
-        m_info[bb].m_latchNode = latch;
+        m_info[frag].m_loopHead = head;
+    }
+    void setLatchNode(const IRFragment *frag, const IRFragment *latch)
+    {
+        m_info[frag].m_latchNode = latch;
     }
 
-    void setCaseHead(const IRFragment *bb, const IRFragment *head, const IRFragment *follow);
+    void setCaseHead(const IRFragment *frag, const IRFragment *head, const IRFragment *follow);
 
-    void setUnstructType(const IRFragment *bb, UnstructType unstructType);
-    void setLoopType(const IRFragment *bb, LoopType loopType);
-    void setCondType(const IRFragment *bb, CondType condType);
+    void setUnstructType(const IRFragment *frag, UnstructType unstructType);
+    void setLoopType(const IRFragment *frag, LoopType loopType);
+    void setCondType(const IRFragment *frag, CondType condType);
 
-    void setLoopFollow(const IRFragment *bb, const IRFragment *follow)
+    void setLoopFollow(const IRFragment *frag, const IRFragment *follow)
     {
-        m_info[bb].m_loopFollow = follow;
+        m_info[frag].m_loopFollow = follow;
     }
 
-    void setCondFollow(const IRFragment *bb, const IRFragment *follow)
+    void setCondFollow(const IRFragment *frag, const IRFragment *follow)
     {
-        m_info[bb].m_condFollow = follow;
+        m_info[frag].m_condFollow = follow;
     }
 
-    /// establish if this bb has any back edges leading FROM it
-    bool hasBackEdge(const IRFragment *bb) const;
+    /// establish if this fragment is the source of any back edges leading FROM it
+    bool hasBackEdge(const IRFragment *frag) const;
 
-    /// \returns true if \p bb is an ancestor of \p other
-    bool isAncestorOf(const IRFragment *bb, const IRFragment *other) const;
-    bool isBBInLoop(const IRFragment *bb, const IRFragment *header, const IRFragment *latch) const;
+    /// \returns true if \p frag is an ancestor of \p other
+    bool isAncestorOf(const IRFragment *frag, const IRFragment *other) const;
+    bool isFragInLoop(const IRFragment *frag, const IRFragment *header,
+                      const IRFragment *latch) const;
 
-    int getPostOrdering(const IRFragment *bb) const { return m_info[bb].m_postOrderIndex; }
-    int getRevOrd(const IRFragment *bb) const { return m_info[bb].m_revPostOrderIndex; }
+    int getPostOrdering(const IRFragment *frag) const { return m_info[frag].m_postOrderIndex; }
+    int getRevOrd(const IRFragment *frag) const { return m_info[frag].m_revPostOrderIndex; }
 
-    const IRFragment *getImmPDom(const IRFragment *bb) const { return m_info[bb].m_immPDom; }
+    const IRFragment *getImmPDom(const IRFragment *frag) const { return m_info[frag].m_immPDom; }
 
-    void setImmPDom(const IRFragment *bb, const IRFragment *immPDom)
+    void setImmPDom(const IRFragment *frag, const IRFragment *immPDom)
     {
-        m_info[bb].m_immPDom = immPDom;
+        m_info[frag].m_immPDom = immPDom;
     }
 
     void unTraverse();
@@ -278,22 +284,22 @@ private:
     /// \post the nodes within the loop have been tagged
     void tagNodesInLoop(const IRFragment *header, bool *&loopNodes);
 
-    IRFragment *findEntryBB() const;
-    IRFragment *findExitBB() const;
+    IRFragment *findEntryFragment() const;
+    IRFragment *findExitFragment() const;
 
 private:
     ProcCFG *m_cfg = nullptr;
 
-    /// Post Ordering according to a DFS starting at the entry BB.
+    /// Post Ordering according to a DFS starting at the entry fragment.
     std::vector<const IRFragment *> m_postOrdering;
 
-    /// Post Ordering according to a DFS starting at the exit BB (usually the return BB).
-    /// Note that this is not the reverse of m_postOrdering
-    /// for functions containing calls to noreturn functions or infinite loops.
+    /// Post Ordering according to a DFS starting at the exit fragment (usually the return
+    /// fragment). Note that this is not the reverse of m_postOrdering for functions containing
+    /// calls to noreturn functions or infinite loops.
     std::vector<const IRFragment *> m_revPostOrdering;
 
 private:
     /// mutable to allow using the map in const methods (might create entries).
-    /// DO NOT change BBStructInfo in const methods!
-    mutable std::unordered_map<const IRFragment *, BBStructInfo> m_info;
+    /// DO NOT change FragStructInfo in const methods!
+    mutable std::unordered_map<const IRFragment *, FragStructInfo> m_info;
 };

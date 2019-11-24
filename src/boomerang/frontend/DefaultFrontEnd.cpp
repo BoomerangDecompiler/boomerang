@@ -849,7 +849,7 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
              stmt            = bb->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
-            stmt->setBB(bb);
+            stmt->setFragment(bb);
         }
     }
     return true;
@@ -1050,7 +1050,7 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
         // previous RTL. It is assumed that THE return statement will have the same semantics
         // (NOTE: may not always be valid). To avoid this assumption, we need branches to
         // statements, not just to native addresses (RTLs).
-        IRFragment *origRetFrag = proc->getCFG()->findRetNode();
+        IRFragment *origRetFrag = proc->getCFG()->findRetFragment();
         assert(origRetFrag);
 
         if (origRetFrag->getFirstStmt()->isReturn()) {

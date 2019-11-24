@@ -417,7 +417,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     m_lines.clear();
     m_proc = proc;
 
-    if (!proc->getCFG() || !proc->getEntryBB()) {
+    if (!proc->getCFG() || !proc->getEntryFragment()) {
         return;
     }
 
@@ -453,7 +453,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 
     // Start generating "real" code
     std::list<const IRFragment *> followSet, gotoSet;
-    generateCode(proc->getEntryBB(), nullptr, followSet, gotoSet, proc);
+    generateCode(proc->getEntryFragment(), nullptr, followSet, gotoSet, proc);
 
     addProcEnd();
 
@@ -829,15 +829,15 @@ void CCodeGenerator::addIfElseCondEnd()
 }
 
 
-void CCodeGenerator::addGoto(const IRFragment *bb)
+void CCodeGenerator::addGoto(const IRFragment *frag)
 {
     QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
-    s << "goto bb0x" << QString::number(bb->getLowAddr().value(), 16) << ";";
+    s << "goto bb0x" << QString::number(frag->getLowAddr().value(), 16) << ";";
     appendLine(tgt);
-    m_usedLabels.insert(bb->getLowAddr().value());
+    m_usedLabels.insert(frag->getLowAddr().value());
 }
 
 
@@ -863,12 +863,12 @@ void CCodeGenerator::addBreak()
 }
 
 
-void CCodeGenerator::addLabel(const IRFragment *bb)
+void CCodeGenerator::addLabel(const IRFragment *frag)
 {
     QString tgt;
     OStream s(&tgt);
 
-    s << "bb0x" << QString::number(bb->getLowAddr().value(), 16) << ":";
+    s << "bb0x" << QString::number(frag->getLowAddr().value(), 16) << ":";
     appendLine(tgt);
 }
 
@@ -2108,7 +2108,7 @@ void CCodeGenerator::closeParen(OStream &str, OpPrec outer, OpPrec inner)
 }
 
 
-void CCodeGenerator::generateCode(const IRFragment *bb, const IRFragment *latch,
+void CCodeGenerator::generateCode(const IRFragment *frag, const IRFragment *latch,
                                   std::list<const IRFragment *> &followSet,
                                   std::list<const IRFragment *> &gotoSet, UserProc *proc)
 {
@@ -2116,27 +2116,27 @@ void CCodeGenerator::generateCode(const IRFragment *bb, const IRFragment *latch,
     // anything. Otherwise if it is in the follow set generate a goto to the follow
     const IRFragment *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
-    if (Util::isContained(gotoSet, bb) && !m_analyzer.isLatchNode(bb) &&
+    if (Util::isContained(gotoSet, frag) && !m_analyzer.isLatchNode(frag) &&
         ((latch && m_analyzer.getLoopHead(latch) &&
-          (bb == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) ||
-         !isAllParentsGenerated(bb))) {
-        emitGotoAndLabel(bb, bb);
+          (frag == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) ||
+         !isAllParentsGenerated(frag))) {
+        emitGotoAndLabel(frag, frag);
         return;
     }
-    else if (Util::isContained(followSet, bb)) {
-        if (bb != enclFollow) {
-            emitGotoAndLabel(bb, bb);
+    else if (Util::isContained(followSet, frag)) {
+        if (frag != enclFollow) {
+            emitGotoAndLabel(frag, frag);
         }
 
         return;
     }
 
-    if (isGenerated(bb)) {
+    if (isGenerated(frag)) {
         // this should only occur for a loop over a single block
         return;
     }
     else {
-        m_generatedBBs.insert(bb);
+        m_generatedFrags.insert(frag);
     }
 
     //
@@ -2158,7 +2158,7 @@ void CCodeGenerator::generateCode(const IRFragment *bb, const IRFragment *latch,
     //        }
     //    \endcode
     //
-    if (m_analyzer.isLatchNode(bb)) {
+    if (m_analyzer.isLatchNode(frag)) {
         // FIXME
         //         if (latch && latch->getLoopHead() &&
         //             (m_indent == latch->getLoopHead()->m_indentLevel +
@@ -2170,72 +2170,74 @@ void CCodeGenerator::generateCode(const IRFragment *bb, const IRFragment *latch,
         //             bb->m_traversed = TravType::Untraversed;
         //             emitGotoAndLabel(this, bb);
         //         }
-        writeBB(bb);
+        writeFragment(frag);
         return;
     }
 
-    switch (m_analyzer.getStructType(bb)) {
+    switch (m_analyzer.getStructType(frag)) {
     case StructType::Loop:
-    case StructType::LoopCond: generateCode_Loop(bb, gotoSet, proc, latch, followSet); break;
+    case StructType::LoopCond: generateCode_Loop(frag, gotoSet, proc, latch, followSet); break;
 
     case StructType::Cond: // if-else / case
-        generateCode_Branch(bb, gotoSet, proc, latch, followSet);
+        generateCode_Branch(frag, gotoSet, proc, latch, followSet);
         break;
 
-    case StructType::Seq: generateCode_Seq(bb, gotoSet, proc, latch, followSet); break;
+    case StructType::Seq: generateCode_Seq(frag, gotoSet, proc, latch, followSet); break;
 
     default:
-        LOG_ERROR("Unhandled structuring type %1", static_cast<int>(m_analyzer.getStructType(bb)));
+        LOG_ERROR("Unhandled structuring type %1",
+                  static_cast<int>(m_analyzer.getStructType(frag)));
     }
 }
 
 
-void CCodeGenerator::generateCode_Loop(const IRFragment *bb, std::list<const IRFragment *> &gotoSet,
-                                       UserProc *proc, const IRFragment *latch,
+void CCodeGenerator::generateCode_Loop(const IRFragment *frag,
+                                       std::list<const IRFragment *> &gotoSet, UserProc *proc,
+                                       const IRFragment *latch,
                                        std::list<const IRFragment *> &followSet)
 {
     // add the follow of the loop (if it exists) to the follow set
-    if (m_analyzer.getLoopFollow(bb)) {
-        followSet.push_back(m_analyzer.getLoopFollow(bb));
+    if (m_analyzer.getLoopFollow(frag)) {
+        followSet.push_back(m_analyzer.getLoopFollow(frag));
     }
 
-    if (m_analyzer.getLoopType(bb) == LoopType::PreTested) {
-        assert(m_analyzer.getLatchNode(bb)->getNumSuccessors() == 1);
+    if (m_analyzer.getLoopType(frag) == LoopType::PreTested) {
+        assert(m_analyzer.getLatchNode(frag)->getNumSuccessors() == 1);
 
         // write the body of the block (excluding the predicate)
-        writeBB(bb);
+        writeFragment(frag);
 
         // write the 'while' predicate
-        SharedExp cond = bb->getCond();
+        SharedExp cond = frag->getCond();
 
-        if (bb->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(bb)) {
+        if (frag->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(frag)) {
             cond = Unary::get(opLNot, cond)->simplify();
         }
 
         addPretestedLoopHeader(cond);
 
         // write the code for the body of the loop
-        const IRFragment *loopBody = (bb->getSuccessor(BELSE) == m_analyzer.getLoopFollow(bb))
-                                         ? bb->getSuccessor(BTHEN)
-                                         : bb->getSuccessor(BELSE);
-        generateCode(loopBody, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
+        const IRFragment *loopBody = (frag->getSuccessor(BELSE) == m_analyzer.getLoopFollow(frag))
+                                         ? frag->getSuccessor(BTHEN)
+                                         : frag->getSuccessor(BELSE);
+        generateCode(loopBody, m_analyzer.getLatchNode(frag), followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
-        if (!isGenerated(m_analyzer.getLatchNode(bb))) {
-            m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
-            writeBB(m_analyzer.getLatchNode(bb));
+        if (!isGenerated(m_analyzer.getLatchNode(frag))) {
+            m_generatedFrags.insert(m_analyzer.getLatchNode(frag));
+            writeFragment(m_analyzer.getLatchNode(frag));
         }
 
         // rewrite the body of the block (excluding the predicate) at the next nesting level after
         // making sure another label won't be generated
-        writeBB(bb);
+        writeFragment(frag);
 
         // write the loop tail
         addPretestedLoopEnd();
     }
     else {
         // write the loop header
-        if (m_analyzer.getLoopType(bb) == LoopType::Endless) {
+        if (m_analyzer.getLoopType(frag) == LoopType::Endless) {
             addEndlessLoopHeader();
         }
         else {
@@ -2244,30 +2246,30 @@ void CCodeGenerator::generateCode_Loop(const IRFragment *bb, std::list<const IRF
 
         // if this is also a conditional header, then generate code for the conditional. Otherwise
         // generate code for the loop body.
-        if (m_analyzer.getStructType(bb) == StructType::LoopCond) {
+        if (m_analyzer.getStructType(frag) == StructType::LoopCond) {
             // set the necessary flags so that generateCode can successfully be called again on this
             // node
-            m_analyzer.setStructType(bb, StructType::Cond);
-            m_analyzer.setTravType(bb, TravType::Untraversed);
-            m_generatedBBs.erase(bb);
-            generateCode(bb, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
+            m_analyzer.setStructType(frag, StructType::Cond);
+            m_analyzer.setTravType(frag, TravType::Untraversed);
+            m_generatedFrags.erase(frag);
+            generateCode(frag, m_analyzer.getLatchNode(frag), followSet, gotoSet, proc);
         }
         else {
-            writeBB(bb);
+            writeFragment(frag);
 
             // write the code for the body of the loop
-            generateCode(bb->getSuccessor(0), m_analyzer.getLatchNode(bb), followSet, gotoSet,
+            generateCode(frag->getSuccessor(0), m_analyzer.getLatchNode(frag), followSet, gotoSet,
                          proc);
         }
 
-        if (m_analyzer.getLoopType(bb) == LoopType::PostTested) {
+        if (m_analyzer.getLoopType(frag) == LoopType::PostTested) {
             // if code has not been generated for the latch node, generate it now
-            if (!isGenerated(m_analyzer.getLatchNode(bb))) {
-                m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
-                writeBB(m_analyzer.getLatchNode(bb));
+            if (!isGenerated(m_analyzer.getLatchNode(frag))) {
+                m_generatedFrags.insert(m_analyzer.getLatchNode(frag));
+                writeFragment(m_analyzer.getLatchNode(frag));
             }
 
-            const IRFragment *myLatch = m_analyzer.getLatchNode(bb);
+            const IRFragment *myLatch = m_analyzer.getLatchNode(frag);
             const IRFragment *myHead  = m_analyzer.getLoopHead(myLatch);
             assert(myLatch->isType(FragType::Twoway));
 
@@ -2280,12 +2282,12 @@ void CCodeGenerator::generateCode_Loop(const IRFragment *bb, std::list<const IRF
             }
         }
         else {
-            assert(m_analyzer.getLoopType(bb) == LoopType::Endless);
+            assert(m_analyzer.getLoopType(frag) == LoopType::Endless);
 
             // if code has not been generated for the latch node, generate it now
-            if (!isGenerated(m_analyzer.getLatchNode(bb))) {
-                m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
-                writeBB(m_analyzer.getLatchNode(bb));
+            if (!isGenerated(m_analyzer.getLatchNode(frag))) {
+                m_generatedFrags.insert(m_analyzer.getLatchNode(frag));
+                writeFragment(m_analyzer.getLatchNode(frag));
             }
 
             // write the closing bracket for an endless loop
@@ -2294,28 +2296,28 @@ void CCodeGenerator::generateCode_Loop(const IRFragment *bb, std::list<const IRF
     }
 
     // write the code for the follow of the loop (if it exists)
-    if (m_analyzer.getLoopFollow(bb)) {
+    if (m_analyzer.getLoopFollow(frag)) {
         // remove the follow from the follow set
         followSet.pop_back();
 
-        if (!isGenerated(m_analyzer.getLoopFollow(bb))) {
-            generateCode(m_analyzer.getLoopFollow(bb), latch, followSet, gotoSet, proc);
+        if (!isGenerated(m_analyzer.getLoopFollow(frag))) {
+            generateCode(m_analyzer.getLoopFollow(frag), latch, followSet, gotoSet, proc);
         }
         else {
-            emitGotoAndLabel(bb, m_analyzer.getLoopFollow(bb));
+            emitGotoAndLabel(frag, m_analyzer.getLoopFollow(frag));
         }
     }
 }
 
 
-void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
+void CCodeGenerator::generateCode_Branch(const IRFragment *frag,
                                          std::list<const IRFragment *> &gotoSet, UserProc *proc,
                                          const IRFragment *latch,
                                          std::list<const IRFragment *> &followSet)
 {
     // reset this back to LoopCond if it was originally of this type
-    if (m_analyzer.getLatchNode(bb) != nullptr) {
-        m_analyzer.setStructType(bb, StructType::LoopCond);
+    if (m_analyzer.getLatchNode(frag) != nullptr) {
+        m_analyzer.setStructType(frag, StructType::LoopCond);
     }
 
     // for 2 way conditional headers that are effectively jumps into
@@ -2327,28 +2329,29 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
     int gotoTotal = 0;
 
     // add the follow to the follow set if this is a case header
-    if (m_analyzer.getCondType(bb) == CondType::Case) {
-        followSet.push_back(m_analyzer.getCondFollow(bb));
+    if (m_analyzer.getCondType(frag) == CondType::Case) {
+        followSet.push_back(m_analyzer.getCondFollow(frag));
     }
-    else if (m_analyzer.getCondFollow(bb) != nullptr) {
+    else if (m_analyzer.getCondFollow(frag) != nullptr) {
         // For a structured two conditional header,
         // its follow is added to the follow set
         // myLoopHead = (sType == LoopCond ? this : loopHead);
 
-        if (m_analyzer.getUnstructType(bb) == UnstructType::Structured) {
-            followSet.push_back(m_analyzer.getCondFollow(bb));
+        if (m_analyzer.getUnstructType(frag) == UnstructType::Structured) {
+            followSet.push_back(m_analyzer.getCondFollow(frag));
         }
 
         // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
         // The temporary follow is set for any unstructured conditional header branch that is within
         // the same loop and case.
         else {
-            if (m_analyzer.getUnstructType(bb) == UnstructType::JumpInOutLoop) {
+            if (m_analyzer.getUnstructType(frag) == UnstructType::JumpInOutLoop) {
                 // define the loop header to be compared against
-                const IRFragment *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond
-                                                    ? bb
-                                                    : m_analyzer.getLoopHead(bb));
-                gotoSet.push_back(m_analyzer.getCondFollow(bb));
+                const IRFragment *myLoopHead = (m_analyzer.getStructType(frag) ==
+                                                        StructType::LoopCond
+                                                    ? frag
+                                                    : m_analyzer.getLoopHead(frag));
+                gotoSet.push_back(m_analyzer.getCondFollow(frag));
                 gotoTotal++;
 
                 // also add the current latch node, and the loop header of the follow if they exist
@@ -2357,32 +2360,32 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
                     gotoTotal++;
                 }
 
-                if (m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) &&
-                    m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) != myLoopHead) {
-                    gotoSet.push_back(m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)));
+                if (m_analyzer.getLoopHead(m_analyzer.getCondFollow(frag)) &&
+                    m_analyzer.getLoopHead(m_analyzer.getCondFollow(frag)) != myLoopHead) {
+                    gotoSet.push_back(m_analyzer.getLoopHead(m_analyzer.getCondFollow(frag)));
                     gotoTotal++;
                 }
             }
 
-            tmpCondFollow = bb->getSuccessor(
-                (m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
+            tmpCondFollow = frag->getSuccessor(
+                (m_analyzer.getCondType(frag) == CondType::IfThen) ? BELSE : BTHEN);
 
             // for a jump into a case, the temp follow is added to the follow set
-            if (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase) {
+            if (m_analyzer.getUnstructType(frag) == UnstructType::JumpIntoCase) {
                 followSet.push_back(tmpCondFollow);
             }
         }
     }
 
     // write the body of the block (excluding the predicate)
-    writeBB(bb);
+    writeFragment(frag);
 
     // write the conditional header
     const SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
 
-    if (m_analyzer.getCondType(bb) == CondType::Case) {
+    if (m_analyzer.getCondType(frag) == CondType::Case) {
         // The CaseStatement will be in the last RTL this BB
-        RTL *last                         = bb->getRTLs()->back().get();
+        RTL *last                         = frag->getRTLs()->back().get();
         std::shared_ptr<CaseStatement> cs = last->getHlStmt()->as<CaseStatement>();
         psi                               = cs->getSwitchInfo();
 
@@ -2390,18 +2393,18 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
         addCaseCondHeader(psi->switchExp);
     }
     else {
-        SharedExp cond = bb->getCond();
+        SharedExp cond = frag->getCond();
 
         if (!cond) {
             cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
         }
 
-        if (m_analyzer.getCondType(bb) == CondType::IfElse) {
+        if (m_analyzer.getCondType(frag) == CondType::IfElse) {
             cond = Unary::get(opLNot, cond->clone());
             cond = cond->simplify();
         }
 
-        if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
+        if (m_analyzer.getCondType(frag) == CondType::IfThenElse) {
             addIfElseCondHeader(cond);
         }
         else {
@@ -2410,32 +2413,32 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
     }
 
     // write code for the body of the conditional
-    if (m_analyzer.getCondType(bb) != CondType::Case) {
-        const IRFragment *succ = bb->getSuccessor(
-            (m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
+    if (m_analyzer.getCondType(frag) != CondType::Case) {
+        const IRFragment *succ = frag->getSuccessor(
+            (m_analyzer.getCondType(frag) == CondType::IfElse) ? BELSE : BTHEN);
         assert(succ != nullptr);
 
         // emit a goto statement if the first clause has already been
         // generated or it is the follow of this node's enclosing loop
-        if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) &&
-                                  succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
-            emitGotoAndLabel(bb, succ);
+        if (isGenerated(succ) || (m_analyzer.getLoopHead(frag) &&
+                                  succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(frag)))) {
+            emitGotoAndLabel(frag, succ);
         }
         else {
             generateCode(succ, latch, followSet, gotoSet, proc);
         }
 
         // generate the else clause if necessary
-        if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
+        if (m_analyzer.getCondType(frag) == CondType::IfThenElse) {
             // generate the 'else' keyword and matching brackets
             addIfElseCondOption();
 
-            succ = bb->getSuccessor(BELSE);
+            succ = frag->getSuccessor(BELSE);
 
             // emit a goto statement if the second clause has already
             // been generated
             if (isGenerated(succ)) {
-                emitGotoAndLabel(bb, succ);
+                emitGotoAndLabel(frag, succ);
             }
             else {
                 generateCode(succ, latch, followSet, gotoSet, proc);
@@ -2455,7 +2458,7 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
         if (psi) {
             // first, determine the optimal fall-through ordering
             std::list<std::pair<SharedExp, const IRFragment *>>
-                switchDests = computeOptimalCaseOrdering(bb, psi);
+                switchDests = computeOptimalCaseOrdering(frag, psi);
 
             for (auto it = switchDests.begin(); it != switchDests.end(); ++it) {
                 SharedExp caseValue    = it->first;
@@ -2468,7 +2471,7 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
                 }
 
                 if (isGenerated(succ)) {
-                    emitGotoAndLabel(bb, succ);
+                    emitGotoAndLabel(frag, succ);
                 }
                 else {
                     generateCode(succ, latch, followSet, gotoSet, proc);
@@ -2481,11 +2484,11 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
     }
 
     // do all the follow stuff if this conditional had one
-    if (m_analyzer.getCondFollow(bb)) {
+    if (m_analyzer.getCondFollow(frag)) {
         // remove the original follow from the follow set if it was
         // added by this header
-        if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) ||
-            (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
+        if ((m_analyzer.getUnstructType(frag) == UnstructType::Structured) ||
+            (m_analyzer.getUnstructType(frag) == UnstructType::JumpIntoCase)) {
             assert(gotoTotal == 0);
             followSet.resize(followSet.size() - 1);
         }
@@ -2496,11 +2499,11 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
         // do the code generation (or goto emitting) for the new conditional follow if it exists,
         // otherwise do it for the original follow
         if (!tmpCondFollow) {
-            tmpCondFollow = m_analyzer.getCondFollow(bb);
+            tmpCondFollow = m_analyzer.getCondFollow(frag);
         }
 
         if (isGenerated(tmpCondFollow)) {
-            emitGotoAndLabel(bb, tmpCondFollow);
+            emitGotoAndLabel(frag, tmpCondFollow);
         }
         else {
             generateCode(tmpCondFollow, latch, followSet, gotoSet, proc);
@@ -2509,28 +2512,30 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *bb,
 }
 
 
-void CCodeGenerator::generateCode_Seq(const IRFragment *bb, std::list<const IRFragment *> &gotoSet,
-                                      UserProc *proc, const IRFragment *latch,
+void CCodeGenerator::generateCode_Seq(const IRFragment *frag,
+                                      std::list<const IRFragment *> &gotoSet, UserProc *proc,
+                                      const IRFragment *latch,
                                       std::list<const IRFragment *> &followSet)
 {
     // generate code for the body of this block
-    writeBB(bb);
+    writeFragment(frag);
 
     // return if this is the 'return' block (i.e. has no out edges) after emitting a 'return'
     // statement
-    if (bb->isType(FragType::Ret)) {
+    if (frag->isType(FragType::Ret)) {
         // This should be emitted now, like a normal statement
         // addReturnStatement(getReturnVal());
         return;
     }
 
     // return if this doesn't have any out edges (emit a warning)
-    if (bb->getNumSuccessors() == 0) {
-        LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
+    if (frag->getNumSuccessors() == 0) {
+        LOG_WARN("No out edge for fragment at address %1, in proc %2", frag->getLowAddr(),
+                 proc->getName());
 
-        if (bb->isType(FragType::CompJump)) {
-            assert(!bb->getRTLs()->empty());
-            RTL *lastRTL = bb->getRTLs()->back().get();
+        if (frag->isType(FragType::CompJump)) {
+            assert(!frag->getRTLs()->empty());
+            RTL *lastRTL = frag->getRTLs()->back().get();
             assert(!lastRTL->empty());
 
             std::shared_ptr<GotoStatement> gs = lastRTL->back()->as<GotoStatement>();
@@ -2545,25 +2550,25 @@ void CCodeGenerator::generateCode_Seq(const IRFragment *bb, std::list<const IRFr
         return;
     }
 
-    const IRFragment *succ = bb->getSuccessor(0);
+    const IRFragment *succ = frag->getSuccessor(0);
 
-    if (bb->getNumSuccessors() > 1) {
-        const IRFragment *other = bb->getSuccessor(1);
+    if (frag->getNumSuccessors() > 1) {
+        const IRFragment *other = frag->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
-        std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(bb->getDest());
+        std::shared_ptr<Const> constDest = std::dynamic_pointer_cast<Const>(frag->getDest());
 
         if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
             std::swap(other, succ);
             LOG_MSG("Taken branch is first out edge");
         }
 
-        SharedExp cond = bb->getCond();
+        SharedExp cond = frag->getCond();
 
         if (cond) {
-            addIfCondHeader(bb->getCond());
+            addIfCondHeader(frag->getCond());
 
             if (isGenerated(other)) {
-                emitGotoAndLabel(bb, other);
+                emitGotoAndLabel(frag, other);
             }
             else {
                 generateCode(other, latch, followSet, gotoSet, proc);
@@ -2583,29 +2588,29 @@ void CCodeGenerator::generateCode_Seq(const IRFragment *bb, std::list<const IRFr
     // The only exception for generating it when it is not in
     // the same loop is when it is only reached from this node
     if (isGenerated(succ)) {
-        emitGotoAndLabel(bb, succ);
+        emitGotoAndLabel(frag, succ);
     }
-    else if (m_analyzer.getLoopHead(succ) != m_analyzer.getLoopHead(bb) &&
+    else if (m_analyzer.getLoopHead(succ) != m_analyzer.getLoopHead(frag) &&
              (!isAllParentsGenerated(succ) || Util::isContained(followSet, succ))) {
-        emitGotoAndLabel(bb, succ);
+        emitGotoAndLabel(frag, succ);
     }
     else if (latch && m_analyzer.getLoopHead(latch) &&
              (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == succ)) {
-        emitGotoAndLabel(bb, succ);
+        emitGotoAndLabel(frag, succ);
     }
-    else if (m_analyzer.getCaseHead(succ) && m_analyzer.getCaseHead(bb) &&
-             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ) &&
-             m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb))) {
-        emitGotoAndLabel(bb, succ);
+    else if (m_analyzer.getCaseHead(succ) && m_analyzer.getCaseHead(frag) &&
+             m_analyzer.getCaseHead(frag) != m_analyzer.getCaseHead(succ) &&
+             m_analyzer.getCondFollow(m_analyzer.getCaseHead(frag))) {
+        emitGotoAndLabel(frag, succ);
     }
     else {
-        if (m_analyzer.getCaseHead(bb) &&
-            (succ == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+        if (m_analyzer.getCaseHead(frag) &&
+            (succ == m_analyzer.getCondFollow(m_analyzer.getCaseHead(frag)))) {
             // generate the 'break' statement
             addCaseCondOptionEnd();
         }
-        else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
-                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ)) ||
+        else if ((m_analyzer.getCaseHead(frag) == nullptr) ||
+                 (m_analyzer.getCaseHead(frag) != m_analyzer.getCaseHead(succ)) ||
                  !m_analyzer.isCaseOption(succ)) {
             generateCode(succ, latch, followSet, gotoSet, proc);
         }
@@ -2613,12 +2618,12 @@ void CCodeGenerator::generateCode_Seq(const IRFragment *bb, std::list<const IRFr
 }
 
 
-void CCodeGenerator::emitGotoAndLabel(const IRFragment *bb, const IRFragment *dest)
+void CCodeGenerator::emitGotoAndLabel(const IRFragment *frag, const IRFragment *dest)
 {
-    if (m_analyzer.getLoopHead(bb) &&
-        ((m_analyzer.getLoopHead(bb) == dest) ||
-         (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)) == dest))) {
-        if (m_analyzer.getLoopHead(bb) == dest) {
+    if (m_analyzer.getLoopHead(frag) &&
+        ((m_analyzer.getLoopHead(frag) == dest) ||
+         (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(frag)) == dest))) {
+        if (m_analyzer.getLoopHead(frag) == dest) {
             addContinue();
         }
         else {
@@ -2627,7 +2632,7 @@ void CCodeGenerator::emitGotoAndLabel(const IRFragment *bb, const IRFragment *de
     }
     else if (dest->isType(FragType::Ret)) {
         // a goto to a return -> just emit the return statement
-        writeBB(dest);
+        writeFragment(dest);
     }
     else {
         addGoto(dest);
@@ -2635,18 +2640,18 @@ void CCodeGenerator::emitGotoAndLabel(const IRFragment *bb, const IRFragment *de
 }
 
 
-void CCodeGenerator::writeBB(const IRFragment *bb)
+void CCodeGenerator::writeFragment(const IRFragment *frag)
 {
     if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
-        LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
+        LOG_MSG("Generating code for fragment at address %1", frag->getLowAddr());
     }
 
     // Allocate space for a label to be generated for this node and add this to the generated code.
     // The actual label can then be generated now or back patched later
-    addLabel(bb);
+    addLabel(frag);
 
-    if (bb->getRTLs()) {
-        for (const auto &rtl : *(bb->getRTLs())) {
+    if (frag->getRTLs()) {
+        for (const auto &rtl : *(frag->getRTLs())) {
             if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
                 LOG_MSG("%1", rtl->getAddress());
             }
@@ -2668,10 +2673,7 @@ void CCodeGenerator::print(const Module *module)
 
 void CCodeGenerator::indent(OStream &str, int indLevel)
 {
-    // Can probably do more efficiently
-    for (int i = 0; i < indLevel; i++) {
-        str << "    ";
-    }
+    str << QString(4 * indLevel, ' ');
 }
 
 
@@ -2681,10 +2683,10 @@ void CCodeGenerator::appendLine(const QString &s)
 }
 
 
-bool CCodeGenerator::isAllParentsGenerated(const IRFragment *bb) const
+bool CCodeGenerator::isAllParentsGenerated(const IRFragment *frag) const
 {
-    for (IRFragment *pred : bb->getPredecessors()) {
-        if (!m_analyzer.isBackEdge(pred, bb) && !isGenerated(pred)) {
+    for (IRFragment *pred : frag->getPredecessors()) {
+        if (!m_analyzer.isBackEdge(pred, frag) && !isGenerated(pred)) {
             return false;
         }
     }
@@ -2693,9 +2695,10 @@ bool CCodeGenerator::isAllParentsGenerated(const IRFragment *bb) const
 }
 
 
-bool CCodeGenerator::isGenerated(const IRFragment *bb) const
+bool CCodeGenerator::isGenerated(const IRFragment *frag) const
 {
-    return m_generatedBBs.find(bb) != m_generatedBBs.end();
+    // 4 spaces per level
+    return m_generatedFrags.find(frag) != m_generatedFrags.end();
 }
 
 
@@ -2749,7 +2752,7 @@ void CCodeGenerator::emitCodeForStmt(const SharedConstStmt &st)
     case StmtType::Branch:
     case StmtType::Goto:
     case StmtType::Case:
-        // these will be handled by the BB
+        // these will be handled by the fragment
         break;
     case StmtType::PhiAssign: LOG_VERBOSE("Encountered Phi Assign in back end"); break;
     case StmtType::ImpAssign: LOG_VERBOSE("Encountered Implicit Assign in back end"); break;
@@ -2792,14 +2795,14 @@ CCodeGenerator::computeOptimalCaseOrdering(const IRFragment *caseHead, const Swi
     }
 
     result.sort([](const CaseEntry &left, const CaseEntry &right) {
-        const IRFragment *leftBB  = left.second;
-        const IRFragment *rightBB = right.second;
+        const IRFragment *leftFrag  = left.second;
+        const IRFragment *rightFrag = right.second;
 
-        const IRFragment *leftSucc = leftBB;
+        const IRFragment *leftSucc = leftFrag;
 
         while (leftSucc->getType() != FragType::Ret) {
-            if (leftSucc == rightBB) {
-                return leftBB != rightBB; // the left case is a fallthrough to the right case
+            if (leftSucc == rightFrag) {
+                return leftFrag != rightFrag; // the left case is a fallthrough to the right case
             }
             else if (leftSucc->getNumSuccessors() != 1) {
                 break;
@@ -2808,10 +2811,10 @@ CCodeGenerator::computeOptimalCaseOrdering(const IRFragment *caseHead, const Swi
             leftSucc = leftSucc->getSuccessor(0);
         }
 
-        const IRFragment *rightSucc = rightBB;
+        const IRFragment *rightSucc = rightFrag;
         while (rightSucc->getType() != FragType::Ret) {
-            if (rightSucc == leftBB) {
-                return leftBB != rightBB; // the right case is a fallthrough to the left case
+            if (rightSucc == leftFrag) {
+                return leftFrag != rightFrag; // the right case is a fallthrough to the left case
             }
             else if (rightSucc->getNumSuccessors() != 1) {
                 break;
@@ -2821,7 +2824,7 @@ CCodeGenerator::computeOptimalCaseOrdering(const IRFragment *caseHead, const Swi
         }
 
         // No fallthrough found; compare by address
-        return leftBB->getLowAddr() < rightBB->getLowAddr();
+        return leftFrag->getLowAddr() < rightFrag->getLowAddr();
     });
 
     return result;

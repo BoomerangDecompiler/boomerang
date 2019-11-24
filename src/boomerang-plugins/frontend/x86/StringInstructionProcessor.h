@@ -34,32 +34,32 @@ public:
 
 private:
     /**
-     * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all
-     * the in and out edges.
+     * Split the given fragment at the RTL given, and turn it into the BranchStatement given.
+     * Sort out all the in and out edges.
      *
-     *    bb -> +----+    +----+ <= bb
+     *  frag -> +----+    +----+ <= frag
      *   Change | A  | to | A  |            where A or B could be empty. S is the string
      *          |    |    |    |            instruction (which will branch to itself and to the
      *          +----+    +----+            start of the next instruction, i.e. the start of B,
      *          | S  |      |               if B is non empty).
      *          +----+      V
-     *          | B  |    +----+ < skipBB
+     *          | B  |    +----+ < skipFrag
      *          |    |    +-b1-+            \p skipBranch is just a branch for the skip part
      *          +----+      |   \___
      *                      V       \
-     *                    +----+ < rptBB
+     *                    +----+ < rptFrag
      *                    | S' |  |  |      S' = S less the skip and repeat parts
      *                    +-b2-+  |  |      \p rptBranch is a branch for the repeat part
      *                      | \__/  /
      *                      V      /
-     *                    +----+ < newBB
+     *                    +----+ < newFrag
      *                    | B  |
      *                    |    |
      *                    +----+
      * S is an RTL with 6 statements representing one string instruction (so this function is highly
      * specialised for the job of replacing the %SKIP and %RPT parts of string instructions)
      */
-    IRFragment *splitForBranch(IRFragment *bb, RTL *stringRTL,
+    IRFragment *splitForBranch(IRFragment *frag, RTL *stringRTL,
                                std::shared_ptr<BranchStatement> skipBranch,
                                std::shared_ptr<BranchStatement> rptBranch);
 

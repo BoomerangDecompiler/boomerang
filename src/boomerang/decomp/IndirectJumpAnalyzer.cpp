@@ -228,68 +228,25 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
 }
 
 
-bool IndirectJumpAnalyzer::decodeIndirectJmp(IRFragment *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::decodeIndirectJmp(IRFragment *frag, UserProc *proc)
 {
-#if CHECK_REAL_PHI_LOOPS
-    RTLList::iterator rit;
-    RTL::iterator sit;
-    Statement *s = bb->getFirstStmt(rit, sit);
-
-    for (s = bb->getFirstStmt(rit, sit); s != nullptr; s = bb->getNextStmt(rit, sit)) {
-        if (!s->isPhi()) {
-            continue;
-        }
-
-        Statement *originalPhi = s;
-        StatementSet workSet, seenSet;
-        workSet.insert(s);
-        seenSet.insert(s);
-
-        do {
-            PhiAssign *pi = (PhiAssign *)*workSet.begin();
-            workSet.remove(pi);
-            PhiAssign::iterator it;
-
-            for (it = pi->begin(); it != pi->end(); ++it) {
-                if (it->def == nullptr) {
-                    continue;
-                }
-
-                if (!it->def->isPhi()) {
-                    continue;
-                }
-
-                if (seenSet.contains(it->def)) {
-                    LOG_VERBOSE("Real phi loop involving statements %1 and %2",
-                                originalPhi->getNumber(), pi->getNumber());
-                    break;
-                }
-                else {
-                    workSet.insert(it->def);
-                    seenSet.insert(it->def);
-                }
-            }
-        } while (workSet.size());
+    if (frag->isType(FragType::CompJump)) {
+        return analyzeCompJump(frag, proc);
     }
-#endif
-
-    if (bb->isType(FragType::CompJump)) {
-        return analyzeCompJump(bb, proc);
-    }
-    else if (bb->isType(FragType::CompCall)) {
-        return analyzeCompCall(bb, proc);
+    else if (frag->isType(FragType::CompCall)) {
+        return analyzeCompCall(frag, proc);
     }
 
     return false;
 }
 
 
-int IndirectJumpAnalyzer::findNumCases(const IRFragment *bb)
+int IndirectJumpAnalyzer::findNumCases(const IRFragment *frag)
 {
     // should actually search from the statement to i
-    for (const IRFragment *pred : bb->getPredecessors()) { // For each in-edge
-        if (!pred->isType(FragType::Twoway)) {             // look for a two-way BB
-            continue;                                      // Ignore all others
+    for (const IRFragment *pred : frag->getPredecessors()) { // For each in-edge
+        if (!pred->isType(FragType::Twoway)) {               // look for a two-way fragment
+            continue;                                        // Ignore all others
         }
         else if (pred->isEmpty() || !pred->getLastStmt()->isBranch()) {
             continue;
@@ -326,14 +283,14 @@ int IndirectJumpAnalyzer::findNumCases(const IRFragment *bb)
         }
     }
 
-    LOG_WARN("Could not find number of cases for n-way at address %1", bb->getLowAddr());
+    LOG_WARN("Could not find number of cases for n-way at address %1", frag->getLowAddr());
     return 1; // Bald faced guess if all else fails
 }
 
 
-void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
+void IndirectJumpAnalyzer::processSwitch(IRFragment *frag, UserProc *proc)
 {
-    RTL *lastRTL         = bb->getLastRTL();
+    RTL *lastRTL         = frag->getLastRTL();
     const SwitchInfo *si = lastRTL->getHlStmt()->as<CaseStatement>()->getSwitchInfo();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
@@ -345,13 +302,13 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
     Address switchDestination;
     const int numCases = si->upperBound - si->lowerBound + 1;
 
-    // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    bb->setType(FragType::Nway);
+    // Emit an NWAY fragment instead of the COMPJUMP. Also update the number of out edges.
+    frag->setType(FragType::Nway);
 
     Prog *prog               = proc->getProg();
     const BinaryImage *image = prog->getBinaryFile()->getImage();
 
-    // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
+    // Where there are repeated switch cases, we have repeated out-edges from the fragment. Example:
     // switch (x) {
     //   case 3: case 5:
     //        do something;
@@ -399,7 +356,7 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
             // Remember to decode the newly discovered switch code arms, if necessary
             // Don't do it right now, in case there are recursive switch statements (e.g.
             // app7win.exe from hackthissite.org)
-            dests.push_back({ bb, switchDestination });
+            dests.push_back({ frag, switchDestination });
         }
         else {
             LOG_MSG("Switch table entry branches to past end of text section %1",
@@ -415,10 +372,10 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
 
             // remove all table elements at index i and above
             while (numToRemove > 0) {
-                IRFragment *succ = bb->getSuccessor(i);
+                IRFragment *succ = frag->getSuccessor(i);
                 if (succ) {
-                    bb->removeSuccessor(succ);
-                    succ->removePredecessor(bb);
+                    frag->removeSuccessor(succ);
+                    succ->removePredecessor(frag);
                 }
                 numToRemove--;
             }
@@ -428,12 +385,12 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *bb, UserProc *proc)
 }
 
 
-bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *frag, UserProc *proc)
 {
-    bool foundNewBBs = false;
+    bool foundNewFragments = false;
 
-    assert(!bb->getRTLs()->empty());
-    RTL *lastRTL = bb->getLastRTL();
+    assert(!frag->getRTLs()->empty());
+    RTL *lastRTL = frag->getLastRTL();
 
     if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: %1", lastRTL->toString());
@@ -477,7 +434,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
 
         if (expr) {
             swi->tableAddr       = T;
-            swi->numTableEntries = findNumCases(bb);
+            swi->numTableEntries = findNumCases(frag);
 
             // TMN: Added actual control of the array members, to possibly truncate what
             // findNumCases() thinks is the number of cases, when finding the first array
@@ -506,12 +463,13 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     }
 
                     // decode the additional switch arms
-                    foundNewBBs |= createCompJumpDest(bb->getBB(), entryIdx, switchEntryAddr);
+                    foundNewFragments |= createCompJumpDest(frag->getBB(), entryIdx,
+                                                            switchEntryAddr);
                 }
             }
 
             if (swi->numTableEntries <= 0) {
-                LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
+                LOG_WARN("Switch analysis failure at address %1", frag->getLowAddr());
                 return false;
             }
 
@@ -529,8 +487,8 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
             lastStmt->setDest(nullptr);
 
             lastStmt->setSwitchInfo(std::move(swi));
-            processSwitch(bb, proc);
-            return foundNewBBs;
+            processSwitch(frag, proc);
+            return foundNewFragments;
         }
     }
     else {
@@ -568,11 +526,12 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *bb, UserProc *proc)
                     int i = 0;
                     for (int dest : dests) {
                         Address switchEntryAddr = Address(dest);
-                        foundNewBBs |= createCompJumpDest(bb->getBB(), i++, switchEntryAddr);
+                        foundNewFragments |= createCompJumpDest(frag->getBB(), i++,
+                                                                switchEntryAddr);
                     }
 
-                    processSwitch(bb, proc);
-                    return foundNewBBs;
+                    processSwitch(frag, proc);
+                    return foundNewFragments;
                 }
             }
         }
@@ -655,11 +614,11 @@ static const std::vector<std::pair<const SharedConstExp, IndCallPattern>> hlCall
 // clang-format on
 
 
-bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *bb, UserProc *proc)
+bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *frag, UserProc *proc)
 {
     Prog *prog = proc->getProg();
-    assert(!bb->getRTLs()->empty());
-    RTL *lastRTL = bb->getLastRTL();
+    assert(!frag->getRTLs()->empty());
+    RTL *lastRTL = frag->getLastRTL();
 
     if (prog->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("decodeIndirectJmp: COMPCALL:");

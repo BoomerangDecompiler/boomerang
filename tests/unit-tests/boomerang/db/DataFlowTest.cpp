@@ -51,7 +51,7 @@ void DataFlowTest::testCalculateDominators1()
     ProcCFG *cfg = proc.getCFG();
     DataFlow *df = proc.getDataFlow();
 
-    BasicBlock *entry = cfg->createBB(BBType::Ret, createRTLs(Address(0x1000), 1));
+    BasicBlock *entry = cfg->createFragBB(BBType::Ret, createRTLs(Address(0x1000), 1));
 
     proc.setEntryBB();
 

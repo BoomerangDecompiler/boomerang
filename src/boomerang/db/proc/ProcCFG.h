@@ -35,11 +35,9 @@ using RTLList = std::list<std::unique_ptr<RTL>>;
 enum class BBType;
 
 
-/**
- * Contains all the IRFragment objects for a single UserProc.
- * These BBs contain all the RTLs for the procedure, so by traversing the CFG,
- * one traverses the IR for the whole procedure.
- */
+/// Contains all the IRFragment objects for a single UserProc.
+/// These fragments contain all the RTLs for the procedure, so by traversing the CFG,
+/// one traverses the IR for the whole procedure.
 class BOOMERANG_API ProcCFG
 {
     // FIXME order is undefined if two fragments come from the same BB
@@ -64,7 +62,8 @@ public:
     ProcCFG &operator=(ProcCFG &&other) = default;
 
 public:
-    /// Note: When removing a BB, the iterator(s) pointing to the removed BB are invalidated.
+    /// \note When removing a fragment, the iterator(s) pointing to the removed fragment
+    /// are invalidated.
     iterator begin() { return iterator(m_fragmentSet.begin()); }
     iterator end() { return iterator(m_fragmentSet.end()); }
     const_iterator begin() const { return const_iterator(m_fragmentSet.begin()); }
@@ -82,47 +81,48 @@ public:
     /// Remove all IRFragments in the CFG
     void clear();
 
-    /// \returns the number of (complete and incomplete) BBs in this CFG.
+    /// \returns the number of fragments in this CFG.
     int getNumFragments() const { return m_fragmentSet.size(); }
 
-    /// Checks if the BB is part of this CFG
+    /// Checks if the fragment is part of this CFG
     bool hasFragment(const IRFragment *frag) const;
 
+    /// Create a new fragment with the given semantics and add it to this CFG.
+    /// \returns the newly created fragment.
     IRFragment *createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb);
 
+    /// Split the given fragment in two at the given address, if possible.
+    /// If the split is successful, returns the new fragment containing the RTLs
+    /// after the split address. If the split is unsuccessful, returns the original fragment.
     IRFragment *splitFragment(IRFragment *frag, Address splitAddr);
 
-    /// \returns the entry BB of the procedure of this CFG
-    IRFragment *getEntryBB() { return m_entryFrag; }
+    /// \returns the entry fragment of the procedure of this CFG
+    IRFragment *getEntryFragment() { return m_entryFrag; }
     const IRFragment *getEntryFragment() const { return m_entryFrag; }
     IRFragment *getExitFragment() { return m_exitFrag; }
     const IRFragment *getExitFragment() const { return m_exitFrag; }
 
-    /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.
+    /// Set the entry fragment to \p entryFrag and mark all return fragments as exit fragments.
     void setEntryAndExitFragment(IRFragment *entryFrag);
 
-    /// Completely removes a single BB from this CFG.
-    /// \note \p bb is invalid after this function returns.
+    /// Completely removes a single fragment from this CFG.
+    /// \note \p frag is invalid after this function returns.
     void removeFragment(IRFragment *frag);
 
     /// \returns the fragment that starts at \p addr
     IRFragment *getFragmentByAddr(Address addr);
 
-    /**
-     * Add an edge from \p sourceBB to \p destBB.
-     * \param sourceBB the start of the edge.
-     * \param destBB the destination of the edge.
-     */
-    void addEdge(IRFragment *source, IRFragment *dest);
+    /// Add an edge from \p sourceFrag to \p destFrag.
+    void addEdge(IRFragment *sourceFrag, IRFragment *destFrag);
 
-    /**
-     * Checks that all BBs are complete, and all out edges are valid.
-     * Also checks that the ProcCFG does not contain interprocedural edges.
-     * By definition, the empty CFG is well-formed.
-     */
+    /// Checks if all out edges are valid.
+    /// Also checks that the CFG does not contain interprocedural edges.
+    /// By definition, the empty CFG is well-formed.
     bool isWellFormed() const;
 
-    IRFragment *findRetNode();
+    /// \returns the return fragment. Prioritizes Ret type fragments,
+    /// but noreturn calls are also considered if there is no return statement.
+    IRFragment *findRetFragment();
 
     // Implicit assignments
 
@@ -152,7 +152,7 @@ private:
 
 private:
     UserProc *m_myProc = nullptr;      ///< Procedure to which this CFG belongs.
-    FragmentSet m_fragmentSet;         ///< The Address to BB map
+    FragmentSet m_fragmentSet;         ///< The set hoding all fragments for this proc
     IRFragment *m_entryFrag = nullptr; ///< The CFG entry fragment.
     IRFragment *m_exitFrag  = nullptr; ///< The CFG exit fragment.
 

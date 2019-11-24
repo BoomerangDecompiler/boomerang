@@ -60,7 +60,7 @@ bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
     }
 
     // This will get done twice; no harm
-    proc->setEntryBB();
+    proc->setEntryFragment();
 
     return true;
 }

@@ -118,7 +118,7 @@ void CallStatement::setArguments(const StatementList &args)
         if (arg->isAssign()) {
             std::shared_ptr<Assign> asgn = arg->as<Assign>();
             asgn->setProc(m_proc);
-            asgn->setBB(m_bb);
+            asgn->setFragment(m_fragment);
         }
     }
 }
@@ -161,7 +161,7 @@ void CallStatement::setSigArguments()
             m_signature->getParamType(i)->clone(), e->clone(), e->clone());
 
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         asgn->setNumber(m_number);
 
@@ -356,9 +356,9 @@ SharedStmt CallStatement::clone() const
     }
 
     // Statement members
-    ret->m_bb     = m_bb;
-    ret->m_proc   = m_proc;
-    ret->m_number = m_number;
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
     return ret;
 }
 
@@ -526,7 +526,7 @@ bool CallStatement::tryConvertToDirect()
         SharedExp a = sig->getParamExp(i);
         std::shared_ptr<Assign> asgn(new Assign(VoidType::get(), a->clone(), a->clone()));
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         m_arguments.append(asgn);
     }
 
@@ -542,8 +542,8 @@ bool CallStatement::tryConvertToDirect()
 
     // 4
     m_isComputed = false;
-    assert(m_bb->isType(FragType::CompCall));
-    m_bb->setType(FragType::Call);
+    assert(m_fragment->isType(FragType::CompCall));
+    m_fragment->setType(FragType::Call);
     m_proc->addCallee(m_procDest);
 
     LOG_VERBOSE("Result of convertToDirect: true");
@@ -607,7 +607,7 @@ void CallStatement::setNumArguments(int n)
 
         std::shared_ptr<Assign> asgn(new Assign(ty, a->clone(), a->clone()));
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         m_arguments.append(asgn);
     }
 }
@@ -984,7 +984,7 @@ std::shared_ptr<Assign> CallStatement::makeArgAssign(SharedType ty, SharedExp e)
     SharedExp rhs = localiseExp(e->clone());
     std::shared_ptr<Assign> asgn(new Assign(ty, lhs, rhs));
     asgn->setProc(m_proc);
-    asgn->setBB(m_bb);
+    asgn->setFragment(m_fragment);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     ProcCFG *cfg = m_proc->getCFG();
 
@@ -1085,7 +1085,7 @@ void CallStatement::updateArguments()
             asgn->setNumber(m_number);
             // as->setParent(this);
             asgn->setProc(m_proc);
-            asgn->setBB(m_bb);
+            asgn->setFragment(m_fragment);
 
             oldArguments.append(asgn);
         }

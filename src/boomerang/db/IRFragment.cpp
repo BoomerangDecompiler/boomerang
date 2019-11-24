@@ -262,7 +262,7 @@ void IRFragment::appendStatementsTo(StatementList &stmts) const
 
     for (const auto &rtl : *rtls) {
         for (SharedStmt &st : *rtl) {
-            assert(st->getBB() == this);
+            assert(st->getFragment() == this);
             stmts.append(st);
         }
     }
@@ -295,7 +295,7 @@ std::shared_ptr<ImplicitAssign> IRFragment::addImplicitAssign(const SharedExp &l
 
     // no phi or implicit assigning to the LHS already
     std::shared_ptr<ImplicitAssign> newImplicit(new ImplicitAssign(lhs));
-    newImplicit->setBB(this);
+    newImplicit->setFragment(this);
     newImplicit->setProc(static_cast<UserProc *>(m_bb->getFunction()));
 
     m_listOfRTLs->front()->append(newImplicit);
@@ -331,7 +331,7 @@ std::shared_ptr<PhiAssign> IRFragment::addPhi(const SharedExp &usedExp)
     }
 
     std::shared_ptr<PhiAssign> phi(new PhiAssign(usedExp));
-    phi->setBB(this);
+    phi->setFragment(this);
     phi->setProc(static_cast<UserProc *>(m_bb->getFunction()));
 
     m_listOfRTLs->front()->append(phi);
@@ -383,7 +383,7 @@ void IRFragment::removeRTL(RTL *rtl)
 
     if (it != m_listOfRTLs->end()) {
         m_listOfRTLs->erase(it);
-        updateBBAddresses();
+        updateAddresses();
     }
 }
 
@@ -400,7 +400,7 @@ Address IRFragment::getHiAddr() const
 }
 
 
-void IRFragment::updateBBAddresses()
+void IRFragment::updateAddresses()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         m_highAddr = Address::INVALID;
@@ -411,10 +411,10 @@ void IRFragment::updateBBAddresses()
 
     if (a.isZero() && (m_listOfRTLs->size() > 1)) {
         RTLList::iterator it = m_listOfRTLs->begin();
-        Address add2         = (*++it)->getAddress();
+        const Address add2   = (*++it)->getAddress();
 
         // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A
-        // better solution would be to change orphan BBs' addresses to Address::INVALID, but I
+        // better solution would be to change orphan fragments' addresses to Address::INVALID, but I
         // suspect that this will cause many problems. MVE
         if (add2 < Address(0x10)) {
             // Assume that 0 is the real address
@@ -540,7 +540,7 @@ SharedExp IRFragment::getDest() const
         return lastStmt->as<GotoStatement>()->getDest();
     }
 
-    LOG_ERROR("Last statement of BB at address %1 is not a goto!", m_bb->getLowAddr());
+    LOG_ERROR("Last statement of fragment at address %1 is not a goto!", m_bb->getLowAddr());
     return nullptr;
 }
 
@@ -628,15 +628,15 @@ void IRFragment::print(OStream &os) const
     os << ":\n";
     os << "  in edges: ";
 
-    for (IRFragment *bb : getPredecessors()) {
-        os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
+    for (IRFragment *frag : getPredecessors()) {
+        os << frag->getHiAddr() << "(" << frag->getLowAddr() << ") ";
     }
 
     os << "\n";
     os << "  out edges: ";
 
-    for (IRFragment *bb : getSuccessors()) {
-        os << bb->getLowAddr() << " ";
+    for (IRFragment *frag : getSuccessors()) {
+        os << frag->getLowAddr() << " ";
     }
 
     os << "\n";

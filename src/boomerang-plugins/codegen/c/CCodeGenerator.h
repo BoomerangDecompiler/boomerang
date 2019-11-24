@@ -155,7 +155,7 @@ private:
      * Functions to add new code
      */
 
-    // pretested loops (cond is optional because it is in the bb [somewhere])
+    // pretested loops (cond is optional because it is in the fragment [somewhere])
     /// Adds: while (\p cond) {
     void addPretestedLoopHeader(const SharedExp &cond);
 
@@ -210,7 +210,7 @@ private:
     void addIfElseCondEnd();
 
     // goto, break, continue, etc
-    void addGoto(const IRFragment *bb);
+    void addGoto(const IRFragment *frag);
 
     /// Adds: continue;
     void addContinue();
@@ -220,7 +220,7 @@ private:
 
     // labels
     /// Adds: L \a ord :
-    void addLabel(const IRFragment *bb);
+    void addLabel(const IRFragment *frag);
 
     // proc related
     /**
@@ -280,32 +280,32 @@ private:
     void closeParen(OStream &str, OpPrec outer, OpPrec inner);
 
 
-    void generateCode(const IRFragment *bb, const IRFragment *latch,
+    void generateCode(const IRFragment *frag, const IRFragment *latch,
                       std::list<const IRFragment *> &followSet,
                       std::list<const IRFragment *> &gotoSet, UserProc *proc);
-    void generateCode_Loop(const IRFragment *bb, std::list<const IRFragment *> &gotoSet,
+    void generateCode_Loop(const IRFragment *frag, std::list<const IRFragment *> &gotoSet,
                            UserProc *proc, const IRFragment *latch,
                            std::list<const IRFragment *> &followSet);
-    void generateCode_Branch(const IRFragment *bb, std::list<const IRFragment *> &gotoSet,
+    void generateCode_Branch(const IRFragment *frag, std::list<const IRFragment *> &gotoSet,
                              UserProc *proc, const IRFragment *latch,
                              std::list<const IRFragment *> &followSet);
-    void generateCode_Seq(const IRFragment *bb, std::list<const IRFragment *> &gotoSet,
+    void generateCode_Seq(const IRFragment *frag, std::list<const IRFragment *> &gotoSet,
                           UserProc *proc, const IRFragment *latch,
                           std::list<const IRFragment *> &followSet);
 
     /// Emits a goto statement (at the correct indentation level) with the destination label for
     /// dest. Also places the label just before the destination code if it isn't already there. If
-    /// the goto is to the return block, it would be nice to emit a 'return' instead (but would have
-    /// to duplicate the other code in that return BB).    Also, 'continue' and 'break' statements
-    /// are used instead if possible
-    void emitGotoAndLabel(const IRFragment *bb, const IRFragment *dest);
+    /// the goto is to the return block, it would be nice to emit a 'return' instead
+    /// (but would have to duplicate the other code in that return fragment).
+    /// Also, 'continue' and 'break' statements are used instead if possible
+    void emitGotoAndLabel(const IRFragment *frag, const IRFragment *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
-    void writeBB(const IRFragment *bb);
+    void writeFragment(const IRFragment *frag);
 
-    /// \returns true if all predecessors of this BB have had their code generated.
-    bool isAllParentsGenerated(const IRFragment *bb) const;
-    bool isGenerated(const IRFragment *bb) const;
+    /// \returns true if all predecessors of this fragment have had their code generated.
+    bool isAllParentsGenerated(const IRFragment *frag) const;
+    bool isGenerated(const IRFragment *frag) const;
 
     void emitCodeForStmt(const SharedConstStmt &stmt);
 
@@ -330,10 +330,11 @@ private:
     void appendLine(const QString &s);
 
 private:
-    int m_indent = 0;                                     ///< Current indentation depth
-    std::map<QString, SharedType> m_locals;               ///< All locals in a Proc
-    std::unordered_set<Address::value_type> m_usedLabels; ///< All used goto labels. (lowAddr of BB)
-    std::unordered_set<const IRFragment *> m_generatedBBs;
+    int m_indent = 0;                       ///< Current indentation depth
+    std::map<QString, SharedType> m_locals; ///< All locals in a Proc
+    std::unordered_set<Address::value_type>
+        m_usedLabels; ///< All used goto labels. (lowAddr of fragment)
+    std::unordered_set<const IRFragment *> m_generatedFrags;
 
     UserProc *m_proc = nullptr;
     ControlFlowAnalyzer m_analyzer;

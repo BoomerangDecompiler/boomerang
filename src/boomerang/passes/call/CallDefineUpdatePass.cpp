@@ -101,7 +101,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
             if (!newDefines.existsOnLeft(loc)) {
                 std::shared_ptr<ImplicitAssign> as(new ImplicitAssign(loc->clone()));
                 as->setProc(proc);
-                as->setBB(callStmt->getBB());
+                as->setFragment(callStmt->getFragment());
                 newDefines.append(as);
             }
         }

@@ -24,8 +24,8 @@ public:
      *
      * Optimizations performed are:
      *  - Removal of redundant jumps (e.g. remove J in A->J->B if J only contains a jump)
-     *  - Removal of empty BBs (not containing any semantics), if possible
-     *  - Removal of BBs not reachable from the entry BB.
+     *  - Removal of empty fragments (not containing any semantics), if possible
+     *  - Removal of fragments not reachable from the entry fragment.
      *
      * \sa ProcCFG::isWellFormed
      * \returns true if the ProcCFG was changed.
@@ -36,6 +36,6 @@ private:
     /// Removes empty jumps and empty BBs.
     bool removeEmptyJumps(ProcCFG *cfg);
 
-    /// Removes BBs that are not reachable from the entry BB.
-    bool removeOrphanBBs(ProcCFG *cfg);
+    /// Removes fragments that are not reachable from the entry fragment.
+    bool removeOrphanFragments(ProcCFG *cfg);
 };

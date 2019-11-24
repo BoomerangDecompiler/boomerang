@@ -30,7 +30,7 @@ SharedStmt Statement::wild = SharedStmt(new Assign(Terminal::get(opNil), Termina
 
 
 Statement::Statement()
-    : m_bb(nullptr)
+    : m_fragment(nullptr)
     , m_proc(nullptr)
     , m_number(0)
 {

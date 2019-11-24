@@ -19,10 +19,10 @@ list(APPEND boomerang-passes-sources
     passes/call/CallDefineUpdatePass
     passes/call/CallArgumentUpdatePass
 
-    passes/early/StatementInitPass
+    passes/early/FragSimplifyPass
     passes/early/GlobalConstReplacePass
+    passes/early/StatementInitPass
     passes/early/StatementPropagationPass
-    passes/early/BBSimplifyPass
 
     passes/middle/CallAndPhiFixPass
     passes/middle/SPPreservationPass

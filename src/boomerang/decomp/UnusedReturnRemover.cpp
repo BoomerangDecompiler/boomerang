@@ -246,11 +246,11 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     const size_t oldNumParameters = proc->getParameters().size();
     std::map<std::shared_ptr<CallStatement>, UseCollector> callLiveness;
 
-    for (IRFragment *bb : *proc->getCFG()) {
+    for (IRFragment *frag : *proc->getCFG()) {
         IRFragment::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
         std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
-            bb->getLastStmt(rrit, srit));
+            frag->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

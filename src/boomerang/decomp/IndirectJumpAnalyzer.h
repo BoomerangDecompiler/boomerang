@@ -27,22 +27,22 @@ class BOOMERANG_API IndirectJumpAnalyzer
 {
 public:
     /**
-     * Analyzes compued jump or compued call BBs.
-     * If the function needs to be re-decompiled because of a significant change
+     * Analyzes compued jump or compued call fragments.
+     * Iff the function needs to be re-decompiled because of a significant change
      * (e.g. new switch arms discovered), this function returns true.
      */
-    bool decodeIndirectJmp(IRFragment *bb, UserProc *proc);
+    bool decodeIndirectJmp(IRFragment *frag, UserProc *proc);
 
     /**
      * Called when a switch has been identified. Visits the destinations of the switch,
-     * adds out edges to the BB, etc.
+     * adds out edges to the fragment, etc.
      *
      * \note    Used to be called as soon as a switch statement is discovered, but this causes
      * decoded but unanalyzed BBs (statements not numbered, locations not SSA renamed etc) to appear
      * in the CFG. This caused problems when there were nested switch statements. Now only called
      * when re-decoding a switch statement
      */
-    void processSwitch(IRFragment *bb, UserProc *proc);
+    void processSwitch(IRFragment *frag, UserProc *proc);
 
     /**
      * Find the number of cases for this switch statement. Assumes that there is a compare and
@@ -55,17 +55,18 @@ public:
      * (of e.g. ubyte) that is indexed by the actual switch value, then the value from that array is
      * used as an index into the array of code pointers.
      */
-    int findNumCases(const IRFragment *bb);
+    int findNumCases(const IRFragment *frag);
 
 private:
     /// Analyze a basic block ending with a computed jump.
-    bool analyzeCompJump(IRFragment *bb, UserProc *proc);
+    bool analyzeCompJump(IRFragment *frag, UserProc *proc);
 
     /// Analyze a basic block ending with a computed call.
-    bool analyzeCompCall(IRFragment *bb, UserProc *proc);
+    bool analyzeCompCall(IRFragment *frag, UserProc *proc);
 
-    /// Decode the destination of an analyzed switch jump
-    /// \returns true if a new BasibBlock was decoded
+    /// Create the destination of an analyzed switch jump, make sure the edge exists
+    /// in the low level CFG, and decode the destination.
+    /// \returns true if a new BasicBlock was decoded
     bool createCompJumpDest(BasicBlock *sourceBB, int destIdx, Address destAddr);
 
     bool addCFGEdge(BasicBlock *sourceBB, int destIdx, BasicBlock *destBB);

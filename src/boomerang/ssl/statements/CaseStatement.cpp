@@ -121,9 +121,9 @@ SharedStmt CaseStatement::clone() const
     }
 
     // Statement members
-    ret->m_bb     = m_bb;
-    ret->m_proc   = m_proc;
-    ret->m_number = m_number;
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
 
     return ret;
 }

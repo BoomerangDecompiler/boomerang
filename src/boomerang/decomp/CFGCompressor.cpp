@@ -22,7 +22,7 @@
 bool CFGCompressor::compressCFG(ProcCFG *cfg)
 {
     // FIXME: The below was working while we still had reaching definitions. It seems to me that it
-    // would be easy to search the BB for definitions between the two branches
+    // would be easy to search the fragments for definitions between the two branches
     // (so we don't need reaching defs, just the SSA property of unique definition).
     //
     // Look in CVS for old code.
@@ -30,7 +30,7 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
     bool changed = false;
 
     changed |= removeEmptyJumps(cfg);
-    changed |= removeOrphanBBs(cfg);
+    changed |= removeOrphanFragments(cfg);
     return changed;
 }
 
@@ -40,14 +40,14 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
     std::deque<IRFragment *> fragsToRemove;
 
     for (IRFragment *frag : *cfg) {
-        // Check if the BB can be removed
+        // Check if the fragment can be removed
         if (frag->getNumSuccessors() == 1 && frag != cfg->getEntryFragment() &&
             (frag->isEmpty() || frag->isEmptyJump())) {
             fragsToRemove.push_back(frag);
         }
     }
 
-    bool bbsRemoved = false;
+    bool fragsRemoved = false;
 
     while (!fragsToRemove.empty()) {
         IRFragment *frag = fragsToRemove.front();
@@ -74,19 +74,19 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
 
         frag->removeAllPredecessors();
         cfg->removeFragment(frag);
-        bbsRemoved = true;
+        fragsRemoved = true;
     }
 
-    return bbsRemoved;
+    return fragsRemoved;
 }
 
 
-bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
+bool CFGCompressor::removeOrphanFragments(ProcCFG *cfg)
 {
     std::deque<IRFragment *> orphans;
 
     for (IRFragment *potentialOrphan : *cfg) {
-        if (potentialOrphan == cfg->getEntryBB()) {
+        if (potentialOrphan == cfg->getEntryFragment()) {
             // don't remove entry fragment
             continue;
         }
@@ -100,7 +100,7 @@ bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
         }
     }
 
-    const bool bbsRemoved = !orphans.empty();
+    const bool fragsRemoved = !orphans.empty();
 
     while (!orphans.empty()) {
         IRFragment *b = orphans.front();
@@ -114,5 +114,5 @@ bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
         cfg->removeFragment(b);
     }
 
-    return bbsRemoved;
+    return fragsRemoved;
 }

@@ -43,7 +43,7 @@ bool X86FrontEnd::processProc(UserProc *function, Address addr)
     }
 
     // This will get done twice; no harm
-    function->setEntryBB();
+    function->setEntryFragment();
 
     return true;
 }
@@ -65,13 +65,13 @@ bool X86FrontEnd::liftProc(UserProc *proc)
 }
 
 
-bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
+bool X86FrontEnd::isHelperFunc(Address callDest, Address addr, RTLList &lrtl)
 {
-    if (dest == Address::INVALID) {
+    if (callDest == Address::INVALID) {
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddr(dest);
+    const QString name = m_program->getSymbolNameByAddr(callDest);
 
     if (name.isEmpty()) {
         return false;
@@ -99,7 +99,7 @@ bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
                         Const::get(32)));
         newRTL->append(a);
 
-        // Append this RTL to the list of RTLs for this BB
+        // Append this RTL to the list of RTLs for this fragment
         lrtl.push_back(std::move(newRTL));
 
         // Return true, so the caller knows not to create a HLCall
@@ -307,14 +307,14 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
         }
     }
 
-    std::set<IRFragment *> bbs;
+    std::set<IRFragment *> frags;
 
     for (SharedStmt s : stmts) {
-        if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
+        if (isOverlappedRegsProcessed(s->getFragment())) { // never redo processing
             continue;
         }
 
-        bbs.insert(s->getBB());
+        frags.insert(s->getFragment());
 
         if (!s->isAssignment()) {
             continue;
@@ -332,8 +332,8 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
         }
     }
 
-    // set a flag for every BB we've processed so we don't do them again
-    m_overlappedRegsProcessed.insert(bbs.begin(), bbs.end());
+    // set a flag for every fragment we've processed so we don't do them again
+    m_overlappedRegsProcessed.insert(frags.begin(), frags.end());
 }
 
 
@@ -344,7 +344,7 @@ void X86FrontEnd::extraProcessCall(IRFragment *callFrag)
         return;
     }
 
-    const RTLList &BB_rtls = *callFrag->getRTLs();
+    const RTLList &fragRTLs = *callFrag->getRTLs();
 
     // looking for function pointers
     auto calledSig = call->getDestProc()->getSignature();
@@ -385,8 +385,8 @@ void X86FrontEnd::extraProcessCall(IRFragment *callFrag)
         SharedExp found = nullptr;
         int pushcount   = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin();
-             itr != BB_rtls.rend() && !found; ++itr) {
+        for (RTLList::const_reverse_iterator itr = fragRTLs.rbegin();
+             itr != fragRTLs.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
@@ -490,7 +490,7 @@ void X86FrontEnd::extraProcessCall(IRFragment *callFrag)
         bool found    = false;
         int pushcount = 0;
 
-        for (auto itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
+        for (auto itr = fragRTLs.rbegin(); itr != fragRTLs.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

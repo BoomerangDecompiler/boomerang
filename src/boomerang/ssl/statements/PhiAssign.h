@@ -113,8 +113,8 @@ public:
     //
 
     /// Get statement at index \p idx
-    SharedStmt getStmtAt(IRFragment *bb);
-    SharedConstStmt getStmtAt(IRFragment *bb) const;
+    SharedStmt getStmtAt(IRFragment *frag);
+    SharedConstStmt getStmtAt(IRFragment *frag) const;
 
     /// Update the statement at index \p idx
     void putAt(IRFragment *idx, const SharedStmt &d, SharedExp e);

@@ -101,16 +101,16 @@ void UserProc::setDecoded()
 }
 
 
-IRFragment *UserProc::getEntryBB()
+IRFragment *UserProc::getEntryFragment()
 {
-    return m_cfg->getEntryBB();
+    return m_cfg->getEntryFragment();
 }
 
 
-void UserProc::setEntryBB()
+void UserProc::setEntryFragment()
 {
-    IRFragment *entryBB = m_cfg->getFragmentByAddr(m_entryAddress);
-    m_cfg->setEntryAndExitFragment(entryBB);
+    IRFragment *entryFrag = m_cfg->getFragmentByAddr(m_entryAddress);
+    m_cfg->setEntryAndExitFragment(entryFrag);
 }
 
 
@@ -124,10 +124,10 @@ void UserProc::numberStatements() const
 {
     int stmtNumber = 0;
 
-    for (IRFragment *bb : *m_cfg) {
+    for (IRFragment *frag : *m_cfg) {
         IRFragment::RTLIterator rit;
         StatementList::iterator sit;
-        for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt s = frag->getFirstStmt(rit, sit); s; s = frag->getNextStmt(rit, sit)) {
             s->setNumber(++stmtNumber);
         }
     }
@@ -136,8 +136,8 @@ void UserProc::numberStatements() const
 
 void UserProc::getStatements(StatementList &stmts) const
 {
-    for (const IRFragment *bb : *m_cfg) {
-        bb->appendStatementsTo(stmts);
+    for (const IRFragment *frag : *m_cfg) {
+        frag->appendStatementsTo(stmts);
     }
 
     for (SharedStmt s : stmts) {
@@ -176,13 +176,13 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
         ++provenIt;
     }
 
-    // remove from BB/RTL
-    IRFragment *bb = stmt->getBB(); // Get our enclosing BB
-    if (!bb) {
+    // remove from fragment/RTL
+    IRFragment *frag = stmt->getFragment(); // Get our enclosing fragment
+    if (!frag) {
         return false;
     }
 
-    for (auto &rtl : *bb->getRTLs()) {
+    for (auto &rtl : *frag->getRTLs()) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -197,26 +197,26 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
 
 std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left, SharedExp right)
 {
-    IRFragment *bb = nullptr;
+    IRFragment *frag = nullptr;
     std::shared_ptr<Assign> as(new Assign(left, right));
 
-    if (s == nullptr) {
-        // This means right is supposed to be a parameter.
-        // We can insert the assignment at the start of the entryBB
-        bb = m_cfg->getEntryBB();
+    if (s) {
+        // An ordinary definition; put the assignment right after s
+        frag = s->getFragment();
     }
     else {
-        // An ordinary definition; put the assignment right after s
-        bb = s->getBB();
+        // This means right is supposed to be a parameter.
+        // We can insert the assignment at the start of the entry fragment
+        frag = m_cfg->getEntryFragment();
     }
 
     as->setProc(this);
-    as->setBB(bb);
+    as->setFragment(frag);
 
-    if (s) {
+    if (s != nullptr) {
         // Insert the new assignment directly after s,
-        // or near the end of the existing BB if s has been removed already.
-        for (auto &rtl : *bb->getRTLs()) {
+        // or near the end of the existing fragment if s has been removed already.
+        for (auto &rtl : *frag->getRTLs()) {
             for (auto it = rtl->begin(); it != rtl->end(); ++it) {
                 if (*it == s) {
                     rtl->insert(++it, as);
@@ -226,7 +226,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         }
     }
 
-    auto &lastRTL = bb->getRTLs()->back();
+    auto &lastRTL = frag->getRTLs()->back();
     if (lastRTL->empty() || lastRTL->back()->isAssignment()) {
         lastRTL->append(as);
     }
@@ -234,28 +234,25 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         // do not insert after a Branch statement etc.
         lastRTL->insert(std::prev(lastRTL->end()), as);
     }
+
     return as;
 }
 
 
 bool UserProc::insertStatementAfter(const SharedStmt &afterThis, const SharedStmt &stmt)
 {
+    assert(afterThis != nullptr);
     assert(!afterThis->isBranch());
 
-    for (IRFragment *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
+    IRFragment *frag = afterThis->getFragment();
+    assert(frag != nullptr);
 
-        if (rtls == nullptr) {
-            continue; // e.g. bb is (as yet) invalid
-        }
-
-        for (const auto &rtl : *rtls) {
-            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
-                if (*ss == afterThis) {
-                    rtl->insert(std::next(ss), stmt);
-                    stmt->setBB(bb);
-                    return true;
-                }
+    for (auto &rtl : *frag->getRTLs()) {
+        for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
+            if (*ss == afterThis) {
+                rtl->insert(std::next(ss), stmt);
+                stmt->setFragment(frag);
+                return true;
             }
         }
     }
@@ -270,8 +267,8 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
     // I believe we always want to propagate to these ex-phi's; check!
     SharedExp newRhs = rhs->propagateAll();
 
-    for (IRFragment *bb : *m_cfg) {
-        for (const auto &rtl : *bb->getRTLs()) {
+    for (IRFragment *frag : *m_cfg) {
+        for (const auto &rtl : *frag->getRTLs()) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
                 if (*ss == orig) {
                     // convert *ss to an Assign
@@ -280,7 +277,7 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
                     asgn->setType(orig->getType()->clone());
                     asgn->setNumber(orig->getNumber());
                     asgn->setProc(orig->getProc());
-                    asgn->setBB(bb);
+                    asgn->setFragment(frag);
 
                     SharedStmt toDelete = *ss;
                     *ss                 = asgn;
@@ -824,8 +821,8 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs)
     IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (IRFragment *bb : *m_cfg) {
-        SharedStmt s = bb->getLastStmt(rrit, srit);
+    for (IRFragment *frag : *m_cfg) {
+        SharedStmt s = frag->getLastStmt(rrit, srit);
         if (!s || !s->isCall()) {
             continue;
         }
@@ -1612,14 +1609,14 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
         return false;
     }
 
-    IRFragment *exitbb = m_cfg->getExitFragment();
+    IRFragment *exitFrag = m_cfg->getExitFragment();
 
-    if (exitbb == nullptr) {
+    if (exitFrag == nullptr) {
         return true;
     }
 
-    if (exitbb->getNumPredecessors() == 1) {
-        SharedStmt s = exitbb->getPredecessor(0)->getLastStmt();
+    if (exitFrag->getNumPredecessors() == 1) {
+        SharedStmt s = exitFrag->getPredecessor(0)->getLastStmt();
 
         if (!s || !s->isCall()) {
             return false;
@@ -1633,7 +1630,7 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
 
             if (visited.find(callee) != visited.end()) {
                 // we have found a procedure involved in tail recursion (either self or mutual).
-                // Assume we have not found all the BBs yet that reach the return statement.
+                // Assume we have not yet found all the fragments that reach the return statement.
                 return false;
             }
             else if (callee->isLib()) {

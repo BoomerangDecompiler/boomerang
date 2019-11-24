@@ -42,9 +42,8 @@ enum class FragType
 };
 
 
-/**
- * Holds the IR for a single BasicBlock.
- */
+/// Holds the IR for at most a single BasicBlock.
+/// In some cases, this might be only a part of a single instruction (e.g. x86 bsf/bsr)
 class BOOMERANG_API IRFragment : public GraphNode<IRFragment>
 {
 public:
@@ -75,7 +74,7 @@ public:
     Function *getFunction();
     const Function *getFunction() const;
 
-    /// \returns all RTLs that are part of this BB.
+    /// \returns all RTLs that are part of this fragment.
     RTLList *getRTLs() { return m_listOfRTLs.get(); }
     const RTLList *getRTLs() const { return m_listOfRTLs.get(); }
 
@@ -85,30 +84,17 @@ public:
     void removeRTL(RTL *rtl);
 
 public:
-    /**
-     * \returns the lowest real address associated with this fragement.
-     * \note although this is usually the address of the first RTL, it is not
-     * always so. For example, if the BB contains just a delayed branch,and the delay
-     * instruction for the branch does not affect the branch, so the delay instruction
-     * is copied in front of the branch instruction. Its address will be
-     * UpdateAddress()'ed to 0, since it is "not really there", so the low address
-     * for this BB will be the address of the branch.
-     * \sa updateBBAddresses
-     */
+    /// \returns the lowest real address associated with this fragement.
+    /// \sa updateAddresses
     Address getLowAddr() const;
 
-    /**
-     * Get the highest address associated with this BB.
-     * This is always the address associated with the last RTL.
-     * \sa updateBBAddresses
-     */
+    /// Get the highest address associated with this fragment.
+    /// This is always the address associated with the last RTL.
+    /// \sa updateAddresses
     Address getHiAddr() const;
 
-    /// Update the high and low address of this BB if the RTL list has changed.
-    void updateBBAddresses();
-
-    /// \returns true if the instructions of this BB have not been decoded yet.
-    inline bool isIncomplete() const { return m_highAddr == Address::INVALID; }
+    /// Update the high and low address of this fragment if the RTL list has changed.
+    void updateAddresses();
 
 public:
     /**
@@ -126,32 +112,32 @@ public:
     SharedStmt getLastStmt();
     const SharedConstStmt getLastStmt() const;
 
-    /// Appends all statements in this BB to \p stmts.
+    /// Appends all statements in this fragment to \p stmts.
     void appendStatementsTo(StatementList &stmts) const;
 
     ///
     std::shared_ptr<ImplicitAssign> addImplicitAssign(const SharedExp &lhs);
 
-    /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
+    /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the fragment.
     std::shared_ptr<PhiAssign> addPhi(const SharedExp &usedExp);
 
-    // Remove all refs from phis in this BB
+    // Remove all refs from phis in this fragment
     void clearPhis();
 
     bool hasStatement(const SharedStmt &stmt) const;
 
-    /// \returns true iff the BB does not contain any statements.
-    /// \note This is different from a BB that does not contain
+    /// \returns true iff the fragment does not contain any statements.
+    /// \note This is different from a fragment that does not contain
     /// any RTLs, since all RTLs could be empty.
     bool isEmpty() const;
 
-    /// \returns true iff the BB only contains an unconditional jump statement.
-    /// \note this disregards the type of the BB (e.g. Oneway)
+    /// \returns true iff the fragment only contains an unconditional jump statement.
+    /// \note this disregards the type of the fragment (e.g. Oneway)
     bool isEmptyJump() const;
 
 public:
-    /// \returns the destination procedure of the call if this is a call BB.
-    /// Returns nullptr for all other BB types.
+    /// \returns the destination procedure of the call if this is a call fragment.
+    /// Returns nullptr for all other fragment types.
     Function *getCallDestProc() const;
 
     /*
@@ -165,21 +151,21 @@ public:
 
     /**
      * Get the condition of a conditional branch.
-     * If the BB does not have a conditional branch statement,
+     * If the fragment does not have a conditional branch statement,
      * this function returns nullptr.
      */
     SharedExp getCond() const;
 
     /**
-     * Set the condition of a conditional branch BB.
+     * Set the condition of a conditional branch fragment.
      * If the BB is not a branch, nothing happens.
      */
     void setCond(const SharedExp &cond);
 
-    /// Get the destination of the high level jump in this BB, if any
+    /// Get the destination of the high level jump in this fragment, if any
     SharedExp getDest() const;
 
-    /// Simplify all expressions in this BB
+    /// Simplify all expressions in this fragment
     void simplify();
 
 public:

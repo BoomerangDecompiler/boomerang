@@ -26,6 +26,7 @@
 ProcCFG::ProcCFG(UserProc *proc)
     : m_myProc(proc)
 {
+    assert(m_myProc != nullptr);
 }
 
 
@@ -56,23 +57,27 @@ bool ProcCFG::hasFragment(const IRFragment *frag) const
 
 IRFragment *ProcCFG::createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb)
 {
+    assert(bb != nullptr);
+
     IRFragment *frag = new IRFragment(bb, std::move(rtls));
     m_fragmentSet.insert(frag);
 
     frag->setType((FragType)bb->getType());
-    frag->updateBBAddresses();
+    frag->updateAddresses();
     return frag;
 }
 
 
 IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
 {
+    assert(hasFragment(frag));
+
     auto it = std::find_if(frag->getRTLs()->begin(), frag->getRTLs()->end(),
                            [splitAddr](const auto &rtl) { return splitAddr == rtl->getAddress(); });
 
     if (it == frag->getRTLs()->end()) {
         // cannot split
-        return nullptr;
+        return frag;
     }
     else if (it == frag->getRTLs()->begin()) {
         // no need to split
@@ -91,8 +96,8 @@ IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
     frag->setType(FragType::Fall);
     addEdge(frag, newFrag);
 
-    frag->updateBBAddresses();
-    newFrag->updateBBAddresses();
+    frag->updateAddresses();
+    newFrag->updateAddresses();
 
     assert(frag->getHiAddr() < splitAddr);
     return newFrag;
@@ -152,69 +157,72 @@ IRFragment *ProcCFG::getFragmentByAddr(Address addr)
 }
 
 
-void ProcCFG::addEdge(IRFragment *sourceBB, IRFragment *destBB)
+void ProcCFG::addEdge(IRFragment *sourceFrag, IRFragment *destFrag)
 {
-    if (!sourceBB || !destBB) {
+    if (!sourceFrag || !destFrag) {
         return;
     }
 
     // Wire up edges
-    sourceBB->addSuccessor(destBB);
-    destBB->addPredecessor(sourceBB);
+    sourceFrag->addSuccessor(destFrag);
+    destFrag->addPredecessor(sourceFrag);
 
     // special handling for upgrading oneway BBs to twoway BBs
-    if (sourceBB->isType(FragType::Oneway) && (sourceBB->getNumSuccessors() > 1)) {
-        sourceBB->setType(FragType::Twoway);
+    if (sourceFrag->isType(FragType::Oneway) && (sourceFrag->getNumSuccessors() > 1)) {
+        sourceFrag->setType(FragType::Twoway);
     }
 }
 
 
 bool ProcCFG::isWellFormed() const
 {
-    for (const IRFragment *bb : *this) {
-        if (bb->getFunction() != m_myProc) {
-            LOG_ERROR("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
-                      bb->getLowAddr(), m_myProc->getName());
+    for (const IRFragment *frag : *this) {
+        if (frag->getFunction() != m_myProc) {
+            LOG_ERROR("CFG is not well formed: Fragment at address %1 does not belong to proc '%2'",
+                      frag->getLowAddr(), m_myProc->getName());
             return false;
         }
 
-        for (const IRFragment *pred : bb->getPredecessors()) {
-            if (!pred->isPredecessorOf(bb)) {
-                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          pred->getLowAddr(), bb->getLowAddr());
+        for (const IRFragment *pred : frag->getPredecessors()) {
+            if (!pred->isPredecessorOf(frag)) {
+                LOG_ERROR("CFG is not well formed: Edge from fragment at %1 to fragment at %2 "
+                          "is malformed.",
+                          pred->getLowAddr(), frag->getLowAddr());
                 return false;
             }
         }
 
-        for (const IRFragment *succ : bb->getSuccessors()) {
-            if (!succ->isSuccessorOf(bb)) {
-                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          bb->getLowAddr(), succ->getLowAddr());
+        for (const IRFragment *succ : frag->getSuccessors()) {
+            if (!succ->isSuccessorOf(frag)) {
+                LOG_ERROR("CFG is not well formed: Edge from fragment at %1 to fragment at %2 "
+                          "is malformed.",
+                          frag->getLowAddr(), succ->getLowAddr());
                 return false;
             }
         }
     }
+
     return true;
 }
 
 
-IRFragment *ProcCFG::findRetNode()
+IRFragment *ProcCFG::findRetFragment()
 {
-    IRFragment *retNode = nullptr;
+    IRFragment *retFrag = nullptr;
 
-    for (IRFragment *bb : *this) {
-        if (bb->isType(FragType::Ret)) {
-            return bb;
+    for (IRFragment *frag : *this) {
+        if (frag->isType(FragType::Ret)) {
+            return frag;
         }
-        else if (bb->isType(FragType::Call)) {
-            const Function *callee = bb->getCallDestProc();
+        else if (frag->isType(FragType::Call)) {
+            const Function *callee = frag->getCallDestProc();
             if (callee && !callee->isLib() && callee->isNoReturn()) {
-                retNode = bb; // use noreturn calls if the proc does not return
+                retFrag = frag; // use noreturn calls if the proc does not return
             }
         }
     }
 
-    return retNode;
+    return retFrag;
 }
 
 
@@ -288,8 +296,8 @@ void ProcCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
 
-    for (IRFragment *bb : *this) {
-        bb->print(out);
+    for (IRFragment *frag : *this) {
+        frag->print(out);
     }
 
     out << '\n';

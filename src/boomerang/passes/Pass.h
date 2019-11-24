@@ -27,7 +27,7 @@ enum class PassID
     StatementInit,
     GlobalConstReplace,
     StatementPropagation,
-    BBSimplify,
+    FragSimplify,
     CallAndPhiFix,
     SPPreservation,
     PreservationAnalysis,

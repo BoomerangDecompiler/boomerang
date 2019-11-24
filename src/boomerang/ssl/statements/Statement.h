@@ -125,12 +125,12 @@ public:
     /// Make copy of self, and make the copy a derived object if needed.
     virtual SharedStmt clone() const = 0;
 
-    /// \returns the BB that this statement is part of.
-    IRFragment *getBB() { return m_bb; }
-    const IRFragment *getBB() const { return m_bb; }
+    /// \returns the fragment that this statement is part of.
+    IRFragment *getFragment() { return m_fragment; }
+    const IRFragment *getFragment() const { return m_fragment; }
 
-    /// Changes the BB that this statment is part of.
-    void setBB(IRFragment *bb) { m_bb = bb; }
+    /// Changes the fragment that this statment is part of.
+    void setFragment(IRFragment *frag) { m_fragment = frag; }
 
     /// \returns the procedure this statement is part of.
     UserProc *getProc() const { return m_proc; }
@@ -308,11 +308,11 @@ private:
     bool replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def);
 
 protected:
-    IRFragment *m_bb = nullptr; ///< contains a pointer to the enclosing BB
-    UserProc *m_proc = nullptr; ///< procedure containing this statement
-    int m_number     = -1;      ///< Statement number for printing
+    IRFragment *m_fragment = nullptr; ///< contains a pointer to the enclosing fragment
+    UserProc *m_proc       = nullptr; ///< procedure containing this statement
+    int m_number           = -1;      ///< Statement number for printing
 
-    StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
+    StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. StmtType::Branch)
 };
 
 

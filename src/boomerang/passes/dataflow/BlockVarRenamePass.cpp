@@ -44,7 +44,7 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 
 // Subscript dataflow variables
 bool BlockVarRenamePass::renameBlockVars(
-    UserProc *proc, int n, std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &stacks)
+    UserProc *proc, std::size_t n, std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &stacks)
 {
     if (proc->getCFG()->getNumFragments() == 0) {
         return false;
@@ -56,9 +56,9 @@ bool BlockVarRenamePass::renameBlockVars(
     // For each statement S in block n
     IRFragment::RTLIterator rit;
     StatementList::iterator sit;
-    IRFragment *bb = proc->getDataFlow()->nodeToBB(n);
+    IRFragment *frag = proc->getDataFlow()->idxToFrag(n);
 
-    for (SharedStmt S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (SharedStmt S = frag->getFirstStmt(rit, sit); S; S = frag->getNextStmt(rit, sit)) {
         {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
@@ -218,9 +218,9 @@ bool BlockVarRenamePass::renameBlockVars(
     }
 
     // For each successor Y of block n
-    for (IRFragment *Ybb : bb->getSuccessors()) {
+    for (IRFragment *yFrag : frag->getSuccessors()) {
         // For each phi-function in Y
-        for (SharedStmt St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+        for (SharedStmt St = yFrag->getFirstStmt(rit, sit); St; St = yFrag->getNextStmt(rit, sit)) {
             if (!St->isPhi()) {
                 continue;
             }
@@ -243,29 +243,29 @@ bool BlockVarRenamePass::renameBlockVars(
             }
 
             // "Replace jth operand with a_i"
-            pa->putAt(bb, def, a);
+            pa->putAt(frag, def, a);
         }
     }
 
     // For each child X of n
     // Note: linear search!
-    const int numBB = proc->getCFG()->getNumFragments();
+    const std::size_t numFrags = proc->getCFG()->getNumFragments();
 
-    for (int X = 0; X < numBB; X++) {
-        const int idom = proc->getDataFlow()->getIdom(X);
+    for (FragIndex X = 0; X < numFrags; ++X) {
+        const FragIndex idom = proc->getDataFlow()->getIdom(X);
         if (idom == n && X != n) { // if 'n' is immediate dominator of X
             renameBlockVars(proc, X, stacks);
         }
     }
 
-    // For each statement S in block n
     // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my
-    // algorithm to process the statments in the BB *backwards*. (It is not important in Appel's
-    // algorithm, since he always pushes a definition for every variable defined on the Stacks).
+    // algorithm to process the statments in the fragments *backwards*.
+    // (It is not important in Appel's algorithm, since he always pushes a definition
+    // for every variable defined on the Stacks).
     IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (SharedStmt S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
+    for (SharedStmt S = frag->getLastStmt(rrit, srit); S; S = frag->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs, assumeABICompliance);
@@ -302,13 +302,13 @@ bool BlockVarRenamePass::execute(UserProc *proc)
 {
     /// The stack which remembers the last definition of an expression.
     std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> stacks;
-    IRFragment *entryBB = proc->getCFG()->getEntryBB();
+    IRFragment *entryFrag = proc->getCFG()->getEntryFragment();
 
-    if (entryBB == nullptr) {
+    if (entryFrag == nullptr) {
         return false;
     }
 
-    return renameBlockVars(proc, proc->getDataFlow()->pbbToNode(entryBB), stacks);
+    return renameBlockVars(proc, proc->getDataFlow()->fragToIdx(entryFrag), stacks);
 }
 
 

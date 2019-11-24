@@ -62,7 +62,7 @@ bool PPCFrontEnd::processProc(UserProc *proc, Address entryAddr)
     }
 
     // This will get done twice; no harm
-    proc->setEntryBB();
+    proc->setEntryFragment();
 
     return true;
 }

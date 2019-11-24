@@ -13,11 +13,11 @@
 #include "boomerang/passes/Pass.h"
 
 
-/// Simplifies basic blocks of a function.
-class BBSimplifyPass final : public IPass
+/// Simplifies IR fragments of a function.
+class FragSimplifyPass final : public IPass
 {
 public:
-    BBSimplifyPass();
+    FragSimplifyPass();
 
 public:
     /// \copydoc IPass::isProcLocal

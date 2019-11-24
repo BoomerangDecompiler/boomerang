@@ -32,7 +32,7 @@ public:
     void findInterferences(ConnectionGraph &interferences);
 
 private:
-    void appendBBs(std::list<IRFragment *> &worklist, std::set<IRFragment *> &workset);
+    void appendFrags(std::list<IRFragment *> &workList, std::set<IRFragment *> &workSet);
 
     void updateWorkListRev(IRFragment *currBB, std::list<IRFragment *> &workList,
                            std::set<IRFragment *> &workSet);
