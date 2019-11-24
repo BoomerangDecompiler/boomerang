@@ -9,7 +9,7 @@
 
 # add submodlules for testing
 add_subdirectory(core)
-# add_subdirectory(db)
+add_subdirectory(db)
 # add_subdirectory(ssl)
 add_subdirectory(type)
 add_subdirectory(util)

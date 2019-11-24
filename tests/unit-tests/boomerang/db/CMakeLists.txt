@@ -63,18 +63,8 @@ BOOMERANG_ADD_TEST(
 
 
 BOOMERANG_ADD_TEST(
-    NAME ProcCFGTest
-    SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_THREAD_LIBS_INIT}
-)
-
-
-BOOMERANG_ADD_TEST(
-    NAME UserProcTest
-    SOURCES proc/UserProcTest.h proc/UserProcTest.cpp
+    NAME BasicBlockTest
+    SOURCES BasicBlockTest.h BasicBlockTest.cpp
     LIBRARIES
         ${DEBUG_LIB}
         boomerang
@@ -83,6 +73,39 @@ BOOMERANG_ADD_TEST(
         boomerang-X86FrontEnd
         boomerang-ElfLoader
 )
+
+
+# BOOMERANG_ADD_TEST(
+#     NAME IRFragmentTest
+#     SOURCES IRFragmentTest.h IRFragmentTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+# )
+
+
+# BOOMERANG_ADD_TEST(
+#     NAME ProcCFGTest
+#     SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+# )
+
+
+# BOOMERANG_ADD_TEST(
+#     NAME UserProcTest
+#     SOURCES proc/UserProcTest.h proc/UserProcTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+#     DEPENDENCIES
+#         boomerang-X86FrontEnd
+#         boomerang-ElfLoader
+# )
 
 
 BOOMERANG_ADD_TEST(
@@ -95,50 +118,40 @@ BOOMERANG_ADD_TEST(
 )
 
 
-BOOMERANG_ADD_TEST(
-    NAME BasicBlockTest
-    SOURCES BasicBlockTest.h BasicBlockTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_THREAD_LIBS_INIT}
-)
+# BOOMERANG_ADD_TEST(
+#     NAME GlobalTest
+#     SOURCES GlobalTest.h GlobalTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+#     DEPENDENCIES
+#         boomerang-ElfLoader
+# )
 
 
-BOOMERANG_ADD_TEST(
-    NAME GlobalTest
-    SOURCES GlobalTest.h GlobalTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_THREAD_LIBS_INIT}
-    DEPENDENCIES
-        boomerang-ElfLoader
-)
+# BOOMERANG_ADD_TEST(
+#     NAME ProgTest
+#     SOURCES ProgTest.h ProgTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+#         boomerang-X86FrontEnd
+#     DEPENDENCIES
+#         boomerang-X86FrontEnd
+#         boomerang-ElfLoader
+# )
 
 
-BOOMERANG_ADD_TEST(
-    NAME ProgTest
-    SOURCES ProgTest.h ProgTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_THREAD_LIBS_INIT}
-        boomerang-X86FrontEnd
-    DEPENDENCIES
-        boomerang-X86FrontEnd
-        boomerang-ElfLoader
-)
-
-
-BOOMERANG_ADD_TEST(
-    NAME DataFlowTest
-    SOURCES DataFlowTest.h DataFlowTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_THREAD_LIBS_INIT}
-    DEPENDENCIES
-        boomerang-ElfLoader
-        boomerang-X86FrontEnd
-)
+# BOOMERANG_ADD_TEST(
+#     NAME DataFlowTest
+#     SOURCES DataFlowTest.h DataFlowTest.cpp
+#     LIBRARIES
+#         ${DEBUG_LIB}
+#         boomerang
+#         ${CMAKE_THREAD_LIBS_INIT}
+#     DEPENDENCIES
+#         boomerang-ElfLoader
+#         boomerang-X86FrontEnd
+# )

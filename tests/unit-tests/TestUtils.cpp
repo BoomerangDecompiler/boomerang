@@ -113,3 +113,9 @@ char *toString(BBType type)
 
     return QTest::toString("<unknown>");
 }
+
+
+char *toString(Address addr)
+{
+    return QTest::toString(addr.toString());
+}
