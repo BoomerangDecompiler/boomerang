@@ -15,6 +15,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
@@ -32,92 +33,98 @@
 #define IFTHEN_X86      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/x86/ifthen"))
 
 
-std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
+// helper function for testCalculateDominatorsComplex()
+IRFragment *createBBAndFragment(LowLevelCFG *cfg, BBType bbType, Address addr, UserProc *proc)
 {
-    std::unique_ptr<RTLList> rtls(new RTLList);
-
-    for (int i = 0; i < numRTLs; i++) {
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(baseAddr + i,
-            { std::make_shared<Assign>(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })));
-    }
-
-    return rtls;
+    BasicBlock *bb = cfg->createBB(bbType, createInsns(addr, 1));
+    bb->setFunction(proc);
+    return proc->getCFG()->createFragment(createRTLs(addr, 1), bb);
 }
 
 
 void DataFlowTest::testCalculateDominators1()
 {
+    Prog prog("test", nullptr);
     UserProc proc(Address(0x1000), "test", nullptr);
     ProcCFG *cfg = proc.getCFG();
     DataFlow *df = proc.getDataFlow();
 
-    BasicBlock *entry = cfg->createFragBB(BBType::Ret, createRTLs(Address(0x1000), 1));
+    BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+    IRFragment *entry = cfg->createFragment(createRTLs(Address(0x1000), 1), bb);
 
-    proc.setEntryBB();
+    proc.setEntryFragment();
 
     QVERIFY(df->calculateDominators());
     QCOMPARE(df->getSemiDominator(entry), entry);
 
-    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const IRFragment *>({}));
 }
 
 
 void DataFlowTest::testCalculateDominators2()
 {
+    Prog prog("test", nullptr);
     UserProc proc(Address(0x1000), "test", nullptr);
     ProcCFG *cfg = proc.getCFG();
     DataFlow *df = proc.getDataFlow();
 
-    BasicBlock *entry = cfg->createBB(BBType::Call, createRTLs(Address(0x1000), 1));
-    BasicBlock *exit  = cfg->createBB(BBType::Ret, createRTLs(Address(0x1001), 1));
+    BasicBlock *entryBB = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+    IRFragment *entry   = cfg->createFragment(createRTLs(Address(0x1000), 1), entryBB);
+    BasicBlock *exitBB  = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1001), 1));
+    IRFragment *exit    = cfg->createFragment(createRTLs(Address(0x1001), 1), exitBB);
 
     cfg->addEdge(entry, exit);
-    proc.setEntryBB();
+    proc.setEntryFragment();
 
     QVERIFY(df->calculateDominators());
     QCOMPARE(df->getSemiDominator(entry), entry);
     QCOMPARE(df->getSemiDominator(exit), entry);
 
-    QCOMPARE(df->getDominanceFrontier(entry), std::set<const BasicBlock *>({}));
-    QCOMPARE(df->getDominanceFrontier(exit), std::set<const BasicBlock *>({}));
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const IRFragment *>({}));
+    QCOMPARE(df->getDominanceFrontier(exit), std::set<const IRFragment *>({}));
 }
 
 
 void DataFlowTest::testCalculateDominatorsComplex()
 {
+    Prog prog("test", nullptr);
+
     // Appel, Figure 19.8
+    LowLevelCFG *cfg = prog.getCFG();
     UserProc proc(Address(0x1000), "test", nullptr);
-    ProcCFG *cfg = proc.getCFG();
+
+    IRFragment *a = createBBAndFragment(cfg, BBType::Twoway, Address(0x1000), &proc);
+    IRFragment *b = createBBAndFragment(cfg, BBType::Twoway, Address(0x1001), &proc);
+    IRFragment *c = createBBAndFragment(cfg, BBType::Twoway, Address(0x1002), &proc);
+    IRFragment *d = createBBAndFragment(cfg, BBType::Twoway, Address(0x1003), &proc);
+    IRFragment *e = createBBAndFragment(cfg, BBType::Twoway, Address(0x1004), &proc);
+    IRFragment *f = createBBAndFragment(cfg, BBType::Twoway, Address(0x1005), &proc);
+    IRFragment *g = createBBAndFragment(cfg, BBType::Oneway, Address(0x1006), &proc);
+    IRFragment *h = createBBAndFragment(cfg, BBType::Oneway, Address(0x1007), &proc);
+    IRFragment *i = createBBAndFragment(cfg, BBType::Oneway, Address(0x1008), &proc);
+    IRFragment *j = createBBAndFragment(cfg, BBType::Oneway, Address(0x1009), &proc);
+    IRFragment *k = createBBAndFragment(cfg, BBType::Oneway, Address(0x100A), &proc);
+    IRFragment *l = createBBAndFragment(cfg, BBType::Twoway, Address(0x100B), &proc);
+    IRFragment *m = createBBAndFragment(cfg, BBType::Ret,    Address(0x100C), &proc);
+
+    ProcCFG *procCFG = proc.getCFG();
+
+    procCFG->addEdge(a, b); procCFG->addEdge(a, c);
+    procCFG->addEdge(b, d); procCFG->addEdge(b, g);
+    procCFG->addEdge(c, e); procCFG->addEdge(c, h);
+    procCFG->addEdge(d, f); procCFG->addEdge(d, g);
+    procCFG->addEdge(e, h);
+    procCFG->addEdge(f, i); procCFG->addEdge(f, k);
+    procCFG->addEdge(g, j);
+    procCFG->addEdge(h, m);
+    procCFG->addEdge(i, l);
+    procCFG->addEdge(j, i);
+    procCFG->addEdge(k, l);
+    procCFG->addEdge(l, b); procCFG->addEdge(l, m);
+
+    proc.setEntryFragment();
+
     DataFlow *df = proc.getDataFlow();
-
-    BasicBlock *a = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1000), 1));
-    BasicBlock *b = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1001), 1));
-    BasicBlock *c = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1002), 1));
-    BasicBlock *d = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1003), 1));
-    BasicBlock *e = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1004), 1));
-    BasicBlock *f = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1005), 1));
-    BasicBlock *g = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1006), 1));
-    BasicBlock *h = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1007), 1));
-    BasicBlock *i = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1008), 1));
-    BasicBlock *j = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1009), 1));
-    BasicBlock *k = cfg->createBB(BBType::Oneway, createRTLs(Address(0x100A), 1));
-    BasicBlock *l = cfg->createBB(BBType::Twoway, createRTLs(Address(0x100B), 1));
-    BasicBlock *m = cfg->createBB(BBType::Ret,    createRTLs(Address(0x100C), 1));
-
-    cfg->addEdge(a, b); cfg->addEdge(a, c);
-    cfg->addEdge(b, d); cfg->addEdge(b, g);
-    cfg->addEdge(c, e); cfg->addEdge(c, h);
-    cfg->addEdge(d, f); cfg->addEdge(d, g);
-    cfg->addEdge(e, h);
-    cfg->addEdge(f, i); cfg->addEdge(f, k);
-    cfg->addEdge(g, j);
-    cfg->addEdge(h, m);
-    cfg->addEdge(i, l);
-    cfg->addEdge(j, i);
-    cfg->addEdge(k, l);
-    cfg->addEdge(l, b); cfg->addEdge(l, m);
-
-    proc.setEntryBB();
 
     // test!
     QVERIFY(df->calculateDominators());
@@ -135,19 +142,19 @@ void DataFlowTest::testCalculateDominatorsComplex()
     QCOMPARE(df->getSemiDominator(l), f); QCOMPARE(df->getDominator(l), b); // semidom != dom
     QCOMPARE(df->getSemiDominator(m), a); QCOMPARE(df->getDominator(m), a);
 
-    QCOMPARE(df->getDominanceFrontier(a), std::set<const BasicBlock *>({         }));
-    QCOMPARE(df->getDominanceFrontier(b), std::set<const BasicBlock *>({ b, m    }));
-    QCOMPARE(df->getDominanceFrontier(c), std::set<const BasicBlock *>({ m       }));
-    QCOMPARE(df->getDominanceFrontier(d), std::set<const BasicBlock *>({ g, i, l }));
-    QCOMPARE(df->getDominanceFrontier(e), std::set<const BasicBlock *>({ h       }));
-    QCOMPARE(df->getDominanceFrontier(f), std::set<const BasicBlock *>({ i, l    }));
-    QCOMPARE(df->getDominanceFrontier(g), std::set<const BasicBlock *>({ i       }));
-    QCOMPARE(df->getDominanceFrontier(h), std::set<const BasicBlock *>({ m       }));
-    QCOMPARE(df->getDominanceFrontier(i), std::set<const BasicBlock *>({ l       }));
-    QCOMPARE(df->getDominanceFrontier(j), std::set<const BasicBlock *>({ i       }));
-    QCOMPARE(df->getDominanceFrontier(k), std::set<const BasicBlock *>({ l       }));
-    QCOMPARE(df->getDominanceFrontier(l), std::set<const BasicBlock *>({ b, m    }));
-    QCOMPARE(df->getDominanceFrontier(m), std::set<const BasicBlock *>({         }));
+    QCOMPARE(df->getDominanceFrontier(a), std::set<const IRFragment *>({         }));
+    QCOMPARE(df->getDominanceFrontier(b), std::set<const IRFragment *>({ b, m    }));
+    QCOMPARE(df->getDominanceFrontier(c), std::set<const IRFragment *>({ m       }));
+    QCOMPARE(df->getDominanceFrontier(d), std::set<const IRFragment *>({ g, i, l }));
+    QCOMPARE(df->getDominanceFrontier(e), std::set<const IRFragment *>({ h       }));
+    QCOMPARE(df->getDominanceFrontier(f), std::set<const IRFragment *>({ i, l    }));
+    QCOMPARE(df->getDominanceFrontier(g), std::set<const IRFragment *>({ i       }));
+    QCOMPARE(df->getDominanceFrontier(h), std::set<const IRFragment *>({ m       }));
+    QCOMPARE(df->getDominanceFrontier(i), std::set<const IRFragment *>({ l       }));
+    QCOMPARE(df->getDominanceFrontier(j), std::set<const IRFragment *>({ i       }));
+    QCOMPARE(df->getDominanceFrontier(k), std::set<const IRFragment *>({ l       }));
+    QCOMPARE(df->getDominanceFrontier(l), std::set<const IRFragment *>({ b, m    }));
+    QCOMPARE(df->getDominanceFrontier(m), std::set<const IRFragment *>({         }));
 }
 
 
@@ -166,6 +173,8 @@ void DataFlowTest::testPlacePhi()
     UserProc *mainProc = static_cast<UserProc *>(*module->begin());
     QCOMPARE(mainProc->getName(), QString("main"));
 
+    PassManager::get()->executePass(PassID::StatementInit, mainProc);
+
     DataFlow *df = mainProc->getDataFlow();
     QVERIFY(df->calculateDominators());
 
@@ -177,13 +186,13 @@ void DataFlowTest::testPlacePhi()
     OStream actual(&actualStr);
 
     // r24 == eax
-    std::set<BBIndex>& A_phi = df->getA_phi(Location::regOf(REG_X86_EAX));
+    std::set<FragIndex>& A_phi = df->getA_phi(Location::regOf(REG_X86_EAX));
 
-    for (BBIndex bb : A_phi) {
+    for (FragIndex bb : A_phi) {
         actual << (int)bb << " ";
     }
 
-    QCOMPARE(actualStr, QString("8 10 15 20 21 "));
+    QCOMPARE(actualStr, QString("6 7 10 14 15 "));
 }
 
 
@@ -202,14 +211,17 @@ void DataFlowTest::testPlacePhi2()
     Function *mainFunction = *m->begin();
     UserProc *proc = static_cast<UserProc *>(mainFunction);
 
+    PassManager::get()->executePass(PassID::StatementInit, proc);
+
     DataFlow *df = proc->getDataFlow();
     QVERIFY(df->calculateDominators());
     QVERIFY(df->placePhiFunctions());
+    proc->numberStatements(); // After placing phi functions!
 
     QString     actual_st;
     OStream actual(&actual_st);
-    SharedExp          e = Location::regOf(REG_X86_EAX);
-    std::set<BBIndex>& s = df->getA_phi(e);
+    SharedExp            e = Location::regOf(REG_X86_EAX);
+    std::set<FragIndex>& s = df->getA_phi(e);
 
     for (auto pp = s.begin(); pp != s.end(); ++pp) {
         actual << (uint64)*pp << " ";
@@ -237,7 +249,9 @@ void DataFlowTest::testRenameVars()
     UserProc *proc = static_cast<UserProc *>(*m->begin());
     DataFlow *df    = proc->getDataFlow();
 
-    df->calculateDominators();
+    PassManager::get()->executePass(PassID::StatementInit, proc);
+
+    QVERIFY(df->calculateDominators());
     QVERIFY(df->placePhiFunctions());
     proc->numberStatements(); // After placing phi functions!
 

@@ -69,9 +69,19 @@ BOOMERANG_ADD_TEST(
         ${DEBUG_LIB}
         boomerang
         ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME DataFlowTest
+    SOURCES DataFlowTest.h DataFlowTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
     DEPENDENCIES
-        boomerang-X86FrontEnd
         boomerang-ElfLoader
+        boomerang-X86FrontEnd
 )
 
 
@@ -141,17 +151,4 @@ BOOMERANG_ADD_TEST(
 #     DEPENDENCIES
 #         boomerang-X86FrontEnd
 #         boomerang-ElfLoader
-# )
-
-
-# BOOMERANG_ADD_TEST(
-#     NAME DataFlowTest
-#     SOURCES DataFlowTest.h DataFlowTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#     DEPENDENCIES
-#         boomerang-ElfLoader
-#         boomerang-X86FrontEnd
 # )

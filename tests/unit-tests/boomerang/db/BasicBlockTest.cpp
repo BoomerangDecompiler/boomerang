@@ -12,20 +12,6 @@
 #include "boomerang/db/BasicBlock.h"
 
 
-static std::vector<MachineInstruction> createInsns(Address startAddr, std::size_t count)
-{
-    std::vector<MachineInstruction> result(count);
-
-    int i = 0;
-    for (MachineInstruction &insn : result) {
-        insn.m_addr = startAddr + (i++);
-        insn.m_size = 1;
-    }
-
-    return result;
-}
-
-
 void BasicBlockTest::testType()
 {
     {

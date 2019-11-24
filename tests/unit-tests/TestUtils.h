@@ -106,3 +106,7 @@ char *toString(const LocationSet& locSet);
 char *toString(IClass type);
 char *toString(BBType type);
 char *toString(Address addr);
+
+
+std::vector<MachineInstruction> createInsns(Address baseAddr, std::size_t count);
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs);
