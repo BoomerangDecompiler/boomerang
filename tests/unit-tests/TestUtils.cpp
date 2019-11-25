@@ -62,6 +62,12 @@ char *toString(const SharedConstExp& exp)
 }
 
 
+char *toString(const SharedConstStmt &stmt)
+{
+    return QTest::toString(stmt->toString());
+}
+
+
 char *toString(const Exp& exp)
 {
     return QTest::toString(exp.toString());
@@ -135,13 +141,19 @@ std::vector<MachineInstruction> createInsns(Address baseAddr, std::size_t count)
 }
 
 
-std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs)
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs, std::size_t numStmtsPerRTL)
 {
     std::unique_ptr<RTLList> rtls(new RTLList);
 
     for (std::size_t i = 0; i < numRTLs; i++) {
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(baseAddr + i,
-            { std::make_shared<Assign>(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })));
+        auto rtl = std::unique_ptr<RTL>(new RTL(baseAddr + i));
+
+        for (std::size_t j = 0; j < numStmtsPerRTL; ++j) {
+            auto stmt = std::make_shared<Assign>(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil));
+            rtl->append(stmt);
+        }
+
+        rtls->push_back(std::move(rtl));
     }
 
     return rtls;

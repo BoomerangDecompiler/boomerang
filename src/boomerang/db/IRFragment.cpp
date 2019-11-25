@@ -29,7 +29,10 @@ IRFragment::IRFragment(BasicBlock *bb, Address lowAddr)
 IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
     : m_bb(bb)
     , m_listOfRTLs(std::move(rtls))
+    , m_fragType(FragType::Fall)
 {
+    assert(m_listOfRTLs && !m_listOfRTLs->empty());
+    updateAddresses();
 }
 
 
@@ -44,6 +47,7 @@ IRFragment &IRFragment::operator=(const IRFragment &other)
     m_bb       = other.m_bb;
     m_lowAddr  = other.m_lowAddr;
     m_highAddr = other.m_highAddr;
+    m_fragType = other.m_fragType;
 
     if (other.m_listOfRTLs) {
         // make a deep copy of the RTL list
@@ -296,7 +300,10 @@ std::shared_ptr<ImplicitAssign> IRFragment::addImplicitAssign(const SharedExp &l
     // no phi or implicit assigning to the LHS already
     std::shared_ptr<ImplicitAssign> newImplicit(new ImplicitAssign(lhs));
     newImplicit->setFragment(this);
-    newImplicit->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+
+    if (m_bb) {
+        newImplicit->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+    }
 
     m_listOfRTLs->front()->append(newImplicit);
     return newImplicit;
@@ -332,7 +339,10 @@ std::shared_ptr<PhiAssign> IRFragment::addPhi(const SharedExp &usedExp)
 
     std::shared_ptr<PhiAssign> phi(new PhiAssign(usedExp));
     phi->setFragment(this);
-    phi->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+
+    if (m_bb) {
+        phi->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+    }
 
     m_listOfRTLs->front()->append(phi);
     return phi;

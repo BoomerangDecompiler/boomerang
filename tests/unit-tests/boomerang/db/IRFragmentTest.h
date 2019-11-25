@@ -23,7 +23,6 @@ private slots:
 
     void testGetType();
     void testExtent();
-    void testIncomplete();
 
     // adding phis/implict assigns
     void testAddPhi();
@@ -32,7 +31,6 @@ private slots:
     void testAddImplicitOverPhi();
 
     void testRemoveRTL();
-    void testCompleteBB();
     void testGetStmt();
     void testGetCallDestProc();
     void testGetCond();
@@ -40,7 +38,7 @@ private slots:
     void testGetDest();
     void testHasStatement();
     void testSimplify();
-    void testUpdateBBAddresses();
+    void testUpdateAddresses();
     void testIsEmpty();
     void testIsEmptyJump();
 };

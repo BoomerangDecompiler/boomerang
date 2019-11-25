@@ -23,161 +23,92 @@
 
 void IRFragmentTest::testConstruct()
 {
-    LibProc proc(Address(0x5000), "test", nullptr);
+    IRFragment frag1(nullptr, Address(0x1000));
 
-    BasicBlock bb1(Address(0x1000), &proc);
+    QCOMPARE(frag1.getLowAddr(), Address(0x1000));
+    QCOMPARE(frag1.getFunction(), nullptr);
+    QVERIFY(frag1.isType(FragType::Invalid));
 
-    QVERIFY(bb1.getLowAddr() == Address(0x1000));
-    QVERIFY(bb1.getFunction() == &proc);
-    QVERIFY(bb1.isIncomplete());
-    QVERIFY(bb1.isType(BBType::Invalid));
+    frag1.setType(FragType::Call);
+    IRFragment frag2(frag1);
 
-    bb1.setType(BBType::Call);
-    BasicBlock bb2(bb1);
+    QCOMPARE(frag2.getLowAddr(), Address(0x1000));
+    QCOMPARE(frag2.getFunction(), nullptr);
+    QVERIFY(frag2.isType(FragType::Call));
 
-    QVERIFY(bb2.getLowAddr() == Address(0x1000));
-    QVERIFY(bb2.getFunction() == &proc);
-    QVERIFY(bb2.isIncomplete());
-    QVERIFY(bb2.isType(BBType::Call));
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::make_unique<RTL>(Address(0x2000), nullptr));
-
-    BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
-    QVERIFY(bb3.getLowAddr() == Address(0x2000));
-    QVERIFY(bb3.getFunction() == &proc);
-    QVERIFY(!bb3.isIncomplete());
-    QVERIFY(bb3.isType(BBType::Fall));
+    IRFragment frag3(nullptr, createRTLs(Address(0x2000), 1, 1));
+    QCOMPARE(frag3.getLowAddr(), Address(0x2000));
+    QCOMPARE(frag3.getFunction(), nullptr);
+    QVERIFY(frag3.isType(FragType::Fall));
 }
 
 
 void IRFragmentTest::testAssign()
 {
-    LibProc proc(Address(0x5000), "test", nullptr);
+    IRFragment frag1(nullptr, Address(0x1000));
 
-    BasicBlock bb1(Address(0x1000), &proc);
+    IRFragment frag2 = frag1;
+    QCOMPARE(frag2.getLowAddr(), Address(0x1000));
+    QCOMPARE(frag2.getFunction(), nullptr);
+    QVERIFY(frag2.isType(FragType::Invalid));
 
-    BasicBlock bb2 = bb1;
-    QVERIFY(bb2.getLowAddr() == Address(0x1000));
-    QVERIFY(bb2.getFunction() == &proc);
-    QVERIFY(bb2.isIncomplete());
-    QVERIFY(bb2.isType(BBType::Invalid));
+    IRFragment frag3(nullptr, createRTLs(Address(0x2000), 1, 1));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::make_unique<RTL>(Address(0x2000), nullptr));
+    IRFragment frag4 = frag3;
+    QCOMPARE(frag4.toString(), frag3.toString());
 
-    BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
-
-    BasicBlock bb4 = bb3;
-    QCOMPARE(bb4.toString(), bb3.toString());
-
-    BasicBlock bb5 = bb2;
-
-    QVERIFY(bb5.getLowAddr() == Address(0x1000));
-    QVERIFY(bb5.getFunction() == &proc);
-    QVERIFY(bb5.isIncomplete());
-    QVERIFY(bb5.isType(BBType::Invalid));
+    QCOMPARE(frag4.getLowAddr(), Address(0x2000));
+    QCOMPARE(frag4.getFunction(), nullptr);
+    QVERIFY(frag4.isType(FragType::Fall));
 }
 
 
 void IRFragmentTest::testGetType()
 {
-    BasicBlock bb(Address::ZERO, nullptr); // incomplete BB
+    IRFragment frag(nullptr, Address::ZERO); // incomplete fragment
 
-    QVERIFY(bb.getType() == BBType::Invalid);
-    QVERIFY(bb.isType(BBType::Invalid));
+    QCOMPARE(frag.getType(), FragType::Invalid);
+    QVERIFY(frag.isType(FragType::Invalid));
 }
 
 
 void IRFragmentTest::testExtent()
 {
     {
-        BasicBlock bb1(Address(0x1000), nullptr);
-        QCOMPARE(bb1.getLowAddr(), Address(0x1000));
-        QCOMPARE(bb1.getHiAddr(), Address::INVALID);
+        IRFragment frag1(nullptr, Address(0x1000));
+        QCOMPARE(frag1.getLowAddr(), Address(0x1000));
+        QCOMPARE(frag1.getHiAddr(), Address::INVALID);
     }
 
     {
-        std::unique_ptr<RTLList> rtls(new RTLList);
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-
-
-        BasicBlock bb2(BBType::Invalid, std::move(rtls), nullptr);
-        QCOMPARE(bb2.getLowAddr(), Address(0x1000));
-        QCOMPARE(bb2.getHiAddr(), Address(0x1000));
+        IRFragment frag2(nullptr, createRTLs(Address(0x1000), 1, 1));
+        QCOMPARE(frag2.getLowAddr(), Address(0x1000));
+        QCOMPARE(frag2.getHiAddr(), Address(0x1000));
     }
 
     {
-        std::unique_ptr<RTLList> rtls(new RTLList);
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-
-        BasicBlock bb3(BBType::Twoway, std::move(rtls), nullptr);
-        QCOMPARE(bb3.getLowAddr(), Address(0x1000));
-        QCOMPARE(bb3.getHiAddr(),  Address(0x1000));
+        IRFragment frag3(nullptr, createRTLs(Address(0x1000), 2, 1));
+        QCOMPARE(frag3.getLowAddr(), Address(0x1000));
+        QCOMPARE(frag3.getHiAddr(),  Address(0x1001));
     }
-}
-
-
-void IRFragmentTest::testIncomplete()
-{
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QCOMPARE(bb1.isIncomplete(), true);
-
-    std::unique_ptr<RTLList> rtls1(new RTLList);
-    rtls1->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-
-    BasicBlock bb2(BBType::Twoway, std::move(rtls1), nullptr);
-    QCOMPARE(bb2.isIncomplete(), false);
-
-    std::unique_ptr<RTLList> rtls2(new RTLList);
-    rtls2->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-
-    BasicBlock bb3(Address(0x1000), nullptr);
-    bb3.completeBB(std::move(rtls2));
-    QCOMPARE(bb3.isIncomplete(), false);
 }
 
 
 void IRFragmentTest::testRemoveRTL()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    bb1.getIR()->removeRTL(nullptr); // check it does not crash
-
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { std::make_shared<BranchStatement>() })));
-
-    RTL *rtlToBeRemoved = rtls->front().get();
-    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
-
-    bb2.getIR()->removeRTL(rtlToBeRemoved);
-    QVERIFY(bb2.getLowAddr() == Address(0x2000));
-    QVERIFY(bb2.isIncomplete());
-}
-
-
-void IRFragmentTest::testCompleteBB()
-{
     {
-        BasicBlock bb1(Address(0x1000), nullptr);
-        QVERIFY(bb1.isIncomplete());
-
-        std::unique_ptr<RTLList> rtls(new RTLList);
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { std::make_shared<BranchStatement>() })));
-
-        bb1.completeBB(std::move(rtls));
-
-        QVERIFY(!bb1.isIncomplete());
+        IRFragment bb1(nullptr, Address(0x1000));
+        bb1.removeRTL(nullptr); // check it does not crash
     }
 
     {
-        BasicBlock bb2(Address(0x1000), nullptr);
-        QVERIFY(bb2.isIncomplete());
+        std::unique_ptr<RTLList> rtls = createRTLs(Address(0x2000), 1, 1);
+        RTL *rtlToBeRemoved = rtls->front().get();
+        IRFragment bb2(nullptr, std::move(rtls));
 
-        std::unique_ptr<RTLList> rtls(new RTLList);
-        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000))));
-        bb2.completeBB(std::move(rtls));
-
-        QVERIFY(!bb2.isIncomplete());
+        bb2.removeRTL(rtlToBeRemoved);
+        QCOMPARE(bb2.getLowAddr(), Address(0x2000));
+        QVERIFY(bb2.getRTLs()->empty());
     }
 }
 
@@ -190,61 +121,66 @@ void IRFragmentTest::testGetStmt()
     StatementList::iterator sit;
     StatementList::reverse_iterator srit;
 
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(bb1.getIR()->getFirstStmt() == nullptr);
-    QVERIFY(bb1.getIR()->getLastStmt() == nullptr);
-    QVERIFY(bb1.getIR()->getFirstStmt(rit, sit) == nullptr);
-    QVERIFY(bb1.getIR()->getLastStmt(rrit, srit) == nullptr);
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QCOMPARE(bb1.getFirstStmt(), nullptr);
+        QCOMPARE(bb1.getLastStmt(), nullptr);
+        QCOMPARE(bb1.getFirstStmt(rit, sit), nullptr);
+        QCOMPARE(bb1.getLastStmt(rrit, srit), nullptr);
+    }
 
+    {
+        IRFragment bb2(nullptr, createRTLs(Address(0x1000), 1, 0));
+        bb2.setType(FragType::CompJump);
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::make_unique<RTL>(Address(0x1000)));
-    BasicBlock bb2(BBType::CompJump, std::move(rtls), nullptr);
+        const SharedStmt firstStmt = bb2.getFirstStmt(rit, sit);
+        const SharedStmt lastStmt  = bb2.getLastStmt(rrit, srit);
 
-    SharedStmt firstStmt = bb2.getIR()->getFirstStmt(rit, sit);
-    SharedStmt lastStmt  = bb2.getIR()->getLastStmt(rrit, srit);
+        QCOMPARE(firstStmt, nullptr);
+        QCOMPARE(lastStmt, nullptr);
+        QCOMPARE(bb2.getFirstStmt(), nullptr);
+        QCOMPARE(bb2.getLastStmt(), nullptr);
+    }
 
-    QVERIFY(firstStmt == nullptr);
-    QVERIFY(lastStmt == nullptr);
-    QVERIFY(bb2.getIR()->getFirstStmt() == nullptr);
-    QVERIFY(bb2.getIR()->getLastStmt() == nullptr);
+    {
+        IRFragment bb3(nullptr, createRTLs(Address(0x1000), 1, 1));
 
-    bb2.getIR()->getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
+        const SharedStmt firstStmt = bb3.getFirstStmt(rit, sit);
+        const SharedStmt lastStmt  = bb3.getLastStmt(rrit, srit);
 
-    firstStmt = bb2.getIR()->getFirstStmt(rit, sit);
-    lastStmt  = bb2.getIR()->getLastStmt(rrit, srit);
-
-    QVERIFY(firstStmt->isBranch());
-    QVERIFY(firstStmt == bb2.getIR()->getFirstStmt());
-    QVERIFY(lastStmt  == bb2.getIR()->getLastStmt());
-    QVERIFY(firstStmt == lastStmt);
+        QVERIFY(firstStmt != nullptr);
+        QVERIFY(lastStmt != nullptr);
+        QVERIFY(firstStmt->isAssign());
+        QCOMPARE(firstStmt, bb3.getFirstStmt());
+        QCOMPARE(lastStmt, bb3.getLastStmt());
+        QCOMPARE(firstStmt, lastStmt);
+    }
 }
 
 
 void IRFragmentTest::testAddImplicit()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-    bb1.completeBB(std::move(rtls));
+    IRFragment bb1(nullptr, createRTLs(Address(0x1000), 1, 1));
+    const std::shared_ptr<ImplicitAssign> imp = bb1.addImplicitAssign(Terminal::get(opCF));
 
-    std::shared_ptr<ImplicitAssign> imp = bb1.getIR()->addImplicitAssign(Terminal::get(opCF));
     QVERIFY(imp);
     QVERIFY(imp->isImplicit());
     QVERIFY(*imp->getLeft() == *Terminal::get(opCF));
 
-    QString expected("Invalid BB:\n"
+    QVERIFY(bb1.getFirstStmt() == imp);
+
+    const QString expected(
+        "Fall BB:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := -\n"
-        "0x00001000    0 BRANCH *no dest*, condition equals\n"
-        "\n"
+        "0x00001000    0 *v*  := \n"
     );
 
     QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
-    bb1.getIR()->addImplicitAssign(Terminal::get(OPER::opCF));
+    bb1.addImplicitAssign(Terminal::get(OPER::opCF));
 
     QCOMPARE(bb1.toString(), expected);
 }
@@ -252,28 +188,25 @@ void IRFragmentTest::testAddImplicit()
 
 void IRFragmentTest::testAddPhi()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-    bb1.completeBB(std::move(rtls));
-
-    std::shared_ptr<PhiAssign> phi = bb1.getIR()->addPhi(Terminal::get(OPER::opCF));
+    IRFragment bb1(nullptr, createRTLs(Address(0x1000), 1, 1));
+    const std::shared_ptr<PhiAssign> phi = bb1.addPhi(Terminal::get(OPER::opCF));
     QVERIFY(phi);
     QVERIFY(phi->isPhi());
     QVERIFY(*phi->getLeft() == *Terminal::get(opCF));
+    QVERIFY(bb1.getFirstStmt() == phi);
 
-    QString expected("Invalid BB:\n"
+    const QString expected(
+        "Fall BB:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := phi{}\n"
-        "0x00001000    0 BRANCH *no dest*, condition equals\n"
-        "\n"
+        "0x00001000    0 *v*  := \n"
     );
 
     QCOMPARE(bb1.toString(), expected);
 
     // add same implicit assign twice
-    bb1.getIR()->addPhi(Terminal::get(OPER::opCF));
+    bb1.addPhi(Terminal::get(OPER::opCF));
 
     QCOMPARE(bb1.toString(), expected);
 }
@@ -281,15 +214,15 @@ void IRFragmentTest::testAddPhi()
 
 void IRFragmentTest::testAddImplicitOverPhi()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
     std::unique_ptr<RTLList> rtls(new RTLList);
     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-    bb1.completeBB(std::move(rtls));
+    IRFragment bb1(nullptr, std::move(rtls));
 
-    QVERIFY(nullptr != bb1.getIR()->addPhi(Terminal::get(opCF)));
-    QVERIFY(nullptr == bb1.getIR()->addImplicitAssign(Terminal::get(opCF)));
+    QVERIFY(nullptr != bb1.addPhi(Terminal::get(opCF)));
+    QVERIFY(nullptr == bb1.addImplicitAssign(Terminal::get(opCF)));
 
-    QString expected("Invalid BB:\n"
+    QString expected(
+        "Fall BB:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := phi{}\n"
@@ -303,15 +236,15 @@ void IRFragmentTest::testAddImplicitOverPhi()
 
 void IRFragmentTest::testAddPhiOverImplict()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
     std::unique_ptr<RTLList> rtls(new RTLList);
     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-    bb1.completeBB(std::move(rtls));
+    IRFragment bb1(nullptr, std::move(rtls));
 
-    QVERIFY(nullptr != bb1.getIR()->addImplicitAssign(Terminal::get(opCF)));
-    QVERIFY(nullptr == bb1.getIR()->addPhi(Terminal::get(opCF)));
+    QVERIFY(nullptr != bb1.addImplicitAssign(Terminal::get(opCF)));
+    QVERIFY(nullptr == bb1.addPhi(Terminal::get(opCF)));
 
-    QString expected("Invalid BB:\n"
+    QString expected(
+        "Fall BB:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := -\n"
@@ -325,36 +258,45 @@ void IRFragmentTest::testAddPhiOverImplict()
 
 void IRFragmentTest::testGetCallDestProc()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(bb1.getIR()->getCallDestProc() == nullptr);
+    QSKIP("Not implemented");
+//     {
+//         IRFragment bb1(nullptr, Address(0x1000));
+//         QVERIFY(bb1.getCallDestProc() == nullptr);
+//     }
 
-    LibProc proc(Address(0x5000), "test", nullptr);
-
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<CallStatement> call(new CallStatement);
-    call->setDestProc(&proc);
-
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call })));
-    BasicBlock bb2(BBType::Call, std::move(rtls), nullptr);
-
-    QVERIFY(bb2.getIR()->getCallDestProc() == &proc);
+//     {
+//         LibProc proc(Address(0x5000), "test", nullptr);
+//
+//         std::unique_ptr<RTLList> rtls(new RTLList);
+//         std::shared_ptr<CallStatement> call(new CallStatement);
+//         call->setDestProc(&proc);
+//
+//         rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call })));
+//         IRFragment bb2(nullptr, std::move(rtls));
+//
+//         QVERIFY(bb2.getCallDestProc() == &proc);
+//     }
 }
 
 
 void IRFragmentTest::testGetCond()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(bb1.getIR()->getCond() == nullptr);
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QVERIFY(bb1.getCond() == nullptr);
+    }
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<BranchStatement> branch(new BranchStatement);
-    branch->setCondExpr(Terminal::get(opZF));
+    {
+        std::unique_ptr<RTLList> rtls(new RTLList);
+        std::shared_ptr<BranchStatement> branch(new BranchStatement);
+        branch->setCondExpr(Terminal::get(opZF));
 
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
-    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
+        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
+        IRFragment bb2(nullptr, std::move(rtls));
 
-    QVERIFY(bb2.getIR()->getCond() != nullptr);
-    QVERIFY(*bb2.getIR()->getCond() == *Terminal::get(opZF));
+        QVERIFY(bb2.getCond() != nullptr);
+        QVERIFY(*bb2.getCond() == *Terminal::get(opZF));
+    }
 }
 
 
@@ -365,130 +307,176 @@ void IRFragmentTest::testSetCond()
     branch->setCondExpr(Terminal::get(opZF));
 
     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
-    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
+    IRFragment bb2(nullptr, std::move(rtls));
 
-    bb2.getIR()->setCond(nullptr);
-    QVERIFY(bb2.getIR()->getCond() == nullptr);
+    bb2.setCond(nullptr);
+    QVERIFY(bb2.getCond() == nullptr);
 
-    bb2.getIR()->setCond(Terminal::get(opOF));
-    QVERIFY(*bb2.getIR()->getCond() == *Terminal::get(opOF));
+    bb2.setCond(Terminal::get(opOF));
+    QVERIFY(*bb2.getCond() == *Terminal::get(opOF));
 }
 
 
 void IRFragmentTest::testGetDest()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(bb1.getIR()->getDest() == nullptr);
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QVERIFY(bb1.getDest() == nullptr);
+    }
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+    {
+        std::unique_ptr<RTLList> rtls(new RTLList);
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
+        IRFragment frag2(nullptr, std::move(rtls));
 
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
-    BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
-
-    QVERIFY(bb2.getIR()->getDest() != nullptr);
-    QCOMPARE(bb2.getIR()->getDest()->toString(), QString("0x2000"));
+        QVERIFY(frag2.getDest() != nullptr);
+        QCOMPARE(frag2.getDest()->toString(), QString("0x2000"));
+    }
 }
 
 
 void IRFragmentTest::testHasStatement()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(!bb1.getIR()->hasStatement(nullptr));
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QVERIFY(!bb1.hasStatement(nullptr));
+    }
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+    {
+        std::unique_ptr<RTLList> rtls(new RTLList);
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
 
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
-    BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
-    QVERIFY(bb2.getIR()->hasStatement(jump));
+        IRFragment bb2(nullptr, std::move(rtls));
+        QVERIFY(bb2.hasStatement(jump));
 
-    std::shared_ptr<GotoStatement> jump2(new GotoStatement(Address(0x2000)));
-    QVERIFY(!bb2.getIR()->hasStatement(jump2));
+        std::shared_ptr<GotoStatement> jump2(new GotoStatement(Address(0x2000)));
+        QVERIFY(!bb2.hasStatement(jump2));
+    }
 }
 
 
 void IRFragmentTest::testSimplify()
 {
-    UserProc proc(Address(0x1000), "test", nullptr);
+    QSKIP("Not implmented");
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
-    BasicBlock *bb1 = proc.getCFG()->createBB(BBType::Twoway, std::move(rtls));
-
-    rtls.reset(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { std::make_shared<CallStatement>() })));
-    BasicBlock *bb2 = proc.getCFG()->createBB(BBType::Twoway, std::move(rtls));
-
-    proc.getCFG()->addEdge(bb1, bb2);
-    proc.getCFG()->addEdge(bb1, bb2);
-
-    bb1->getIR()->simplify();
-    QCOMPARE(bb1->getType(), BBType::Oneway);
-    QCOMPARE(bb1->getNumSuccessors(), 1);
-    QVERIFY(bb1->isPredecessorOf(bb2));
-    QVERIFY(bb2->isSuccessorOf(bb1));
+//     UserProc proc(Address(0x1000), "test", nullptr);
+//
+//     std::unique_ptr<RTLList> rtls(new RTLList);
+//     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
+//     IRFragment *bb1 = proc.getCFG()->createFragment(std::move(rtls), nullptr);
+//
+//     rtls.reset(new RTLList);
+//     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { std::make_shared<CallStatement>() })));
+//     BasicBlock *bb2 = proc.getCFG()->createBB(BBType::Twoway, std::move(rtls));
+//
+//     proc.getCFG()->addEdge(bb1, bb2);
+//     proc.getCFG()->addEdge(bb1, bb2);
+//
+//     bb1->getIR()->simplify();
+//     QCOMPARE(bb1->getType(), BBType::Oneway);
+//     QCOMPARE(bb1->getNumSuccessors(), 1);
+//     QVERIFY(bb1->isPredecessorOf(bb2));
+//     QVERIFY(bb2->isSuccessorOf(bb1));
 }
 
 
-void IRFragmentTest::testUpdateBBAddresses()
+void IRFragmentTest::testUpdateAddresses()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    bb1.updateBBAddresses();
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        bb1.updateAddresses();
 
-    QVERIFY(bb1.getLowAddr() == Address(0x1000));
-    QVERIFY(bb1.getHiAddr()  == Address::INVALID);
+        QVERIFY(bb1.getLowAddr() == Address(0x1000));
+        QVERIFY(bb1.getHiAddr()  == Address::INVALID);
+    }
 
-    std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+    {
+        std::unique_ptr<RTLList> rtls(new RTLList);
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
 
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { jump })));
-    bb1.completeBB(std::move(rtls));
-    bb1.updateBBAddresses();
+        rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { jump })));
+        IRFragment bb1(nullptr, std::move(rtls));
 
-    QVERIFY(bb1.getLowAddr() == Address(0x2000));
-    QVERIFY(bb1.getHiAddr()  == Address(0x2000));
+        QVERIFY(bb1.getLowAddr() == Address(0x2000));
+        QVERIFY(bb1.getHiAddr()  == Address(0x2000));
+    }
 }
 
 
 void IRFragmentTest::testIsEmpty()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(bb1.getIR()->isEmpty());
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QVERIFY(bb1.isEmpty());
+    }
 
-    auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000))));
+    {
+        IRFragment bb1(nullptr, createRTLs(Address(0x1000), 1, 0));
+        QVERIFY(bb1.isEmpty());
+    }
 
-    bb1.completeBB(std::move(bbRTLs));
-    QVERIFY(bb1.getIR()->isEmpty());
+    {
+        IRFragment bb1(nullptr, createRTLs(Address(0x1000), 1, 0));
+        bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001))));
+        QVERIFY(bb1.isEmpty());
+    }
 
-    bb1.getIR()->getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001))));
-    QVERIFY(bb1.getIR()->isEmpty());
+    {
+        IRFragment bb1(nullptr, createRTLs(Address(0x1000), 1, 0));
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+        bb1.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { jump })));
 
-    std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
-    bb1.getIR()->getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1002), { jump })));
-
-    QVERIFY(!bb1.getIR()->isEmpty());
+        QVERIFY(!bb1.isEmpty());
+    }
 }
 
 
 void IRFragmentTest::testIsEmptyJump()
 {
-    BasicBlock bb1(Address(0x1000), nullptr);
-    QVERIFY(!bb1.getIR()->isEmptyJump());
+    {
+        IRFragment bb1(nullptr, Address(0x1000));
+        QVERIFY(!bb1.isEmptyJump());
+    }
 
-    auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
-    bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
-    bb1.completeBB(std::move(bbRTLs));
-    QVERIFY(!bb1.getIR()->isEmptyJump());
+    {
+        auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
+        bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
+        IRFragment bb1(nullptr, std::move(bbRTLs));
+        QVERIFY(!bb1.isEmptyJump());
+    }
 
-    std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
-    bb1.getIR()->getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
-    QVERIFY(bb1.getIR()->isEmptyJump());
+    {
+        auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
+        bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
+        std::shared_ptr<BranchStatement> jump(new BranchStatement());
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
 
-    std::shared_ptr<Assign> asgn(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
-    bb1.getIR()->getRTLs()->back()->push_front(asgn);
-    QVERIFY(!bb1.getIR()->isEmptyJump());
+        IRFragment bb1(nullptr, std::move(bbRTLs));
+        QVERIFY(!bb1.isEmptyJump());
+    }
+
+    {
+        auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
+        bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
+
+        IRFragment bb1(nullptr, std::move(bbRTLs));
+        QVERIFY(bb1.isEmptyJump());
+    }
+
+    {
+        auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
+        bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
+        std::shared_ptr<GotoStatement> jump(new GotoStatement(Address(0x2000)));
+        std::shared_ptr<Assign> asgn(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { asgn, jump })));
+
+        IRFragment bb1(nullptr, std::move(bbRTLs));
+        QVERIFY(!bb1.isEmptyJump());
+    }
 }
 
 

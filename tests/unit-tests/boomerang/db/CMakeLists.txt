@@ -107,14 +107,14 @@ BOOMERANG_ADD_TEST(
 )
 
 
-# BOOMERANG_ADD_TEST(
-#     NAME IRFragmentTest
-#     SOURCES IRFragmentTest.h IRFragmentTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-# )
+BOOMERANG_ADD_TEST(
+    NAME IRFragmentTest
+    SOURCES IRFragmentTest.h IRFragmentTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
 
 
 # BOOMERANG_ADD_TEST(

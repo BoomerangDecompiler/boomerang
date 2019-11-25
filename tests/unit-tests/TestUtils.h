@@ -102,6 +102,7 @@ void compareLongStrings(const QString& actual, const QString& expected);
 
 char *toString(const Exp& exp);
 char *toString(const SharedConstExp& exp);
+char *toString(const SharedConstStmt &stmt);
 char *toString(const LocationSet& locSet);
 char *toString(IClass type);
 char *toString(BBType type);
@@ -109,4 +110,4 @@ char *toString(Address addr);
 
 
 std::vector<MachineInstruction> createInsns(Address baseAddr, std::size_t count);
-std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs);
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs, std::size_t numStmtsPerRTL);
