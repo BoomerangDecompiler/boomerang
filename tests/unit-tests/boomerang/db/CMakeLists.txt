@@ -131,14 +131,14 @@ BOOMERANG_ADD_TEST(
 )
 
 
-# BOOMERANG_ADD_TEST(
-#     NAME ProcCFGTest
-#     SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-# )
+BOOMERANG_ADD_TEST(
+    NAME ProcCFGTest
+    SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
 
 
 # BOOMERANG_ADD_TEST(

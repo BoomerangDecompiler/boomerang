@@ -21,14 +21,12 @@ class ProcCFGTest : public BoomerangTest
     Q_OBJECT
 
 private slots:
-    void testHasBB();
-    void testCreateBB();
-    void testCreateBBBlocking(); /// tests createBB if another (complete) BB is blocking the newly created BB.
-    void testCreateBBBlockingIncomplete(); /// tests createBB if another incomplete BB is blocking the newly created BB.
-    void testCreateIncompleteBB(); /// tests creating an incomplete BB
-    void testEnsureBBExists();
-    void testSetEntryAndExitBB();
-    void testRemoveBB();
+    void testHasFragment();
+    void testCreateFragment();
+    void testSplitFragment();
+    void testEntryAndExitFragment();
+    void testRemoveFragment();
+    void testGetFragmentByAddr();
     void testAddEdge();
     void testIsWellFormed();
 };

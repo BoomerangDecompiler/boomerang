@@ -106,6 +106,9 @@ IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
 
 void ProcCFG::removeFragment(IRFragment *frag)
 {
+    assert(frag != nullptr);
+    assert(this->hasFragment(frag));
+
     RTLList::iterator rit;
     StatementList::iterator sit;
 
@@ -179,7 +182,7 @@ bool ProcCFG::isWellFormed() const
     for (const IRFragment *frag : *this) {
         if (frag->getFunction() != m_myProc) {
             LOG_ERROR("CFG is not well formed: Fragment at address %1 does not belong to proc '%2'",
-                      frag->getLowAddr(), m_myProc->getName());
+                      frag->getLowAddr(), m_myProc ? m_myProc->getName() : QString("<Unknown>"));
             return false;
         }
 
