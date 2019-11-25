@@ -117,6 +117,20 @@ BOOMERANG_ADD_TEST(
 )
 
 
+BOOMERANG_ADD_TEST(
+    NAME ProgTest
+    SOURCES ProgTest.h ProgTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+        boomerang-X86FrontEnd
+    DEPENDENCIES
+        boomerang-X86FrontEnd
+        boomerang-ElfLoader
+)
+
+
 # BOOMERANG_ADD_TEST(
 #     NAME ProcCFGTest
 #     SOURCES proc/ProcCFGTest.h proc/ProcCFGTest.cpp
@@ -148,17 +162,3 @@ BOOMERANG_ADD_TEST(
         boomerang
         ${CMAKE_THREAD_LIBS_INIT}
 )
-
-
-# BOOMERANG_ADD_TEST(
-#     NAME ProgTest
-#     SOURCES ProgTest.h ProgTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#         boomerang-X86FrontEnd
-#     DEPENDENCIES
-#         boomerang-X86FrontEnd
-#         boomerang-ElfLoader
-# )
