@@ -339,7 +339,7 @@ void ProgTest::testGetFloatConstant()
 
     double result;
     QVERIFY(!m_project.getProg()->getFloatConstant(Address::INVALID, result, 32));
-    QVERIFY(m_project.getProg()->getFloatConstant(Address(0x080485CC), result, 32));
+    QVERIFY(m_project.getProg()->getFloatConstant(Address(0x08049240), result, 32));
     QCOMPARE(result, 5.0);
 }
 

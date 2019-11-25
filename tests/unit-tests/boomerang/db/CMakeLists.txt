@@ -85,6 +85,18 @@ BOOMERANG_ADD_TEST(
 )
 
 
+BOOMERANG_ADD_TEST(
+    NAME GlobalTest
+    SOURCES GlobalTest.h GlobalTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+)
+
+
 # BOOMERANG_ADD_TEST(
 #     NAME IRFragmentTest
 #     SOURCES IRFragmentTest.h IRFragmentTest.cpp
@@ -126,18 +138,6 @@ BOOMERANG_ADD_TEST(
         boomerang
         ${CMAKE_THREAD_LIBS_INIT}
 )
-
-
-# BOOMERANG_ADD_TEST(
-#     NAME GlobalTest
-#     SOURCES GlobalTest.h GlobalTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#     DEPENDENCIES
-#         boomerang-ElfLoader
-# )
 
 
 # BOOMERANG_ADD_TEST(
