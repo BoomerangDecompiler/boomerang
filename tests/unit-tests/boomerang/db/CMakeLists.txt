@@ -141,17 +141,17 @@ BOOMERANG_ADD_TEST(
 )
 
 
-# BOOMERANG_ADD_TEST(
-#     NAME UserProcTest
-#     SOURCES proc/UserProcTest.h proc/UserProcTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#     DEPENDENCIES
-#         boomerang-X86FrontEnd
-#         boomerang-ElfLoader
-# )
+BOOMERANG_ADD_TEST(
+    NAME UserProcTest
+    SOURCES proc/UserProcTest.h proc/UserProcTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-X86FrontEnd
+        boomerang-ElfLoader
+)
 
 
 BOOMERANG_ADD_TEST(
