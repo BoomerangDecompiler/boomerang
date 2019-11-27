@@ -831,13 +831,13 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
     const bool canDecode = !cfg->isStartOfBB(destAddr) || cfg->isStartOfIncompleteBB(destAddr);
 
     if (!canDecode) {
-        BasicBlock *destBB = cfg->getBBStartingAt(destAddr);
+        BasicBlock *destBB = cfg->getBBStartingAt(destAddr).bb;
         return addCFGEdge(sourceBB, destIdx, destBB);
     }
 
     BasicBlock *dummy = nullptr;
     cfg->ensureBBExists(destAddr, dummy);
-    BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr);
+    BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr).bb;
 
     addCFGEdge(sourceBB, destIdx, destBB);
     prog->getFrontEnd()->decodeFragment(static_cast<UserProc *>(sourceBB->getFunction()), destAddr);

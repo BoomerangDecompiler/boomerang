@@ -73,7 +73,7 @@ public:
     /// \copydoc IFrontEnd::processProc
     bool processProc(UserProc *proc, Address addr) override;
 
-    /// \copydoc IFrontEnd::processProc
+    /// \copydoc IFrontEnd::liftProc
     bool liftProc(UserProc *proc) override;
 
     /// Do extra processing of call instructions.
@@ -116,7 +116,7 @@ protected:
      */
     virtual bool isHelperFunc(Address dest, Address addr, RTLList &lrtl);
 
-private:
+protected:
     /// Disassemble a single instruction at address \p pc
     /// \returns true on success
     bool disassembleInstruction(Address pc, MachineInstruction &insn);
@@ -124,6 +124,10 @@ private:
     /// Lifts a single instruction \p insn to an RTL.
     /// \returns true on success
     bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted);
+
+private:
+    bool liftBB(BasicBlock *bb, UserProc *proc,
+                std::list<std::shared_ptr<CallStatement>> &callList);
 
     std::unique_ptr<RTLList> liftBB(const std::list<MachineInstruction> &bbInsns);
 
@@ -158,6 +162,7 @@ private:
      */
     Address getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc);
 
+protected:
     /// After disassembly, tag all the BBs that are part of \p proc
     void tagFunctionBBs(UserProc *proc);
 

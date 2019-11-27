@@ -265,7 +265,7 @@ void SPARCFrontendTest::testDelaySlot()
     ProcCFG::iterator it = cfg->begin();
 
     QVERIFY(it != cfg->end());
-    BasicBlock *bb = *it;
+    IRFragment *bb = *it;
     bb->print(strm);
     QString expected("Call BB:\n"
                      "  in edges: \n"

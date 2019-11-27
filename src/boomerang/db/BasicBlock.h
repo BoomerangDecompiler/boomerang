@@ -26,15 +26,16 @@ class RTL;
 /// reordering these will break the save files - trent
 enum class BBType
 {
-    Invalid  = -1, ///< invalid instruction
-    Fall     = 0,  ///< fall-through node
-    Oneway   = 1,  ///< unconditional branch (jmp)
-    Twoway   = 2,  ///< conditional branch   (jXX)
-    Nway     = 3,  ///< case branch          (jmp [off + 4*eax])
-    Call     = 4,  ///< procedure call       (call)
-    Ret      = 5,  ///< return               (ret)
-    CompJump = 6,  ///< computed jump
-    CompCall = 7,  ///< computed call        (call [eax + 0x14])
+    Invalid   = -1, ///< invalid instruction
+    Fall      = 0,  ///< fall-through node
+    Oneway    = 1,  ///< unconditional branch (jmp)
+    Twoway    = 2,  ///< conditional branch   (jXX)
+    Nway      = 3,  ///< case branch          (jmp [off + 4*eax])
+    Call      = 4,  ///< procedure call       (call)
+    Ret       = 5,  ///< return               (ret)
+    CompJump  = 6,  ///< computed jump
+    CompCall  = 7,  ///< computed call        (call [eax + 0x14])
+    DelaySlot = 8   ///< Like Oneway, but this is the delay slot of a jump or call
 };
 
 

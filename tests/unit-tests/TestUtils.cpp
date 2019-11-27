@@ -116,6 +116,7 @@ char *toString(BBType type)
     HANDLE_ENUM_VAL(BBType::Call);
     HANDLE_ENUM_VAL(BBType::CompJump);
     HANDLE_ENUM_VAL(BBType::CompCall);
+    HANDLE_ENUM_VAL(BBType::DelaySlot);
     }
 
     return QTest::toString("<unknown>");

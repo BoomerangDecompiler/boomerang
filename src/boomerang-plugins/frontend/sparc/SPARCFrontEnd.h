@@ -18,6 +18,9 @@
 #include "boomerang/util/Interval.h"
 
 
+class ProcCFG;
+
+
 /**
  * This file contains routines to manage the decoding of SPARC instructions
  * and the instantiation to RTLs, removing SPARC dependent features
@@ -48,6 +51,9 @@ public:
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
+
+private:
+    bool handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *proc);
 
 private:
     /**

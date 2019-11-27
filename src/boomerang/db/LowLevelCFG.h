@@ -35,7 +35,16 @@ enum class BBType;
  */
 class BOOMERANG_API LowLevelCFG
 {
-    typedef std::multimap<Address, BasicBlock *, std::less<Address>> BBStartMap;
+public:
+    /// \sa getBBStartingAt
+    struct BBStart
+    {
+        BasicBlock *bb    = nullptr;
+        BasicBlock *delay = nullptr;
+    };
+
+private:
+    typedef std::map<Address, BBStart, std::less<Address>> BBStartMap;
 
 public:
     typedef MapValueIterator<BBStartMap> iterator;
@@ -124,16 +133,16 @@ public:
      * Get a (complete or incomplete) BasicBlock starting at the given address.
      * If there is no such block, return nullptr.
      */
-    inline BasicBlock *getBBStartingAt(Address addr)
+    inline BBStart getBBStartingAt(Address addr)
     {
         BBStartMap::iterator it = m_bbStartMap.find(addr);
-        return (it != m_bbStartMap.end()) ? (*it).second : nullptr;
+        return (it != m_bbStartMap.end()) ? (*it).second : BBStart{};
     }
 
-    inline const BasicBlock *getBBStartingAt(Address addr) const
+    inline const BBStart getBBStartingAt(Address addr) const
     {
         BBStartMap::const_iterator it = m_bbStartMap.find(addr);
-        return (it != m_bbStartMap.end()) ? (*it).second : nullptr;
+        return (it != m_bbStartMap.end()) ? (*it).second : BBStart{};
     }
 
     /// Check if \p addr is the start of a basic block, complete or not

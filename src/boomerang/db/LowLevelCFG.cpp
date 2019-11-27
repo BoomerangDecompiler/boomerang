@@ -31,7 +31,14 @@ LowLevelCFG::LowLevelCFG(Prog *prog)
 
 LowLevelCFG::~LowLevelCFG()
 {
-    qDeleteAll(begin(), end()); // deletes all BBs
+    for (auto &b : *this) {
+        if (b.bb) {
+            delete b.bb;
+        }
+        if (b.delay) {
+            delete b.delay;
+        }
+    }
 }
 
 
@@ -43,13 +50,7 @@ bool LowLevelCFG::hasBB(const BasicBlock *bb) const
 
     // we have to use linear search here, since the bb might already have been deleted
     // (invoking UB when calling getLowAddr).
-    for (const auto &val : m_bbStartMap) {
-        if (val.second == bb) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::any_of(begin(), end(), [bb](auto &b) { return b.bb == bb || b.delay == bb; });
 }
 
 
@@ -69,8 +70,9 @@ BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstru
 
     BBStartMap::iterator mi = m_bbStartMap.find(startAddr);
 
-    if ((mi != m_bbStartMap.end()) && mi->second) {
-        currentBB = mi->second;
+    if ((mi != m_bbStartMap.end()) && ((bbType != BBType::DelaySlot && mi->second.bb) ||
+                                       (bbType == BBType::DelaySlot && mi->second.delay))) {
+        currentBB = bbType == (BBType::DelaySlot) ? mi->second.delay : mi->second.bb;
 
         // It should be incomplete, or the BB there should be zero
         // (we have called ensureBBExists() but not yet created the BB for it).
@@ -80,8 +82,6 @@ BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstru
         if (currentBB->isComplete()) {
             LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
                         currentBB->getLowAddr());
-
-            // we automatically destroy bbRTLs
             return nullptr;
         }
         else {
@@ -128,7 +128,7 @@ BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstru
         mi = std::next(mi);
 
         if (mi != m_bbStartMap.end()) {
-            BasicBlock *nextBB    = (*mi).second;
+            BasicBlock *nextBB    = (*mi).second.bb;
             Address nextAddr      = (*mi).first;
             bool nextIsIncomplete = !nextBB->isComplete();
 
@@ -188,14 +188,14 @@ bool LowLevelCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
     BBStartMap::iterator itExistingBB = m_bbStartMap.lower_bound(addr);
 
     BasicBlock *overlappingBB = nullptr;
-    if (itExistingBB != m_bbStartMap.end() && itExistingBB->second->getLowAddr() == addr) {
-        overlappingBB = itExistingBB->second;
+    if (itExistingBB != m_bbStartMap.end() && itExistingBB->second.bb->getLowAddr() == addr) {
+        overlappingBB = itExistingBB->second.bb;
     }
     else if (itExistingBB != m_bbStartMap.begin()) {
         --itExistingBB;
-        if (itExistingBB->second->getLowAddr() <= addr &&
-            itExistingBB->second->getHiAddr() > addr) {
-            overlappingBB = itExistingBB->second;
+        if (itExistingBB->second.bb->getLowAddr() <= addr &&
+            itExistingBB->second.bb->getHiAddr() > addr) {
+            overlappingBB = itExistingBB->second.bb;
         }
     }
 
@@ -209,7 +209,7 @@ bool LowLevelCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
     }
     else if (overlappingBB && overlappingBB->getLowAddr() < addr) {
         splitBB(overlappingBB, addr);
-        BasicBlock *highBB = getBBStartingAt(addr);
+        BasicBlock *highBB = getBBStartingAt(addr).bb;
 
         if (currBB == overlappingBB) {
             // This means that the BB that we are expecting to use, usually to add
@@ -229,15 +229,15 @@ bool LowLevelCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
 
 bool LowLevelCFG::isStartOfBB(Address addr) const
 {
-    return getBBStartingAt(addr) != nullptr;
+    BBStart b = getBBStartingAt(addr);
+    return b.bb != nullptr;
 }
 
 
 bool LowLevelCFG::isStartOfIncompleteBB(Address addr) const
 {
-    const BasicBlock *bb = getBBStartingAt(addr);
-
-    return bb && !bb->isComplete();
+    BBStart b = getBBStartingAt(addr);
+    return b.bb && !b.bb->isComplete();
 }
 
 
@@ -257,8 +257,25 @@ void LowLevelCFG::removeBB(BasicBlock *bb)
     std::tie(firstIt, lastIt) = m_bbStartMap.equal_range(bb->getLowAddr());
 
     for (auto it = firstIt; it != lastIt; ++it) {
-        if (it->second == bb) {
-            m_bbStartMap.erase(it);
+        if (it->second.bb == bb) {
+            if (it->second.delay == nullptr) {
+                m_bbStartMap.erase(it);
+            }
+            else {
+                it->second.bb = nullptr;
+            }
+
+            delete bb;
+            return;
+        }
+        else if (it->second.delay == bb) {
+            if (it->second.bb == nullptr) {
+                m_bbStartMap.erase(it);
+            }
+            else {
+                it->second.delay = nullptr;
+            }
+
             delete bb;
             return;
         }
@@ -290,7 +307,8 @@ void LowLevelCFG::addEdge(BasicBlock *sourceBB, Address addr)
 {
     // If we already have a BB for this address, add the edge to it.
     // If not, create a new incomplete BB at the destination address.
-    BasicBlock *destBB = getBBStartingAt(addr);
+    // Never add an edge to the delay slot (we create delay slot BBs manually).
+    BasicBlock *destBB = getBBStartingAt(addr).bb;
 
     if (!destBB) {
         destBB = createIncompleteBB(addr);
@@ -302,35 +320,35 @@ void LowLevelCFG::addEdge(BasicBlock *sourceBB, Address addr)
 
 bool LowLevelCFG::isWellFormed() const
 {
-    for (const BasicBlock *bb : *this) {
-        if (!bb->isComplete()) {
-            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
+    for (const BBStart &b : *this) {
+        if (!b.bb->isComplete()) {
+            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete", b.bb->getLowAddr());
             return false;
         }
 
-        for (const BasicBlock *pred : bb->getPredecessors()) {
-            if (!pred->isPredecessorOf(bb)) {
+        for (const BasicBlock *pred : b.bb->getPredecessors()) {
+            if (!pred->isPredecessorOf(b.bb)) {
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          pred->getLowAddr(), bb->getLowAddr());
+                          pred->getLowAddr(), b.bb->getLowAddr());
                 return false;
             }
-            else if (pred->getFunction() != bb->getFunction()) {
+            else if (pred->getFunction() != b.bb->getFunction()) {
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                           pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
-                          bb->getFunction()->getName());
+                          b.bb->getFunction()->getName());
                 return false;
             }
         }
 
-        for (const BasicBlock *succ : bb->getSuccessors()) {
-            if (!succ->isSuccessorOf(bb)) {
+        for (const BasicBlock *succ : b.bb->getSuccessors()) {
+            if (!succ->isSuccessorOf(b.bb)) {
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                          bb->getLowAddr(), succ->getLowAddr());
+                          b.bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
-            else if (succ->getFunction() != bb->getFunction()) {
+            else if (succ->getFunction() != b.bb->getFunction()) {
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                          bb->getFunction()->getName(),
+                          b.bb->getFunction()->getName(),
                           succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
                 return false;
             }
@@ -345,9 +363,9 @@ BasicBlock *LowLevelCFG::findRetNode()
 {
     BasicBlock *retNode = nullptr;
 
-    for (BasicBlock *bb : *this) {
-        if (bb->getType() == BBType::Ret) {
-            return bb;
+    for (const BBStart &b : *this) {
+        if (b.bb->getType() == BBType::Ret) {
+            return b.bb;
         }
     }
 
@@ -426,8 +444,14 @@ void LowLevelCFG::print(OStream &out) const
 {
     out << "Control Flow Graph:\n";
 
-    for (BasicBlock *bb : *this) {
-        bb->print(out);
+    for (const BBStart &b : *this) {
+        if (b.bb) {
+            b.bb->print(out);
+        }
+
+        if (b.delay) {
+            b.delay->print(out);
+        }
     }
 
     out << '\n';
@@ -447,19 +471,22 @@ void LowLevelCFG::insertBB(BasicBlock *bb)
 {
     assert(bb != nullptr);
     assert(bb->getLowAddr() != Address::INVALID);
-    if (bb->getLowAddr() != Address::ZERO) {
-        auto it = m_bbStartMap.find(bb->getLowAddr());
-        if (it != m_bbStartMap.end()) {
-            // replace it
-            it->second = bb;
-        }
-        else {
-            // just insert it
-            m_bbStartMap.insert({ bb->getLowAddr(), bb });
-        }
+    if (bb->isType(BBType::DelaySlot)) {
+        assert(bb->isComplete());
+    }
+
+    BBStartMap::iterator existingIt = m_bbStartMap.find(bb->getLowAddr());
+    const bool isDelay              = bb->isType(BBType::DelaySlot);
+
+    if (existingIt == m_bbStartMap.end()) {
+        m_bbStartMap[bb->getLowAddr()] = isDelay ? BBStart{ nullptr, bb } : BBStart{ bb, nullptr };
+        return;
+    }
+
+    if (isDelay) {
+        m_bbStartMap[bb->getLowAddr()].delay = bb;
     }
     else {
-        // this is an orpahned BB (e.g. delay slot)
-        m_bbStartMap.insert({ Address::ZERO, bb });
+        m_bbStartMap[bb->getLowAddr()].bb = bb;
     }
 }

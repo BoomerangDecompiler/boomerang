@@ -536,8 +536,8 @@ INSTRUCTION "BA"      (reloc)      { goto reloc };
 INSTRUCTION "BA"      (cc, reloc)  { goto reloc };
 INSTRUCTION "BAA"     (reloc)      { goto reloc };
 INSTRUCTION "BAA"     (cc, reloc)  { goto reloc };
-INSTRUCTION "BN"      (cc, reloc)  { goto reloc };
 INSTRUCTION "BN"      (reloc)      { goto reloc };
+INSTRUCTION "BN"      (cc, reloc)  { goto reloc };
 INSTRUCTION "BNA"     (reloc)      { goto reloc };
 INSTRUCTION "BNA"     (cc, reloc)  { goto reloc };
 
