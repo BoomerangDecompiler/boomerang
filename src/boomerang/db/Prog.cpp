@@ -55,7 +55,7 @@ Prog::Prog(const QString &name, Project *project)
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
-    , m_cfg(new LowLevelCFG(this))
+    , m_cfg(new LowLevelCFG)
 {
     m_rootModule = getOrInsertModule(getName());
     assert(m_rootModule != nullptr);

@@ -54,7 +54,7 @@ public:
 
 public:
     /// Creates an empty CFG for the function \p proc
-    LowLevelCFG(Prog *prog);
+    LowLevelCFG();
     LowLevelCFG(const LowLevelCFG &other) = delete;
     LowLevelCFG(LowLevelCFG &&other)      = default;
 
@@ -76,9 +76,6 @@ public:
     const_reverse_iterator rend() const { return const_reverse_iterator(m_bbStartMap.rend()); }
 
 public:
-    Prog *getProg() { return m_prog; }
-    const Prog *getProg() const { return m_prog; }
-
     /// \returns the number of (complete and incomplete) BBs in this CFG.
     int getNumBBs() const { return m_bbStartMap.size(); }
 
@@ -224,7 +221,6 @@ private:
     void insertBB(BasicBlock *bb);
 
 private:
-    Prog *m_prog          = nullptr; ///< Procedure to which this CFG belongs.
     BasicBlock *m_entryBB = nullptr; ///< The BB corresponding to the entry point of the program.
     BBStartMap m_bbStartMap;         ///< The Address to BB map
 };
