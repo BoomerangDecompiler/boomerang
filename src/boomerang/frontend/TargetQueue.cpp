@@ -58,9 +58,8 @@ Address TargetQueue::popAddress(const LowLevelCFG &cfg)
             LOG_MSG("<%1", address);
         }
 
-        // If no label there at all, or if there is a BB, it's incomplete, then we can parse this
-        // address next
-        if (!cfg.isStartOfBB(address) || cfg.isStartOfIncompleteBB(address)) {
+        // Don't return start adresses of already decoded Basic Blocks
+        if (!cfg.isStartOfCompleteBB(address)) {
             return address;
         }
     }

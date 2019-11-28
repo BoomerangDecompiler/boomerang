@@ -828,7 +828,7 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
 {
     Prog *prog           = sourceBB->getFunction()->getProg();
     LowLevelCFG *cfg     = prog->getCFG();
-    const bool canDecode = !cfg->isStartOfBB(destAddr) || cfg->isStartOfIncompleteBB(destAddr);
+    const bool canDecode = !cfg->isStartOfCompleteBB(destAddr);
 
     if (!canDecode) {
         BasicBlock *destBB = cfg->getBBStartingAt(destAddr).bb;

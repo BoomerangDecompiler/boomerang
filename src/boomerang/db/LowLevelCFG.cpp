@@ -13,6 +13,8 @@
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/util/log/Log.h"
 
+#include <numeric>
+
 
 LowLevelCFG::LowLevelCFG()
 {
@@ -29,6 +31,15 @@ LowLevelCFG::~LowLevelCFG()
             delete b.delay;
         }
     }
+}
+
+
+int LowLevelCFG::getNumBBs() const
+{
+    return std::accumulate(
+        m_bbStartMap.begin(), m_bbStartMap.end(), int(0), [](int val, const auto &entry) {
+            return val + (entry.second.bb != nullptr) + (entry.second.delay != nullptr);
+        });
 }
 
 
@@ -224,10 +235,10 @@ bool LowLevelCFG::isStartOfBB(Address addr) const
 }
 
 
-bool LowLevelCFG::isStartOfIncompleteBB(Address addr) const
+bool LowLevelCFG::isStartOfCompleteBB(Address addr) const
 {
     BBStart b = getBBStartingAt(addr);
-    return b.bb && !b.bb->isComplete();
+    return b.bb && b.bb->isComplete();
 }
 
 
@@ -323,9 +334,11 @@ bool LowLevelCFG::isWellFormed() const
                 return false;
             }
             else if (pred->getFunction() != b.bb->getFunction()) {
+                const Function *myFunc   = b.bb->getFunction();
+                const Function *predFunc = pred->getFunction();
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                          pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
-                          b.bb->getFunction()->getName());
+                          myFunc ? myFunc->getName() : "<invalid>",
+                          predFunc ? predFunc->getName() : "<invalid>");
                 return false;
             }
         }
@@ -337,9 +350,11 @@ bool LowLevelCFG::isWellFormed() const
                 return false;
             }
             else if (succ->getFunction() != b.bb->getFunction()) {
+                const Function *myFunc   = b.bb->getFunction();
+                const Function *succFunc = succ->getFunction();
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                          b.bb->getFunction()->getName(),
-                          succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
+                          myFunc ? myFunc->getName() : "<invalid>",
+                          succFunc ? succFunc->getName() : "<invalid>");
                 return false;
             }
         }

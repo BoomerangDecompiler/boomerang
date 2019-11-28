@@ -77,7 +77,7 @@ public:
 
 public:
     /// \returns the number of (complete and incomplete) BBs in this CFG.
-    int getNumBBs() const { return m_bbStartMap.size(); }
+    int getNumBBs() const;
 
     /// Checks if the BB is part of this CFG
     bool hasBB(const BasicBlock *bb) const;
@@ -145,8 +145,8 @@ public:
     /// Check if \p addr is the start of a basic block, complete or not
     bool isStartOfBB(Address addr) const;
 
-    /// Check if the given address is the start of an incomplete basic block.
-    bool isStartOfIncompleteBB(Address addr) const;
+    /// Check if the given address is the start of a complete basic block.
+    bool isStartOfCompleteBB(Address addr) const;
 
     /// \returns the entry BB of the procedure of this CFG
     BasicBlock *getEntryBB() { return m_entryBB; }
@@ -158,29 +158,6 @@ public:
     /// Completely removes a single BB from this CFG.
     /// \note \p bb is invalid after this function returns.
     void removeBB(BasicBlock *bb);
-
-    /**
-     * Split \p bb into a "low" and "high" part at the RTL associated with \p splitAddr.
-     * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type
-     * of \p bb.
-     *
-     * \ | /                    \ | /
-     * +---+ bb                 +---+ BB1
-     * |   |                    +---+
-     * |   |         ==>          |    Fallthrough
-     * +---+                    +---+
-     * / | \                    +---+ BB2
-     *                          / | \
-     *
-     * If \p splitAddr is not in the range [bb->getLowAddr, bb->getHiAddr], the split fails.
-     * \param   bb         pointer to the BB to be split
-     * \param   splitAddr  address of RTL to become the start of the new BB
-     * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only
-     * modifies the top part to not overlap. If this is the case, the RTLs of the original BB are
-     * deleted. \returns If the merge is successful, returns the "high" part of the split BB.
-     * Otherwise, returns the original BB.
-     */
-    BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
 
     /**
      * Add an edge from \p sourceBB to \p destBB.
@@ -218,6 +195,29 @@ public:
     QString toString() const;
 
 private:
+    /**
+     * Split \p bb into a "low" and "high" part at the RTL associated with \p splitAddr.
+     * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type
+     * of \p bb.
+     *
+     * \ | /                    \ | /
+     * +---+ bb                 +---+ BB1
+     * |   |                    +---+
+     * |   |         ==>          |    Fallthrough
+     * +---+                    +---+
+     * / | \                    +---+ BB2
+     *                          / | \
+     *
+     * If \p splitAddr is not in the range [bb->getLowAddr, bb->getHiAddr], the split fails.
+     * \param   bb         pointer to the BB to be split
+     * \param   splitAddr  address of RTL to become the start of the new BB
+     * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only
+     * modifies the top part to not overlap. If this is the case, the RTLs of the original BB are
+     * deleted. \returns If the merge is successful, returns the "high" part of the split BB.
+     * Otherwise, returns the original BB.
+     */
+    BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
+
     void insertBB(BasicBlock *bb);
 
 private:
