@@ -79,9 +79,6 @@ public:
     /// \returns the number of (complete and incomplete) BBs in this CFG.
     int getNumBBs() const;
 
-    /// Checks if the BB is part of this CFG
-    bool hasBB(const BasicBlock *bb) const;
-
     /**
      * Create a new Basic Block for this CFG.
      * If the BB is blocked by a larger complete BB, the existing BB will be split at the first

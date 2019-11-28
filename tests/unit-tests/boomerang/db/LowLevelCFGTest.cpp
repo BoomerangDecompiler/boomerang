@@ -29,20 +29,6 @@ void LowLevelCFGTest::testGetNumBBs()
 }
 
 
-void LowLevelCFGTest::testHasBB()
-{
-    LowLevelCFG cfg;
-    QVERIFY(!cfg.hasBB(nullptr));
-
-    BasicBlock *bb = cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
-    QVERIFY(cfg.hasBB(bb));
-
-    LowLevelCFG cfg2;
-    cfg2.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
-    QVERIFY(!cfg2.hasBB(bb));
-}
-
-
 void LowLevelCFGTest::testCreateBB()
 {
     LowLevelCFG cfg;

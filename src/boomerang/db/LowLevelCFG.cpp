@@ -43,18 +43,6 @@ int LowLevelCFG::getNumBBs() const
 }
 
 
-bool LowLevelCFG::hasBB(const BasicBlock *bb) const
-{
-    if (bb == nullptr) {
-        return false;
-    }
-
-    // we have to use linear search here, since the bb might already have been deleted
-    // (invoking UB when calling getLowAddr).
-    return std::any_of(begin(), end(), [bb](auto &b) { return b.bb == bb || b.delay == bb; });
-}
-
-
 BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstruction> &bbInsns)
 {
     assert(!bbInsns.empty());

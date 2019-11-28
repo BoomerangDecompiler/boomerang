@@ -19,7 +19,6 @@ class LowLevelCFGTest : public BoomerangTest
 
 private slots:
     void testGetNumBBs();
-    void testHasBB();
     void testCreateBB();
     void testCreateBB_Blocking();
     void testCreateBB_BlockingIncomplete();
