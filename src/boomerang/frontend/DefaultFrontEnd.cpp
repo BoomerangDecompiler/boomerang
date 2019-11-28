@@ -612,6 +612,7 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
             stmt->setFragment(bb);
         }
     }
+
     return true;
 }
 

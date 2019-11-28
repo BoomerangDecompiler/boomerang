@@ -187,7 +187,7 @@ regression_tests = [
     #"sparc/global1",
     #"sparc/global2",
     #"sparc/global3",
-    #"sparc/hello",
+    "sparc/hello",
     #"sparc/loop",
     #"sparc/minmax",
     #"sparc/minmax2",
