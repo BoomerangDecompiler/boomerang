@@ -13,6 +13,7 @@
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Util.h"
 
+#include <cassert>
 #include <vector>
 
 
@@ -20,7 +21,7 @@
  * Base class for all nodes/vertices in a directed graph.
  */
 template<typename Derived>
-class BOOMERANG_API GraphNode
+class GraphNode
 {
 public:
     inline int getNumPredecessors() const { return m_predecessors.size(); }
