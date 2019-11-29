@@ -299,7 +299,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // this is a CTI. Lift the instruction to gain access to call/jump semantics
             DecodeResult lifted;
             if (!liftInstruction(insn, lifted)) {
-                LOG_ERROR("Cannot lift instruction!");
+                LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
+                          insn.m_opstr.data());
 
                 // try next insruction in queue
                 sequentialDecode = false;
@@ -681,7 +682,8 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
     for (const MachineInstruction &insn : currentBB->getInsns()) {
         DecodeResult lifted;
         if (!m_decoder->liftInstruction(insn, lifted)) {
-            LOG_ERROR("Cannot lift instruction");
+            LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
+                      insn.m_opstr.data());
             return false;
         }
 

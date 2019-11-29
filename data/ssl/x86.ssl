@@ -2208,6 +2208,12 @@ INSTRUCTION "FUCOMIP.reg80" (reg) {
     FPOP
 };
 
+# To fix issue with Capstone next branch and 3.0.5 used by Ubuntu
+INSTRUCTION "FUCOMPI.reg80" (reg) {
+    SUBFLAGSFL(%st, reg)
+    FPOP
+};
+
 
 # FUCOMP
 INSTRUCTION "FUCOMP" () {

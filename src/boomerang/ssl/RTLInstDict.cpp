@@ -112,9 +112,9 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
     // before trying the verbose instructions
     auto dict_entry = m_instructions.find({ name, args.size() });
     if (dict_entry == m_instructions.end()) {
-        LOG_VERBOSE("Cannot instatiate instruction '%1' at address %2: "
-                    "No instruction template takes %3 arguments",
-                    name, natPC, args.size());
+        LOG_ERROR("Cannot instatiate instruction '%1' at address %2: "
+                  "No instruction template takes %3 arguments",
+                  name, natPC, args.size());
         return nullptr; // instruction not found
     }
 
