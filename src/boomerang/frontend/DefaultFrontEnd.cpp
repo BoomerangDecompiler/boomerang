@@ -917,22 +917,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 }
 
 
-std::unique_ptr<RTLList> DefaultFrontEnd::liftBB(const std::list<MachineInstruction> &bbInsns)
-{
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    DecodeResult lifted;
-
-    for (const MachineInstruction &bbInsn : bbInsns) {
-        if (liftInstruction(bbInsn, lifted)) {
-            bbRTLs->push_back(std::move(lifted.rtl));
-            assert(!lifted.reLift); // fix: BSF/BSR etc.
-        }
-    }
-
-    return bbRTLs;
-}
-
-
 void DefaultFrontEnd::extraProcessCall(IRFragment *)
 {
 }

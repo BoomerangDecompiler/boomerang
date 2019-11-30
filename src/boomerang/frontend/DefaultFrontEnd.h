@@ -129,8 +129,6 @@ private:
     bool liftBB(BasicBlock *bb, UserProc *proc,
                 std::list<std::shared_ptr<CallStatement>> &callList);
 
-    std::unique_ptr<RTLList> liftBB(const std::list<MachineInstruction> &bbInsns);
-
     /// \returns true iff \p exp is a memof that references the address of an imported function.
     bool refersToImportedFunction(const SharedExp &exp);
 
