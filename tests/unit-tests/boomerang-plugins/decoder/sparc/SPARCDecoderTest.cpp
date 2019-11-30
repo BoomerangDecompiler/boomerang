@@ -50,8 +50,8 @@ void SPARCDecoderTest::testInstructions()
     QVERIFY(m_decoder->disassembleInstruction(sourceAddr, diff, insn));
     QVERIFY(m_decoder->liftInstruction(insn, result));
 
-    result.getRTL()->simplify();
-    QCOMPARE(result.getRTL()->toString(), expectedResult);
+    result.getFirstRTL()->simplify();
+    QCOMPARE(result.getFirstRTL()->toString(), expectedResult);
 }
 
 

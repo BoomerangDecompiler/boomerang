@@ -298,7 +298,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
             // this is a CTI. Lift the instruction to gain access to call/jump semantics
             DecodeResult lifted;
-            if (!liftInstruction(insn, lifted) || !lifted.getRTL()) {
+            if (!liftInstruction(insn, lifted) || !lifted.getFirstRTL()) {
                 LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
                           insn.m_opstr.data());
 
@@ -308,14 +308,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             bbInsns.push_back(insn);
-            const RTL::StmtList &sl = lifted.getRTL()->getStatements();
+            const RTL::StmtList &sl = lifted.getFirstRTL()->getStatements();
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 SharedStmt s = *ss;
                 s->setProc(proc); // let's do this really early!
 
-                if (m_refHints.find(lifted.getRTL()->getAddress()) != m_refHints.end()) {
-                    const QString &name(m_refHints[lifted.getRTL()->getAddress()]);
+                if (m_refHints.find(lifted.getFirstRTL()->getAddress()) != m_refHints.end()) {
+                    const QString &name(m_refHints[lifted.getFirstRTL()->getAddress()]);
                     Address globAddr = m_program->getGlobalAddrByName(name);
 
                     if (globAddr != Address::INVALID) {
@@ -697,7 +697,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             return false;
         }
 
-        for (auto ss = lifted.getRTL()->begin(); ss != lifted.getRTL()->end(); ++ss) {
+        for (auto ss = lifted.getFirstRTL()->begin(); ss != lifted.getFirstRTL()->end(); ++ss) {
             SharedStmt s = *ss;
             s->setProc(proc); // let's do this really early!
             s->simplify();
@@ -707,8 +707,8 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             // Check for a call to an already existing procedure (including self recursive umps),
             // or to the PLT (note that a LibProc entry for the PLT function may not yet exist)
             if (s->getKind() == StmtType::Goto) {
-                preprocessProcGoto(ss, jumpStmt->getFixedDest(), lifted.getRTL()->getStatements(),
-                                   lifted.getRTL());
+                preprocessProcGoto(ss, jumpStmt->getFixedDest(),
+                                   lifted.getFirstRTL()->getStatements(), lifted.getFirstRTL());
                 s = *ss; // *ss can be changed within preprocessProcGoto
             }
 
@@ -739,13 +739,13 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                     call->setDestProc(lp);
 
-                    std::unique_ptr<RTL> rtl(new RTL(lifted.getRTL()->getAddress(), { call }));
+                    std::unique_ptr<RTL> rtl(new RTL(lifted.getFirstRTL()->getAddress(), { call }));
                     bbRTLs->push_back(std::move(rtl));
 
                     IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
                     appendSyntheticReturn(callFrag);
 
-                    if (lifted.getRTL()->getAddress() == proc->getEntryAddress()) {
+                    if (lifted.getFirstRTL()->getAddress() == proc->getEntryAddress()) {
                         // it's a thunk
                         // Proc *lp = prog->findProc(func.c_str());
                         func = "__imp_" + func;
@@ -897,12 +897,12 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             default: assert(false); break;
             }
 
-            if (lifted.getRTL() == nullptr) {
+            if (lifted.getFirstRTL() == nullptr) {
                 break;
             }
         }
 
-        if (lifted.getRTL() != nullptr && bbRTLs != nullptr) {
+        if (lifted.getFirstRTL() != nullptr && bbRTLs != nullptr) {
             // we have yet put the RTL into the list -> do it now
             bbRTLs->push_back(lifted.useRTL());
         }
@@ -1204,11 +1204,11 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
         } while (dummyLifted.reLift);
     }
 
-    if (lifted.getRTL()->empty()) {
+    if (lifted.getFirstRTL()->empty()) {
         return Address::INVALID;
     }
 
-    SharedStmt firstStmt = lifted.getRTL()->front();
+    SharedStmt firstStmt = lifted.getFirstRTL()->front();
     if (!firstStmt) {
         return Address::INVALID;
     }

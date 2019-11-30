@@ -60,13 +60,13 @@ std::unique_ptr<RTL> DecodeResult::useRTL()
 }
 
 
-RTL *DecodeResult::getRTL()
+RTL *DecodeResult::getFirstRTL()
 {
     return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
 }
 
 
-const RTL *DecodeResult::getRTL() const
+const RTL *DecodeResult::getFirstRTL() const
 {
     return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
 }

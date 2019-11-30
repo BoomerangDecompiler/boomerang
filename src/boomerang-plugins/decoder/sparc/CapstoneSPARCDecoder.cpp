@@ -191,7 +191,7 @@ bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, Decod
     lifted.reLift = false;
     lifted.fillRTL(createRTLForInstruction(insn));
 
-    return lifted.getRTL() != nullptr;
+    return lifted.getFirstRTL() != nullptr;
 }
 
 

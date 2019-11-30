@@ -248,7 +248,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
     // Define aliases to the RTLs so that they can be treated as a high level types where
     // appropriate.
-    RTL *rtl        = lifted.getRTL();
+    RTL *rtl        = lifted.getFirstRTL();
     SharedStmt last = !rtl->empty() ? rtl->back() : nullptr;
 
     if (lifted.reLift) {
@@ -760,11 +760,11 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
         return false;
     }
-    else if (liftedCTI.getRTL()->empty()) {
+    else if (liftedCTI.getFirstRTL()->empty()) {
         return false;
     }
 
-    SharedStmt hlStmt = liftedCTI.getRTL()->back();
+    SharedStmt hlStmt = liftedCTI.getFirstRTL()->back();
     if (!hlStmt) {
         return false;
     }
@@ -803,7 +803,8 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     // insert a return BB after the call.
     // Note that if an add, there may be an assignment to a temp register first.
     // So look at last RTL
-    SharedStmt delayAsgn = liftedDelay.getRTL()->empty() ? nullptr : liftedDelay.getRTL()->back();
+    SharedStmt delayAsgn = liftedDelay.getFirstRTL()->empty() ? nullptr
+                                                              : liftedDelay.getFirstRTL()->back();
 
     if (delayAsgn && delayAsgn->isAssign()) {
         SharedExp lhs = delayAsgn->as<Assign>()->getLeft();
@@ -838,7 +839,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
         }
     }
 
-    liftedDelay.getRTL()->append(hlStmt);
+    liftedDelay.getFirstRTL()->append(hlStmt);
     bbRTLs->push_back(liftedDelay.useRTL());
 
     cfg->createFragment(std::move(bbRTLs), bb);
@@ -864,17 +865,17 @@ bool SPARCFrontEnd::liftDD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
         return false;
     }
-    else if (liftedCTI.getRTL()->empty()) {
+    else if (liftedCTI.getFirstRTL()->empty()) {
         return false;
     }
 
-    SharedStmt hlStmt = liftedCTI.getRTL()->back();
+    SharedStmt hlStmt = liftedCTI.getFirstRTL()->back();
     if (!hlStmt) {
         return false;
     }
 
     if (bb->isType(BBType::Ret)) {
-        liftedCTI.getRTL()->pop_back();
+        liftedCTI.getFirstRTL()->pop_back();
         bbRTLs->push_back(liftedCTI.useRTL());
         bbRTLs->push_back(liftedDelay.useRTL());
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(delayInsn->m_addr, { hlStmt })));

@@ -231,7 +231,7 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         lifted.fillRTL(createRTLForInstruction(insn));
     }
 
-    return lifted.getRTL() != nullptr;
+    return lifted.getFirstRTL() != nullptr;
 }
 
 
@@ -485,7 +485,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     case 1:
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.getRTL()->append(
+        result.getFirstRTL()->append(
             std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
         break;
 

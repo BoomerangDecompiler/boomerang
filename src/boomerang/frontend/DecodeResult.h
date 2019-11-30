@@ -45,8 +45,8 @@ public:
     void fillRTL(std::unique_ptr<RTL> _rtl);
     std::unique_ptr<RTL> useRTL();
 
-    RTL *getRTL();
-    const RTL *getRTL() const;
+    RTL *getFirstRTL();
+    const RTL *getFirstRTL() const;
 
 private:
     RTLList m_rtls;
