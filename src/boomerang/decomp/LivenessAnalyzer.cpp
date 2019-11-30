@@ -123,9 +123,8 @@ bool LivenessAnalyzer::calcLiveness(IRFragment *frag, ConnectionGraph &ig, UserP
 
 void LivenessAnalyzer::getLiveOut(IRFragment *frag, LocationSet &liveout, LocationSet &phiLocs)
 {
-    ProcCFG *cfg = static_cast<UserProc *>(frag->getFunction())->getCFG();
-    const bool
-        debugLiveness = frag->getFunction()->getProg()->getProject()->getSettings()->debugLiveness;
+    ProcCFG *cfg         = frag->getProc()->getCFG();
+    const bool debugLive = cfg->getProc()->getProg()->getProject()->getSettings()->debugLiveness;
 
     liveout.clear();
 
@@ -209,7 +208,7 @@ void LivenessAnalyzer::getLiveOut(IRFragment *frag, LocationSet &liveout, Locati
             liveout.insert(ref);
             phiLocs.insert(ref);
 
-            if (debugLiveness) {
+            if (debugLive) {
                 LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in fragment at %3", ref,
                         st, frag->getLowAddr());
             }

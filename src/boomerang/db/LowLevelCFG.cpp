@@ -10,7 +10,7 @@
 #include "LowLevelCFG.h"
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/log/Log.h"
 
 #include <numeric>
@@ -321,9 +321,9 @@ bool LowLevelCFG::isWellFormed() const
                           pred->getLowAddr(), b.bb->getLowAddr());
                 return false;
             }
-            else if (pred->getFunction() != b.bb->getFunction()) {
-                const Function *myFunc   = b.bb->getFunction();
-                const Function *predFunc = pred->getFunction();
+            else if (pred->getProc() != b.bb->getProc()) {
+                const UserProc *myFunc   = b.bb->getProc();
+                const UserProc *predFunc = pred->getProc();
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                           myFunc ? myFunc->getName() : "<invalid>",
                           predFunc ? predFunc->getName() : "<invalid>");
@@ -337,9 +337,9 @@ bool LowLevelCFG::isWellFormed() const
                           b.bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
-            else if (succ->getFunction() != b.bb->getFunction()) {
-                const Function *myFunc   = b.bb->getFunction();
-                const Function *succFunc = succ->getFunction();
+            else if (succ->getProc() != b.bb->getProc()) {
+                const UserProc *myFunc   = b.bb->getProc();
+                const UserProc *succFunc = succ->getProc();
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                           myFunc ? myFunc->getName() : "<invalid>",
                           succFunc ? succFunc->getName() : "<invalid>");

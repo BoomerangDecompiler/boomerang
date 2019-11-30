@@ -153,8 +153,8 @@ void ProcCFGTest::testRemoveFragment()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
 
         IRFragment *frag = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
@@ -170,8 +170,8 @@ void ProcCFGTest::testRemoveFragment()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
         IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
@@ -211,8 +211,8 @@ void ProcCFGTest::testAddEdge()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 2, 1), bb1);
         IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 2, 1), bb2);
@@ -242,8 +242,8 @@ void ProcCFGTest::testAddEdge()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 2, 1), bb1);
         cfg->addEdge(frag1, frag1);
@@ -271,8 +271,8 @@ void ProcCFGTest::testIsWellFormed()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         QVERIFY(cfg->isWellFormed());
     }
@@ -281,8 +281,8 @@ void ProcCFGTest::testIsWellFormed()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
         QVERIFY(cfg->isWellFormed());
@@ -293,23 +293,23 @@ void ProcCFGTest::testIsWellFormed()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(nullptr);
+        bb1->setProc(&proc);
+        bb2->setProc(nullptr);
 
         cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
         cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
 
         QVERIFY(!cfg->isWellFormed());
 
-        bb1->setFunction(nullptr);
+        bb1->setProc(nullptr);
     }
 
     {
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        bb1->setFunction(&proc);
-        bb2->setFunction(&proc);
+        bb1->setProc(&proc);
+        bb2->setProc(&proc);
 
         IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
         IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);

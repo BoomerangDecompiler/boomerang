@@ -672,7 +672,7 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResu
 bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
                              std::list<std::shared_ptr<CallStatement>> &callList)
 {
-    if (!currentBB || currentBB->getFunction() != proc) {
+    if (!currentBB || currentBB->getProc() != proc) {
         return false;
     }
 
@@ -1037,7 +1037,7 @@ void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
 
 IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs, BasicBlock *retBB)
 {
-    UserProc *proc = static_cast<UserProc *>(retBB->getFunction());
+    UserProc *proc = retBB->getProc();
     ProcCFG *cfg   = proc->getCFG();
 
     RTL *retRTL         = newRTLs->back().get();
@@ -1116,7 +1116,7 @@ void DefaultFrontEnd::appendSyntheticReturn(IRFragment *callFrag)
 
     bbRTLs->push_back(std::move(rtl));
 
-    UserProc *proc      = static_cast<UserProc *>(callFrag->getFunction());
+    UserProc *proc      = callFrag->getProc();
     IRFragment *retFrag = createReturnBlock(std::move(bbRTLs), callFrag->getBB());
     proc->getCFG()->addEdge(callFrag, retFrag);
 }
@@ -1255,8 +1255,8 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
         toVisit.pop();
         visited.insert(current);
 
-        assert(current->getFunction() == nullptr || current->getFunction() == proc);
-        current->setFunction(proc);
+        assert(current->getProc() == nullptr || current->getProc() == proc);
+        current->setProc(proc);
 
         for (BasicBlock *succ : current->getSuccessors()) {
             if (visited.find(succ) == visited.end()) {

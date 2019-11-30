@@ -270,7 +270,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         BasicBlock *newBB = cfg->createBB(BBType::Oneway, bbInsns);
         bbInsns.clear();
         assert(newBB);
-        newBB->setFunction(proc);
+        newBB->setProc(proc);
 
         if (!limitText.contains(dest)) {
             LOG_ERROR("Jump destination is outside text limits!");
@@ -285,7 +285,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     case IClass::SU: {
         BasicBlock *jumpBB = cfg->createBB(BBType::Oneway, bbInsns);
         bbInsns.clear();
-        jumpBB->setFunction(proc);
+        jumpBB->setProc(proc);
 
         // Ordinary, non-delay branch.
         if (last && last->isGoto()) {
@@ -330,13 +330,13 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
         BasicBlock *bb = cfg->createBB(bbType, bbInsns);
         bbInsns.clear();
-        bb->setFunction(proc);
+        bb->setProc(proc);
 
         // delay BB
         bbInsns.push_back(delayInsn);
         BasicBlock *delayBB = cfg->createBB(BBType::DelaySlot, bbInsns);
         bbInsns.clear();
-        delayBB->setFunction(proc);
+        delayBB->setProc(proc);
 
         cfg->addEdge(bb, delayBB);
         // TODO: Determine the destination address
@@ -357,7 +357,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         if (last && last->isReturn()) {
             BasicBlock *retBB = cfg->createBB(BBType::Ret, bbInsns);
             bbInsns.clear();
-            retBB->setFunction(proc);
+            retBB->setProc(proc);
 
             MachineInstruction delayInsn;
             if (!disassembleInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn)) {
@@ -368,7 +368,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
             bbInsns.push_back(delayInsn);
             BasicBlock *delayBB = cfg->createBB(BBType::DelaySlot, bbInsns);
             bbInsns.clear();
-            delayBB->setFunction(proc);
+            delayBB->setProc(proc);
             cfg->addEdge(retBB, delayBB);
             return false;
         }
@@ -684,10 +684,10 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
 bool SPARCFrontEnd::liftBB(BasicBlock *bb, BasicBlock *delay, UserProc *proc)
 {
-    if (!bb || bb->getFunction() != proc) {
+    if (!bb || bb->getProc() != proc) {
         return false;
     }
-    else if (delay && delay->getFunction() != proc) {
+    else if (delay && delay->getProc() != proc) {
         return false;
     }
 

@@ -26,19 +26,19 @@ void IRFragmentTest::testConstruct()
     IRFragment frag1(nullptr, Address(0x1000));
 
     QCOMPARE(frag1.getLowAddr(), Address(0x1000));
-    QCOMPARE(frag1.getFunction(), nullptr);
+    QCOMPARE(frag1.getProc(), nullptr);
     QVERIFY(frag1.isType(FragType::Invalid));
 
     frag1.setType(FragType::Call);
     IRFragment frag2(frag1);
 
     QCOMPARE(frag2.getLowAddr(), Address(0x1000));
-    QCOMPARE(frag2.getFunction(), nullptr);
+    QCOMPARE(frag2.getProc(), nullptr);
     QVERIFY(frag2.isType(FragType::Call));
 
     IRFragment frag3(nullptr, createRTLs(Address(0x2000), 1, 1));
     QCOMPARE(frag3.getLowAddr(), Address(0x2000));
-    QCOMPARE(frag3.getFunction(), nullptr);
+    QCOMPARE(frag3.getProc(), nullptr);
     QVERIFY(frag3.isType(FragType::Fall));
 }
 
@@ -49,7 +49,7 @@ void IRFragmentTest::testAssign()
 
     IRFragment frag2 = frag1;
     QCOMPARE(frag2.getLowAddr(), Address(0x1000));
-    QCOMPARE(frag2.getFunction(), nullptr);
+    QCOMPARE(frag2.getProc(), nullptr);
     QVERIFY(frag2.isType(FragType::Invalid));
 
     IRFragment frag3(nullptr, createRTLs(Address(0x2000), 1, 1));
@@ -58,7 +58,7 @@ void IRFragmentTest::testAssign()
     QCOMPARE(frag4.toString(), frag3.toString());
 
     QCOMPARE(frag4.getLowAddr(), Address(0x2000));
-    QCOMPARE(frag4.getFunction(), nullptr);
+    QCOMPARE(frag4.getProc(), nullptr);
     QVERIFY(frag4.isType(FragType::Fall));
 }
 

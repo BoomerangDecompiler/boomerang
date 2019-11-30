@@ -37,7 +37,7 @@
 IRFragment *createBBAndFragment(LowLevelCFG *cfg, BBType bbType, Address addr, UserProc *proc)
 {
     BasicBlock *bb = cfg->createBB(bbType, createInsns(addr, 1));
-    bb->setFunction(proc);
+    bb->setProc(proc);
     return proc->getCFG()->createFragment(createRTLs(addr, 1, 1), bb);
 }
 

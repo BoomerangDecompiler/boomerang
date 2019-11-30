@@ -34,7 +34,8 @@ void InterferenceFinder::findInterferences(ConnectionGraph &ig)
     std::set<IRFragment *> workSet;   // Set of the same; used for quick membership test
     appendFrags(workList, workSet);
 
-    int count = 0;
+    int count            = 0;
+    const bool debugLive = m_cfg->getProc()->getProg()->getProject()->getSettings()->debugLiveness;
 
     while (!workList.empty() && count++ < 1E5) {
         IRFragment *currFrag = workList.back();
@@ -42,15 +43,14 @@ void InterferenceFinder::findInterferences(ConnectionGraph &ig)
         workSet.erase(currFrag);
 
         // Calculate live locations and interferences
-        assert(currFrag->getFunction() && !currFrag->getFunction()->isLib());
-        bool change = m_livenessAna.calcLiveness(currFrag, ig,
-                                                 static_cast<UserProc *>(currFrag->getFunction()));
+        assert(currFrag->getProc() != nullptr);
+        bool change = m_livenessAna.calcLiveness(currFrag, ig, currFrag->getProc());
 
         if (!change) {
             continue;
         }
 
-        if (currFrag->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
+        if (debugLive) {
             SharedStmt last = currFrag->getLastStmt();
 
             LOG_MSG("Revisiting BB ending with stmt %1 due to change",

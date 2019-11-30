@@ -826,7 +826,7 @@ bool IndirectJumpAnalyzer::analyzeCompCall(IRFragment *frag, UserProc *proc)
 
 bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx, Address destAddr)
 {
-    Prog *prog           = sourceBB->getFunction()->getProg();
+    Prog *prog           = sourceBB->getProc()->getProg();
     LowLevelCFG *cfg     = prog->getCFG();
     const bool canDecode = !cfg->isStartOfCompleteBB(destAddr);
 
@@ -840,7 +840,7 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
     BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr).bb;
 
     addCFGEdge(sourceBB, destIdx, destBB);
-    prog->getFrontEnd()->decodeFragment(static_cast<UserProc *>(sourceBB->getFunction()), destAddr);
+    prog->getFrontEnd()->decodeFragment(sourceBB->getProc(), destAddr);
 
     return true;
 }

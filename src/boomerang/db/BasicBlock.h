@@ -89,11 +89,11 @@ public:
     inline bool isType(BBType type) const { return m_bbType == type; }
     inline void setType(BBType bbType) { m_bbType = bbType; }
 
-    void setFunction(Function *proc) { m_function = proc; }
+    void setProc(UserProc *proc) { m_proc = proc; }
 
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
-    inline const Function *getFunction() const { return m_function; }
-    inline Function *getFunction() { return m_function; }
+    inline const UserProc *getProc() const { return m_proc; }
+    inline UserProc *getProc() { return m_proc; }
 
     inline Address getLowAddr() const { return m_lowAddr; }
     inline Address getHiAddr() const { return m_highAddr; }
@@ -124,7 +124,7 @@ protected:
     std::vector<MachineInstruction> m_insns;
 
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
-    Function *m_function = nullptr;
+    UserProc *m_proc = nullptr;
 
     Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;

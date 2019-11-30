@@ -71,8 +71,8 @@ public:
     inline bool isType(FragType type) const { return m_fragType == type; }
     inline void setType(FragType type) { m_fragType = type; }
 
-    Function *getFunction();
-    const Function *getFunction() const;
+    UserProc *getProc();
+    const UserProc *getProc() const;
 
     /// \returns all RTLs that are part of this fragment.
     RTLList *getRTLs() { return m_listOfRTLs.get(); }

@@ -420,8 +420,8 @@ void LowLevelCFGTest::testIsWellFormed()
     BasicBlock *proc2BB = cfg.createBB(BBType::Oneway, createInsns(Address(0x3000), 1));
 
     cfg.addEdge(callBB, proc2BB);
-    bb1->setFunction(&proc);
-    bb2->setFunction(&proc);
+    bb1->setProc(&proc);
+    bb2->setProc(&proc);
 
     QVERIFY(!cfg.isWellFormed());
 }

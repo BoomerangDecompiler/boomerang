@@ -79,15 +79,15 @@ bool IRFragment::operator<(const IRFragment &rhs) const
 }
 
 
-Function *IRFragment::getFunction()
+UserProc *IRFragment::getProc()
 {
-    return m_bb ? m_bb->getFunction() : nullptr;
+    return m_bb ? m_bb->getProc() : nullptr;
 }
 
 
-const Function *IRFragment::getFunction() const
+const UserProc *IRFragment::getProc() const
 {
-    return m_bb ? m_bb->getFunction() : nullptr;
+    return m_bb ? m_bb->getProc() : nullptr;
 }
 
 
@@ -302,7 +302,7 @@ std::shared_ptr<ImplicitAssign> IRFragment::addImplicitAssign(const SharedExp &l
     newImplicit->setFragment(this);
 
     if (m_bb) {
-        newImplicit->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+        newImplicit->setProc(m_bb->getProc());
     }
 
     m_listOfRTLs->front()->append(newImplicit);
@@ -341,7 +341,7 @@ std::shared_ptr<PhiAssign> IRFragment::addPhi(const SharedExp &usedExp)
     phi->setFragment(this);
 
     if (m_bb) {
-        phi->setProc(static_cast<UserProc *>(m_bb->getFunction()));
+        phi->setProc(m_bb->getProc());
     }
 
     m_listOfRTLs->front()->append(phi);
@@ -616,7 +616,7 @@ void IRFragment::simplify()
             redundant->removePredecessor(m_bb);
         }
 
-        assert(static_cast<UserProc *>(m_bb->getFunction())->getCFG()->isWellFormed());
+        assert(m_bb->getProc()->getCFG()->isWellFormed());
     }
 }
 

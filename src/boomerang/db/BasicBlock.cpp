@@ -29,7 +29,7 @@ BasicBlock::BasicBlock(BBType bbType, const std::vector<MachineInstruction> &ins
 
 BasicBlock::BasicBlock(const BasicBlock &bb)
     : GraphNode(bb)
-    , m_function(bb.m_function)
+    , m_proc(bb.m_proc)
     , m_lowAddr(bb.m_lowAddr)
     , m_highAddr(bb.m_highAddr)
     , m_bbType(bb.m_bbType)
@@ -46,7 +46,7 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
 {
     GraphNode::operator=(bb);
 
-    m_function = bb.m_function;
+    m_proc     = bb.m_proc;
     m_bbType   = bb.m_bbType;
     m_lowAddr  = bb.m_lowAddr;
     m_highAddr = bb.m_highAddr;

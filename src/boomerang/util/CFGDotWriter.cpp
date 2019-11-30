@@ -94,7 +94,7 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
         const BasicBlock *bb    = b.bb;
         const BasicBlock *delay = b.delay;
 
-        if (bb && bb->getFunction() == proc) {
+        if (bb && bb->getProc() == proc) {
             of << "      bb" << bb->getLowAddr() << "[shape=rectangle, label=\"";
 
             for (const MachineInstruction &insn : bb->getInsns()) {
@@ -105,7 +105,7 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
             of << "\"];\n";
         }
 
-        if (delay && delay->getFunction() == proc) {
+        if (delay && delay->getProc() == proc) {
             of << "      bb" << delay->getLowAddr() << "_d[shape=rectangle, label=\"";
 
             for (const MachineInstruction &insn : delay->getInsns()) {
@@ -124,7 +124,7 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
         const BasicBlock *srcBB    = b.bb;
         const BasicBlock *srcDelay = b.delay;
 
-        if (srcBB && srcBB->getFunction() == proc) {
+        if (srcBB && srcBB->getProc() == proc) {
             for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
                 const BasicBlock *dstBB = srcBB->getSuccessor(j);
 
@@ -148,7 +148,7 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
             }
         }
 
-        if (srcDelay && srcDelay->getFunction() == proc) {
+        if (srcDelay && srcDelay->getProc() == proc) {
             for (int j = 0; j < srcDelay->getNumSuccessors(); j++) {
                 const BasicBlock *dstBB = srcDelay->getSuccessor(j);
 
