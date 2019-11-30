@@ -188,14 +188,8 @@ bool CapstoneSPARCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 
 bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
-    lifted.iclass = insn.m_iclass;
     lifted.reLift = false;
     lifted.rtl    = createRTLForInstruction(insn);
-
-    if (lifted.rtl && lifted.rtl->empty()) {
-        // Force empty unrecognized instructions to have NOP type instead of NCT
-        lifted.iclass = IClass::NOP;
-    }
 
     return lifted.rtl != nullptr;
 }

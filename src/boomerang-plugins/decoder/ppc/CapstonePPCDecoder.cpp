@@ -143,7 +143,6 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 
 bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
-    lifted.iclass = IClass::NOP; //< only relevant for architectures with delay slots
     lifted.reLift = false;
     lifted.rtl    = createRTLForInstruction(insn);
 

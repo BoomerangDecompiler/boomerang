@@ -54,8 +54,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
         m_decoder->initialize(project);
     }
 
-    nop_inst.iclass = IClass::NOP;
-    nop_inst.rtl    = std::make_unique<RTL>(Address::INVALID);
+    nop_inst.rtl = std::make_unique<RTL>(Address::INVALID);
 }
 
 
@@ -260,7 +259,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         } while (ok && dummyLifted.reLift);
     }
 
-    switch (lifted.iclass) {
+    switch (bbInsns.back().m_iclass) {
     case IClass::SKIP: {
         // We can't simply ignore the skipped delay instruction as there
         // will most likely be a branch to it so we simply set the jump
@@ -386,7 +385,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
     default: // Others are non SPARC cases
         LOG_WARN("Encountered instruction class '%1' which is invalid for SPARC",
-                 (int)lifted.iclass);
+                 (int)bbInsns.back().m_iclass);
         break;
     }
 

@@ -40,7 +40,6 @@ void SPARCDecoderTest::initTestCase()
 void SPARCDecoderTest::testInstructions()
 {
     QFETCH(InstructionData, insnData);
-    QFETCH(IClass, expectedClass);
     QFETCH(QString, expectedResult);
 
     MachineInstruction insn;
@@ -50,8 +49,6 @@ void SPARCDecoderTest::testInstructions()
 
     QVERIFY(m_decoder->disassembleInstruction(sourceAddr, diff, insn));
     QVERIFY(m_decoder->liftInstruction(insn, result));
-
-    QCOMPARE(result.iclass, expectedClass);
 
     result.rtl->simplify();
     QCOMPARE(result.rtl->toString(), expectedResult);

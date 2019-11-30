@@ -50,13 +50,6 @@ public:
     std::unique_ptr<RTL> rtl;
 
     /**
-     * The class of the lifted instruction. Will be one of the classes described in
-     * "A Transformational Approach to Binary Translation of Delayed Branches".
-     * Ignored by machines with no delay slots.
-     */
-    IClass iclass;
-
-    /**
      * If true, the semantics of this instruction are incomplete and it must be re-lifted
      * to retrieve all semantics. This is necessary for instructions like x86 BSF/BSR,
      * which emit branches (these instructions need to have additional RTLs at %pc+1, %pc+2 etc.

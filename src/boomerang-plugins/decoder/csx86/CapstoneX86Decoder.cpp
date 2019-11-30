@@ -216,7 +216,6 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         return ok;
     }
 
-    lifted.iclass = IClass::NOP; //< ICLASS is irrelevant for x86
     lifted.reLift = false;
 
     // clang-format off

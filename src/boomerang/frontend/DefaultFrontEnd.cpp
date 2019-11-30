@@ -660,7 +660,6 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResu
                   "treating instruction as NOP",
                   insn.m_templateName, insn.m_addr);
 
-        lifted.iclass = IClass::NOP;
         lifted.reLift = false;
         lifted.rtl    = std::make_unique<RTL>(insn.m_addr);
     }
