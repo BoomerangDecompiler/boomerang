@@ -251,14 +251,6 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     RTL *rtl        = lifted.getFirstRTL();
     SharedStmt last = !rtl->empty() ? rtl->back() : nullptr;
 
-    if (lifted.reLift) {
-        DecodeResult dummyLifted;
-        bool ok;
-        do {
-            ok = m_decoder->liftInstruction(bbInsns.back(), dummyLifted);
-        } while (ok && dummyLifted.reLift);
-    }
-
     switch (bbInsns.back().m_iclass) {
     case IClass::SKIP: {
         // We can't simply ignore the skipped delay instruction as there
@@ -722,17 +714,6 @@ std::unique_ptr<RTLList> SPARCFrontEnd::liftBBPart(BasicBlock *bb)
 
         DecodeResult lifted;
         if (!m_decoder->liftInstruction(insn, lifted)) {
-            return nullptr;
-        }
-
-        if (lifted.reLift) {
-            bool ok;
-
-            LOG_ERROR("Cannot re-lift instruction");
-            do {
-                ok = m_decoder->liftInstruction(insn, lifted);
-            } while (ok && lifted.reLift);
-
             return nullptr;
         }
 

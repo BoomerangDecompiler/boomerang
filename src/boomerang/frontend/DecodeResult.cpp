@@ -18,7 +18,6 @@ DecodeResult::DecodeResult()
 
 DecodeResult::DecodeResult(DecodeResult &&other)
     : m_rtls(std::move(other.m_rtls))
-    , reLift(std::move(other.reLift))
 {
 }
 
@@ -31,7 +30,6 @@ DecodeResult::~DecodeResult()
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
     m_rtls = std::move(other.m_rtls);
-    reLift = std::move(other.reLift);
 
     return *this;
 }
@@ -40,7 +38,6 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 void DecodeResult::reset()
 {
     m_rtls.clear();
-    reLift = false;
 }
 
 

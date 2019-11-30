@@ -216,8 +216,6 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         return ok;
     }
 
-    lifted.reLift = false;
-
     // clang-format off
     if (insn.m_id == cs::X86_INS_AND &&
         *insn.m_operands[0] == *Location::regOf(REG_X86_ESP) &&
@@ -504,16 +502,6 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     default:
         // Should never happen
         LOG_FATAL("Unknown BSFR state %1", m_bsfrState);
-    }
-
-    // Keep numBytes == 0 until the last state, so we re-decode this instruction 3 times
-    if (m_bsfrState != 3 - 1) {
-        // Let the number of bytes be 1. This is important at least for setting the fallthrough
-        // address for the branch (in the first RTL), which should point to the next RTL
-        result.reLift = true; // Decode this instuction again
-    }
-    else {
-        result.reLift = false;
     }
 
     if (m_debugMode) {

@@ -143,7 +143,6 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 
 bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
 {
-    lifted.reLift = false;
     lifted.fillRTL(createRTLForInstruction(insn));
 
     return lifted.getFirstRTL() != nullptr;

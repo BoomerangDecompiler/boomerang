@@ -50,16 +50,4 @@ public:
 
 private:
     RTLList m_rtls;
-
-public:
-    /**
-     * If true, the semantics of this instruction are incomplete and it must be re-lifted
-     * to retrieve all semantics. This is necessary for instructions like x86 BSF/BSR,
-     * which emit branches (these instructions need to have additional RTLs at %pc+1, %pc+2 etc.
-     * to account for the additional semantics)
-     *
-     * \warning Re-lifting must always be done until this variable is false, even if the semantics
-     * are not used. Not doing so will break lifting other instructions.
-     */
-    bool reLift;
 };

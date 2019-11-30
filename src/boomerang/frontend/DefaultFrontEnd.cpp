@@ -538,14 +538,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
             }
 
-            if (lifted.reLift) {
-                DecodeResult dummyLifted;
-                bool ok;
-                do {
-                    ok = m_decoder->liftInstruction(insn, dummyLifted);
-                } while (ok && dummyLifted.reLift);
-            }
-
             addr += insn.m_size;
             lastAddr = std::max(lastAddr, addr);
         } // while sequentialDecode
@@ -660,7 +652,6 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResu
                   "treating instruction as NOP",
                   insn.m_templateName, insn.m_addr);
 
-        lifted.reLift = false;
         lifted.fillRTL(std::make_unique<RTL>(insn.m_addr));
     }
 
@@ -683,17 +674,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
         if (!m_decoder->liftInstruction(insn, lifted)) {
             LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
                       insn.m_opstr.data());
-            return false;
-        }
-
-        if (lifted.reLift) {
-            bool ok;
-
-            LOG_ERROR("Cannot re-lift instruction");
-            do {
-                ok = m_decoder->liftInstruction(insn, lifted);
-            } while (ok && lifted.reLift);
-
             return false;
         }
 
@@ -1191,17 +1171,6 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
 
     if (!decodeInstruction(callAddr, insn, lifted)) {
         return Address::INVALID;
-    }
-
-    // Make sure to re-decode the instruction as often as necessary, but throw away the results.
-    // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
-    if (lifted.reLift) {
-        DecodeResult dummyLifted;
-        do {
-            if (!m_decoder->liftInstruction(insn, dummyLifted)) {
-                return Address::INVALID;
-            }
-        } while (dummyLifted.reLift);
     }
 
     if (lifted.getFirstRTL()->empty()) {
