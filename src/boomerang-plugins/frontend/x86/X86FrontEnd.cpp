@@ -181,6 +181,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
     DecodeResult lifted;
 
     do {
+        lifted.reset();
         if (!decodeInstruction(addr, insn, lifted)) {
             // Must have gotten out of step
             break;
@@ -188,9 +189,9 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 
         std::shared_ptr<const CallStatement> call = nullptr;
 
-        if (!lifted.rtl->empty()) {
-            call = (lifted.rtl->back()->getKind() == StmtType::Call)
-                       ? lifted.rtl->back()->as<CallStatement>()
+        if (!lifted.getRTL()->empty()) {
+            call = (lifted.getRTL()->back()->getKind() == StmtType::Call)
+                       ? lifted.getRTL()->back()->as<CallStatement>()
                        : nullptr;
         }
 
@@ -202,17 +203,19 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
             const int oldInsnLength = insn.m_size;
 
+            lifted.reset();
             if (decodeInstruction(addr + oldInsnLength, insn, lifted) &&
-                (lifted.rtl->size() == 2)) {
+                (lifted.getRTL()->size() == 2)) {
                 // using back instead of rtl[1], since size()==2
                 std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(
-                    lifted.rtl->back());
+                    lifted.getRTL()->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_X86_EAX))) {
+                    lifted.reset();
                     if (decodeInstruction(addr + oldInsnLength + insn.m_size, insn, lifted) &&
-                        !lifted.rtl->empty() && lifted.rtl->back()->isCall()) {
-                        std::shared_ptr<CallStatement> main = lifted.rtl->back()
-                                                                  ->as<CallStatement>();
+                        !lifted.getRTL()->empty() && lifted.getRTL()->back()->isCall()) {
+                        std::shared_ptr<CallStatement>
+                            main = lifted.getRTL()->back()->as<CallStatement>();
                         if (main->getFixedDest() != Address::INVALID) {
                             symbols->createSymbol(main->getFixedDest(), "WinMain");
                             gotMain = true;
@@ -235,10 +238,11 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                 //   m[esp-4] = K
                 //   esp = esp-4
 
-                if (decodeInstruction(prevAddr, insn, lifted) && lifted.rtl->size() == 2 &&
-                    lifted.rtl->front()->isAssign()) {
-                    std::shared_ptr<Assign> a = lifted.rtl->front()
-                                                    ->as<Assign>(); // Get m[esp-4] = K
+                lifted.reset();
+                if (decodeInstruction(prevAddr, insn, lifted) && lifted.getRTL()->size() == 2 &&
+                    lifted.getRTL()->front()->isAssign()) {
+                    std::shared_ptr<Assign>
+                        a         = lifted.getRTL()->front()->as<Assign>(); // Get m[esp-4] = K
                     SharedExp rhs = a->getRight();
                     if (rhs->isIntConst()) {
                         gotMain = true;
@@ -250,7 +254,8 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const SharedConstStmt lastStmt = !lifted.rtl->empty() ? lifted.rtl->back() : nullptr;
+        const SharedConstStmt lastStmt = !lifted.getRTL()->empty() ? lifted.getRTL()->back()
+                                                                   : nullptr;
 
         if (lastStmt && lastStmt->isGoto()) {
             // Example: Borland often starts with a branch

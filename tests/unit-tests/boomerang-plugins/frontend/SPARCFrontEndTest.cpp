@@ -46,8 +46,8 @@ void SPARCFrontendTest::test1()
     OStream strm(&actual);
 
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
-    QVERIFY(lifted.rtl != nullptr);
-    lifted.rtl->print(strm);
+    QVERIFY(lifted.getRTL() != nullptr);
+    lifted.getRTL()->print(strm);
 
     expected = "0x00010684    0 *32* tmp := r14 - 112\n"
                "              0 *32* m[r14] := r16\n"
@@ -77,17 +77,19 @@ void SPARCFrontendTest::test1()
                "              0 *32* r14 := tmp\n";
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     addr += insn.m_size;
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010688    0 *32* r8 := 0x10400\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     addr += insn.m_size;
     QVERIFY(fe->decodeInstruction(addr, insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x0001068c    0 *32* r8 := r8 | 848\n");
     QCOMPARE(actual, expected);
     actual.clear();
@@ -110,7 +112,7 @@ void SPARCFrontendTest::test2()
     QVERIFY(fe != nullptr);
 
     QVERIFY(fe->decodeInstruction(Address(0x00010690), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     // This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
     expected = QString("0x00010690    0 CALL printf(\n"
@@ -119,21 +121,24 @@ void SPARCFrontendTest::test2()
                        "              Live variables: <None>\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     QVERIFY(fe->decodeInstruction(Address(0x00010694), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010694\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     QVERIFY(fe->decodeInstruction(Address(0x00010698), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010698    0 *32* r8 := 0\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     QVERIFY(fe->decodeInstruction(Address(0x0001069C), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x0001069c    0 *32* r24 := r8\n");
     QCOMPARE(actual, expected);
 }
@@ -154,20 +159,23 @@ void SPARCFrontendTest::test3()
     OStream  strm(&actual);
 
     QVERIFY(fe->decodeInstruction(Address(0x000106a0), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x000106a0\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
+
     QVERIFY(fe->decodeInstruction(Address(0x000106a4), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x000106a4    0 RET\n"
                        "              Modifieds: <None>\n"
                        "              Reaching definitions: <None>\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     QVERIFY(fe->decodeInstruction(Address(0x000106a8), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x000106a8    0 *32* tmp := 0\n"
                        "              0 *32* r8 := r24\n"
                        "              0 *32* r9 := r25\n"
@@ -214,27 +222,30 @@ void SPARCFrontendTest::testBranch()
 
     // bne
     QVERIFY(fe->decodeInstruction(Address(0x00010ab0), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     // bg
     QVERIFY(fe->decodeInstruction(Address(0x00010af8), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition signed greater\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 
     // bleu
     QVERIFY(fe->decodeInstruction(Address(0x00010b44), insn, lifted));
-    lifted.rtl->print(strm);
+    lifted.getRTL()->print(strm);
     expected = QString("0x00010b44    0 BRANCH 0x00010b54, condition unsigned less or equals\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
+    lifted.reset();
 }
 
 

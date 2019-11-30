@@ -298,7 +298,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
             // this is a CTI. Lift the instruction to gain access to call/jump semantics
             DecodeResult lifted;
-            if (!liftInstruction(insn, lifted)) {
+            if (!liftInstruction(insn, lifted) || !lifted.getRTL()) {
                 LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
                           insn.m_opstr.data());
 
@@ -308,14 +308,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             bbInsns.push_back(insn);
-            const RTL::StmtList &sl = lifted.rtl->getStatements();
+            const RTL::StmtList &sl = lifted.getRTL()->getStatements();
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 SharedStmt s = *ss;
                 s->setProc(proc); // let's do this really early!
 
-                if (m_refHints.find(lifted.rtl->getAddress()) != m_refHints.end()) {
-                    const QString &name(m_refHints[lifted.rtl->getAddress()]);
+                if (m_refHints.find(lifted.getRTL()->getAddress()) != m_refHints.end()) {
+                    const QString &name(m_refHints[lifted.getRTL()->getAddress()]);
                     Address globAddr = m_program->getGlobalAddrByName(name);
 
                     if (globAddr != Address::INVALID) {
@@ -661,7 +661,7 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResu
                   insn.m_templateName, insn.m_addr);
 
         lifted.reLift = false;
-        lifted.rtl    = std::make_unique<RTL>(insn.m_addr);
+        lifted.fillRTL(std::make_unique<RTL>(insn.m_addr));
     }
 
     return true;
@@ -697,7 +697,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             return false;
         }
 
-        for (auto ss = lifted.rtl->begin(); ss != lifted.rtl->end(); ++ss) {
+        for (auto ss = lifted.getRTL()->begin(); ss != lifted.getRTL()->end(); ++ss) {
             SharedStmt s = *ss;
             s->setProc(proc); // let's do this really early!
             s->simplify();
@@ -707,8 +707,8 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             // Check for a call to an already existing procedure (including self recursive umps),
             // or to the PLT (note that a LibProc entry for the PLT function may not yet exist)
             if (s->getKind() == StmtType::Goto) {
-                preprocessProcGoto(ss, jumpStmt->getFixedDest(), lifted.rtl->getStatements(),
-                                   lifted.rtl.get());
+                preprocessProcGoto(ss, jumpStmt->getFixedDest(), lifted.getRTL()->getStatements(),
+                                   lifted.getRTL());
                 s = *ss; // *ss can be changed within preprocessProcGoto
             }
 
@@ -739,13 +739,13 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                     call->setDestProc(lp);
 
-                    std::unique_ptr<RTL> rtl(new RTL(lifted.rtl->getAddress(), { call }));
+                    std::unique_ptr<RTL> rtl(new RTL(lifted.getRTL()->getAddress(), { call }));
                     bbRTLs->push_back(std::move(rtl));
 
                     IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
                     appendSyntheticReturn(callFrag);
 
-                    if (lifted.rtl->getAddress() == proc->getEntryAddress()) {
+                    if (lifted.getRTL()->getAddress() == proc->getEntryAddress()) {
                         // it's a thunk
                         // Proc *lp = prog->findProc(func.c_str());
                         func = "__imp_" + func;
@@ -760,7 +760,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                 // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                 // to be a switch stmt
-                bbRTLs->push_back(std::move(lifted.rtl));
+                bbRTLs->push_back(lifted.useRTL());
 
                 procCFG->createFragment(std::move(bbRTLs), currentBB);
                 LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr, jumpDest);
@@ -806,7 +806,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                 // Treat computed and static calls separately
                 if (call->isComputed()) {
-                    bbRTLs->push_back(std::move(lifted.rtl));
+                    bbRTLs->push_back(lifted.useRTL());
 
                     IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
                     extraProcessCall(callFrag);
@@ -823,11 +823,11 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
                     // machine specific funcion calls
                     if (isHelperFunc(callAddr, insn.m_addr, *bbRTLs)) {
                         // We have already added to BB_rtls
-                        lifted.rtl.reset(); // Discard the call semantics
+                        lifted.useRTL(); // Discard the call semantics
                         break;
                     }
 
-                    bbRTLs->push_back(std::move(lifted.rtl));
+                    bbRTLs->push_back(lifted.useRTL());
 
                     // Add this non computed call site to the set of call sites which need
                     // to be analysed later.
@@ -882,7 +882,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             case StmtType::Ret: {
                 // Create the list of RTLs for the next basic block and
                 // continue with the next instruction.
-                bbRTLs->push_back(std::move(lifted.rtl));
+                bbRTLs->push_back(lifted.useRTL());
                 createReturnBlock(std::move(bbRTLs), currentBB);
             } break;
 
@@ -897,14 +897,14 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             default: assert(false); break;
             }
 
-            if (lifted.rtl == nullptr) {
+            if (lifted.getRTL() == nullptr) {
                 break;
             }
         }
 
-        if (lifted.rtl != nullptr && bbRTLs != nullptr) {
+        if (lifted.getRTL() != nullptr && bbRTLs != nullptr) {
             // we have yet put the RTL into the list -> do it now
-            bbRTLs->push_back(std::move(lifted.rtl));
+            bbRTLs->push_back(lifted.useRTL());
         }
     }
 
@@ -1204,11 +1204,11 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
         } while (dummyLifted.reLift);
     }
 
-    if (lifted.rtl->empty()) {
+    if (lifted.getRTL()->empty()) {
         return Address::INVALID;
     }
 
-    SharedStmt firstStmt = lifted.rtl->front();
+    SharedStmt firstStmt = lifted.getRTL()->front();
     if (!firstStmt) {
         return Address::INVALID;
     }

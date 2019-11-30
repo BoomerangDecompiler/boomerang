@@ -11,15 +11,12 @@
 
 
 #include "boomerang/frontend/MachineInstruction.h"
-#include "boomerang/util/Address.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Types.h"
 
 #include <cstddef>
 #include <list>
 #include <memory>
-
-
-class RTL;
 
 
 /**
@@ -45,10 +42,16 @@ public:
     /// Resets all the fields to their default values.
     void reset();
 
-public:
-    /// The RTL constructed (if any).
-    std::unique_ptr<RTL> rtl;
+    void fillRTL(std::unique_ptr<RTL> _rtl);
+    std::unique_ptr<RTL> useRTL();
 
+    RTL *getRTL();
+    const RTL *getRTL() const;
+
+private:
+    RTLList m_rtls;
+
+public:
     /**
      * If true, the semantics of this instruction are incomplete and it must be re-lifted
      * to retrieve all semantics. This is necessary for instructions like x86 BSF/BSR,

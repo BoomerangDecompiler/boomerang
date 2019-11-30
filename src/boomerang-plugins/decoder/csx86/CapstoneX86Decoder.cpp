@@ -224,14 +224,14 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         *insn.m_operands[1] == *Const::get(Address(0xFFFFFFF0U))) {
 
         // special hack to ignore 'and esp, 0xfffffff0' in startup code
-        lifted.rtl = std::make_unique<RTL>(insn.m_addr);
+        lifted.fillRTL(std::make_unique<RTL>(insn.m_addr));
     }
     // clang-format on
     else {
-        lifted.rtl = createRTLForInstruction(insn);
+        lifted.fillRTL(createRTLForInstruction(insn));
     }
 
-    return lifted.rtl != nullptr;
+    return lifted.getRTL() != nullptr;
 }
 
 
@@ -458,7 +458,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     //
 
     std::shared_ptr<BranchStatement> b = nullptr;
-    result.rtl                         = std::unique_ptr<RTL>(new RTL(insn.m_addr + m_bsfrState));
+    std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + m_bsfrState));
 
     const SharedExp dest   = insn.m_operands[0];
     const SharedExp src    = insn.m_operands[1];
@@ -473,33 +473,32 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
 
     switch (m_bsfrState) {
     case 0:
-        result.rtl->append(
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
         b.reset(new BranchStatement);
         b->setDest(insn.m_addr + insn.m_size);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
-        result.rtl->append(b);
+        rtl->append(b);
         break;
 
     case 1:
-        result.rtl->append(
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.rtl->append(
+        result.getRTL()->append(
             std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
         break;
 
     case 2:
-        result.rtl->append(
-            std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
-                                     Binary::get(incdec, dest->clone(), Const::get(1))));
+        rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
+                                             Binary::get(incdec, dest->clone(), Const::get(1))));
         b.reset(new BranchStatement);
         b->setDest(insn.m_addr + 2);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,
                                    Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),
                                    Const::get(0)));
-        result.rtl->append(b);
+        rtl->append(b);
         break;
 
     default:

@@ -54,7 +54,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
         m_decoder->initialize(project);
     }
 
-    nop_inst.rtl = std::make_unique<RTL>(Address::INVALID);
+    nop_inst.fillRTL(std::make_unique<RTL>(Address::INVALID));
 }
 
 
@@ -248,7 +248,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
     // Define aliases to the RTLs so that they can be treated as a high level types where
     // appropriate.
-    RTL *rtl        = lifted.rtl.get();
+    RTL *rtl        = lifted.getRTL();
     SharedStmt last = !rtl->empty() ? rtl->back() : nullptr;
 
     if (lifted.reLift) {
@@ -736,7 +736,7 @@ std::unique_ptr<RTLList> SPARCFrontEnd::liftBBPart(BasicBlock *bb)
             return nullptr;
         }
 
-        bbRTLs->push_back(std::move(lifted.rtl));
+        bbRTLs->push_back(lifted.useRTL());
     }
 
     return bbRTLs;
@@ -760,11 +760,11 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
         return false;
     }
-    else if (liftedCTI.rtl->empty()) {
+    else if (liftedCTI.getRTL()->empty()) {
         return false;
     }
 
-    SharedStmt hlStmt = liftedCTI.rtl->back();
+    SharedStmt hlStmt = liftedCTI.getRTL()->back();
     if (!hlStmt) {
         return false;
     }
@@ -778,7 +778,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
         // restore semantics chop off one level of return address)
         if (m_decoder->isSPARCRestore(*delayInsn)) {
             hlStmt->as<CallStatement>()->setReturnAfterCall(true);
-            bbRTLs->push_back(std::move(liftedCTI.rtl));
+            bbRTLs->push_back(liftedCTI.useRTL());
             cfg->createFragment(std::move(bbRTLs), bb);
 
             m_callList.push_back(hlStmt->as<CallStatement>()); // case_CALL()
@@ -787,7 +787,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     }
 
     // Add all statements bt the high level statement to the RTL list
-    bbRTLs->push_back(std::move(liftedCTI.rtl));
+    bbRTLs->push_back(liftedCTI.useRTL());
     assert(bbRTLs->back()->back() == hlStmt);
     bbRTLs->back()->pop_back();
 
@@ -803,7 +803,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     // insert a return BB after the call.
     // Note that if an add, there may be an assignment to a temp register first.
     // So look at last RTL
-    SharedStmt delayAsgn = liftedDelay.rtl->empty() ? nullptr : liftedDelay.rtl->back();
+    SharedStmt delayAsgn = liftedDelay.getRTL()->empty() ? nullptr : liftedDelay.getRTL()->back();
 
     if (delayAsgn && delayAsgn->isAssign()) {
         SharedExp lhs = delayAsgn->as<Assign>()->getLeft();
@@ -838,8 +838,8 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
         }
     }
 
-    liftedDelay.rtl->append(hlStmt);
-    bbRTLs->push_back(std::move(liftedDelay.rtl));
+    liftedDelay.getRTL()->append(hlStmt);
+    bbRTLs->push_back(liftedDelay.useRTL());
 
     cfg->createFragment(std::move(bbRTLs), bb);
 
@@ -864,19 +864,19 @@ bool SPARCFrontEnd::liftDD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
         return false;
     }
-    else if (liftedCTI.rtl->empty()) {
+    else if (liftedCTI.getRTL()->empty()) {
         return false;
     }
 
-    SharedStmt hlStmt = liftedCTI.rtl->back();
+    SharedStmt hlStmt = liftedCTI.getRTL()->back();
     if (!hlStmt) {
         return false;
     }
 
     if (bb->isType(BBType::Ret)) {
-        liftedCTI.rtl->pop_back();
-        bbRTLs->push_back(std::move(liftedCTI.rtl));
-        bbRTLs->push_back(std::move(liftedDelay.rtl));
+        liftedCTI.getRTL()->pop_back();
+        bbRTLs->push_back(liftedCTI.useRTL());
+        bbRTLs->push_back(liftedDelay.useRTL());
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(delayInsn->m_addr, { hlStmt })));
         createReturnBlock(std::move(bbRTLs), bb);
         return true;

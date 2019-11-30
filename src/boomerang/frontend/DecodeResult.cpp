@@ -9,8 +9,6 @@
 #pragma endregion License
 #include "DecodeResult.h"
 
-#include "boomerang/ssl/RTL.h"
-
 
 DecodeResult::DecodeResult()
 {
@@ -19,7 +17,7 @@ DecodeResult::DecodeResult()
 
 
 DecodeResult::DecodeResult(DecodeResult &&other)
-    : rtl(std::move(other.rtl))
+    : m_rtls(std::move(other.m_rtls))
     , reLift(std::move(other.reLift))
 {
 }
@@ -32,7 +30,7 @@ DecodeResult::~DecodeResult()
 
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
-    rtl    = std::move(other.rtl);
+    m_rtls = std::move(other.m_rtls);
     reLift = std::move(other.reLift);
 
     return *this;
@@ -41,6 +39,34 @@ DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 
 void DecodeResult::reset()
 {
-    rtl    = nullptr;
+    m_rtls.clear();
     reLift = false;
+}
+
+
+void DecodeResult::fillRTL(std::unique_ptr<RTL> _rtl)
+{
+    assert(m_rtls.empty());
+    m_rtls.push_back(std::move(_rtl));
+}
+
+
+std::unique_ptr<RTL> DecodeResult::useRTL()
+{
+    assert(!m_rtls.empty());
+    std::unique_ptr<RTL> rtl = std::move(m_rtls.front());
+    m_rtls.clear();
+    return rtl;
+}
+
+
+RTL *DecodeResult::getRTL()
+{
+    return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
+}
+
+
+const RTL *DecodeResult::getRTL() const
+{
+    return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
 }
