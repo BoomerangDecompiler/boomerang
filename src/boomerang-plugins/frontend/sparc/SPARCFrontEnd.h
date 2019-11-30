@@ -78,7 +78,7 @@ private:
 private:
     // This struct represents a single nop instruction.
     // Used as a substitute delay slot instruction
-    DecodeResult nop_inst;
+    LiftedInstruction nop_inst;
 
     std::list<std::shared_ptr<CallStatement>> m_callList;
 };

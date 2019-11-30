@@ -44,7 +44,8 @@ void X86FrontEndTest::test1()
 
     // Decode first instruction
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
+
     {
         QVERIFY(fe->decodeInstruction(addr, insn, lifted));
         lifted.getFirstRTL()->print(strm);
@@ -86,7 +87,8 @@ void X86FrontEndTest::test2()
     QVERIFY(fe != nullptr);
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
+
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -128,7 +130,7 @@ void X86FrontEndTest::test3()
     QVERIFY(fe != nullptr);
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -166,7 +168,7 @@ void X86FrontEndTest::testBranch()
     QVERIFY(fe != nullptr);
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);

@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/frontend/LiftedInstruction.h"
 #include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/ssl/Register.h"
 
@@ -52,7 +52,7 @@ public:
     /// Lift a disassembled instruction to an RTL
     /// \returns true if lifting the instruction was succesful.
     [[nodiscard]] virtual bool liftInstruction(const MachineInstruction &insn,
-                                               DecodeResult &lifted) = 0;
+                                               LiftedInstruction &lifted) = 0;
 
     /// \returns machine-specific register name given its index
     virtual QString getRegNameByNum(RegNum regNum) const = 0;

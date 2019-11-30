@@ -49,7 +49,7 @@ public:
     bool disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
 
     /// \copydoc IDecoder::liftInstruction
-    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted) override;
 
     /// \returns false
     bool isSPARCRestore(const MachineInstruction &insn) const override;

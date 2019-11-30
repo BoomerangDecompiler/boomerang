@@ -178,7 +178,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
     // followed by a push of eax and then the call to main.  Or a call to __libc_start_main
     Address dest;
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
 
     do {
         lifted.reset();

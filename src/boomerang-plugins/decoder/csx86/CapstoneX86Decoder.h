@@ -31,7 +31,7 @@ public:
     bool disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
 
     /// \copydoc IDecoder::liftInstruction
-    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted) override;
 
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;
@@ -71,12 +71,11 @@ private:
      * instrucion to generate the correct semantics.
      * \param pc start of the instruction
      */
-    bool genBSFR(const MachineInstruction &insn, DecodeResult &result);
+    bool genBSFR(const MachineInstruction &insn, LiftedInstruction &result);
 
     /// \returns the name of the SSL template for \p instruction
     QString getTemplateName(const cs::cs_insn *instruction) const;
 
 private:
-    int m_bsfrState = 0; ///< State for state machine used in genBSFR()
     cs::cs_insn *m_insn; ///< decoded instruction;
 };

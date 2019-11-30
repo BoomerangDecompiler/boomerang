@@ -29,7 +29,7 @@ public:
     bool disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
 
     /// \copydoc IDecoder::liftInstruction
-    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted) override;
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted) override;
 
     /// \copydoc IDecoder::getRegNameByNum
     QString getRegNameByNum(RegNum regNum) const override;

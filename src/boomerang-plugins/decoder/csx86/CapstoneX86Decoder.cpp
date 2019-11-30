@@ -208,7 +208,7 @@ bool CapstoneX86Decoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 }
 
 
-bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
+bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
 {
     if (insn.m_id == cs::X86_INS_BSF || insn.m_id == cs::X86_INS_BSR) {
         // special hack to give BSF/BSR the correct semantics since SSL does not support loops yet
@@ -222,11 +222,11 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, DecodeR
         *insn.m_operands[1] == *Const::get(Address(0xFFFFFFF0U))) {
 
         // special hack to ignore 'and esp, 0xfffffff0' in startup code
-        lifted.fillRTL(std::make_unique<RTL>(insn.m_addr));
+        lifted.appendRTL(std::make_unique<RTL>(insn.m_addr), 0);
     }
     // clang-format on
     else {
-        lifted.fillRTL(createRTLForInstruction(insn));
+        lifted.appendRTL(createRTLForInstruction(insn), 0);
     }
 
     return lifted.getFirstRTL() != nullptr;
@@ -435,13 +435,12 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(const MachineInstruction
 }
 
 
-bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &result)
+bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstruction &result)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the
     // %SKIP/%RPT won't work. We need to emit 6 statements, but these need to be in 3 RTLs, since
-    // the destination of a branch has to be to the start of an RTL.  So we use a state machine, and
-    // set numBytes to 0 for the first two times. That way, this instruction ends up emitting three
-    // RTLs, each with the semantics we need. Note: we don't use x86.ssl for these.
+    // the destination of a branch has to be to the start of an RTL.
+    // Note: we don't use x86.ssl for these.
     //
     // BSFR1:
     //    pc+0:    *1* zf := 1
@@ -455,9 +454,6 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     // exit:
     //
 
-    std::shared_ptr<BranchStatement> b = nullptr;
-    std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + m_bsfrState));
-
     const SharedExp dest   = insn.m_operands[0];
     const SharedExp src    = insn.m_operands[1];
     const std::size_t size = dest->isRegOfConst()
@@ -469,48 +465,48 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, DecodeResult &r
     const int init    = insn.m_id == cs::X86_INS_BSF ? 0 : size - 1;
     const OPER incdec = insn.m_id == cs::X86_INS_BSF ? opPlus : opMinus;
 
-    switch (m_bsfrState) {
-    case 0:
+    // first RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 0));
+
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
-        b.reset(new BranchStatement);
+        std::shared_ptr<BranchStatement> b(new BranchStatement);
         b->setDest(insn.m_addr + insn.m_size);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
         rtl->append(b);
-        break;
 
-    case 1:
+        result.appendRTL(std::move(rtl), 0);
+    }
+
+    // second RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 1));
+
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.getFirstRTL()->append(
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
-        break;
 
-    case 2:
+        result.appendRTL(std::move(rtl), 1);
+    }
+
+    // third RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 0));
+
         rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
                                              Binary::get(incdec, dest->clone(), Const::get(1))));
-        b.reset(new BranchStatement);
+        std::shared_ptr<BranchStatement> b(new BranchStatement);
         b->setDest(insn.m_addr + 2);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,
                                    Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),
                                    Const::get(0)));
         rtl->append(b);
-        break;
 
-    default:
-        // Should never happen
-        LOG_FATAL("Unknown BSFR state %1", m_bsfrState);
-    }
-
-    if (m_debugMode) {
-        LOG_MSG("%1: BS%2%3%4", insn.m_addr + m_bsfrState, (init == -1 ? "F" : "R"),
-                (size == 32 ? ".od" : ".ow"), m_bsfrState + 1);
-    }
-
-    if (++m_bsfrState == 3) {
-        m_bsfrState = 0; // Ready for next time
+        result.appendRTL(std::move(rtl), 2);
     }
 
     return true;

@@ -40,7 +40,7 @@ void SPARCFrontendTest::test1()
 
     // Decode first instruction
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString     expected;
     QString     actual;
     OStream strm(&actual);
@@ -101,7 +101,7 @@ void SPARCFrontendTest::test2()
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -153,7 +153,7 @@ void SPARCFrontendTest::test3()
     QVERIFY(fe != nullptr);
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
@@ -210,7 +210,7 @@ void SPARCFrontendTest::test3()
 void SPARCFrontendTest::testBranch()
 {
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);

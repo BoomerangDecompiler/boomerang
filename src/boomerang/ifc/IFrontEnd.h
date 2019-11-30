@@ -22,7 +22,7 @@
 
 class BasicBlock;
 class CallStatement;
-class DecodeResult;
+class LiftedInstruction;
 class Exp;
 class IDecoder;
 class Project;

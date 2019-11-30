@@ -54,7 +54,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
         m_decoder->initialize(project);
     }
 
-    nop_inst.fillRTL(std::make_unique<RTL>(Address::INVALID));
+    nop_inst.appendRTL(std::make_unique<RTL>(Address::INVALID), 0);
 }
 
 
@@ -237,7 +237,7 @@ Address SPARCFrontEnd::findMainEntryPoint(bool &gotMain)
 
 bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *proc)
 {
-    DecodeResult lifted;
+    LiftedInstruction lifted;
     LowLevelCFG *cfg                  = m_program->getCFG();
     const Address addr                = bbInsns.back().m_addr;
     const Interval<Address> limitText = m_program->getBinaryFile()->getImage()->getLimitText();
@@ -299,7 +299,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         // or a call to .stret4
         const Address delayAddr = addr + SPARC_INSTRUCTION_LENGTH;
         MachineInstruction delayInsn;
-        DecodeResult delayLifted;
+        LiftedInstruction delayLifted;
 
         if (!decodeInstruction(delayAddr, delayInsn, delayLifted)) {
             warnInvalidInstruction(delayAddr);
@@ -539,7 +539,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
     //             case IClass::DD: {
     //                 MachineInstruction delayInsn;
-    //                 DecodeResult delayLifted;
+    //                 LiftedInstruction delayLifted;
     //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
     //                 delayLifted)) {
     //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
@@ -580,7 +580,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     //                 // optimisation if the instr has relative fields.
     //
     //                 MachineInstruction delayInsn;
-    //                 DecodeResult delayLifted;
+    //                 LiftedInstruction delayLifted;
     //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
     //                 delayLifted)) {
     //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
@@ -620,7 +620,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     //                 delay
     //                 // instruction if branch not taken.
     //                 MachineInstruction delayInsn;
-    //                 DecodeResult delayLifted;
+    //                 LiftedInstruction delayLifted;
     //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
     //                 delayLifted)) {
     //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
@@ -712,12 +712,12 @@ std::unique_ptr<RTLList> SPARCFrontEnd::liftBBPart(BasicBlock *bb)
             break;
         }
 
-        DecodeResult lifted;
+        LiftedInstruction lifted;
         if (!m_decoder->liftInstruction(insn, lifted)) {
             return nullptr;
         }
 
-        bbRTLs->push_back(lifted.useRTL());
+        bbRTLs->push_back(lifted.useSingleRTL());
     }
 
     return bbRTLs;
@@ -732,8 +732,8 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     // or a call to .stret4
     std::unique_ptr<RTLList> bbRTLs = liftBBPart(bb);
 
-    DecodeResult liftedCTI;
-    DecodeResult liftedDelay;
+    LiftedInstruction liftedCTI;
+    LiftedInstruction liftedDelay;
 
     if (!liftInstruction(bb->getInsns().back(), liftedCTI)) {
         return false;
@@ -759,7 +759,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
         // restore semantics chop off one level of return address)
         if (m_decoder->isSPARCRestore(*delayInsn)) {
             hlStmt->as<CallStatement>()->setReturnAfterCall(true);
-            bbRTLs->push_back(liftedCTI.useRTL());
+            bbRTLs->push_back(liftedCTI.useSingleRTL());
             cfg->createFragment(std::move(bbRTLs), bb);
 
             m_callList.push_back(hlStmt->as<CallStatement>()); // case_CALL()
@@ -768,7 +768,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     }
 
     // Add all statements bt the high level statement to the RTL list
-    bbRTLs->push_back(liftedCTI.useRTL());
+    bbRTLs->push_back(liftedCTI.useSingleRTL());
     assert(bbRTLs->back()->back() == hlStmt);
     bbRTLs->back()->pop_back();
 
@@ -821,7 +821,7 @@ bool SPARCFrontEnd::liftSD(BasicBlock *bb, const MachineInstruction *delayInsn, 
     }
 
     liftedDelay.getFirstRTL()->append(hlStmt);
-    bbRTLs->push_back(liftedDelay.useRTL());
+    bbRTLs->push_back(liftedDelay.useSingleRTL());
 
     cfg->createFragment(std::move(bbRTLs), bb);
 
@@ -837,8 +837,8 @@ bool SPARCFrontEnd::liftDD(BasicBlock *bb, const MachineInstruction *delayInsn, 
 {
     std::unique_ptr<RTLList> bbRTLs = liftBBPart(bb);
 
-    DecodeResult liftedCTI;
-    DecodeResult liftedDelay;
+    LiftedInstruction liftedCTI;
+    LiftedInstruction liftedDelay;
 
     if (!liftInstruction(bb->getInsns().back(), liftedCTI)) {
         return false;
@@ -857,8 +857,8 @@ bool SPARCFrontEnd::liftDD(BasicBlock *bb, const MachineInstruction *delayInsn, 
 
     if (bb->isType(BBType::Ret)) {
         liftedCTI.getFirstRTL()->pop_back();
-        bbRTLs->push_back(liftedCTI.useRTL());
-        bbRTLs->push_back(liftedDelay.useRTL());
+        bbRTLs->push_back(liftedCTI.useSingleRTL());
+        bbRTLs->push_back(liftedDelay.useSingleRTL());
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(delayInsn->m_addr, { hlStmt })));
         createReturnBlock(std::move(bbRTLs), bb);
         return true;

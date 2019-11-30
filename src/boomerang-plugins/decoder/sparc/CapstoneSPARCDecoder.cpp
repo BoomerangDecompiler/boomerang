@@ -186,9 +186,10 @@ bool CapstoneSPARCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 }
 
 
-bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
+bool CapstoneSPARCDecoder::liftInstruction(const MachineInstruction &insn,
+                                           LiftedInstruction &lifted)
 {
-    lifted.fillRTL(createRTLForInstruction(insn));
+    lifted.appendRTL(createRTLForInstruction(insn), 0);
 
     return lifted.getFirstRTL() != nullptr;
 }

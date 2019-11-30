@@ -42,7 +42,7 @@ void CapstonePPCDecoderTest::testInstructions()
     QFETCH(QString, expectedResult);
 
     MachineInstruction insn;
-    DecodeResult result;
+    LiftedInstruction result;
     Address sourceAddr = Address(0x1000);
     ptrdiff_t diff     = (HostAddress(&insnData) - sourceAddr).value();
 

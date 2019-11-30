@@ -22,7 +22,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/frontend/LiftedInstruction.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -297,8 +297,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             // this is a CTI. Lift the instruction to gain access to call/jump semantics
-            DecodeResult lifted;
-            if (!liftInstruction(insn, lifted) || !lifted.getFirstRTL()) {
+            LiftedInstruction lifted;
+            if (!liftInstruction(insn, lifted)) {
                 LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
                           insn.m_opstr.data());
 
@@ -427,7 +427,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                            ->getName();
 
                         // Assign the proc to the call
-                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
+                        Function *p = m_program->getOrCreateLibraryProc(name);
 
                         if (call->getDestProc()) {
                             // prevent unnecessary __imp procs
@@ -472,7 +472,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         // Record the called address as the start of a new procedure if it
                         // didn't already exist.
                         if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
-                            (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
+                            (m_program->getFunctionByAddr(callAddr) == nullptr)) {
                             if (m_program->getProject()->getSettings()->traceDecoder) {
                                 LOG_MSG("p%1", callAddr);
                             }
@@ -610,7 +610,8 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
 }
 
 
-bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn, DecodeResult &result)
+bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn,
+                                        LiftedInstruction &result)
 {
     return disassembleInstruction(pc, insn) && liftInstruction(insn, result);
 }
@@ -643,7 +644,7 @@ bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &ins
 }
 
 
-bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResult &lifted)
+bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
 {
     const bool ok = m_decoder->liftInstruction(insn, lifted);
 
@@ -652,7 +653,7 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, DecodeResu
                   "treating instruction as NOP",
                   insn.m_templateName, insn.m_addr);
 
-        lifted.fillRTL(std::make_unique<RTL>(insn.m_addr));
+        lifted.appendRTL(std::make_unique<RTL>(insn.m_addr), 0);
     }
 
     return true;
@@ -670,7 +671,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
     ProcCFG *procCFG = proc->getCFG();
 
     for (const MachineInstruction &insn : currentBB->getInsns()) {
-        DecodeResult lifted;
+        LiftedInstruction lifted;
         if (!m_decoder->liftInstruction(insn, lifted)) {
             LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
                       insn.m_opstr.data());
@@ -740,7 +741,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                 // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                 // to be a switch stmt
-                bbRTLs->push_back(lifted.useRTL());
+                bbRTLs->push_back(lifted.useSingleRTL());
 
                 procCFG->createFragment(std::move(bbRTLs), currentBB);
                 LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr, jumpDest);
@@ -786,7 +787,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                 // Treat computed and static calls separately
                 if (call->isComputed()) {
-                    bbRTLs->push_back(lifted.useRTL());
+                    bbRTLs->push_back(lifted.useSingleRTL());
 
                     IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
                     extraProcessCall(callFrag);
@@ -803,11 +804,11 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
                     // machine specific funcion calls
                     if (isHelperFunc(callAddr, insn.m_addr, *bbRTLs)) {
                         // We have already added to BB_rtls
-                        lifted.useRTL(); // Discard the call semantics
+                        lifted.useSingleRTL(); // Discard the call semantics
                         break;
                     }
 
-                    bbRTLs->push_back(lifted.useRTL());
+                    bbRTLs->push_back(lifted.useSingleRTL());
 
                     // Add this non computed call site to the set of call sites which need
                     // to be analysed later.
@@ -862,7 +863,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             case StmtType::Ret: {
                 // Create the list of RTLs for the next basic block and
                 // continue with the next instruction.
-                bbRTLs->push_back(lifted.useRTL());
+                bbRTLs->push_back(lifted.useSingleRTL());
                 createReturnBlock(std::move(bbRTLs), currentBB);
             } break;
 
@@ -884,7 +885,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
         if (lifted.getFirstRTL() != nullptr && bbRTLs != nullptr) {
             // we have yet put the RTL into the list -> do it now
-            bbRTLs->push_back(lifted.useRTL());
+            bbRTLs->push_back(lifted.useSingleRTL());
         }
     }
 
@@ -1167,7 +1168,7 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
     }
 
     MachineInstruction insn;
-    DecodeResult lifted;
+    LiftedInstruction lifted;
 
     if (!decodeInstruction(callAddr, insn, lifted)) {
         return Address::INVALID;

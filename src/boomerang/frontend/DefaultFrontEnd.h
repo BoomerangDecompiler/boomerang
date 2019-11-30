@@ -24,7 +24,7 @@ class RTL;
 class IDecoder;
 class Exp;
 class Prog;
-class DecodeResult;
+class LiftedInstruction;
 class Signature;
 class Statement;
 class CallStatement;
@@ -83,7 +83,7 @@ public:
     /// Disassemble and lift a single instruction at address \p addr
     /// \returns true on success
     [[nodiscard]] bool decodeInstruction(Address pc, MachineInstruction &insn,
-                                         DecodeResult &lifted);
+                                         LiftedInstruction &lifted);
 
 public:
     /// \copydoc IFrontEnd::getEntryPoints
@@ -123,7 +123,7 @@ protected:
 
     /// Lifts a single instruction \p insn to an RTL.
     /// \returns true on success
-    bool liftInstruction(const MachineInstruction &insn, DecodeResult &lifted);
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted);
 
 private:
     bool liftBB(BasicBlock *bb, UserProc *proc,
