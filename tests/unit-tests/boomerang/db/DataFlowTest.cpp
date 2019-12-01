@@ -240,7 +240,7 @@ void DataFlowTest::testRenameVars()
     assert(fe != nullptr);
 
     Type::clearNamedTypes();
-    fe->disassembleEntryPoints();
+    QVERIFY(fe->disassembleEntryPoints());
 
     const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);

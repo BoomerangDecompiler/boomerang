@@ -261,7 +261,7 @@ void SPARCFrontendTest::testDelaySlot()
     // disassembly calls readLibraryCatalog(), which needs to have definitions
     // for non-SPARC architectures cleared
     Type::clearNamedTypes();
-    fe->disassembleEntryPoints();
+    QVERIFY(fe->disassembleEntryPoints());
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);
