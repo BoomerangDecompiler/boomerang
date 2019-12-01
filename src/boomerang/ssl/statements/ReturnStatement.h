@@ -29,7 +29,7 @@ public:
     ReturnStatement(const ReturnStatement &other) = delete;
     ReturnStatement(ReturnStatement &&other)      = default;
 
-    virtual ~ReturnStatement() override;
+    ~ReturnStatement() override;
 
     ReturnStatement &operator=(const ReturnStatement &other) = delete;
     ReturnStatement &operator=(ReturnStatement &&other) = default;
@@ -43,7 +43,7 @@ public:
 
 public:
     /// \copydoc Statement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     iterator erase(iterator it);
 
@@ -62,19 +62,19 @@ public:
     void updateReturns();
 
     /// \copydoc Statement::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp &, SharedExp &) const override;
+    bool search(const Exp &, SharedExp &) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
+    void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// Remove from modifieds AND from returns
     void removeModified(SharedExp loc);
@@ -83,31 +83,31 @@ public:
     void addReturn(const std::shared_ptr<Assignment> &a);
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;
+    SharedConstType getTypeForExp(SharedConstExp exp) const override;
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedType getTypeForExp(SharedExp exp) override;
+    SharedType getTypeForExp(SharedExp exp) override;
 
     /// \copydoc Statement::setTypeForExp
-    virtual void setTypeForExp(SharedExp exp, SharedType ty) override;
+    void setTypeForExp(SharedExp exp, SharedType ty) override;
 
     /// \copydoc Statement::simplify
-    virtual void simplify() override;
+    void simplify() override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtModifier *visitor) override;
+    bool accept(StmtModifier *visitor) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtPartModifier *visitor) override;
+    bool accept(StmtPartModifier *visitor) override;
 
     /// \copydoc Statement::definesLoc
-    virtual bool definesLoc(SharedExp loc) const override;
+    bool definesLoc(SharedExp loc) const override;
 
     /// \returns pointer to the collector object
     DefCollector *getCollector() { return &m_col; }

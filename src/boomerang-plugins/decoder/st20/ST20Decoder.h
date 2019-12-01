@@ -27,7 +27,7 @@ public:
     ST20Decoder(const ST20Decoder &other) = delete;
     ST20Decoder(ST20Decoder &&other)      = default;
 
-    virtual ~ST20Decoder() override = default;
+    ~ST20Decoder() override = default;
 
     ST20Decoder &operator=(const ST20Decoder &other) = delete;
     ST20Decoder &operator=(ST20Decoder &&other) = default;
@@ -46,7 +46,7 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
     /// \returns false
     bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;

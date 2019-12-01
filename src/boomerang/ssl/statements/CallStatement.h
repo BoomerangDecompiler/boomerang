@@ -34,29 +34,29 @@ public:
     CallStatement(const CallStatement &other) = delete;
     CallStatement(CallStatement &&other)      = default;
 
-    virtual ~CallStatement() override;
+    ~CallStatement() override;
 
     CallStatement &operator=(const CallStatement &other) = delete;
     CallStatement &operator=(CallStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc Statement::setNumber
-    virtual void setNumber(int num) override;
+    void setNumber(int num) override;
 
     /// Set the arguments of this call. Takes ownership of the statements
     /// in \p args.
@@ -127,16 +127,16 @@ public:
     void eliminateDuplicateArgs();
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::search
-    virtual bool search(const Exp &search, SharedExp &result) const override;
+    bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::search
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /**
      * Sets a bit that says that this call is effectively followed by a return.
@@ -160,22 +160,22 @@ public:
     const Function *getDestProc() const;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
+    void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
-    virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
+    bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
 
     /// \copydoc GotoStatement::simplify
-    virtual void simplify() override;
+    void simplify() override;
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedConstType getTypeForExp(SharedConstExp exp) const override;
+    SharedConstType getTypeForExp(SharedConstExp exp) const override;
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedType getTypeForExp(SharedExp exp) override;
+    SharedType getTypeForExp(SharedExp exp) override;
 
     /// \copydoc Statement::setTypeForExp
-    virtual void setTypeForExp(SharedExp exp, SharedType ty) override;
+    void setTypeForExp(SharedExp exp, SharedType ty) override;
 
     /// \returns pointer to the def collector object
     const DefCollector *getDefCollector() const { return &m_defCol; }

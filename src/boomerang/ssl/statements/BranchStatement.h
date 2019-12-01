@@ -23,26 +23,26 @@ public:
     BranchStatement(const BranchStatement &other) = default;
     BranchStatement(BranchStatement &&other)      = default;
 
-    virtual ~BranchStatement() override;
+    ~BranchStatement() override;
 
     BranchStatement &operator=(const BranchStatement &other) = default;
     BranchStatement &operator=(BranchStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
@@ -72,19 +72,19 @@ public:
     void setFallBB(BasicBlock *bb);
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::search
-    virtual bool search(const Exp &search, SharedExp &result) const override;
+    bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::searchAll
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc GotoStatement::simplify
-    virtual void simplify() override;
+    void simplify() override;
 
 private:
     BranchType m_jumpType; ///< The condition for jumping

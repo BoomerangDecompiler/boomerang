@@ -26,7 +26,7 @@ public:
     SizeType(const SizeType &other) = default;
     SizeType(SizeType &&other)      = default;
 
-    virtual ~SizeType() override;
+    ~SizeType() override;
 
     SizeType &operator=(const SizeType &other) = default;
     SizeType &operator=(SizeType &&other) = default;
@@ -36,32 +36,32 @@ public:
     static std::shared_ptr<SizeType> get(Size sz);
 
     /// \copydoc Type::operator==
-    virtual bool operator==(const Type &other) const override;
+    bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
-    virtual bool operator<(const Type &other) const override;
+    bool operator<(const Type &other) const override;
 
     /// \copydoc Type::clone
-    virtual SharedType clone() const override;
+    SharedType clone() const override;
 
     /// \copydoc Type::getSize
-    virtual Size getSize() const override;
+    Size getSize() const override;
 
     /// \copydoc Type::setSize
-    virtual void setSize(Size sz) override;
+    void setSize(Size sz) override;
 
     /// \copydoc Type::isComplete
-    virtual bool isComplete() override;
+    bool isComplete() override;
 
     /// \copydoc Type::getCtype
-    virtual QString getCtype(bool final = false) const override;
+    QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+    SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
 protected:
     /// \copydoc Type::isCompatible
-    virtual bool isCompatible(const Type &other, bool) const override;
+    bool isCompatible(const Type &other, bool) const override;
 
 private:
     Size m_size; ///< Size in bits, e.g. 16

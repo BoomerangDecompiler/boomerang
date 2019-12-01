@@ -30,14 +30,14 @@ public:
     virtual bool common(const std::shared_ptr<Assignment> &stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
+    bool visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
+    bool visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
+    bool visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
+    bool visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
 };

@@ -51,7 +51,7 @@ public:
     DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
-    virtual bool initialize(Project *project) override;
+    bool initialize(Project *project) override;
 
     /// \copydoc IFrontEnd::getDecoder
     IDecoder *getDecoder() override { return m_decoder; }
@@ -70,7 +70,7 @@ public:
     bool decodeFragment(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(UserProc *proc, Address addr) override;
+    bool processProc(UserProc *proc, Address addr) override;
 
     /// Decode a single instruction at address \p addr
     virtual bool decodeSingleInstruction(Address pc, DecodeResult &result);
@@ -85,13 +85,13 @@ public:
     std::vector<Address> findEntryPoints() override;
 
     /// \copydoc IFrontEnd::isNoReturnCallDest
-    virtual bool isNoReturnCallDest(const QString &procName) const override;
+    bool isNoReturnCallDest(const QString &procName) const override;
 
     /// \copydoc IFrontEnd::addRefHint
-    virtual void addRefHint(Address addr, const QString &name) override;
+    void addRefHint(Address addr, const QString &name) override;
 
     /// \copydoc IFrontEnd::saveDecodedRTL
-    virtual void saveDecodedRTL(Address a, RTL *rtl) override;
+    void saveDecodedRTL(Address a, RTL *rtl) override;
 
 protected:
     /**

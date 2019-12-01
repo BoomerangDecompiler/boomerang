@@ -29,7 +29,7 @@ public:
     X86FrontEnd(X86FrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~X86FrontEnd() override;
+    ~X86FrontEnd() override;
 
     X86FrontEnd &operator=(const X86FrontEnd &other) = delete;
     X86FrontEnd &operator=(X86FrontEnd &&other) = default;
@@ -38,10 +38,10 @@ public:
     bool initialize(Project *project) override;
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(UserProc *proc, Address addr) override;
+    bool processProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool &gotMain) override;
+    Address findMainEntryPoint(bool &gotMain) override;
 
 protected:
     /// \copydoc IFrontEnd::extraProcessCall

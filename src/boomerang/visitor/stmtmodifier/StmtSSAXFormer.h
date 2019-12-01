@@ -32,19 +32,19 @@ public:
     void handleCommonLHS(const std::shared_ptr<Assignment> &stmt);
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<Assign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<ImplicitAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<BoolAssign> &stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<CallStatement> &stmt, bool &visitChildren) override;
 
 private:
     UserProc *m_proc;

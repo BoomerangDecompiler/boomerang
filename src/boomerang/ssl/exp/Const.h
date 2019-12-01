@@ -50,14 +50,14 @@ public:
     Const(Const &&other) = default;
 
     /// Nothing to destruct: Don't deallocate the string passed to constructor
-    virtual ~Const() override = default;
+    ~Const() override = default;
 
     Const &operator=(const Const &) = default;
     Const &operator=(Const &&) = default;
 
 public:
     /// \copydoc Exp::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     template<class T>
     static std::shared_ptr<Const> get(T i)
@@ -74,13 +74,13 @@ public:
     }
 
     /// \copydoc Exp::operator==
-    virtual bool operator==(const Exp &o) const override;
+    bool operator==(const Exp &o) const override;
 
     /// \copydoc Exp::operator<
-    virtual bool operator<(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
 
     /// \copydoc Exp::equalNoSubscript
-    virtual bool equalNoSubscript(const Exp &o) const override;
+    bool equalNoSubscript(const Exp &o) const override;
 
     // Get the constant
     int getInt() const;
@@ -110,21 +110,21 @@ public:
     void printNoQuotes(OStream &os) const;
 
     /// \copydoc Exp::ascendType
-    virtual SharedType ascendType() override;
+    SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual bool descendType(SharedType newType) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
-    virtual bool acceptVisitor(ExpVisitor *v) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     Data m_value;      ///< The value of this constant

@@ -28,13 +28,13 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
     /// \copydoc IDecoder::getRegNameByNum
-    virtual QString getRegNameByNum(RegNum regNum) const override;
+    QString getRegNameByNum(RegNum regNum) const override;
 
     /// \copydoc IDecoder::getRegSize
-    virtual int getRegSizeByNum(RegNum regNum) const override;
+    int getRegSizeByNum(RegNum regNum) const override;
 
 private:
     bool initialize(Project *project) override;

@@ -25,7 +25,7 @@ public:
     const QString &getName() override;
 
     /// \copydoc ITypeRecovery::recoverProgramTypes
-    virtual void recoverProgramTypes(Prog *prog) override;
+    void recoverProgramTypes(Prog *prog) override;
 
 private:
     const QString m_name;

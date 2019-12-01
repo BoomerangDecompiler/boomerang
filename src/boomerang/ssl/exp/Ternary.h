@@ -21,14 +21,14 @@ public:
     Ternary(const Ternary &other);
     Ternary(Ternary &&other) = default;
 
-    virtual ~Ternary() override;
+    ~Ternary() override;
 
     Ternary &operator=(const Ternary &other) = default;
     Ternary &operator=(Ternary &&other) = default;
 
 public:
     /// \copydoc Binary::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     static std::shared_ptr<Ternary> get(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
 
@@ -60,10 +60,10 @@ public:
     void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     /// \copydoc Binary::ascendType
-    virtual SharedType ascendType() override;
+    SharedType ascendType() override;
 
     /// \copydoc Binary::descendType
-    virtual bool descendType(SharedType newType) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Binary::acceptVisitor
@@ -71,13 +71,13 @@ public:
 
 protected:
     /// \copydoc Binary::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Binary::acceptChildModifier
-    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+    SharedExp acceptChildModifier(ExpModifier *mod) override;
 
     /// \copydoc Binary::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedExp m_subExp3; ///< Third subexpression pointer

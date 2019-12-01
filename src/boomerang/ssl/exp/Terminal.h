@@ -23,14 +23,14 @@ public:
     Terminal(const Terminal &other);
     Terminal(Terminal &&other) = default;
 
-    virtual ~Terminal() override = default;
+    ~Terminal() override = default;
 
     Terminal &operator=(const Terminal &) = default;
     Terminal &operator=(Terminal &&) = default;
 
 public:
     /// \copydoc Exp::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     /// \copydoc Exp::get
     static SharedExp get(OPER op);
@@ -56,8 +56,8 @@ public:
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 };

@@ -27,42 +27,42 @@ public:
     ImplicitAssign(const ImplicitAssign &other);
     ImplicitAssign(ImplicitAssign &&other) = default;
 
-    virtual ~ImplicitAssign() override = default;
+    ~ImplicitAssign() override = default;
 
     ImplicitAssign &operator=(const ImplicitAssign &other) = default;
     ImplicitAssign &operator=(ImplicitAssign &&other) = default;
 
 public:
     /// \copydoc Statement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp &search, SharedExp &result) const override;
+    bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc Statement::printCompact
-    virtual void printCompact(OStream &os) const override;
+    void printCompact(OStream &os) const override;
 
     /// \copydoc Assignment::getRight
-    virtual SharedExp getRight() const override { return nullptr; }
+    SharedExp getRight() const override { return nullptr; }
 
     /// \copydoc Statement::simplify
-    virtual void simplify() override {}
+    void simplify() override {}
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 };

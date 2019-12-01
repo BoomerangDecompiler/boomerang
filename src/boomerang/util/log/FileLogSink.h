@@ -22,13 +22,13 @@ class FileLogSink : public ILogSink
 {
 public:
     FileLogSink(const QString &filename, bool append = false);
-    virtual ~FileLogSink() override;
+    ~FileLogSink() override;
 
     /// \copydoc ILogSink::write
-    virtual void write(const QString &s) override;
+    void write(const QString &s) override;
 
     /// \copydoc ILogSink::flush
-    virtual void flush() override;
+    void flush() override;
 
 private:
     QFile m_logFile;

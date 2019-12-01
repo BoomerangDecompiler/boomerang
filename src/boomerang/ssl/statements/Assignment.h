@@ -25,7 +25,7 @@ public:
     Assignment(const Assignment &other) = default;
     Assignment(Assignment &&other)      = default;
 
-    virtual ~Assignment() override;
+    ~Assignment() override;
 
     Assignment &operator=(const Assignment &other) = default;
     Assignment &operator=(Assignment &&other) = default;
@@ -38,25 +38,25 @@ public:
     bool operator<(const Assignment &o);
 
     /// \copydoc Assignment::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// Like print, but print without statement number
     virtual void printCompact(OStream &os) const = 0;
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedConstType getTypeForExp(SharedConstExp e) const override;
+    SharedConstType getTypeForExp(SharedConstExp e) const override;
 
     /// \copydoc Statement::getTypeForExp
-    virtual SharedType getTypeForExp(SharedExp e) override;
+    SharedType getTypeForExp(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
-    virtual void setTypeForExp(SharedExp e, SharedType ty) override;
+    void setTypeForExp(SharedExp e, SharedType ty) override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
+    void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
-    virtual bool definesLoc(SharedExp loc) const override;
+    bool definesLoc(SharedExp loc) const override;
 
     /// \returns the expression defining the left hand side of the assignment
     SharedExp getLeft() const;
@@ -69,7 +69,7 @@ public:
     virtual SharedExp getRight() const = 0;
 
     /// \copydoc Statement::simplifyAddr
-    virtual void simplifyAddr() override;
+    void simplifyAddr() override;
 
 protected:
     SharedExp m_lhs; ///< The left hand side of the assignment

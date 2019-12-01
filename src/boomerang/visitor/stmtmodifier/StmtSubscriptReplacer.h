@@ -17,9 +17,9 @@ class BOOMERANG_API StmtSubscriptReplacer : public StmtModifier
 {
 public:
     StmtSubscriptReplacer(const SharedConstStmt &original, const SharedStmt &replacement);
-    virtual ~StmtSubscriptReplacer() override;
+    ~StmtSubscriptReplacer() override;
 
 public:
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 };

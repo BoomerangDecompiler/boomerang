@@ -33,10 +33,10 @@ public:
 
 public:
     /// \copydoc SimpExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
+    SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 
     /// \copydoc SimpExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<Location> &exp) override;
+    SharedExp postModify(const std::shared_ptr<Location> &exp) override;
 
 private:
     /// Statement that is being modified at present, for debugging only

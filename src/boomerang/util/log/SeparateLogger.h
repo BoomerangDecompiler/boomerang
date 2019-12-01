@@ -24,7 +24,7 @@ public:
     SeparateLogger(const SeparateLogger &other) = delete;
     SeparateLogger(SeparateLogger &&other)      = delete;
 
-    virtual ~SeparateLogger() override = default;
+    ~SeparateLogger() override = default;
 
     SeparateLogger &operator=(const SeparateLogger &other) = delete;
     SeparateLogger &operator=(SeparateLogger &&other) = delete;

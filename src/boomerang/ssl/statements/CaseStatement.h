@@ -50,38 +50,38 @@ public:
     CaseStatement(const CaseStatement &other);
     CaseStatement(CaseStatement &&other) = default;
 
-    virtual ~CaseStatement() override;
+    ~CaseStatement() override;
 
     CaseStatement &operator=(const CaseStatement &other);
     CaseStatement &operator=(CaseStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::searchAll
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc GotoStatement::simplify
-    virtual void simplify() override;
+    void simplify() override;
 
     /// Get information about this switch statement
     SwitchInfo *getSwitchInfo();

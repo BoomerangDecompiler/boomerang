@@ -71,7 +71,7 @@ public:
     UserProc(const UserProc &) = delete;
     UserProc(UserProc &&)      = default;
 
-    virtual ~UserProc() override;
+    ~UserProc() override;
 
     UserProc &operator=(const UserProc &) = delete;
     UserProc &operator=(UserProc &&) = default;

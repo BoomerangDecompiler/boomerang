@@ -28,7 +28,7 @@ public:
 
 public:
     /// \copydoc StmtModifier::visit
-    virtual void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
+    void visit(const std::shared_ptr<PhiAssign> &stmt, bool &visitChildren) override;
 
 private:
     ProcCFG *m_cfg;

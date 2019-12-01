@@ -26,7 +26,7 @@ public:
     bool isFound() { return m_found; }
 
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Binary> &exp, bool &visitChildren) override;
+    bool preVisit(const std::shared_ptr<Binary> &exp, bool &visitChildren) override;
 
 private:
     bool m_found;

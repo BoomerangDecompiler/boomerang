@@ -21,14 +21,14 @@ public:
     Binary(const Binary &other);
     Binary(Binary &&other) = default;
 
-    virtual ~Binary() override;
+    ~Binary() override;
 
     Binary &operator=(const Binary &other) = default;
     Binary &operator=(Binary &&other) = default;
 
 public:
     /// \copydoc Unary::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2);
 
@@ -62,24 +62,24 @@ public:
     void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     /// \copydoc Unary::ascendType
-    virtual SharedType ascendType() override;
+    SharedType ascendType() override;
 
     /// \copydoc Unary::ascendType
-    virtual bool descendType(SharedType newType) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Unary::acceptVisitor
-    virtual bool acceptVisitor(ExpVisitor *v) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
 protected:
     /// \copydoc Unary::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Unary::acceptChildModifier
-    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+    SharedExp acceptChildModifier(ExpModifier *mod) override;
 
     /// \copydoc Unary::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
     SharedExp m_subExp2; ///< Second subexpression pointer

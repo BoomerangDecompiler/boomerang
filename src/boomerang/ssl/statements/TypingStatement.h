@@ -25,7 +25,7 @@ public:
     TypingStatement(const TypingStatement &other) = default;
     TypingStatement(TypingStatement &&other)      = default;
 
-    virtual ~TypingStatement() override = default;
+    ~TypingStatement() override = default;
 
     TypingStatement &operator=(const TypingStatement &other) = default;
     TypingStatement &operator=(TypingStatement &&other) = default;
@@ -37,7 +37,7 @@ public:
     void setType(SharedType ty) { m_type = ty; }
 
     /// \copydoc Statement::isTyping
-    virtual bool isTyping() const override { return true; }
+    bool isTyping() const override { return true; }
 
 protected:
     SharedType m_type; ///< The type for this assignment or reference

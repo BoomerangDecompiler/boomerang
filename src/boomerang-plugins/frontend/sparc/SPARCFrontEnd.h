@@ -44,10 +44,10 @@ public:
      * during decoding. The semantics of delayed CTIs are
      * transformed into CTIs that aren't delayed.
      */
-    virtual bool processProc(UserProc *proc, Address entryAddr) override;
+    bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool &gotMain) override;
+    Address findMainEntryPoint(bool &gotMain) override;
 
 private:
     /**

@@ -26,26 +26,26 @@ public:
     BoolAssign(const BoolAssign &other) = default;
     BoolAssign(BoolAssign &&other)      = default;
 
-    virtual ~BoolAssign() override;
+    ~BoolAssign() override;
 
     BoolAssign &operator=(const BoolAssign &other) = default;
     BoolAssign &operator=(BoolAssign &&other) = default;
 
 public:
     /// \copydoc Statement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 
     /**
      * Sets the BranchType of this jcond as well as the flag
@@ -82,25 +82,25 @@ public:
     void makeSigned();
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(OStream &os) const override;
+    void printCompact(OStream &os) const override;
 
     /// \copydoc Statement::simplify
-    virtual void simplify() override;
+    void simplify() override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet &def, bool assumeABICompliance) const override;
+    void getDefinitions(LocationSet &def, bool assumeABICompliance) const override;
 
     /// \copydoc Assignment::getRight
-    virtual SharedExp getRight() const override { return getCondExpr(); }
+    SharedExp getRight() const override { return getCondExpr(); }
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp &search, SharedExp &result) const override;
+    bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
 private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true

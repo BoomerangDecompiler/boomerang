@@ -90,7 +90,7 @@ class BOOMERANG_PLUGIN_API CCodeGenerator : public ICodeGenerator
 {
 public:
     CCodeGenerator(Project *project);
-    virtual ~CCodeGenerator() override = default;
+    ~CCodeGenerator() override = default;
 
 public:
     /// \copydoc ICodeGenerator::generateCode

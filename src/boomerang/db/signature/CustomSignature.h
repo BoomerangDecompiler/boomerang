@@ -17,19 +17,19 @@ class BOOMERANG_API CustomSignature : public Signature
 {
 public:
     CustomSignature(const QString &name);
-    virtual ~CustomSignature() override = default;
+    ~CustomSignature() override = default;
 
 public:
     /// \copydoc Signature::isPromoted
-    virtual bool isPromoted() const override { return true; }
+    bool isPromoted() const override { return true; }
 
     /// \copydoc Signature::clone
-    virtual std::shared_ptr<Signature> clone() const override;
+    std::shared_ptr<Signature> clone() const override;
 
     void setSP(int spReg);
 
     /// \copydoc Signature::getStackRegister
-    virtual RegNum getStackRegister() const override { return m_spReg; }
+    RegNum getStackRegister() const override { return m_spReg; }
 
 protected:
     RegNum m_spReg;

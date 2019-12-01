@@ -32,14 +32,14 @@ public:
     bool common(const Assignment *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(const Assign *stmt) override;
+    bool visit(const Assign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(const PhiAssign *stmt) override;
+    bool visit(const PhiAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(const ImplicitAssign *stmt) override;
+    bool visit(const ImplicitAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(const BoolAssign *stmt) override;
+    bool visit(const BoolAssign *stmt) override;
 };

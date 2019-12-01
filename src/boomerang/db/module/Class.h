@@ -24,5 +24,5 @@ public:
 
     /// A Class tends to be aggregated into the parent Module,
     /// this isn't the case with Java, but hey, we're not doing that yet.
-    virtual bool isAggregate() const override { return true; }
+    bool isAggregate() const override { return true; }
 };

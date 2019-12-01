@@ -34,14 +34,14 @@ public:
     Location(const Location &other);
     Location(Location &&other) = default;
 
-    virtual ~Location() override = default;
+    ~Location() override = default;
 
     Location &operator=(const Location &other) = default;
     Location &operator=(Location &&other) = default;
 
 public:
     /// \copydoc Unary::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     static SharedExp get(OPER op, SharedExp childExp, UserProc *proc);
 
@@ -65,14 +65,14 @@ public:
 
 public:
     /// \copydoc Unary::acceptVisitor
-    virtual bool acceptVisitor(ExpVisitor *v) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     UserProc *m_proc;

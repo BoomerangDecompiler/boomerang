@@ -21,29 +21,29 @@ public:
     Unary(const Unary &other);
     Unary(Unary &&other) = default;
 
-    virtual ~Unary() override;
+    ~Unary() override;
 
     Unary &operator=(const Unary &other) = default;
     Unary &operator=(Unary &&other) = default;
 
 public:
     /// \copydoc Exp::clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     /// \copydoc Exp::get
     static SharedExp get(OPER op, SharedExp e1);
 
     /// \copydoc Exp::operator==
-    virtual bool operator==(const Exp &o) const override;
+    bool operator==(const Exp &o) const override;
 
     /// \copydoc Exp::operator<
-    virtual bool operator<(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
 
     /// \copydoc Exp::equalNoSubscript
     bool equalNoSubscript(const Exp &o) const override;
 
     /// \copydoc Exp::getArity
-    virtual int getArity() const override { return 1; }
+    int getArity() const override { return 1; }
 
     /// \copydoc Exp::doSearchChildren
     void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
@@ -61,24 +61,24 @@ public:
     SharedExp &refSubExp1() override;
 
     /// \copydoc Exp::ascendType
-    virtual SharedType ascendType() override;
+    SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual bool descendType(SharedType newType) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
-    virtual bool acceptVisitor(ExpVisitor *v) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptChildModifier
-    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+    SharedExp acceptChildModifier(ExpModifier *mod) override;
 
     /// \copydoc Exp::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
     SharedExp m_subExp1; ///< One subexpression pointer

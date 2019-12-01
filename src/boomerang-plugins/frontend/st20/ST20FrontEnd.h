@@ -28,15 +28,15 @@ public:
     ST20FrontEnd(ST20FrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~ST20FrontEnd() override = default;
+    ~ST20FrontEnd() override = default;
 
     ST20FrontEnd &operator=(const ST20FrontEnd &other) = delete;
     ST20FrontEnd &operator=(ST20FrontEnd &&other) = default;
 
 public:
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(UserProc *proc, Address entryAddr) override;
+    bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool &gotMain) override;
+    Address findMainEntryPoint(bool &gotMain) override;
 };

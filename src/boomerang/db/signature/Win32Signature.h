@@ -25,14 +25,14 @@ class BOOMERANG_API Win32Signature : public Signature
 public:
     explicit Win32Signature(const QString &name);
     explicit Win32Signature(Signature &old);
-    virtual ~Win32Signature() override = default;
+    ~Win32Signature() override = default;
 
 public:
     /// \copydoc Signature::clone
-    virtual std::shared_ptr<Signature> clone() const override;
+    std::shared_ptr<Signature> clone() const override;
 
     /// \copydoc Signature::operator==
-    virtual bool operator==(const Signature &other) const override;
+    bool operator==(const Signature &other) const override;
 
     static bool qualified(UserProc *p, Signature &candidate);
 
@@ -44,28 +44,28 @@ public:
                       const QString &boundMax = "") override;
 
     /// \copydoc Signature::getArgumentExp
-    virtual SharedExp getArgumentExp(int n) const override;
+    SharedExp getArgumentExp(int n) const override;
 
     /// \copydoc Signature::promote
-    virtual std::shared_ptr<Signature> promote(UserProc *) override;
+    std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual RegNum getStackRegister() const override { return REG_X86_ESP; }
+    RegNum getStackRegister() const override { return REG_X86_ESP; }
 
     /// \copydoc Signature::getProven
-    virtual SharedExp getProven(SharedExp left) const override;
+    SharedExp getProven(SharedExp left) const override;
 
     /// \copydoc Signature::isPreserved
-    virtual bool isPreserved(SharedExp e) const override;
+    bool isPreserved(SharedExp e) const override;
 
     /// \copydoc Signature::getLibraryDefines
-    virtual void getLibraryDefines(StatementList &defs) override;
+    void getLibraryDefines(StatementList &defs) override;
 
     /// \copydoc Signature::isPromoted
-    virtual bool isPromoted() const override { return true; }
+    bool isPromoted() const override { return true; }
 
     /// \copydoc Signature::getConvention
-    virtual CallConv getConvention() const override { return CallConv::Pascal; }
+    CallConv getConvention() const override { return CallConv::Pascal; }
 };
 
 
@@ -82,15 +82,15 @@ public:
 
 public:
     /// \copydoc Win32Signature::getArgumentExp
-    virtual SharedExp getArgumentExp(int n) const override;
+    SharedExp getArgumentExp(int n) const override;
 
     /// \copydoc Win32Signature::getProven
-    virtual SharedExp getProven(SharedExp left) const override;
+    SharedExp getProven(SharedExp left) const override;
 
     /// \copydoc Win32Signature::clone
-    virtual std::shared_ptr<Signature> clone() const override;
+    std::shared_ptr<Signature> clone() const override;
 
     /// \copydoc Win32Signature::getConvention
-    virtual CallConv getConvention() const override { return CallConv::ThisCall; }
+    CallConv getConvention() const override { return CallConv::ThisCall; }
 };
 }

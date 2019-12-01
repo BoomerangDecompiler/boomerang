@@ -47,7 +47,7 @@ public:
     UnionType(const UnionType &other) = default;
     UnionType(UnionType &&other)      = default;
 
-    virtual ~UnionType() override;
+    ~UnionType() override;
 
     UnionType &operator=(const UnionType &other) = default;
     UnionType &operator=(UnionType &&other) = default;
@@ -58,25 +58,25 @@ public:
     static std::shared_ptr<UnionType> get(const std::initializer_list<Member> members);
 
     /// \copydoc Type::operator==
-    virtual bool operator==(const Type &other) const override;
+    bool operator==(const Type &other) const override;
 
     /// \copydoc Type::operator<
-    virtual bool operator<(const Type &other) const override;
+    bool operator<(const Type &other) const override;
 
     /// \copydoc Type::clone
-    virtual SharedType clone() const override;
+    SharedType clone() const override;
 
     /// \copydoc Type::getSize
-    virtual Size getSize() const override;
+    Size getSize() const override;
 
     /// \copydoc Type::getCtype
-    virtual QString getCtype(bool final = false) const override;
+    QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+    SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
     /// \copydoc Type::isCompatibleWith
-    virtual bool isCompatibleWith(const Type &other, bool all) const override;
+    bool isCompatibleWith(const Type &other, bool all) const override;
 
 public:
     /// \returns the number of distinct types in this union.
@@ -92,7 +92,7 @@ public:
 
 protected:
     /// \copydoc Type::isCompatible
-    virtual bool isCompatible(const Type &other, bool all) const override;
+    bool isCompatible(const Type &other, bool all) const override;
 
 private:
     /**

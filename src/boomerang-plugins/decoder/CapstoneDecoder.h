@@ -47,7 +47,7 @@ public:
     bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
 
 protected:
-    virtual bool initialize(Project *project) override;
+    bool initialize(Project *project) override;
 
     bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
 

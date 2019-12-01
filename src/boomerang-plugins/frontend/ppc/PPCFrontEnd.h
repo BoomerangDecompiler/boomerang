@@ -26,15 +26,15 @@ public:
     PPCFrontEnd(PPCFrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~PPCFrontEnd() override = default;
+    ~PPCFrontEnd() override = default;
 
     PPCFrontEnd &operator=(const PPCFrontEnd &other) = delete;
     PPCFrontEnd &operator=(PPCFrontEnd &&other) = default;
 
 public:
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(UserProc *proc, Address entryAddr) override;
+    bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool &gotMain) override;
+    Address findMainEntryPoint(bool &gotMain) override;
 };

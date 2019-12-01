@@ -19,11 +19,11 @@
 class ConsoleLogSink : public ILogSink
 {
 public:
-    virtual ~ConsoleLogSink() override = default;
+    ~ConsoleLogSink() override = default;
 
     /// \copydoc ILogSink::write
-    virtual void write(const QString &s) override;
+    void write(const QString &s) override;
 
     /// \copydoc ILogSink::flush
-    virtual void flush() override;
+    void flush() override;
 };

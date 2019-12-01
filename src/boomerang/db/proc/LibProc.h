@@ -29,7 +29,7 @@ public:
     LibProc(const LibProc &) = delete;
     LibProc(LibProc &&)      = default;
 
-    virtual ~LibProc() override = default;
+    ~LibProc() override = default;
 
     LibProc &operator=(const LibProc &) = delete;
     LibProc &operator=(LibProc &&) = default;
@@ -39,15 +39,15 @@ public:
     bool isLib() const override;
 
     /// \copydoc Function::isNoReturn
-    virtual bool isNoReturn() const override;
+    bool isNoReturn() const override;
 
     /// \copydoc Function::getProven
-    virtual SharedExp getProven(SharedExp left) override;
+    SharedExp getProven(SharedExp left) override;
 
     /// \copydoc Function::getPremised
     /// Get the RHS that is premised for left
-    virtual SharedExp getPremised(SharedExp) override;
+    SharedExp getPremised(SharedExp) override;
 
     /// \copydoc Function::isPreserved
-    virtual bool isPreserved(SharedExp e) override;
+    bool isPreserved(SharedExp e) override;
 };

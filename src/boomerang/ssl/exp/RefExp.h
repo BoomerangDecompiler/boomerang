@@ -38,7 +38,7 @@ public:
     RefExp(const RefExp &other) = default;
     RefExp(RefExp &&other)      = default;
 
-    virtual ~RefExp() override { m_def = nullptr; }
+    ~RefExp() override { m_def = nullptr; }
 
     RefExp &operator=(const RefExp &other) = default;
     RefExp &operator=(RefExp &&other) = default;
@@ -69,21 +69,21 @@ public:
     bool isImplicitDef() const;
 
     /// \copydoc Unary::ascendType
-    virtual SharedType ascendType() override;
+    SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
-    virtual bool descendType(SharedType newType) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Unary::acceptVisitor
-    virtual bool acceptVisitor(ExpVisitor *v) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
 private:
     /// \copydoc Unary::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
+    SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Unary::acceptPostModifier
-    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
+    SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedStmt m_def; ///< The defining statement

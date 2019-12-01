@@ -32,26 +32,26 @@ public:
     GotoStatement(const GotoStatement &other) = default;
     GotoStatement(GotoStatement &&other)      = default;
 
-    virtual ~GotoStatement() override;
+    ~GotoStatement() override;
 
     GotoStatement &operator=(const GotoStatement &other) = default;
     GotoStatement &operator=(GotoStatement &&other) = default;
 
 public:
     /// \copydoc Statement::clone
-    virtual SharedStmt clone() const override;
+    SharedStmt clone() const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) const override;
+    bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtModifier *modifier) override;
+    bool accept(StmtModifier *modifier) override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtPartModifier *modifier) override;
+    bool accept(StmtPartModifier *modifier) override;
 
     /// Set the destination of this jump to be a given fixed address.
     void setDest(Address addr);
@@ -90,19 +90,19 @@ public:
     bool isComputed() const;
 
     /// \copydoc Statement::print
-    virtual void print(OStream &os) const override;
+    void print(OStream &os) const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp &pattern, SharedExp &result) const override;
+    bool search(const Exp &pattern, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
+    bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) override;
 
     // simplify all the uses/defs in this Statement
-    virtual void simplify() override;
+    void simplify() override;
 
 protected:
     /// Destination of a jump or call. This is the absolute destination

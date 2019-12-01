@@ -31,10 +31,10 @@ public:
 
 public:
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
+    bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
+    bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
 private:
     bool m_found;

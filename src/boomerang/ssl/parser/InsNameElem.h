@@ -55,9 +55,9 @@ class InsOptionElem : public InsNameElem
 public:
     InsOptionElem(const QString &name);
 
-    virtual size_t getNumTokens() const override;
-    virtual QString getInstruction() const override;
-    virtual QString getInsPattern() const override;
+    size_t getNumTokens() const override;
+    QString getInstruction() const override;
+    QString getInsPattern() const override;
 };
 
 
@@ -66,10 +66,10 @@ class InsListElem : public InsNameElem
 public:
     InsListElem(const QString &name, const std::shared_ptr<Table> &t, const QString &idx);
 
-    virtual size_t getNumTokens() const override;
-    virtual QString getInstruction() const override;
-    virtual QString getInsPattern() const override;
-    virtual void getRefMap(std::map<QString, std::shared_ptr<InsNameElem>> &m) override;
+    size_t getNumTokens() const override;
+    QString getInstruction() const override;
+    QString getInsPattern() const override;
+    void getRefMap(std::map<QString, std::shared_ptr<InsNameElem>> &m) override;
 
     QString getIndex() const;
 
