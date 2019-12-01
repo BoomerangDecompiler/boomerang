@@ -10,12 +10,11 @@
 #pragma once
 
 
-#include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
 #include "boomerang/ifc/IFrontEnd.h"
+#include "boomerang/ssl/RTL.h"
 
 #include <map>
-#include <memory>
 
 
 class Function;
@@ -30,6 +29,7 @@ class Statement;
 class CallStatement;
 class BinaryFile;
 class MachineInstruction;
+class IRFragment;
 
 class QString;
 

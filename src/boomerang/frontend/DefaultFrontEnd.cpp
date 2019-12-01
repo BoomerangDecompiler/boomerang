@@ -604,73 +604,66 @@ bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn,
 std::vector<Address> DefaultFrontEnd::findEntryPoints()
 {
     std::vector<Address> entrypoints;
-    bool gotMain = false;
-    // AssemblyLayer
-    Address a = findMainEntryPoint(gotMain);
+
+    bool gotMain;
+    const Address a = findMainEntryPoint(gotMain);
 
     // TODO: find exported functions and add them too ?
-    if (a != Address::INVALID) {
-        entrypoints.push_back(a);
+    if (gotMain) {
+        return { a };
     }
-    else {             // try some other tricks
-        QString fname; // = m_program->getProject()->getSettings()->getFilename();
 
-        // X11 Module
-        if (fname.endsWith("_drv.o")) {
-            int seploc = fname.lastIndexOf(QDir::separator());
-            QString p  = fname.mid(seploc + 1); // part after the last path separator
+    // try some other tricks
+    const QString fname; // = m_program->getProject()->getSettings()->getFilename();
+    const BinarySymbolTable *syms = m_program->getBinaryFile()->getSymbols();
 
-            if (p != fname) {
-                QString name = p.mid(0, p.length() - 6) + "ModuleData";
-                const BinarySymbol
-                    *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(name);
+    // X11 Module
+    if (fname.endsWith("_drv.o")) {
+        const int seploc = fname.lastIndexOf(QDir::separator());
+        const QString p  = fname.mid(seploc + 1); // part after the last path separator
 
-                if (p_sym) {
-                    Address tmpaddr = p_sym->getLocation();
-
-
-                    BinaryImage *image = m_program->getBinaryFile()->getImage();
-                    DWord vers = 0, setup = 0, teardown = 0;
-                    bool ok = true;
-                    ok &= image->readNative4(tmpaddr, vers);
-                    ok &= image->readNative4(tmpaddr, setup);
-                    ok &= image->readNative4(tmpaddr, teardown);
-
-                    // TODO: find use for vers ?
-                    const Address setupAddr    = Address(setup);
-                    const Address teardownAddr = Address(teardown);
-
-                    if (ok) {
-                        if (!setupAddr.isZero()) {
-                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
-                                entrypoints.push_back(setupAddr);
-                            }
-                        }
-
-                        if (!teardownAddr.isZero()) {
-                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
-                                entrypoints.push_back(teardownAddr);
-                            }
-                        }
-                    }
-                }
-            }
+        if (p == fname) {
+            return {};
         }
 
-        // Linux kernel module
-        if (fname.endsWith(".ko")) {
-            const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(
-                "init_module");
+        const QString name      = p.mid(0, p.length() - 6) + "ModuleData";
+        const BinarySymbol *sym = syms->findSymbolByName(name);
+        if (!sym) {
+            return {};
+        }
 
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
+        const Address tmpaddr = sym->getLocation();
 
-            p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("cleanup_module");
+        const BinaryImage *image = m_program->getBinaryFile()->getImage();
+        DWord vers = 0, setup = 0, teardown = 0;
+        bool ok = true;
+        ok &= image->readNative4(tmpaddr, vers);
+        ok &= image->readNative4(tmpaddr, setup);
+        ok &= image->readNative4(tmpaddr, teardown);
 
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
+        if (!ok) {
+            return {};
+        }
+
+        // TODO: find use for vers ?
+        if (setup != 0 && createFunctionForEntryPoint(Address(setup), "ModuleSetupProc")) {
+            entrypoints.push_back(Address(setup));
+        }
+
+        if (teardown != 0 && createFunctionForEntryPoint(Address(teardown), "ModuleTearDownProc")) {
+            entrypoints.push_back(Address(teardown));
+        }
+    }
+    // Linux kernel module
+    else if (fname.endsWith(".ko")) {
+        const BinarySymbol *sym = syms->findSymbolByName("init_module");
+        if (sym) {
+            entrypoints.push_back(sym->getLocation());
+        }
+
+        sym = syms->findSymbolByName("cleanup_module");
+        if (sym) {
+            entrypoints.push_back(sym->getLocation());
         }
     }
 
@@ -713,10 +706,10 @@ bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &ins
         return false;
     }
 
-    const ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
+    const ptrdiff_t hostNativeDiff = (section->getHostAddr() - section->getSourceAddr()).value();
 
     try {
-        return m_decoder->disassembleInstruction(pc, host_native_diff, insn);
+        return m_decoder->disassembleInstruction(pc, hostNativeDiff, insn);
     }
     catch (std::runtime_error &e) {
         LOG_ERROR("%1", e.what());

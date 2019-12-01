@@ -11,36 +11,18 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
-#include "boomerang/frontend/SigEnum.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 
-#include <list>
-#include <memory>
 #include <vector>
 
 
-class BasicBlock;
-class CallStatement;
-class LiftedInstruction;
-class Exp;
 class IDecoder;
 class Project;
-
-class Signature;
-class Statement;
 class UserProc;
-
 class QString;
 
-using SharedExp      = std::shared_ptr<Exp>;
-using SharedConstExp = std::shared_ptr<const Exp>;
-using RTLList        = std::list<std::unique_ptr<RTL>>;
 
-
-/**
- * Decodes a binary file into Functions and BasicBlocks.
- */
+/// Disassembles a binary file into Functions and BasicBlocks and lifts them to IRFragments.
 class BOOMERANG_API IFrontEnd
 {
 public:
