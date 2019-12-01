@@ -35,7 +35,7 @@ public:
 
 public:
     /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address entryAddr) override;
+    virtual bool disassembleFragment(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;

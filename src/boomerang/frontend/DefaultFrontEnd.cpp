@@ -66,44 +66,43 @@ bool DefaultFrontEnd::initialize(Project *project)
 }
 
 
-bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
+bool DefaultFrontEnd::disassembleEntryPoints()
 {
-    if (!decodeMain) {
-        return true;
-    }
+    BinaryImage *image    = m_program->getBinaryFile()->getImage();
+    const Address lowAddr = image->getLimitTextLow();
+    const int numBytes    = (image->getLimitTextHigh() - lowAddr).value();
 
-    BinaryImage *image = m_program->getBinaryFile()->getImage();
-
-    Interval<Address> extent(image->getLimitTextLow(), image->getLimitTextHigh());
-
-    m_program->getProject()->alertStartDecode(extent.lower(),
-                                              (extent.upper() - extent.lower()).value());
+    m_program->getProject()->alertStartDecode(lowAddr, numBytes);
 
     bool gotMain;
-    Address a = findMainEntryPoint(gotMain);
-    LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
+    const Address mainAddr = findMainEntryPoint(gotMain);
 
-    if (a == Address::INVALID) {
-        std::vector<Address> entrypoints = findEntryPoints();
-
-        for (auto &entrypoint : entrypoints) {
-            if (!decodeRecursive(entrypoint)) {
-                return false;
-            }
-        }
-
-        return true;
+    if (gotMain) {
+        LOG_MSG("Found main at address %1", mainAddr);
+    }
+    else {
+        LOG_WARN("Could not find main, falling back to entry point(s)");
     }
 
-    decodeRecursive(a);
-    m_program->addEntryPoint(a);
+    if (!gotMain) {
+        std::vector<Address> entrypoints = findEntryPoints();
+
+        return std::all_of(entrypoints.begin(), entrypoints.end(),
+                           [this](Address entry) { return disassembleFunctionAtAddr(entry); });
+    }
+
+    if (!disassembleFunctionAtAddr(mainAddr)) {
+        return false;
+    }
+
+    m_program->addEntryPoint(mainAddr);
 
     if (!gotMain) {
         return true; // Decoded successfully, but patterns don't match a known main() pattern
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-    QString name                  = m_program->getSymbolNameByAddr(a);
+    QString name                  = m_program->getSymbolNameByAddr(mainAddr);
 
     if (name == nullptr) {
         name = mainName[0];
@@ -114,10 +113,10 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
             continue;
         }
 
-        Function *proc = m_program->getFunctionByAddr(a);
+        Function *proc = m_program->getFunctionByAddr(mainAddr);
 
         if (proc == nullptr) {
-            LOG_WARN("No proc found for address %1", a);
+            LOG_WARN("No proc found for address %1", mainAddr);
             return false;
         }
 
@@ -129,7 +128,6 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
         else {
             proc->setSignature(fty->getSignature()->clone());
             proc->getSignature()->setName(name);
-            // proc->getSignature()->setFullSig(true); // Don't add or remove parameters
             proc->getSignature()->setForced(true); // Don't add or remove parameters
         }
 
@@ -140,39 +138,10 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 }
 
 
-bool DefaultFrontEnd::decodeRecursive(Address addr)
-{
-    assert(addr != Address::INVALID);
-
-    Function *newProc = m_program->getOrCreateFunction(addr);
-
-    // Sometimes, we have to adjust the entry address since
-    // the instruction at addr is just a jump to another address.
-    addr = newProc->getEntryAddress();
-    LOG_MSG("Starting decode at address %1", addr);
-    UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
-
-    if (proc == nullptr) {
-        LOG_MSG("No proc found at address %1", addr);
-        return false;
-    }
-    else if (proc->isLib()) {
-        LOG_MSG("NOT decoding library proc at address %1", addr);
-        return false;
-    }
-
-    if (processProc(proc, addr)) {
-        proc->setDecoded();
-    }
-
-    return m_program->isWellFormed();
-}
-
-
-bool DefaultFrontEnd::decodeUndecoded()
+bool DefaultFrontEnd::disassembleAll()
 {
     bool change = true;
-    LOG_MSG("Looking for undecoded procedures to decode...");
+    LOG_MSG("Looking for functions to disassemble...");
 
     while (change) {
         change = false;
@@ -184,19 +153,18 @@ bool DefaultFrontEnd::decodeUndecoded()
                 }
 
                 UserProc *userProc = static_cast<UserProc *>(function);
-
                 if (userProc->isDecoded()) {
                     continue;
                 }
 
-                // undecoded userproc.. decode it
-                change = true;
 
-                if (!processProc(userProc, userProc->getEntryAddress())) {
+                // Not yet disassembled - do it now
+                if (!disassembleFragment(userProc, userProc->getEntryAddress())) {
                     return false;
                 }
 
                 userProc->setDecoded();
+                change = true;
 
                 // Break out of the loops if not decoding children
                 if (!m_program->getProject()->getSettings()->decodeChildren) {
@@ -214,24 +182,42 @@ bool DefaultFrontEnd::decodeUndecoded()
 }
 
 
-bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
+bool DefaultFrontEnd::disassembleFunctionAtAddr(Address addr)
 {
-    if (m_program->getProject()->getSettings()->traceDecoder) {
-        LOG_MSG("Decoding fragment at address %1", a);
+    assert(addr != Address::INVALID);
+
+    Function *newProc = m_program->getOrCreateFunction(addr);
+
+    // Sometimes, we have to adjust the entry address since
+    // the instruction at addr is just a jump to another address.
+    addr = newProc->getEntryAddress();
+    LOG_MSG("Starting disassembly at address %1", addr);
+    UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
+
+    if (proc == nullptr) {
+        LOG_MSG("No proc found at address %1", addr);
+        return false;
+    }
+    else if (proc->isLib()) {
+        LOG_MSG("NOT decoding library proc at address %1", addr);
+        return false;
     }
 
-    return processProc(proc, a);
+    if (disassembleFragment(proc, addr)) {
+        proc->setDecoded();
+    }
+
+    return m_program->isWellFormed();
 }
 
 
-bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
+bool DefaultFrontEnd::disassembleFragment(UserProc *proc, Address addr)
 {
-    LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
+    LOG_VERBOSE("### Disassembing proc '%1' at address %2 ###", proc->getName(), addr);
 
     LowLevelCFG *cfg = proc->getProg()->getCFG();
     assert(cfg);
 
-    // Initialise the queue of control flow targets that have yet to be decoded.
     m_targetQueue.initial(addr);
 
     int numBytesDecoded = 0;
@@ -418,7 +404,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                     }
 
-                    Address functionAddr = getAddrOfLibraryThunk(call, proc);
+                    const Address functionAddr = getAddrOfLibraryThunk(call, proc);
                     if (functionAddr != Address::INVALID) {
                         // Yes, it's a library function. Look up its name.
                         QString name = m_program->getBinaryFile()
@@ -546,9 +532,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     tagFunctionBBs(proc);
 
     m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
-
-    LOG_VERBOSE("### Finished decoding proc '%1' ###", proc->getName());
-
+    LOG_VERBOSE("### Finished disassembling proc '%1' ###", proc->getName());
     return true;
 }
 
@@ -614,6 +598,103 @@ bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn,
                                         LiftedInstruction &result)
 {
     return disassembleInstruction(pc, insn) && liftInstruction(insn, result);
+}
+
+
+std::vector<Address> DefaultFrontEnd::findEntryPoints()
+{
+    std::vector<Address> entrypoints;
+    bool gotMain = false;
+    // AssemblyLayer
+    Address a = findMainEntryPoint(gotMain);
+
+    // TODO: find exported functions and add them too ?
+    if (a != Address::INVALID) {
+        entrypoints.push_back(a);
+    }
+    else {             // try some other tricks
+        QString fname; // = m_program->getProject()->getSettings()->getFilename();
+
+        // X11 Module
+        if (fname.endsWith("_drv.o")) {
+            int seploc = fname.lastIndexOf(QDir::separator());
+            QString p  = fname.mid(seploc + 1); // part after the last path separator
+
+            if (p != fname) {
+                QString name = p.mid(0, p.length() - 6) + "ModuleData";
+                const BinarySymbol
+                    *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(name);
+
+                if (p_sym) {
+                    Address tmpaddr = p_sym->getLocation();
+
+
+                    BinaryImage *image = m_program->getBinaryFile()->getImage();
+                    DWord vers = 0, setup = 0, teardown = 0;
+                    bool ok = true;
+                    ok &= image->readNative4(tmpaddr, vers);
+                    ok &= image->readNative4(tmpaddr, setup);
+                    ok &= image->readNative4(tmpaddr, teardown);
+
+                    // TODO: find use for vers ?
+                    const Address setupAddr    = Address(setup);
+                    const Address teardownAddr = Address(teardown);
+
+                    if (ok) {
+                        if (!setupAddr.isZero()) {
+                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
+                                entrypoints.push_back(setupAddr);
+                            }
+                        }
+
+                        if (!teardownAddr.isZero()) {
+                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
+                                entrypoints.push_back(teardownAddr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Linux kernel module
+        if (fname.endsWith(".ko")) {
+            const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(
+                "init_module");
+
+            if (p_sym) {
+                entrypoints.push_back(p_sym->getLocation());
+            }
+
+            p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("cleanup_module");
+
+            if (p_sym) {
+                entrypoints.push_back(p_sym->getLocation());
+            }
+        }
+    }
+
+    return entrypoints;
+}
+
+
+bool DefaultFrontEnd::isNoReturnCallDest(const QString &name) const
+{
+    std::vector<QString> names = { "__exit", "exit",    "ExitProcess",
+                                   "abort",  "_assert", "__debugbreak" };
+
+    return std::find(names.begin(), names.end(), name) != names.end();
+}
+
+
+void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
+{
+    m_refHints[addr] = name;
+}
+
+
+void DefaultFrontEnd::extraProcessCall(IRFragment *)
+{
 }
 
 
@@ -894,108 +975,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
     }
 
     return true;
-}
-
-
-void DefaultFrontEnd::extraProcessCall(IRFragment *)
-{
-}
-
-
-std::vector<Address> DefaultFrontEnd::findEntryPoints()
-{
-    std::vector<Address> entrypoints;
-    bool gotMain = false;
-    // AssemblyLayer
-    Address a = findMainEntryPoint(gotMain);
-
-    // TODO: find exported functions and add them too ?
-    if (a != Address::INVALID) {
-        entrypoints.push_back(a);
-    }
-    else {             // try some other tricks
-        QString fname; // = m_program->getProject()->getSettings()->getFilename();
-
-        // X11 Module
-        if (fname.endsWith("_drv.o")) {
-            int seploc = fname.lastIndexOf(QDir::separator());
-            QString p  = fname.mid(seploc + 1); // part after the last path separator
-
-            if (p != fname) {
-                QString name = p.mid(0, p.length() - 6) + "ModuleData";
-                const BinarySymbol
-                    *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(name);
-
-                if (p_sym) {
-                    Address tmpaddr = p_sym->getLocation();
-
-
-                    BinaryImage *image = m_program->getBinaryFile()->getImage();
-                    DWord vers = 0, setup = 0, teardown = 0;
-                    bool ok = true;
-                    ok &= image->readNative4(tmpaddr, vers);
-                    ok &= image->readNative4(tmpaddr, setup);
-                    ok &= image->readNative4(tmpaddr, teardown);
-
-                    // TODO: find use for vers ?
-                    const Address setupAddr    = Address(setup);
-                    const Address teardownAddr = Address(teardown);
-
-                    if (ok) {
-                        if (!setupAddr.isZero()) {
-                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
-                                entrypoints.push_back(setupAddr);
-                            }
-                        }
-
-                        if (!teardownAddr.isZero()) {
-                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
-                                entrypoints.push_back(teardownAddr);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Linux kernel module
-        if (fname.endsWith(".ko")) {
-            const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(
-                "init_module");
-
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
-
-            p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("cleanup_module");
-
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
-        }
-    }
-
-    return entrypoints;
-}
-
-
-bool DefaultFrontEnd::isNoReturnCallDest(const QString &name) const
-{
-    // clang-format off
-    return
-        name == "_exit" ||
-        name == "exit" ||
-        name == "ExitProcess" ||
-        name == "abort" ||
-        name == "_assert" ||
-        name == "__debugbreak";
-    // clang-format on
-}
-
-
-void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
-{
-    m_refHints[addr] = name;
 }
 
 

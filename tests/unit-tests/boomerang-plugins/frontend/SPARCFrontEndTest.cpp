@@ -258,9 +258,10 @@ void SPARCFrontendTest::testDelaySlot()
     SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    // decode calls readLibraryCatalog(), which needs to have definitions for non-SPARC architectures cleared
+    // disassembly calls readLibraryCatalog(), which needs to have definitions
+    // for non-SPARC architectures cleared
     Type::clearNamedTypes();
-    fe->decodeEntryPointsRecursive(prog);
+    fe->disassembleEntryPoints();
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);
@@ -270,7 +271,7 @@ void SPARCFrontendTest::testDelaySlot()
     Module      *m = prog->getOrInsertModule("test");
 
     UserProc    proc(addr, "testDelaySlot", m);
-    bool        res = fe->processProc(&proc, addr);
+    bool        res = fe->disassembleFragment(&proc, addr);
 
     QVERIFY(res == 1);
     ProcCFG        *cfg = proc.getCFG();

@@ -52,33 +52,28 @@ public:
     DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
+    /// \copydoc IFrontEnd::initialize
     bool initialize(Project *project) override;
 
     /// \copydoc IFrontEnd::getDecoder
     IDecoder *getDecoder() override { return m_decoder; }
     const IDecoder *getDecoder() const override { return m_decoder; }
 
-    /// \copydoc IFrontEnd::decodeEntryPointsRecursive
-    bool decodeEntryPointsRecursive(bool decodeMain = true) override;
+public:
+    /// \copydoc IFrontEnd::disassembleEntryPoints
+    [[nodiscard]] bool disassembleEntryPoints() override;
 
-    /// \copydoc IFrontEnd::decodeRecursive
-    bool decodeRecursive(Address addr) override;
+    /// \copydoc IFrontEnd::disassembleAll
+    [[nodiscard]] bool disassembleAll() override;
 
-    /// \copydoc IFrontEnd::decodeUndecoded
-    bool decodeUndecoded() override;
+    /// \copydoc IFrontEnd::disassembleFunctionAtAddr
+    [[nodiscard]] bool disassembleFunctionAtAddr(Address addr) override;
 
-    /// \copydoc IFrontEnd::decodeFragment
-    bool decodeFragment(UserProc *proc, Address addr) override;
-
-    /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::disassembleFragment
+    [[nodiscard]] bool disassembleFragment(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::liftProc
-    bool liftProc(UserProc *proc) override;
-
-    /// Do extra processing of call instructions.
-    /// Does nothing by default.
-    virtual void extraProcessCall(IRFragment *callFrag);
+    [[nodiscard]] bool liftProc(UserProc *proc) override;
 
     /// Disassemble and lift a single instruction at address \p addr
     /// \returns true on success
@@ -86,7 +81,7 @@ public:
                                          LiftedInstruction &lifted);
 
 public:
-    /// \copydoc IFrontEnd::getEntryPoints
+    /// \copydoc IFrontEnd::findEntryPoints
     std::vector<Address> findEntryPoints() override;
 
     /// \copydoc IFrontEnd::isNoReturnCallDest
@@ -96,6 +91,10 @@ public:
     void addRefHint(Address addr, const QString &name) override;
 
 protected:
+    /// Do extra processing of call instructions.
+    /// Does nothing by default.
+    virtual void extraProcessCall(IRFragment *callFrag);
+
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
      * \param proc      pointer to enclosing UserProc

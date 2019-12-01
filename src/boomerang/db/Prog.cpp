@@ -602,7 +602,10 @@ bool Prog::decodeEntryPoint(Address entryAddr)
             return false;
         }
 
-        m_fe->decodeRecursive(entryAddr);
+        if (!m_fe->disassembleFunctionAtAddr(entryAddr)) {
+            LOG_WARN("Cannot disassemble function at entry address %1", entryAddr);
+            return false;
+        }
     }
 
     if (!func) {
@@ -634,7 +637,7 @@ bool Prog::decodeFragment(UserProc *proc, Address a)
 {
     if ((a >= m_binaryFile->getImage()->getLimitTextLow()) &&
         (a < m_binaryFile->getImage()->getLimitTextHigh())) {
-        return m_fe->decodeFragment(proc, a);
+        return m_fe->disassembleFragment(proc, a);
     }
     else {
         LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
@@ -649,7 +652,7 @@ bool Prog::reDecode(UserProc *proc)
         return false;
     }
 
-    return m_fe->processProc(proc, proc->getEntryAddress());
+    return m_fe->disassembleFragment(proc, proc->getEntryAddress());
 }
 
 

@@ -1090,7 +1090,7 @@ void StatementTest::testBypass()
     prog->setFrontEnd(fe);
 
     fe->decodeEntryPointsRecursive();
-    fe->decodeUndecoded();
+    fe->disassembleAll();
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);

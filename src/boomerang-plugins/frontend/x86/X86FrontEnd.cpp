@@ -35,10 +35,10 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool X86FrontEnd::processProc(UserProc *function, Address addr)
+bool X86FrontEnd::disassembleFragment(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::processProc(function, addr)) {
+    if (!DefaultFrontEnd::disassembleFragment(function, addr)) {
         return false;
     }
 

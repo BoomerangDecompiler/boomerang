@@ -47,7 +47,7 @@ public:
      * during decoding. The semantics of delayed CTIs are
      * transformed into CTIs that aren't delayed.
      */
-    bool processProc(UserProc *proc, Address entryAddr) override;
+    virtual bool disassembleFragment(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::liftProc
     bool liftProc(UserProc *proc) override;

@@ -58,7 +58,7 @@ SPARCFrontEnd::SPARCFrontEnd(Project *project)
 }
 
 
-bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
+bool SPARCFrontEnd::disassembleFragment(UserProc *proc, Address addr)
 {
     LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 

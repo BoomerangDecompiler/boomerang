@@ -53,39 +53,32 @@ public:
     virtual IDecoder *getDecoder()             = 0;
     virtual const IDecoder *getDecoder() const = 0;
 
-    /// Decode all undecoded procedures.
+public:
+    /// Disassemble all entry points.
     /// \returns true for a good decode (no invalid instructions)
-    virtual bool decodeEntryPointsRecursive(bool decodeMain = true) = 0;
+    [[nodiscard]] virtual bool disassembleEntryPoints() = 0;
 
-    /// Decode all procs starting at a given address
-    /// \returns true iff decoded successfully.
-    virtual bool decodeRecursive(Address addr) = 0;
-
-    /// Decode all undecoded functions.
+    /// Disassemble all functions until there are no un-disassembled functions left.
     /// \returns true if decoded successfully.
-    virtual bool decodeUndecoded() = 0;
+    [[nodiscard]] virtual bool disassembleAll() = 0;
 
-    /// Decode a fragment of a procedure, e.g. for each destination of a switch statement
+    /// Disassemble the funnction beginning at address \p addr.
+    /// Creates the function if it does not yet exist.
     /// \returns true iff decoded successfully.
-    virtual bool decodeFragment(UserProc *proc, Address addr) = 0;
+    [[nodiscard]] virtual bool disassembleFunctionAtAddr(Address addr) = 0;
 
-    /**
-     * Process a procedure, given a native (source machine) address.
-     * This is the main function for decoding a procedure.
-     *
-     * \param proc the procedure object
-     * \param addr the entry address of \p proc
-     *
-     * \returns true for a good decode (no illegal instructions)
-     */
-    virtual bool processProc(UserProc *proc, Address addr) = 0;
+    /// Disassemble a single procedure (or a fragment thereof), starting at \p addr.
+    /// \param proc the procedure object
+    /// \param addr the entry address of \p proc
+    /// \returns true for a good decode (no illegal instructions)
+    [[nodiscard]] virtual bool disassembleFragment(UserProc *proc, Address addr) = 0;
 
     /// Lift all instructions for a proc.
     /// \returns true on success, false on failure
     [[nodiscard]] virtual bool liftProc(UserProc *proc) = 0;
 
 public:
-    /// Locate the entry address of "main", returning a native address
+    /// \returns the address of "main", or Address::INVALID if not found
     virtual Address findMainEntryPoint(bool &gotMain) = 0;
 
     /// Returns a list of all available entrypoints.

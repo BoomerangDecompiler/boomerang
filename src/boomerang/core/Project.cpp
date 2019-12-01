@@ -320,7 +320,7 @@ bool Project::decodeAll()
         LOG_MSG("Decoding entry point...");
     }
 
-    if (!m_fe || !m_fe->decodeEntryPointsRecursive(getSettings()->decodeMain)) {
+    if (!m_fe || (getSettings()->decodeMain && !m_fe->disassembleEntryPoints())) {
         LOG_ERROR("Aborting load due to decode failure");
         return false;
     }
@@ -334,7 +334,7 @@ bool Project::decodeAll()
     if (getSettings()->decodeChildren) {
         // this causes any undecoded userprocs to be decoded
         LOG_MSG("Decoding anything undecoded...");
-        if (!m_fe->decodeUndecoded()) {
+        if (!m_fe->disassembleAll()) {
             LOG_ERROR("Aborting load due to decode failure");
             return false;
         }

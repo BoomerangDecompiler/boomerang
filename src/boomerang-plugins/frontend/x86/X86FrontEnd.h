@@ -41,7 +41,7 @@ public:
     bool initialize(Project *project) override;
 
     /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address addr) override;
+    bool disassembleFragment(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::liftProc
     bool liftProc(UserProc *proc) override;

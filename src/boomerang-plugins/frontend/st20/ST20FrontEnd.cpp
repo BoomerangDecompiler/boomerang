@@ -52,10 +52,10 @@ Address ST20FrontEnd::findMainEntryPoint(bool &gotMain)
 }
 
 
-bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
+bool ST20FrontEnd::disassembleFragment(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::processProc(proc, entryAddr)) {
+    if (!DefaultFrontEnd::disassembleFragment(proc, entryAddr)) {
         return false;
     }
 
