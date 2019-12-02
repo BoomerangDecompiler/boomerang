@@ -28,6 +28,7 @@
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
@@ -253,7 +254,9 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     RTL *rtl        = lifted.getFirstRTL();
     SharedStmt last = !rtl->empty() ? rtl->back() : nullptr;
 
-    switch (bbInsns.back().m_iclass) {
+    const IClass ctiClass = bbInsns.back().m_iclass;
+
+    switch (ctiClass) {
     case IClass::SKIP: {
         // We can't simply ignore the skipped delay instruction as there
         // will most likely be a branch to it so we simply set the jump
@@ -369,12 +372,39 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         LOG_ERROR("Not implemented.");
     } break;
 
-    case IClass::SCD: {
-        LOG_ERROR("Not implemented.");
-    } break;
-
+    case IClass::SCD:
     case IClass::SCDAN: {
-        LOG_ERROR("Not implemented.");
+        // Always execute the delay instr, and branch if condition is met.
+        const Address delayAddr = addr + SPARC_INSTRUCTION_LENGTH;
+
+        BasicBlock *branchBB = cfg->createBB(BBType::Twoway, bbInsns);
+        bbInsns.clear();
+        branchBB->setProc(proc);
+
+        MachineInstruction delayInsn;
+        LiftedInstruction delayLifted;
+        if (!decodeInstruction(delayAddr, delayInsn, delayLifted)) {
+            warnInvalidInstruction(delayAddr);
+            return false;
+        }
+
+        bbInsns.push_back(delayInsn);
+        BasicBlock *delayBB = cfg->createBB(BBType::DelaySlot, bbInsns);
+        bbInsns.clear();
+        delayBB->setProc(proc);
+        cfg->addEdge(branchBB, delayBB);
+
+        // anul the delay slot if SCDAN
+        const Address fallthroughAddr = delayAddr +
+                                        (ctiClass == IClass::SCDAN) * SPARC_INSTRUCTION_LENGTH;
+        cfg->addEdge(branchBB, fallthroughAddr);
+
+        const Address destAddr = last->as<BranchStatement>()->getFixedDest();
+        if (destAddr != Address::INVALID) {
+            m_targetQueue.pushAddress(cfg, destAddr, branchBB);
+            cfg->addEdge(delayBB, destAddr);
+        }
+        return true;
     } break;
 
     default: // Others are non SPARC cases
