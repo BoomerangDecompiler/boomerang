@@ -56,6 +56,7 @@ public:
     Address findMainEntryPoint(bool &gotMain) override;
 
 private:
+    /// \returns true to continue disassembling sequentially
     bool handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *proc);
 
     bool liftBB(BasicBlock *bb, BasicBlock *delay, UserProc *proc);

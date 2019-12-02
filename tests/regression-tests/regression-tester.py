@@ -197,7 +197,7 @@ regression_tests = [
     #"sparc/phi",
     #"sparc/phi2",
     "sparc/printpi",
-    #"sparc/short1",
+    "sparc/short1",
     #"sparc/short2",
     #"sparc/stattest",
     #"sparc/sumarray",

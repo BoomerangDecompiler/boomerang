@@ -182,7 +182,7 @@ bool LowLevelCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
     }
     else if (itExistingBB != m_bbStartMap.begin()) {
         --itExistingBB;
-        if (itExistingBB->second.bb->getLowAddr() <= addr &&
+        if (itExistingBB->second.bb && itExistingBB->second.bb->getLowAddr() <= addr &&
             itExistingBB->second.bb->getHiAddr() > addr) {
             overlappingBB = itExistingBB->second.bb;
         }
