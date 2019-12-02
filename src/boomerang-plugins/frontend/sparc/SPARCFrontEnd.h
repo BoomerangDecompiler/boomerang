@@ -70,6 +70,7 @@ private:
     bool liftSCDAT(BasicBlock *bb, const MachineInstruction *delayInsn, UserProc *proc);
     bool liftSU(BasicBlock *bb, const MachineInstruction *delayInsn, UserProc *proc);
     bool liftSKIP(BasicBlock *bb, const MachineInstruction *delayInsn, UserProc *proc);
+    bool liftNCT(BasicBlock *bb, UserProc *proc);
 
 private:
     /// Warn about an invalid or unrecognized instruction at \p pc

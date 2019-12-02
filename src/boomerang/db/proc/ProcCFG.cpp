@@ -160,6 +160,14 @@ IRFragment *ProcCFG::getFragmentByAddr(Address addr)
 }
 
 
+IRFragment *ProcCFG::getFragmentByBB(const BasicBlock *bb)
+{
+    auto it = std::find_if(m_fragmentSet.begin(), m_fragmentSet.end(),
+                           [bb](IRFragment *frag) { return frag->getBB() == bb; });
+    return it != m_fragmentSet.end() ? *it : nullptr;
+}
+
+
 void ProcCFG::addEdge(IRFragment *sourceFrag, IRFragment *destFrag)
 {
     if (!sourceFrag || !destFrag) {

@@ -172,7 +172,7 @@ regression_tests = [
     #"sparc/andn",
     #"sparc/banner",
     #"sparc/bcd",
-    #"sparc/branch",
+    "sparc/branch",
     #"sparc/callchain",
     #"sparc/condcodexform_gcc",
     #"sparc/elfhashtest",

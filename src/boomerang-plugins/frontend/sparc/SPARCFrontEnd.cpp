@@ -190,12 +190,14 @@ bool SPARCFrontEnd::liftProc(UserProc *proc)
         const BasicBlock *bb = frag->getBB();
 
         for (BasicBlock *succ : bb->getSuccessors()) {
-            if (succ->isType(BBType::DelaySlot)) {
-                continue;
+            if (succ->isType(BBType::DelaySlot) && succ->getNumSuccessors() == 1) {
+                succ = succ->getSuccessor(0);
             }
 
-            IRFragment *succFragment = procCFG->getFragmentByAddr(succ->getLowAddr());
-            procCFG->addEdge(frag, succFragment);
+            IRFragment *succFragment = procCFG->getFragmentByBB(succ);
+            if (succFragment) {
+                procCFG->addEdge(frag, succFragment);
+            }
         }
     }
 
@@ -374,7 +376,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
 
     case IClass::SCD:
     case IClass::SCDAN: {
-        // Always execute the delay instr, and branch if condition is met.
+        // Always execute the delay instr if SCD, and branch if condition is met.
         const Address delayAddr = addr + SPARC_INSTRUCTION_LENGTH;
 
         BasicBlock *branchBB = cfg->createBB(BBType::Twoway, bbInsns);
@@ -414,294 +416,6 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     }
 
     return true;
-    /*
-
-    )
-            else if (last->getKind() == StmtType::Call) {
-                // Check the delay slot of this call. First case of interest is when the
-                // instruction is a restore, e.g.
-                // 142c8:  40 00 5b 91          call exit
-                // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                if (m_decoder->isSPARCRestore(delayInsn)) {
-                    // Give the address of the call; I think that this is actually important, if
-                    // faintly annoying
-                    delayLifted.rtl->setAddress(addr);
-                    bbRTLs->push_back(std::move(delayLifted.rtl));
-
-                    // The restore means it is effectively followed by a return (since the
-                    // resore semantics chop off one level of return address)
-                    last->as<CallStatement>()->setReturnAfterCall(true);
-                    sequentialDecode = false;
-                    case_CALL(addr, lifted, nop_inst, bbRTLs, proc, callList, true);
-                    break;
-                }
-
-                // Next class of interest is if it assigns to %o7 (could be a move, add, and
-                // possibly others). E.g.:
-                // 14e4c:  82 10 00 0f      mov     %o7, %g1
-                // 14e50:  7f ff ff 60      call    blah
-                // 14e54:  9e 10 00 01      mov     %g1, %o7
-                // Note there could be an unrelated instruction between the first move and the
-                // call (move/x/call/move in UQBT terms). In Boomerang, we leave the semantics
-                // of the moves there (to be likely removed by dataflow analysis) and merely
-                // insert a return BB after the call. Note that if an add, there may be an
-                // assignment to a temp register first. So look at last RT
-                // TODO: why would delay_inst.rtl->empty() be empty here ?
-                SharedStmt a = delayLifted.rtl->empty() ? nullptr : delayLifted.rtl->back();
-
-                if (a && a->isAssign()) {
-                    SharedExp lhs = a->as<Assign>()->getLeft();
-
-                    if (lhs->isRegN(REG_SPARC_O7)) {
-                        // If it's an add, this is special. Example:
-                        //     call foo
-                        //     add %o7, K, %o7
-                        // is equivalent to call foo / ba .+K
-                        SharedExp rhs = a->as<Assign>()->getRight();
-                        auto o7(Location::regOf(REG_SPARC_O7));
-
-                        if (rhs->getOper() == opPlus && rhs->access<Exp, 2>()->isIntConst() &&
-                            *rhs->getSubExp1() == *o7) {
-                            // Get the constant
-                            const int K = rhs->access<Const, 2>()->getInt();
-                            case_CALL(addr, lifted, delayLifted, bbRTLs, proc, callList, true);
-
-                            // We don't generate a goto; instead, we just decode from the new
-                            // address Note: the call to case_CALL has already incremented
-                            // address by 8, so don't do again
-                            addr += K;
-                            break;
-                        }
-                        else {
-                            // We assume this is some sort of move/x/call/move pattern. The
-                            // overall effect is to pop one return address, we we emit a return
-                            // after this call
-                            last->as<CallStatement>()->setReturnAfterCall(true);
-                            sequentialDecode = false;
-                            case_CALL(addr, lifted, delayLifted, bbRTLs, proc, callList, true);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            const RTL *delayRTL = delayLifted.rtl.get();
-
-            switch (delayLifted.iclass) {
-            case IClass::NOP:
-            case IClass::NCT:
-
-                // Ordinary delayed instruction. Since NCT's can't affect unconditional jumps,
-                // we put the delay instruction before the jump or call
-                if (last->getKind() == StmtType::Call) {
-                    // This is a call followed by an NCT/NOP
-                    sequentialDecode = case_CALL(addr, lifted, delayLifted, bbRTLs, proc,
-                                                 callList);
-                }
-                else {
-                    // This is a non-call followed by an NCT/NOP
-                    case_SD(pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                            m_program->getBinaryFile()->getImage()->getLimitText(), lifted,
-                            delayLifted, std::move(BB_rtls), cfg, _targetQueue);
-
-                    // There is no fall through branch.
-                    sequentialDecode = false;
-                }
-
-                break;
-
-            case IClass::SKIP:
-                case_unhandled_stub(addr);
-                addr += 2 * SPARC_INSTRUCTION_LENGTH;
-                break;
-
-            case IClass::SU: {
-                // SD/SU.
-                // This will be either BA or CALL followed by BA,A. Our interpretation is that
-                // it is as if the SD (i.e. the BA or CALL) now takes the destination of the SU
-                // (i.e. the BA,A). For example:
-                //       call 1000, ba,a 2000
-                // is really like:
-                //       call 2000.
-
-                // Just so that we can check that our interpretation is correct the first time
-                // we hit this case...
-                case_unhandled_stub(addr);
-
-                // Adjust the destination of the SD and emit it.
-                std::shared_ptr<const GotoStatement> delayJump = delayRTL->back()
-                                                                     ->as<GotoStatement>();
-                const Address dest = addr + SPARC_INSTRUCTION_LENGTH + delayJump->getFixedDest();
-                jumpStmt->setDest(dest);
-                bbRTLs->push_back(std::move(lifted.rtl));
-
-                // Create the appropriate BB
-                if (last->getKind() == StmtType::Call) {
-                    BasicBlock *newBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                    assert(newBB);
-
-                    createCallToAddress(dest, pc, newBB, cfg, 2 * SPARC_INSTRUCTION_LENGTH);
-                    addr += 2 * SPARC_INSTRUCTION_LENGTH;
-
-                    // Add this call site to the set of call sites which need to be analyzed
-                    // later.
-                    callList.push_back(lifted.rtl->back()->as<CallStatement>());
-                }
-                else {
-                    BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
-                    assert(newBB);
-                    createJumpToAddress(dest, newBB, cfg, _targetQueue,
-                                        m_program->getBinaryFile()->getImage()->getLimitText());
-
-                    // There is no fall through branch.
-                    sequentialDecode = false;
-                }
-
-                break;
-            }
-
-            default:
-                case_unhandled_stub(addr);
-                addr += 2 * SPARC_INSTRUCTION_LENGTH; // Skip the pair
-                break;
-            }
-
-            break;
-        }*/
-
-    //             case IClass::DD: {
-    //                 MachineInstruction delayInsn;
-    //                 LiftedInstruction delayLifted;
-    //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
-    //                 delayLifted)) {
-    //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
-    //                     sequentialDecode = false;
-    //                     continue;
-    //                 }
-    //
-    //                 switch (delayLifted.iclass) {
-    //                 case IClass::NOP:
-    //                 case IClass::NCT:
-    //                     sequentialDecode = case_DD(
-    //                                            addr,
-    //                                            m_program->getBinaryFile()->getImage()->getTextDelta(),
-    //                                            lifted,
-    //                         delayLifted, std::move(bbRTLs), _targetQueue, proc, callList);
-    //                     break;
-    //
-    //                 default: case_unhandled_stub(addr); break;
-    //                 }
-    //
-    //                 break;
-    //             }
-    //
-    //             case IClass::SCD: {
-    //                 // Always execute the delay instr, and branch if condition is met.
-    //                 // Normally, the delayed instruction moves in front of the branch. But if it
-    //                 affects
-    //                 // the condition codes, we may have to duplicate it as an orphan in the true
-    //                 leg of
-    //                 // the branch, and fall through to the delay instruction in the "false" leg.
-    //                 Instead
-    //                 // of moving the delay instruction to an orphan BB, we may have a duplicate
-    //                 of the
-    //                 // delay instruction just before the target; if so, we can branch to that and
-    //                 not
-    //                 // need the orphan.  We do just a binary comparison; that may fail to make
-    //                 this
-    //                 // optimisation if the instr has relative fields.
-    //
-    //                 MachineInstruction delayInsn;
-    //                 LiftedInstruction delayLifted;
-    //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
-    //                 delayLifted)) {
-    //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
-    //                     sequentialDecode = false;
-    //                     continue;
-    //                 }
-    //
-    //                 switch (delayLifted.iclass) {
-    //                 case IClass::NOP:
-    //                 case IClass::NCT:
-    //                     sequentialDecode = case_SCD(
-    //                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-    //                         m_program->getBinaryFile()->getImage()->getLimitText(), lifted,
-    //                         delayLifted, std::move(BB_rtls), cfg, _targetQueue);
-    //                     break;
-    //
-    //                 default:
-    //
-    //                     if (delayLifted.rtl->back()->getKind() == StmtType::Call) {
-    //                         // Assume it's the move/call/move pattern
-    //                         sequentialDecode = case_SCD(
-    //                             pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-    //                             m_program->getBinaryFile()->getImage()->getLimitText(), lifted,
-    //                             delayLifted, std::move(BB_rtls), cfg, _targetQueue);
-    //                         break;
-    //                     }
-    //
-    //                     case_unhandled_stub(addr);
-    //                     break;
-    //                 }
-    //
-    //                 break;
-    //             }
-    //
-    //             case IClass::SCDAN: {
-    //                 // Execute the delay instruction if the branch is taken; skip (anull) the
-    //                 delay
-    //                 // instruction if branch not taken.
-    //                 MachineInstruction delayInsn;
-    //                 LiftedInstruction delayLifted;
-    //                 if (!decodeInstruction(addr + SPARC_INSTRUCTION_LENGTH, delayInsn,
-    //                 delayLifted)) {
-    //                     warnInvalidInstruction(addr + SPARC_INSTRUCTION_LENGTH);
-    //                     sequentialDecode = false;
-    //                     continue;
-    //                 }
-    //
-    //                 switch (delayLifted.iclass) {
-    //                 case IClass::NOP: {
-    //                     // This is an ordinary two-way branch. Add the branch to the list of RTLs
-    //                     for
-    //                     // this BB
-    //                     bbRTLs->push_back(std::move(lifted.rtl));
-    //                     // Create the BB and add it to the CFG
-    //                     BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
-    //                     assert(newBB);
-    //
-    //                     // Visit the destination of the branch; add "true" leg
-    //                     const Address jumpDest = jumpStmt ? jumpStmt->getFixedDest() :
-    //                     Address::INVALID; createJumpToAddress(jumpDest, newBB, cfg, _targetQueue,
-    //                                         m_program->getBinaryFile()->getImage()->getLimitText());
-    //
-    //                     // Add the "false" leg: point past the delay inst
-    //                     cfg->addEdge(newBB, pc + 8);
-    //                     addr += 2 * SPARC_INSTRUCTION_LENGTH; // Skip branch and delay
-    //                     break;
-    //                 }
-    //
-    //                 case IClass::NCT:
-    //                     sequentialDecode = case_SCDAN(
-    //                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-    //                         m_program->getBinaryFile()->getImage()->getLimitText(), lifted,
-    //                         delayLifted, std::move(BB_rtls), cfg, _targetQueue);
-    //                     break;
-    //
-    //                 default:
-    //                     case_unhandled_stub(addr);
-    //                     addr += 2 * SPARC_INSTRUCTION_LENGTH;
-    //                     break;
-    //                 }
-    //
-    //                 break;
-    //             }
-    //
-    //             default: // Others are non SPARC cases
-    //                 LOG_WARN("Encountered instruction class '%1' which is invalid for SPARC",
-    //                          (int)lifted.iclass);
-    //                 break;
-    //             }
 }
 
 
@@ -727,6 +441,7 @@ bool SPARCFrontEnd::liftBB(BasicBlock *bb, BasicBlock *delay, UserProc *proc)
     case IClass::SCDAT: return liftSCDAT(bb, delayInsn, proc);
     case IClass::SU: return liftSU(bb, delayInsn, proc);
     case IClass::SKIP: return liftSKIP(bb, delayInsn, proc);
+    case IClass::NCT: return liftNCT(bb, proc);
     default: assert(false);
     }
 
@@ -901,19 +616,67 @@ bool SPARCFrontEnd::liftDD(BasicBlock *bb, const MachineInstruction *delayInsn, 
 }
 
 
-bool SPARCFrontEnd::liftSCD(BasicBlock * /*bb*/, const MachineInstruction * /*delayInsn*/,
-                            UserProc * /*proc*/)
+bool SPARCFrontEnd::liftSCD(BasicBlock *bb, const MachineInstruction *delayInsn, UserProc *proc)
 {
-    LOG_ERROR("Not implemented");
-    return false;
+    ProcCFG *cfg                    = proc->getCFG();
+    std::unique_ptr<RTLList> bbRTLs = liftBBPart(bb);
+
+    LiftedInstruction liftedCTI;
+    LiftedInstruction liftedDelay;
+
+    if (!liftInstruction(bb->getInsns().back(), liftedCTI)) {
+        return false;
+    }
+    else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
+        return false;
+    }
+    else if (liftedCTI.getFirstRTL()->empty()) {
+        return false;
+    }
+
+    SharedStmt hlStmt = liftedCTI.getFirstRTL()->back();
+    if (!hlStmt) {
+        return false;
+    }
+
+    liftedDelay.getFirstRTL()->append(hlStmt);
+    bbRTLs->push_back(liftedDelay.useSingleRTL());
+
+    cfg->createFragment(std::move(bbRTLs), bb);
+
+    return true;
 }
 
 
-bool SPARCFrontEnd::liftSCDAN(BasicBlock * /*bb*/, const MachineInstruction * /*delayInsn*/,
-                              UserProc * /*proc*/)
+bool SPARCFrontEnd::liftSCDAN(BasicBlock *bb, const MachineInstruction *delayInsn, UserProc *proc)
 {
-    LOG_ERROR("Not implemented");
-    return false;
+    ProcCFG *cfg                    = proc->getCFG();
+    std::unique_ptr<RTLList> bbRTLs = liftBBPart(bb);
+
+    LiftedInstruction liftedCTI;
+    LiftedInstruction liftedDelay;
+
+    if (!liftInstruction(bb->getInsns().back(), liftedCTI)) {
+        return false;
+    }
+    else if (delayInsn && !liftInstruction(*delayInsn, liftedDelay)) {
+        return false;
+    }
+    else if (liftedCTI.getFirstRTL()->empty()) {
+        return false;
+    }
+
+    SharedStmt hlStmt = liftedCTI.getFirstRTL()->back();
+    if (!hlStmt) {
+        return false;
+    }
+
+    liftedDelay.getFirstRTL()->append(hlStmt);
+    bbRTLs->push_back(liftedDelay.useSingleRTL());
+
+    cfg->createFragment(std::move(bbRTLs), bb);
+
+    return true;
 }
 
 
@@ -938,6 +701,22 @@ bool SPARCFrontEnd::liftSKIP(BasicBlock * /*bb*/, const MachineInstruction * /*d
 {
     LOG_ERROR("Not implemented");
     return false;
+}
+
+
+bool SPARCFrontEnd::liftNCT(BasicBlock *bb, UserProc *proc)
+{
+    ProcCFG *cfg                    = proc->getCFG();
+    std::unique_ptr<RTLList> bbRTLs = liftBBPart(bb);
+
+    LiftedInstruction lifted;
+    if (!liftInstruction(bb->getInsns().back(), lifted)) {
+        return false;
+    }
+
+    bbRTLs->push_back(lifted.useSingleRTL());
+    cfg->createFragment(std::move(bbRTLs), bb);
+    return true;
 }
 
 

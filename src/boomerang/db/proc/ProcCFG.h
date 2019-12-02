@@ -112,6 +112,9 @@ public:
     /// \returns the fragment that starts at \p addr
     IRFragment *getFragmentByAddr(Address addr);
 
+    /// \returns the fragment that belongs to \p bb
+    IRFragment *getFragmentByBB(const BasicBlock *bb);
+
     /// Add an edge from \p sourceFrag to \p destFrag.
     void addEdge(IRFragment *sourceFrag, IRFragment *destFrag);
 
