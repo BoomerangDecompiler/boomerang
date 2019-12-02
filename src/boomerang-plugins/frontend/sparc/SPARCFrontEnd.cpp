@@ -141,6 +141,8 @@ bool SPARCFrontEnd::disassembleFragment(UserProc *proc, Address addr)
         }
     }
 
+    tagFunctionBBs(proc);
+
     m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
     proc->setDecoded();
 
