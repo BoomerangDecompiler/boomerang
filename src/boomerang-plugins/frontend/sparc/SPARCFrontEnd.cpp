@@ -345,11 +345,14 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
             return true;
         }
         else {
-            const Address destAddr = last->as<GotoStatement>()->getFixedDest();
-            m_targetQueue.pushAddress(cfg, destAddr, bb);
-            cfg->addEdge(delayBB, destAddr);
-
             // unconditional delayed jump
+            const Address destAddr = last->as<GotoStatement>()->getFixedDest();
+
+            if (m_binaryFile->getImage()->getLimitText().contains(destAddr)) {
+                m_targetQueue.pushAddress(cfg, destAddr, bb);
+                cfg->addEdge(delayBB, destAddr);
+            }
+
             return false;
         }
     } break;
