@@ -266,7 +266,6 @@ void SPARCFrontendTest::testDelaySlot()
     // disassembly calls readLibraryCatalog(), which needs to have definitions
     // for non-SPARC architectures cleared
     Type::clearNamedTypes();
-    QVERIFY(fe->disassembleEntryPoints());
 
     bool    gotMain;
     const Address mainAddr = fe->findMainEntryPoint(gotMain);
@@ -287,9 +286,10 @@ void SPARCFrontendTest::testDelaySlot()
         QVERIFY(it != cfg->end());
         const IRFragment *frag = *it;
         QVERIFY(frag != nullptr);
+
         const QString expected = "Call BB:\n"
                                  "  in edges: \n"
-                                 "  out edges: 0x00010a98 \n"
+                                 "  out edges: 0x00010a94 \n"
                                  "0x00010a80    0 *32* tmp := r14 - 120\n"
                                  "              0 *32* m[r14] := r16\n"
                                  "              0 *32* m[r14 + 4] := r17\n"
@@ -319,9 +319,10 @@ void SPARCFrontendTest::testDelaySlot()
                                  "0x00010a84    0 *32* r16 := 0x11400\n"
                                  "0x00010a88    0 *32* r16 := r16 | 808\n"
                                  "0x00010a8c    0 *32* r8 := r16\n"
-                                 "0x00010a90    0 *32* tmp := r30\n"
+                                 "0x00010a90\n"
+                                 "0x00010a94    0 *32* tmp := r30\n"
                                  "              0 *32* r9 := r30 - 20\n"
-                                 "0x00010a90    0 CALL scanf(\n"
+                                 "              0 CALL scanf(\n"
                                  "              )\n"
                                  "              Reaching definitions: <None>\n"
                                  "              Live variables: <None>\n";
@@ -334,12 +335,15 @@ void SPARCFrontendTest::testDelaySlot()
         const IRFragment *frag = *(++it);
         QVERIFY(frag != nullptr);
         const QString expected = "Call BB:\n"
-                                 "  in edges: 0x00010a90(0x00010a80) \n"
-                                 "  out edges: 0x00010aa4 \n"
+                                 "  in edges: 0x00010a94(0x00010a80) \n"
+                                 "  out edges: 0x00010aa0 \n"
+                                 "0x00010a94    0 *32* tmp := r30\n"
+                                 "              0 *32* r9 := r30 - 20\n"
                                  "0x00010a98    0 *32* r8 := r16\n"
-                                 "0x00010a9c    0 *32* tmp := r30\n"
+                                 "0x00010a9c\n"
+                                 "0x00010aa0    0 *32* tmp := r30\n"
                                  "              0 *32* r9 := r30 - 24\n"
-                                 "0x00010a9c    0 CALL scanf(\n"
+                                 "              0 CALL scanf(\n"
                                  "              )\n"
                                  "              Reaching definitions: <None>\n"
                                  "              Live variables: <None>\n";
@@ -352,13 +356,15 @@ void SPARCFrontendTest::testDelaySlot()
         const IRFragment *frag = *(++it);
         QVERIFY(frag != nullptr);
         const QString expected = "Twoway BB:\n"
-                                 "  in edges: 0x00010a9c(0x00010a98) \n"
-                                 "  out edges: 0x00010ac8 0x00010ab8 \n"
+                                 "  in edges: 0x00010aa0(0x00010a94) \n"
+                                 "  out edges: 0x00010acc 0x00010ab4 \n"
+                                 "0x00010aa0    0 *32* tmp := r30\n"
+                                 "              0 *32* r9 := r30 - 24\n"
                                  "0x00010aa4    0 *32* r8 := m[r30 - 20]\n"
                                  "0x00010aa8    0 *32* r16 := 5\n"
                                  "0x00010aac    0 *v* %flags := SUBFLAGS( r16, r8, r16 - r8 )\n"
-                                 "0x00010ab0    0 *32* r8 := 0x11400\n"
-                                 "0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
+                                 "0x00010ab4    0 *32* r8 := 0x11400\n"
+                                 "              0 BRANCH 0x00010ac8, condition not equals\n"
                                  "High level: %flags\n";
         compareLongStrings(frag->toString(), expected);
     }
@@ -368,10 +374,12 @@ void SPARCFrontendTest::testDelaySlot()
         const IRFragment *frag = *(++it);
         QVERIFY(frag != nullptr);
         const QString expected = "Call BB:\n"
-                                 "  in edges: 0x00010ab0(0x00010aa4) \n"
-                                 "  out edges: 0x00010ac0 \n"
-                                 "0x00010ab8    0 *32* r8 := r8 | 816\n"
-                                 "0x00010ab8    0 CALL printf(\n"
+                                 "  in edges: 0x00010ab4(0x00010aa0) \n"
+                                 "  out edges: 0x00010abc \n"
+                                 "0x00010ab4    0 *32* r8 := 0x11400\n"
+                                 "0x00010ab8\n"
+                                 "0x00010abc    0 *32* r8 := r8 | 816\n"
+                                 "              0 CALL printf(\n"
                                  "              )\n"
                                  "              Reaching definitions: <None>\n"
                                  "              Live variables: <None>\n";
@@ -385,8 +393,9 @@ void SPARCFrontendTest::testDelaySlot()
         QVERIFY(frag != nullptr);
 
         const QString expected = "Fall BB:\n"
-                                 "  in edges: 0x00010ab8(0x00010ab8) \n"
-                                 "  out edges: 0x00010ac8 \n"
+                                 "  in edges: 0x00010abc(0x00010ab4) \n"
+                                 "  out edges: 0x00010acc \n"
+                                 "0x00010abc    0 *32* r8 := r8 | 816\n"
                                  "0x00010ac0    0 *32* r8 := m[r30 - 20]\n"
                                  "0x00010ac4    0 *v* %flags := SUBFLAGS( r16, r8, r16 - r8 )\n";
         compareLongStrings(frag->toString(), expected);
@@ -397,10 +406,10 @@ void SPARCFrontendTest::testDelaySlot()
         const IRFragment *frag = *(++it);
         QVERIFY(frag != nullptr);
         const QString expected = "Twoway BB:\n"
-                                 "  in edges: 0x00010ab0(0x00010aa4) 0x00010ac4(0x00010ac0) \n"
-                                 "  out edges: 0x00010ad8 0x00010ad0 \n"
-                                 "0x00010ac8    0 *32* r8 := 0x11400\n"
-                                 "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
+                                 "  in edges: 0x00010ab4(0x00010aa0) 0x00010ac4(0x00010abc) \n"
+                                 "  out edges: 0x00010ad8 0x00010acc \n"
+                                 "0x00010acc    0 *32* r8 := 0x11400\n"
+                                 "              0 BRANCH 0x00010ad8, condition equals\n"
                                  "High level: %flags\n";
         compareLongStrings(frag->toString(), expected);
     }

@@ -106,4 +106,8 @@ void BasicBlock::print(OStream &os) const
     }
 
     os << "\n";
+
+    for (const MachineInstruction &insn : m_insns) {
+        os << insn.m_addr << " " << insn.m_mnem.data() << " " << insn.m_opstr.data() << "\n";
+    }
 }
