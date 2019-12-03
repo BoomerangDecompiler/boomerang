@@ -445,7 +445,8 @@ bool SPARCFrontEnd::liftBB(BasicBlock *bb, BasicBlock *delay, UserProc *proc)
     case IClass::SCDAT: return liftSCDAT(bb, delayInsn, proc);
     case IClass::SU: return liftSU(bb, delayInsn, proc);
     case IClass::SKIP: return liftSKIP(bb, delayInsn, proc);
-    case IClass::NCT: return liftNCT(bb, proc);
+    case IClass::NCT:
+    case IClass::NOP: return liftNCT(bb, proc);
     default: assert(false);
     }
 

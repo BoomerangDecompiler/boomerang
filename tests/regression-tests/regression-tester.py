@@ -188,7 +188,7 @@ regression_tests = [
     "sparc/global2",
     "sparc/global3",
     "sparc/hello",
-    #"sparc/loop",
+    "sparc/loop",
     "sparc/minmax",
     "sparc/minmax2",
     #"sparc/nestedswitch",
@@ -208,7 +208,7 @@ regression_tests = [
     #"sparc/testarray1",
     #"sparc/testarray2",
     "sparc/twoproc2",
-    #"sparc/uns",
+    "sparc/uns",
 
     #"windows/typetest.exe"
 ]
