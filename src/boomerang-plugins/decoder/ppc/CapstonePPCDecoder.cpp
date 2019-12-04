@@ -136,6 +136,10 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 
     result.m_templateName = getTemplateName(decodedInstruction);
 
+    result.setGroup(MIGroup::Call, isCall(decodedInstruction));
+    result.setGroup(MIGroup::Jump, isJump(decodedInstruction));
+    result.setGroup(MIGroup::Ret, isRet(decodedInstruction));
+
     cs_free(decodedInstruction, numInstructions);
     return true;
 }
@@ -375,6 +379,46 @@ QString CapstonePPCDecoder::getTemplateName(const cs::cs_insn *instruction) cons
     // . cannot be part of an identifier -> use q instead
     insnID = insnID.replace('.', 'q');
     return insnID;
+}
+
+
+bool CapstonePPCDecoder::isCall(const cs::cs_insn *instruction) const
+{
+    if (instruction->detail->groups_count > 0) {
+        return isInstructionInGroup(instruction, cs::CS_GRP_CALL);
+    }
+
+    const int id = instruction->id;
+    return id == cs::PPC_INS_BL;
+}
+
+
+bool CapstonePPCDecoder::isJump(const cs::cs_insn *instruction) const
+{
+    if (instruction->detail->groups_count > 0) {
+        return isInstructionInGroup(instruction, cs::CS_GRP_JUMP);
+    }
+
+    const int id = instruction->id;
+
+    // clang-format off
+    return
+        id == cs::PPC_INS_B ||
+        id == cs::PPC_INS_BA ||
+        id == cs::PPC_INS_BC ||
+        id == cs::PPC_INS_BCA;
+    // clang-format on
+}
+
+
+bool CapstonePPCDecoder::isRet(const cs::cs_insn *instruction) const
+{
+    if (instruction->detail->groups_count > 0) {
+        return isInstructionInGroup(instruction, cs::CS_GRP_RET);
+    }
+
+    const int id = instruction->id;
+    return id == cs::PPC_INS_BLR;
 }
 
 

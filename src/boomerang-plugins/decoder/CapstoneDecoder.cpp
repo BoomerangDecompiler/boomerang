@@ -64,7 +64,7 @@ bool CapstoneDecoder::initialize(Project *project)
 }
 
 
-bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group)
+bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group) const
 {
     for (int i = 0; i < instruction->detail->groups_count; i++) {
         if (instruction->detail->groups[i] == group) {

@@ -129,7 +129,7 @@ regression_tests = [
     #"ppc/fromssa2",
     #"ppc/global1",
     #"ppc/global3",
-    #"ppc/hello",
+    "ppc/hello",
     #"ppc/ifthen",
     #"ppc/loop",
     #"ppc/manyparams",

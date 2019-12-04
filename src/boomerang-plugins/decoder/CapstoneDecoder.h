@@ -49,7 +49,7 @@ public:
 protected:
     bool initialize(Project *project) override;
 
-    bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
+    bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group) const;
 
 protected:
     cs::csh m_handle;
