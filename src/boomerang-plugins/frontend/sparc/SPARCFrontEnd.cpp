@@ -340,9 +340,13 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
         // TODO: Determine the destination address
 
         if (bbType == BBType::Call) {
-            BasicBlock *afterCTI = cfg->createIncompleteBB(addr + SPARC_INSTRUCTION_LENGTH);
-            cfg->addEdge(bb, afterCTI);
-            return true;
+            if (!m_decoder->isSPARCRestore(delayInsn)) {
+                m_targetQueue.pushAddress(cfg, addr + 2 * SPARC_INSTRUCTION_LENGTH, bb);
+                BasicBlock *afterCTI = cfg->createIncompleteBB(addr + 2 * SPARC_INSTRUCTION_LENGTH);
+                cfg->addEdge(bb, afterCTI);
+            }
+
+            return false;
         }
         else {
             // unconditional delayed jump

@@ -45,6 +45,10 @@ void TargetQueue::pushAddress(LowLevelCFG *cfg, Address newAddr, BasicBlock *&ne
 void TargetQueue::initial(Address addr)
 {
     m_targets.push(addr);
+
+    if (m_traceDecoder) {
+        LOG_MSG(">%1", addr);
+    }
 }
 
 

@@ -178,7 +178,7 @@ regression_tests = [
     #"sparc/elfhashtest",
     "sparc/fbranch",
     #"sparc/fbranch2",
-    #"sparc/fib",
+    "sparc/fib",
     #"sparc/fibo2",
     #"sparc/fibo3",
     #"sparc/fibo4",
