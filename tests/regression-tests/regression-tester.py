@@ -114,7 +114,7 @@ regression_tests = [
     "x86/switch_gcc",
     "x86/testarray1",
     "x86/testarray2",
-    #"x86/testset",
+    "x86/testset",
     "x86/twofib",
     "x86/twoproc",
     "x86/twoproc2",
