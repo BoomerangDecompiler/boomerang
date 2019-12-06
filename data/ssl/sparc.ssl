@@ -259,7 +259,7 @@ INSTRUCTION "STH" (src, dest) { *16* dest := truncs(32, 16, src) };
 INSTRUCTION "STB" (src, dest) { *8*  dest := truncs(32, 8, src) };
 
 
-# LOad STore Unsigned Byte
+# LoaD STore Unsigned Byte
 # the byte number given by address offset
 # (1st 2 bytes of addr.) is selected by a shift
 # the copied byte (in the source addr.) is replaced with 1's
