@@ -537,7 +537,6 @@ SharedExp IRFragment::getDest() const
         }
     }
 
-
     if (lastStmt->isCase()) {
         // Get the expression from the switch info
         const SwitchInfo *si = lastStmt->as<CaseStatement>()->getSwitchInfo();

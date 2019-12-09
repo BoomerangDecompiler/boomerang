@@ -281,6 +281,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     }
 
     case IClass::SU: {
+        // e.g. "ba,a"
         BasicBlock *jumpBB = cfg->createBB(BBType::Oneway, bbInsns);
         bbInsns.clear();
         jumpBB->setProc(proc);
@@ -302,8 +303,7 @@ bool SPARCFrontEnd::handleCTI(std::list<MachineInstruction> &bbInsns, UserProc *
     }
 
     case IClass::SD: {
-        // This includes "call" and "ba". If a "call", it might be a move_call_move idiom,
-        // or a call to .stret4
+        // This includes "call" and "ba".
         const Address delayAddr = addr + SPARC_INSTRUCTION_LENGTH;
         MachineInstruction delayInsn;
         LiftedInstruction delayLifted;
