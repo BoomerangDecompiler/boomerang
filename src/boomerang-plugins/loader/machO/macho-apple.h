@@ -23,6 +23,9 @@
  */
 #ifndef _MACHO_LOADER_H_
 #define _MACHO_LOADER_H_
+
+#include <cstdint>
+
 #ifndef _MACH_MACHINE_H_          // On OS X, this is already defined
 typedef uint32_t   cpu_type_t;    // I guessed
 typedef uint32_t   cpu_subtype_t; // I guessed
