@@ -73,6 +73,10 @@ BasicBlock::~BasicBlock()
 
 BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
 {
+    if (this == &bb) {
+        return *this;
+    }
+
     m_function = bb.m_function;
     m_lowAddr  = bb.m_lowAddr;
     m_highAddr = bb.m_highAddr;
