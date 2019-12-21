@@ -48,9 +48,6 @@ public:
     /// \copydoc IDecoder::decodeInstruction
     bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
-    /// \returns false
-    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
-
 private:
     /**
      * Given an instruction name and a variable list of expressions

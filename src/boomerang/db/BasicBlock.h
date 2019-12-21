@@ -55,7 +55,7 @@ enum class BBType
 
 
 /**
- * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions
+ * Basic Blocks hold the semantics (RTLs) of a sequential list of instructions
  * ended by a Control Transfer Instruction (CTI).
  * During decompilation, a special RTL with a zero address is prepended;
  * this RTL contains implicit assigns and phi assigns.

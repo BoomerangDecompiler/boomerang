@@ -149,7 +149,7 @@ public:
 
     bool isNoReturn() const { return false; }
 
-    /// \returns true if this is a known machine (e.g. SPARCSignature as opposed to Signature)
+    /// \returns true if this is a known machine (e.g. Win32Signature as opposed to Signature)
     virtual bool isPromoted() const { return false; }
 
     /// any signature can be promoted to a higher level signature, if available
@@ -158,21 +158,21 @@ public:
     /// Needed before the signature is promoted
     virtual RegNum getStackRegister() const;
 
-    /**
-     * Does expression e represent a local stack-based variable?
-     * Result can be ABI specific, e.g. SPARC has locals in the parent's stack frame, at POSITIVE
-     * offsets from the stack pointer register Also, I believe that the PA/RISC stack grows away
-     * from 0
-     */
+    /// Does expression e represent a local stack-based variable?
+    /// Note that for some architectures, the stack grows "down" (towards zero), while for other
+    /// architectures the stack grows "up" (away from zero) so locals might be in either direction
+    /// of the stack pointer for different architectures
+    /// \param spIndex the register number of the stack pointer
+    /// \param e expression to check
     bool isStackLocal(RegNum spIndex, SharedConstExp e) const;
 
-    // Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
+    /// Similar to \ref isStackLocal, but checks for address of a local (i.e. sp{0} -/+ K)
     virtual bool isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const;
 
-    // For most machines, local variables are always NEGATIVE offsets from sp
+    /// For most machines, local variables are always NEGATIVE offsets from sp
     virtual bool isLocalOffsetNegative() const { return true; }
 
-    // For most machines, local variables are not POSITIVE offsets from sp
+    /// For most machines, local variables are not POSITIVE offsets from sp
     virtual bool isLocalOffsetPositive() const { return !isLocalOffsetNegative(); }
 
     /**

@@ -84,7 +84,6 @@ bool CapstonePPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     //     printf("%lx %08x %s %s\n", decodedInstruction->address, *(uint32 *)instructionData,
     //            decodedInstruction->mnemonic, decodedInstruction->op_str);
 
-    result.iclass   = IClass::NOP; //< only relevant for architectures with delay slots
     result.numBytes = PPC_MAX_INSTRUCTION_LENGTH;
     result.reDecode = false;
     result.rtl      = createRTLForInstruction(pc, decodedInstruction);

@@ -45,9 +45,6 @@ public:
     /**
      * Find the number of cases for this switch statement. Assumes that there is a compare and
      * branch around the indirect branch.
-     * \note fails test/sparc/switchAnd_cc because of the and instruction, and the compare that is
-     * outside is not the compare for the upper bound. Note that you CAN have an and
-     * and still have a test for an upper bound. So this needs tightening.
      *
      * TMN: It also needs to check for and handle the double indirect case; where there is one array
      * (of e.g. ubyte) that is indexed by the actual switch value, then the value from that array is

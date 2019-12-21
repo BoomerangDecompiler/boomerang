@@ -80,23 +80,6 @@ char *toString(const LocationSet& locSet)
 #define HANDLE_ENUM_VAL(x) case x: return QTest::toString(#x)
 
 
-char *toString(IClass type)
-{
-    switch (type) {
-    HANDLE_ENUM_VAL(IClass::NCT);
-    HANDLE_ENUM_VAL(IClass::SD);
-    HANDLE_ENUM_VAL(IClass::DD);
-    HANDLE_ENUM_VAL(IClass::SCD);
-    HANDLE_ENUM_VAL(IClass::SCDAN);
-    HANDLE_ENUM_VAL(IClass::SCDAT);
-    HANDLE_ENUM_VAL(IClass::SU);
-    HANDLE_ENUM_VAL(IClass::SKIP);
-    HANDLE_ENUM_VAL(IClass::NOP);
-    }
-
-    return QTest::toString("<unknown>");
-}
-
 char *toString(BBType type)
 {
     switch (type) {

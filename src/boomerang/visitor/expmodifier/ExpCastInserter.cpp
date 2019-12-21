@@ -105,7 +105,6 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
 
         break;
 
-    // This case needed for e.g. test/sparc/minmax2, if %g1 is declared as unsigned int
     case opLess:
     case opGtr:
     case opLessEq:

@@ -77,9 +77,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     Address startAddr = bbRTLs->front()->getAddress();
 
     // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a
-    // delayed branch only, with its delay instruction moved in front of it (with 0 address). Note:
-    // it is possible to see two RTLs with zero address with SPARC: jmpl %o0, %o1. There will be one
-    // for the delay instr (if not a NOP), and one for the side effect of copying %o7 to %o1. Note
+    // delayed branch only, with its delay instruction moved in front of it (with 0 address). Note
     // that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the
     // map, but they have no RTLs with a non zero address.
     if (startAddr.isZero() && (bbRTLs->size() > 1)) {

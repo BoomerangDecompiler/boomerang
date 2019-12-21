@@ -15,7 +15,6 @@ set(TESTS
 
 set(TESTS_WITH_ELF
     elf/ElfBinaryLoaderTest
-    sparc/SparcBinaryLoaderTest
 )
 
 set(TESTS_WITH_WIN32

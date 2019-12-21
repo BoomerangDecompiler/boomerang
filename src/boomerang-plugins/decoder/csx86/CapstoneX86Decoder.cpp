@@ -177,7 +177,6 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return ok;
     }
 
-    result.iclass   = IClass::NOP; //< ICLASS is irrelevant for x86
     result.numBytes = m_insn->size;
     result.reDecode = false;
     result.rtl      = createRTLForInstruction(pc, m_insn);

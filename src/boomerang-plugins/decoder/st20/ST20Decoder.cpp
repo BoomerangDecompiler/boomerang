@@ -344,12 +344,6 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
 }
 
 
-bool ST20Decoder::isSPARCRestore(Address, ptrdiff_t) const
-{
-    return false;
-}
-
-
 std::unique_ptr<RTL> ST20Decoder::instantiate(Address pc, const char *name,
                                               const std::initializer_list<SharedExp> &args)
 {

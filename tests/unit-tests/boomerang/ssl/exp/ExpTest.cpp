@@ -35,7 +35,7 @@ void ExpTest::initTestCase()
     BoomerangTest::initTestCase();
 
     m_99 = Const::get(99);
-    m_rof2.reset(new Location(opRegOf, Const::get(REG_SPARC_G2), nullptr));
+    m_rof2.reset(new Location(opRegOf, Const::get(REG_X86_DX), nullptr));
 }
 
 
@@ -111,7 +111,7 @@ void ExpTest::testCompare3()
 
 void ExpTest::testCompare4()
 {
-    QVERIFY(*m_rof2 == *Location::regOf(REG_SPARC_G2));
+    QVERIFY(*m_rof2 == *Location::regOf(REG_X86_DX));
 }
 
 
@@ -271,14 +271,14 @@ void ExpTest::testSearchAll()
     QVERIFY(e->searchAll(*search, result));
     QVERIFY(result.size() == 2);
     QVERIFY(*result.front() == *m_rof2);
-    Location rof8(opRegOf, Const::get(REG_SPARC_O0), nullptr);
+    Location rof8(opRegOf, Const::get(REG_X86_AL), nullptr);
     QVERIFY(*result.back() == rof8);
 }
 
 
 void ExpTest::testAccumulate()
 {
-    SharedExp rof2     = Location::regOf(REG_SPARC_G2);
+    SharedExp rof2     = Location::regOf(REG_X86_DX);
     SharedExp nineNine = Const::get(99);
 
     // Zero terms
@@ -431,7 +431,7 @@ void ExpTest::testSimplifyAddr()
                               Unary::get(opAddrOf, Location::memOf(Const::get(1000))),
                               Ternary::get(opAt,
                                            Unary::get(opAddrOf,
-                                                      Location::memOf(Location::regOf(REG_SPARC_G2))),
+                                                      Location::memOf(Location::regOf(REG_X86_DX))),
                                            Const::get(0),
                                            Const::get(15)));
     QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@[0:15])"));
@@ -492,7 +492,7 @@ void ExpTest::testMapOfExp()
                                                       Const::get(5))));
 
     m[e] = -100;
-    SharedExp rof2 = Location::regOf(REG_SPARC_G2);
+    SharedExp rof2 = Location::regOf(REG_X86_DX);
     m[rof2] = 2; // Should overwrite
 
     QCOMPARE(m.size(), static_cast<size_t>(3));
@@ -569,8 +569,8 @@ void ExpTest::testFixSuccessor()
                               m_rof2->clone());
     QCOMPARE(*b->fixSuccessor(), *b);
 
-    b = Unary::get(opSuccessor, Location::regOf(REG_SPARC_G2));
-    QCOMPARE(*b->fixSuccessor(), *Location::regOf(REG_SPARC_G3));
+    b = Unary::get(opSuccessor, Location::regOf(REG_X86_DX));
+    QCOMPARE(*b->fixSuccessor(), *Location::regOf(REG_X86_BX));
 }
 
 
@@ -579,10 +579,10 @@ void ExpTest::testAssociativity()
     // (r8 + m[m[r8 + 12] + -12]) + 12
     SharedExp e1 = Binary::get(opPlus,
                                Binary::get(opPlus,
-                                           Location::regOf(REG_SPARC_O0),
+                                           Location::regOf(REG_X86_AL),
                                            Location::memOf(Binary::get(opPlus,
                                                                        Location::memOf(Binary::get(opPlus,
-                                                                                                   Location::regOf(REG_SPARC_O0),
+                                                                                                   Location::regOf(REG_X86_AL),
                                                                                                    Const::get(12))),
                                                                        Const::get(-12)))),
                                Const::get(12));
@@ -590,11 +590,11 @@ void ExpTest::testAssociativity()
     // (r8 + 12) + m[m[r8 + 12] + -12]
     SharedExp e2 = Binary::get(opPlus,
                                Binary::get(opPlus,
-                                           Location::regOf(REG_SPARC_O0),
+                                           Location::regOf(REG_X86_AL),
                                            Const::get(12)),
                                Location::memOf(Binary::get(opPlus,
                                                            Location::memOf(Binary::get(opPlus,
-                                                                                       Location::regOf(REG_SPARC_O0),
+                                                                                       Location::regOf(REG_X86_AL),
                                                                                        Const::get(12))),
                                                            Const::get(-12))));
 

@@ -22,27 +22,6 @@ class RTL;
 
 
 /**
- * These are the instruction classes defined in
- * "A Transformational Approach to Binary Translation of Delayed Branches"
- * for SPARC instructions.
- * Ignored by machines with no delay slots.
- */
-enum class IClass : uint8
-{
-    NOP, ///< No operation (e.g. SPARC BN,A)
-    NCT, ///< Non Control Transfer
-
-    SD,    ///< Static Delayed
-    DD,    ///< Dynamic Delayed
-    SCD,   ///< Static Conditional Delayed
-    SCDAN, ///< Static Conditional Delayed, Anulled if Not taken
-    SCDAT, ///< Static Conditional Delayed, Anulled if Taken
-    SU,    ///< Static Unconditional (not delayed)
-    SKIP   ///< Skip successor
-};
-
-
-/**
  * The DecodeResult struct contains all the information that results from
  * calling the decoder. This prevents excessive use of confusing
  * reference parameters.
@@ -66,13 +45,6 @@ public:
 
 public:
     bool valid; ///< Indicates whether or not a valid instruction was decoded.
-
-    /**
-     * The class of the decoded instruction. Will be one of the classes described in
-     * "A Transformational Approach to Binary Translation of Delayed Branches".
-     * Ignored by machines with no delay slots.
-     */
-    IClass iclass;
 
     /**
      * If true, don't add numBytes and decode there; instead, re-decode the current instruction.

@@ -220,10 +220,8 @@ void BinaryImage::updateTextLimits()
         }
 
         // The .plt section is an anomaly. It's code, but we never want to
-        // decode it, and in SPARC ELF files, it's actually in the data
-        // section (so it can be modified). For now, we make this ugly
-        // exception
-        if (".plt" == section->getName()) {
+        // decode it. For now, we make this ugly exception
+        if (section->getName() == ".plt") {
             continue;
         }
 

@@ -270,9 +270,6 @@ IFrontEnd *Project::createFrontEnd()
 
         switch (getLoadedBinaryFile()->getMachine()) {
         case Machine::X86: plugin = m_pluginManager->getPluginByName("X86 FrontEnd plugin"); break;
-        case Machine::SPARC:
-            plugin = m_pluginManager->getPluginByName("SPARC FrontEnd plugin");
-            break;
         case Machine::PPC: plugin = m_pluginManager->getPluginByName("PPC FrontEnd plugin"); break;
         case Machine::ST20:
             plugin = m_pluginManager->getPluginByName("ST20 FrontEnd plugin");
