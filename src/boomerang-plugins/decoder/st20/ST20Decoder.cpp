@@ -111,7 +111,6 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
 
             result.m_addr   = pc;
             result.m_id     = ST20_FUNC_J;
-            result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "j");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
@@ -136,7 +135,6 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
 
             result.m_addr   = pc;
             result.m_id     = functionCode;
-            result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), functionNames[functionCode]);
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%x", total);
@@ -162,7 +160,6 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
 
             result.m_addr   = pc;
             result.m_id     = ST20_FUNC_CALL;
-            result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "call");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
@@ -180,7 +177,6 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
 
             result.m_addr   = pc;
             result.m_id     = ST20_FUNC_CJ;
-            result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), "cj");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
@@ -203,7 +199,6 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             result.m_addr = pc;
             result.m_id   = OPR_MASK |
                           (total > 0 ? total : ((~total & ~0xF) | (total & 0xF) | OPR_SIGN));
-            result.m_iclass = IClass::NOP;
 
             std::strcpy(result.m_mnem.data(), insnName);
             std::strcpy(result.m_opstr.data(), "");
@@ -405,12 +400,6 @@ const char *ST20Decoder::getInstructionName(int prefixTotal) const
     }
 
     return nullptr;
-}
-
-
-bool ST20Decoder::isSPARCRestore(const MachineInstruction &) const
-{
-    return false;
 }
 
 

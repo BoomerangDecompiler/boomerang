@@ -18,14 +18,3 @@ BOOMERANG_ADD_TEST(
     DEPENDENCIES
         boomerang-CapstonePPCDecoder
 )
-
-BOOMERANG_ADD_TEST(
-    NAME SPARCDecoderTest
-    SOURCES
-        sparc/SPARCDecoderTest.h
-        sparc/SPARCDecoderTest.cpp
-    LIBRARIES
-        boomerang-CapstoneSPARCDecoder
-    DEPENDENCIES
-        boomerang-CapstoneSPARCDecoder
-)

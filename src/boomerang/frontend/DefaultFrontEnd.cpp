@@ -233,7 +233,7 @@ bool DefaultFrontEnd::disassembleFragment(UserProc *proc, Address addr)
         bool sequentialDecode = true;
 
         while (sequentialDecode) {
-            BasicBlock *existingBB = cfg->getBBStartingAt(addr).bb;
+            BasicBlock *existingBB = cfg->getBBStartingAt(addr);
             if (existingBB) {
                 if (!bbInsns.empty()) {
                     // if bbInsns is not empty, the previous instruction was not a CTI.
@@ -545,9 +545,8 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     ProcCFG *procCFG = proc->getCFG();
 
 
-    for (LowLevelCFG::BBStart &b : *cfg) {
-        liftBB(b.bb, proc, callList);
-        liftBB(b.delay, proc, callList);
+    for (BasicBlock *bb : *cfg) {
+        liftBB(bb, proc, callList);
     }
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
@@ -991,11 +990,10 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
         // sometimes be extra semantics associated with a return (e.g. x86 ret instruction adds to
-        // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
-        // returning a value as part of the restore instruction) are assumed to appear in a
-        // previous RTL. It is assumed that THE return statement will have the same semantics
-        // (NOTE: may not always be valid). To avoid this assumption, we need branches to
-        // statements, not just to native addresses (RTLs).
+        // the stack pointer before setting %pc and branching). Other semantics are assumed
+        // to appear in a previous RTL. It is assumed that THE return statement will have
+        // the same semantics (NOTE: may not always be valid). To avoid this assumption,
+        // we need branches to statements, not just to native addresses (RTLs).
         IRFragment *origRetFrag = proc->getCFG()->findRetFragment();
         assert(origRetFrag);
 
@@ -1172,7 +1170,7 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
     std::set<BasicBlock *> visited;
     std::stack<BasicBlock *> toVisit;
 
-    BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress()).bb;
+    BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress());
     toVisit.push(entryBB);
 
     while (!toVisit.empty()) {

@@ -44,6 +44,10 @@ BasicBlock::~BasicBlock()
 
 BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
 {
+    if (this == &bb) {
+        return *this;
+    }
+
     GraphNode::operator=(bb);
 
     m_proc     = bb.m_proc;
@@ -87,7 +91,6 @@ void BasicBlock::print(OStream &os) const
     case BBType::Fall: os << "Fall BB"; break;
     case BBType::CompJump: os << "Computed jump BB"; break;
     case BBType::CompCall: os << "Computed call BB"; break;
-    case BBType::DelaySlot: os << "Delay Slot BB"; break;
     case BBType::Invalid: os << "Invalid BB"; break;
     }
 

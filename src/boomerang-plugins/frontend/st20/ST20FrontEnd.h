@@ -17,7 +17,7 @@
 /**
  * Contains routines to manage the decoding of st20
  * instructions and the instantiation to RTLs, removing st20
- * dependent features such as delay slots in the process.
+ * dependent features in the process.
  */
 class BOOMERANG_PLUGIN_API ST20FrontEnd : public DefaultFrontEnd
 {

@@ -103,7 +103,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
 
         case BranchType::JSG: op = opGtr; break;
 
-        // These next few seem to fluke working fine on architectures like X86 and SPARC which
+        // These next few seem to fluke working fine on architectures like x86 which
         // clear the carry on all logical operations.
         case BranchType::JUL:
             // NOTE: this is equivalent to never branching, since nothing

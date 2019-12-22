@@ -30,21 +30,11 @@ enum class BBType;
  * Contains all the BasicBlock objects for the whole Prog.
  * These BBs contain all the RTLs for the program, so by traversing the CFG,
  * one traverses the whole program.
- * On architetures with delay stots, there may be more than one BasicBlock per address to simulate
- * the effects of the delay slot(s).
  */
 class BOOMERANG_API LowLevelCFG
 {
-public:
-    /// \sa getBBStartingAt
-    struct BBStart
-    {
-        BasicBlock *bb    = nullptr;
-        BasicBlock *delay = nullptr;
-    };
-
 private:
-    typedef std::map<Address, BBStart, std::less<Address>> BBStartMap;
+    typedef std::map<Address, BasicBlock *, std::less<Address>> BBStartMap;
 
 public:
     typedef MapValueIterator<BBStartMap> iterator;
@@ -127,16 +117,16 @@ public:
      * Get a (complete or incomplete) BasicBlock starting at the given address.
      * If there is no such block, return nullptr.
      */
-    inline BBStart getBBStartingAt(Address addr)
+    inline BasicBlock *getBBStartingAt(Address addr)
     {
         BBStartMap::iterator it = m_bbStartMap.find(addr);
-        return (it != m_bbStartMap.end()) ? (*it).second : BBStart{};
+        return (it != m_bbStartMap.end()) ? (*it).second : nullptr;
     }
 
-    inline const BBStart getBBStartingAt(Address addr) const
+    inline const BasicBlock *getBBStartingAt(Address addr) const
     {
         BBStartMap::const_iterator it = m_bbStartMap.find(addr);
-        return (it != m_bbStartMap.end()) ? (*it).second : BBStart{};
+        return (it != m_bbStartMap.end()) ? (*it).second : nullptr;
     }
 
     /// Check if \p addr is the start of a basic block, complete or not

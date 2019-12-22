@@ -14,13 +14,12 @@
 
 
 /**
- * GotoStatement has just one member variable, an expression representing the
- * jump's destination (an integer constant for direct jumps; an expression
- * for register jumps). An instance of this class will never represent a
- * return or computed call as these are distinguised by the decoder and are
- * instantiated as CallStatements and ReturnStatements respecitvely.
- * This class also represents unconditional jumps with a fixed offset
- * (e.g BN, Ba on SPARC).
+ * GotoStatement has just one member variable, an expression representing the jump's destination
+ * (an integer constant for direct jumps; an expression for register jumps).
+ * An instance of this class will never represent a return or computed call as these are
+ * distinguished by the frontend and are instantiated as CallStatements and ReturnStatements
+ * respecitvely.
+ * This class also represents unconditional jumps with a fixed offset.
  */
 class BOOMERANG_API GotoStatement : public Statement
 {

@@ -1,6 +1,7 @@
 v0.6.0 (in development)
 -----------------------
 - Improved: Instruction semantics definition format.
+- Removed: SPARC support.
 
 v0.5.2 (in development)
 -----------------------

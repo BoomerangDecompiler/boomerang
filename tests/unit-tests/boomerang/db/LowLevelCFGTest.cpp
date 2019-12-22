@@ -21,11 +21,8 @@ void LowLevelCFGTest::testGetNumBBs()
     cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
     QCOMPARE(cfg.getNumBBs(), 1);
 
-    cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-    QCOMPARE(cfg.getNumBBs(), 2);
-
-    cfg.createBB(BBType::DelaySlot, createInsns(Address(0x2000), 2));
-    QCOMPARE(cfg.getNumBBs(), 3);
+    cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+    QCOMPARE(cfg.getNumBBs(), 1);
 }
 
 
@@ -46,14 +43,6 @@ void LowLevelCFGTest::testCreateBB()
         BasicBlock *bb = cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
         QVERIFY(bb == nullptr);
     }
-
-    {
-        BasicBlock *bb = cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-        QVERIFY(bb != nullptr);
-        QVERIFY(bb->isType(BBType::DelaySlot));
-        QCOMPARE(bb->getLowAddr(), Address(0x1000));
-        QCOMPARE(bb->getHiAddr(),  Address(0x1001));
-    }
 }
 
 
@@ -66,15 +55,14 @@ void LowLevelCFGTest::testCreateBB_Blocking()
     // Try to create a BB which is larger than an existing one.
     BasicBlock *highBB1 = cfg.createBB(BBType::Oneway, createInsns(Address(0x0FFF), 5));
     QVERIFY(highBB1 == nullptr); // ??
-    QVERIFY(cfg.getBBStartingAt(Address(0x1000)).bb == existingBB); // bb was not replaced
-    QVERIFY(cfg.getBBStartingAt(Address(0x1000)).delay == nullptr);
+    QVERIFY(cfg.getBBStartingAt(Address(0x1000)) == existingBB); // bb was not replaced
+    QVERIFY(cfg.getBBStartingAt(Address(0x1001)) == nullptr);
     QVERIFY(cfg.isWellFormed());
     QCOMPARE(cfg.getNumBBs(), 2);
     highBB1 = existingBB;
 
-    BasicBlock *lowBB1 = cfg.getBBStartingAt(Address(0x0FFF)).bb;
+    BasicBlock *lowBB1 = cfg.getBBStartingAt(Address(0x0FFF));
     QVERIFY(lowBB1 != nullptr);
-    QVERIFY(cfg.getBBStartingAt(Address(0x0FFF)).delay == nullptr);
 
     QCOMPARE(lowBB1->getNumSuccessors(), 1);
     QCOMPARE(highBB1->getNumPredecessors(), 1);
@@ -148,7 +136,7 @@ void LowLevelCFGTest::testEnsureBBExists()
     QVERIFY(dummy == nullptr);
     QCOMPARE(cfg.getNumBBs(), 1);
 
-    BasicBlock *incompleteBB = cfg.getBBStartingAt(Address(0x1000)).bb;
+    BasicBlock *incompleteBB = cfg.getBBStartingAt(Address(0x1000));
     QVERIFY(incompleteBB != nullptr);
     QVERIFY(!incompleteBB->isComplete());
 
@@ -176,36 +164,16 @@ void LowLevelCFGTest::testGetBBStartingAt()
 {
     {
         LowLevelCFG cfg;
-        LowLevelCFG::BBStart b = cfg.getBBStartingAt(Address(0x1000));
-        QVERIFY(b.bb == nullptr);
-        QVERIFY(b.delay == nullptr);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1000)) == nullptr);
     }
 
     {
         LowLevelCFG cfg;
         BasicBlock *bb = cfg.createBB(BBType::Fall, createInsns(Address(0x1000), 2));
 
-        LowLevelCFG::BBStart b1 = cfg.getBBStartingAt(Address(0x1000));
-        QVERIFY(b1.bb == bb);
-        QVERIFY(b1.delay == nullptr);
-
-        LowLevelCFG::BBStart b2 = cfg.getBBStartingAt(Address(0x1001));
-        QVERIFY(b2.bb == nullptr);
-        QVERIFY(b2.delay == nullptr);
-    }
-
-    {
-        LowLevelCFG cfg;
-        BasicBlock *bb1 = cfg.createBB(BBType::Fall, createInsns(Address(0x1000), 2));
-        BasicBlock *bb2 = cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-
-        LowLevelCFG::BBStart b1 = cfg.getBBStartingAt(Address(0x1000));
-        QVERIFY(b1.bb == bb1);
-        QVERIFY(b1.delay == bb2);
-
-        LowLevelCFG::BBStart b2 = cfg.getBBStartingAt(Address(0x1001));
-        QVERIFY(b2.bb == nullptr);
-        QVERIFY(b2.delay == nullptr);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1000))== bb);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1001)) == nullptr);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1002)) == nullptr);
     }
 }
 
@@ -222,17 +190,6 @@ void LowLevelCFGTest::testIsStartOfBB()
 
         cfg.createBB(BBType::Fall, createInsns(Address(0x1000), 2));
         QVERIFY(cfg.isStartOfBB(Address(0x1000)));
-        QVERIFY(!cfg.isStartOfBB(Address(0x1001)));
-        cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-        QVERIFY(cfg.isStartOfBB(Address(0x1000)));
-        QVERIFY(!cfg.isStartOfBB(Address(0x1001)));
-    }
-
-    {
-        LowLevelCFG cfg;
-
-        cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 2));
-        QVERIFY(!cfg.isStartOfBB(Address(0x1000)));
         QVERIFY(!cfg.isStartOfBB(Address(0x1001)));
     }
 }
@@ -253,19 +210,6 @@ void LowLevelCFGTest::testIsStartOfCompleteBB()
 
     {
         LowLevelCFG cfg;
-        cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-        QVERIFY(!cfg.isStartOfCompleteBB(Address(0x1000)));
-    }
-
-    {
-        LowLevelCFG cfg;
-        cfg.createBB(BBType::Fall, createInsns(Address(0x1000), 2));
-        QVERIFY(cfg.isStartOfCompleteBB(Address(0x1000)));
-    }
-
-    {
-        LowLevelCFG cfg;
-        cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
         cfg.createBB(BBType::Fall, createInsns(Address(0x1000), 2));
         QVERIFY(cfg.isStartOfCompleteBB(Address(0x1000)));
     }
@@ -303,43 +247,17 @@ void LowLevelCFGTest::testRemoveBB()
         LowLevelCFG cfg;
         BasicBlock *bb = cfg.createIncompleteBB(Address(0x1000));
         cfg.removeBB(bb);
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).delay == nullptr);
         QCOMPARE(cfg.getNumBBs(), 0);
     }
 
     {
         // remove complete BB
         LowLevelCFG cfg;
-        BasicBlock *bb = cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
-        cfg.removeBB(bb);
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).bb == nullptr);
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).delay == nullptr);
-        QCOMPARE(cfg.getNumBBs(), 0);
-    }
-
-    {
-        // remove delay BB, keep other one intact
-        LowLevelCFG cfg;
-        BasicBlock *bb    = cfg.createBB(BBType::Oneway,    createInsns(Address(0x1000), 1));
-        BasicBlock *delay = cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-
-        cfg.removeBB(delay);
-
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).bb == bb);
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).delay == nullptr);
-        QCOMPARE(cfg.getNumBBs(), 1);
-    }
-
-    {
-        LowLevelCFG cfg;
-        // remove original BB, keep delay intact
-        BasicBlock *bb    = cfg.createBB(BBType::Oneway,    createInsns(Address(0x1000), 1));
-        BasicBlock *delay = cfg.createBB(BBType::DelaySlot, createInsns(Address(0x1000), 1));
-
-        cfg.removeBB(bb);
-
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).bb == nullptr);
-        QVERIFY(cfg.getBBStartingAt(Address(0x1000)).delay == delay);
+        BasicBlock *bb1 = cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+        BasicBlock *bb2 = cfg.createBB(BBType::Oneway, createInsns(Address(0x1001), 1));
+        cfg.removeBB(bb1);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1000)) == nullptr);
+        QVERIFY(cfg.getBBStartingAt(Address(0x1001)) == bb2);
         QCOMPARE(cfg.getNumBBs(), 1);
     }
 }
@@ -384,7 +302,7 @@ void LowLevelCFGTest::testAddEdge()
     cfg.addEdge(bb2, Address(0x3000));
     QVERIFY(!cfg.isWellFormed());
 
-    BasicBlock *incompleteBB = cfg.getBBStartingAt(Address(0x3000)).bb;
+    BasicBlock *incompleteBB = cfg.getBBStartingAt(Address(0x3000));
     QVERIFY(!incompleteBB->isComplete());
     QCOMPARE(incompleteBB->getLowAddr(), Address(0x3000));
     QCOMPARE(bb2->getNumSuccessors(), 2);

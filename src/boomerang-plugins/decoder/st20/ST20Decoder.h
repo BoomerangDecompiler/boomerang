@@ -51,9 +51,6 @@ public:
     /// \copydoc IDecoder::liftInstruction
     bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted) override;
 
-    /// \returns false
-    bool isSPARCRestore(const MachineInstruction &insn) const override;
-
 private:
     /**
      * Given an instruction name and a variable list of expressions

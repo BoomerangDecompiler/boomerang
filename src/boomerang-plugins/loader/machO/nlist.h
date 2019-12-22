@@ -1,3 +1,6 @@
+#include <cstdint>
+
+
 struct nlist
 {
     union

@@ -120,7 +120,6 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
     result.m_addr   = Address(decodedInstruction->address);
     result.m_id     = decodedInstruction->id;
     result.m_size   = decodedInstruction->size;
-    result.m_iclass = IClass::NOP; // Irrelevant for PPC
 
     std::strncpy(result.m_mnem.data(), decodedInstruction->mnemonic, MNEM_SIZE);
     std::strncpy(result.m_opstr.data(), decodedInstruction->op_str, OPSTR_SIZE);

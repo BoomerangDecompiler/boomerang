@@ -13,7 +13,6 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/PPCSignature.h"
-#include "boomerang/db/signature/SPARCSignature.h"
 #include "boomerang/db/signature/ST20Signature.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/signature/Win32Signature.h"
@@ -406,10 +405,6 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
         return std::make_shared<CallingConvention::StdC::X86Signature>(*this);
     }
 
-    if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
-        return std::make_shared<CallingConvention::StdC::SPARCSignature>(*this);
-    }
-
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
         return std::make_shared<CallingConvention::StdC::PPCSignature>(*this);
     }
@@ -436,8 +431,6 @@ std::unique_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
         else {
             return std::make_unique<CallingConvention::StdC::X86Signature>(name);
         }
-
-    case Machine::SPARC: return std::make_unique<CallingConvention::StdC::SPARCSignature>(name);
 
     case Machine::PPC: return std::make_unique<CallingConvention::StdC::PPCSignature>(name);
 
@@ -504,16 +497,6 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX))); // eax
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ECX))); // ecx
         defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDX))); // edx
-        return true;
-
-    case Machine::SPARC:
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O0))); // %o0-o5
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O1)));
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O2)));
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O3)));
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O4)));
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_O5)));
-        defs.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_SPARC_G1))); // %g1
         return true;
 
     case Machine::PPC:

@@ -90,25 +90,11 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
 {
     const LowLevelCFG *cfg = proc->getProg()->getCFG();
 
-    for (const LowLevelCFG::BBStart &b : *cfg) {
-        const BasicBlock *bb    = b.bb;
-        const BasicBlock *delay = b.delay;
-
+    for (const BasicBlock * bb : *cfg) {
         if (bb && bb->getProc() == proc) {
             of << "      bb" << bb->getLowAddr() << "[shape=rectangle, label=\"";
 
             for (const MachineInstruction &insn : bb->getInsns()) {
-                of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data()
-                   << "\\l";
-            }
-
-            of << "\"];\n";
-        }
-
-        if (delay && delay->getProc() == proc) {
-            of << "      bb" << delay->getLowAddr() << "_d[shape=rectangle, label=\"";
-
-            for (const MachineInstruction &insn : delay->getInsns()) {
                 of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data()
                    << "\\l";
             }
@@ -120,45 +106,14 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
     of << "\n";
 
     // edges
-    for (const LowLevelCFG::BBStart &b : *cfg) {
-        const BasicBlock *srcBB    = b.bb;
-        const BasicBlock *srcDelay = b.delay;
-
+    for (const BasicBlock *srcBB : *cfg) {
         if (srcBB && srcBB->getProc() == proc) {
             for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
                 const BasicBlock *dstBB = srcBB->getSuccessor(j);
 
                 of << "      bb" << srcBB->getLowAddr() << " -> bb" << dstBB->getLowAddr();
 
-                if (dstBB->isType(BBType::DelaySlot)) {
-                    of << "_d";
-                }
-
                 if (srcBB->isType(BBType::Twoway)) {
-                    if (j == 0) {
-                        of << " [color=\"green\"];\n"; // cond == true
-                    }
-                    else {
-                        of << " [color=\"red\"];\n"; // cond == false
-                    }
-                }
-                else {
-                    of << " [color=\"black\"];\n"; // normal connection
-                }
-            }
-        }
-
-        if (srcDelay && srcDelay->getProc() == proc) {
-            for (int j = 0; j < srcDelay->getNumSuccessors(); j++) {
-                const BasicBlock *dstBB = srcDelay->getSuccessor(j);
-
-                of << "      bb" << srcDelay->getLowAddr() << "_d -> bb" << dstBB->getLowAddr();
-
-                if (dstBB->isType(BBType::DelaySlot)) {
-                    of << "_d";
-                }
-
-                if (srcDelay->isType(BBType::Twoway)) {
                     if (j == 0) {
                         of << " [color=\"green\"];\n"; // cond == true
                     }

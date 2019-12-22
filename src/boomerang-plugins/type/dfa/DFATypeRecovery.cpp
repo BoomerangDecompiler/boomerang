@@ -246,8 +246,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature.
-    // Sometimes needed to split variables (e.g. argc as a
-    // int and char* in sparc/switch_gcc)
+    // Sometimes needed to split variables
     bool ch = dfaTypeAnalysis(proc->getSignature().get(), cfg);
     StatementList stmts;
     proc->getStatements(stmts);

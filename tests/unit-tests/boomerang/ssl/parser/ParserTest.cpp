@@ -22,7 +22,6 @@ void ParserTest::testRead()
     RTLInstDict d(false);
 
     QVERIFY(d.readSSLFile(BOOMERANG_TEST_BASE "share/boomerang/ssl/x86.ssl"));
-    QVERIFY(d.readSSLFile(BOOMERANG_TEST_BASE "share/boomerang/ssl/sparc.ssl"));
     QVERIFY(d.readSSLFile(BOOMERANG_TEST_BASE "share/boomerang/ssl/ppc.ssl"));
     QVERIFY(d.readSSLFile(BOOMERANG_TEST_BASE "share/boomerang/ssl/st20.ssl"));
 }

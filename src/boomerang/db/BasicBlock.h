@@ -34,8 +34,7 @@ enum class BBType
     Call      = 4,  ///< procedure call       (call)
     Ret       = 5,  ///< return               (ret)
     CompJump  = 6,  ///< computed jump
-    CompCall  = 7,  ///< computed call        (call [eax + 0x14])
-    DelaySlot = 8   ///< Like Oneway, but this is the delay slot of a jump or call
+    CompCall  = 7   ///< computed call        (call [eax + 0x14])
 };
 
 
@@ -46,7 +45,7 @@ enum class BBType
 #define BELSE 1
 
 /**
- * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions
+ * Basic Blocks hold the semantics (RTLs) of a sequential list of instructions
  * ended by a Control Transfer Instruction (CTI).
  * During decompilation, a special RTL with a zero address is prepended;
  * this RTL contains implicit assigns and phi assigns.

@@ -9,26 +9,27 @@
 #pragma endregion License
 #pragma once
 
+#include <cstdint>
 
 /// \file ElfTypes.h This file contains the elf format support structures
 /// \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
 
 // Data types for 32 bit ELF files
-typedef uint8 Elf32_Byte;
-typedef uint16 Elf32_Half;
-typedef sint32 Elf32_Sword;
-typedef uint32 Elf32_Word;
-typedef uint32 Elf32_Addr;
-typedef uint32 Elf32_Off;
+typedef uint8_t Elf32_Byte;
+typedef uint16_t Elf32_Half;
+typedef int32_t Elf32_Sword;
+typedef uint32_t Elf32_Word;
+typedef uint32_t Elf32_Addr;
+typedef uint32_t Elf32_Off;
 
-typedef uint8 Elf64_Byte;
-typedef uint16 Elf64_Half;
-typedef uint32 Elf64_Sword;
-typedef sint32 Elf64_Word;
-typedef sint64 Elf64_Sxword;
-typedef uint64 Elf64_Xword;
-typedef uint64 Elf64_Addr;
-typedef uint64 Elf64_Off;
+typedef uint8_t Elf64_Byte;
+typedef uint16_t Elf64_Half;
+typedef uint32_t Elf64_Sword;
+typedef int32_t Elf64_Word;
+typedef int64_t Elf64_Sxword;
+typedef uint64_t Elf64_Xword;
+typedef uint64_t Elf64_Addr;
+typedef uint64_t Elf64_Off;
 
 
 // number of bytes for ELF file type identification

@@ -41,7 +41,6 @@ enum class Machine : uint8_t
     INVALID = 0xFF,
     UNKNOWN = 0,
     X86,
-    SPARC,
     PPC,
     ST20
 };

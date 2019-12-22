@@ -61,8 +61,4 @@ public:
     virtual int getRegSizeByNum(RegNum regNum) const = 0;
 
     virtual const RTLInstDict *getDict() const = 0;
-
-    /// \return true if this is a SPARC restore instruction.
-    /// For all other architectures, this must return false.
-    virtual bool isSPARCRestore(const MachineInstruction &insn) const = 0;
 };

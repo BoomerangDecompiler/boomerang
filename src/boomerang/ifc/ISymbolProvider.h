@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+#include "boomerang/core/BoomerangAPI.h"
 
 #include <memory>
 

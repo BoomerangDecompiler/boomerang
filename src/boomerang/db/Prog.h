@@ -153,7 +153,7 @@ public:
     QString getRegNameByNum(RegNum regNum) const;
     int getRegSizeByNum(RegNum regNum) const;
 
-    /// Get a code for the machine e.g. MACHINE_SPARC
+    /// Get a code for the machine e.g. Machine::X86
     Machine getMachine() const;
 
     void readDefaultLibraryCatalogues();
