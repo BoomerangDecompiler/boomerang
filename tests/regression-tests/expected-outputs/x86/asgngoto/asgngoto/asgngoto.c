@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     atexit(0x8048584);
     MAIN__(local0);
     exit(0);
+    return;
 }
 
 /** address: 0x08048904 */

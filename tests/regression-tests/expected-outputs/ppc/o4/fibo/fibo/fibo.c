@@ -26,12 +26,12 @@ int main(int argc, char *argv[])
 __size32 fib(int param1)
 {
     int g3; 		// r3
-    __size32 g3_1; 		// r3{6}
+    __size32 g3_1; 		// r3{7}
 
     if (param1 > 1) {
-        g3_1 = fib(param1 - 1);
-        g3 = fib(param1 - 2);
-        g3 = g3_1 + g3;
+        g3 = fib(param1 - 1);
+        g3_1 = fib(param1 - 2);
+        g3 += g3_1;
     }
     else {
         g3 = param1;

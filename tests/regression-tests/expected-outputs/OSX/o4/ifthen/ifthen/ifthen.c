@@ -5,6 +5,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g29; 		// r29
+    int g3; 		// r3
 
     g29 = 0;
     puts("Figure 19.2");
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
     if (argc <= 3) {
         g29 = argc;
     }
-    printf("C is %d\n", g29 + argc);
-    return;
+    g3 = printf("C is %d\n", g29 + argc);
+    return g3;
 }
 
