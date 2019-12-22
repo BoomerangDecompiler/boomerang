@@ -45,7 +45,7 @@ regression_tests = [
     "OSX/o4/global2",
     "OSX/o4/global3",
     "OSX/o4/hello",
-    #"OSX/o4/ifthen",
+    "OSX/o4/ifthen",
     "OSX/o4/loop",
     "OSX/o4/minmax",
     "OSX/o4/minmax2",

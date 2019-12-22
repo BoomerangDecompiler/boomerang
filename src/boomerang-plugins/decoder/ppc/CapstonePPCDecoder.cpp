@@ -21,7 +21,7 @@
 #include <cstring>
 
 
-#define PPC_MAX_INSTRUCTION_LENGTH (4)
+#define PPC_INSN_LENGTH (4)
 
 // only map those registers that are mapped to a number
 // different from -1 in the SSL file.
@@ -95,8 +95,8 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
 
     cs::cs_insn *decodedInstruction;
-    size_t numInstructions = cs_disasm(m_handle, instructionData, PPC_MAX_INSTRUCTION_LENGTH,
-                                       pc.value(), 1, &decodedInstruction);
+    size_t numInstructions = cs_disasm(m_handle, instructionData, PPC_INSN_LENGTH, pc.value(), 1,
+                                       &decodedInstruction);
     const bool valid       = numInstructions > 0;
 
     if (!valid) {
@@ -182,7 +182,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
         callStmt->setIsComputed(false);
 
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
-                                             Const::get(insn.m_addr + PPC_MAX_INSTRUCTION_LENGTH)));
+                                             Const::get(insn.m_addr + PPC_INSN_LENGTH)));
         rtl->append(callStmt);
 
         if (m_prog) {
@@ -200,7 +200,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
     }
     else if (insnID == "BCTRL") {
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
-                                             Const::get(Address(insn.m_addr + 4))));
+                                             Const::get(Address(insn.m_addr + PPC_INSN_LENGTH))));
 
         std::shared_ptr<CallStatement> call(new CallStatement);
         call->setDest(Location::regOf(REG_PPC_CTR));
@@ -269,7 +269,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
     }
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = insn.m_operands[numOperands - 1]->access<Const>()->getAddr();
-        if (dest != insn.m_addr + PPC_MAX_INSTRUCTION_LENGTH) {
+        if (dest != insn.m_addr + PPC_INSN_LENGTH) {
             std::shared_ptr<BranchStatement> jump(new BranchStatement);
             jump->setDest(dest);
             jump->setCondType(BranchType::JNE);
@@ -383,21 +383,18 @@ QString CapstonePPCDecoder::getTemplateName(const cs::cs_insn *instruction) cons
 
 bool CapstonePPCDecoder::isCall(const cs::cs_insn *instruction) const
 {
-    if (instruction->detail->groups_count > 0) {
-        return isInstructionInGroup(instruction, cs::CS_GRP_CALL);
-    }
-
     const int id = instruction->id;
-    return id == cs::PPC_INS_BL;
+
+    // clang-format off
+    return
+        id == cs::PPC_INS_BL ||
+        id == cs::PPC_INS_BCTRL;
+    // clang-format on
 }
 
 
 bool CapstonePPCDecoder::isJump(const cs::cs_insn *instruction) const
 {
-    if (instruction->detail->groups_count > 0) {
-        return isInstructionInGroup(instruction, cs::CS_GRP_JUMP);
-    }
-
     const int id = instruction->id;
 
     // clang-format off
@@ -405,7 +402,8 @@ bool CapstonePPCDecoder::isJump(const cs::cs_insn *instruction) const
         id == cs::PPC_INS_B ||
         id == cs::PPC_INS_BA ||
         id == cs::PPC_INS_BC ||
-        id == cs::PPC_INS_BCA;
+        id == cs::PPC_INS_BCA ||
+        id == cs::PPC_INS_BCTR;
     // clang-format on
 }
 

@@ -335,8 +335,22 @@ bool DefaultFrontEnd::disassembleFragment(UserProc *proc, Address addr)
                         break;
                     }
 
-                    // Add the out edge if it is to a destination within the procedure
-                    if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                    // Check if this is a jump to an already existing function. If so, this is
+                    // actually a call that immediately returns afterwards
+                    Function *destProc = m_program->getFunctionByAddr(jumpDest);
+                    if (destProc && destProc != reinterpret_cast<Function *>(-1)) {
+                        sequentialDecode = false;
+                        break;
+                    }
+
+                    BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(jumpDest);
+                    if (sym && sym->isFunction()) {
+                        sequentialDecode = false;
+                        break;
+                    }
+                    else if (jumpDest <
+                             m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                        // Add the out edge if it is to a destination within the procedure
                         m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
                         cfg->addEdge(currentBB, jumpDest);
                     }
@@ -544,6 +558,7 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     LowLevelCFG *cfg = proc->getProg()->getCFG();
     ProcCFG *procCFG = proc->getCFG();
 
+    CFGDotWriter().writeCFG(m_program, "cfg.dot");
 
     for (BasicBlock *bb : *cfg) {
         liftBB(bb, proc, callList);
@@ -742,8 +757,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     ProcCFG *procCFG = proc->getCFG();
-
-    CFGDotWriter().writeCFG(m_program, "cfg.dot");
 
     for (const MachineInstruction &insn : currentBB->getInsns()) {
         LiftedInstruction lifted;
@@ -987,6 +1000,7 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
         if (newFrag) {
             SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
             proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
+            newFrag->setType(FragType::Ret);
         }
     }
     else {
