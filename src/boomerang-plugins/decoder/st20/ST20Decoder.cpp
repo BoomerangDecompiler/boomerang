@@ -109,8 +109,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             total += oper;
             const Address jumpDest = pc + result.m_size + total;
 
-            result.m_addr   = pc;
-            result.m_id     = ST20_FUNC_J;
+            result.m_addr = pc;
+            result.m_id   = ST20_FUNC_J;
 
             std::strcpy(result.m_mnem.data(), "j");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
@@ -133,8 +133,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
         case ST20_FUNC_STNL: {
             total += oper;
 
-            result.m_addr   = pc;
-            result.m_id     = functionCode;
+            result.m_addr = pc;
+            result.m_id   = functionCode;
 
             std::strcpy(result.m_mnem.data(), functionNames[functionCode]);
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "0x%x", total);
@@ -158,8 +158,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             total += oper;
             const Address callDest = Address(pc + result.m_size + total);
 
-            result.m_addr   = pc;
-            result.m_id     = ST20_FUNC_CALL;
+            result.m_addr = pc;
+            result.m_id   = ST20_FUNC_CALL;
 
             std::strcpy(result.m_mnem.data(), "call");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",
@@ -175,8 +175,8 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
             total += oper;
             const Address jumpDest = pc + result.m_size + total;
 
-            result.m_addr   = pc;
-            result.m_id     = ST20_FUNC_CJ;
+            result.m_addr = pc;
+            result.m_id   = ST20_FUNC_CJ;
 
             std::strcpy(result.m_mnem.data(), "cj");
             std::snprintf(result.m_opstr.data(), result.m_opstr.size(), "%s",

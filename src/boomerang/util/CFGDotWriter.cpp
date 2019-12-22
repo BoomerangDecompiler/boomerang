@@ -90,7 +90,7 @@ void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
 {
     const LowLevelCFG *cfg = proc->getProg()->getCFG();
 
-    for (const BasicBlock * bb : *cfg) {
+    for (const BasicBlock *bb : *cfg) {
         if (bb && bb->getProc() == proc) {
             of << "      bb" << bb->getLowAddr() << "[shape=rectangle, label=\"";
 

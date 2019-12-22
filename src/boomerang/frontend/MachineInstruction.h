@@ -38,10 +38,10 @@ enum class MIGroup
 class BOOMERANG_API MachineInstruction
 {
 public:
-    Address m_addr;      ///< Address (IP) of the instruction
-    uint32 m_id;         ///< instruction unique ID (e.g. MOV, ADD etc.)
-    uint16 m_size   = 0; ///< Size in bytes
-    uint8 m_groups  = 0;
+    Address m_addr;     ///< Address (IP) of the instruction
+    uint32 m_id;        ///< instruction unique ID (e.g. MOV, ADD etc.)
+    uint16 m_size  = 0; ///< Size in bytes
+    uint8 m_groups = 0;
 
     std::array<char, MNEM_SIZE> m_mnem   = { 0 };
     std::array<char, OPSTR_SIZE> m_opstr = { 0 };

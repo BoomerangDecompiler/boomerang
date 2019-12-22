@@ -743,6 +743,8 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     ProcCFG *procCFG = proc->getCFG();
 
+    CFGDotWriter().writeCFG(m_program, "cfg.dot");
+
     for (const MachineInstruction &insn : currentBB->getInsns()) {
         LiftedInstruction lifted;
         if (!m_decoder->liftInstruction(insn, lifted)) {
@@ -980,7 +982,7 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
     IRFragment *newFrag = nullptr;
 
     if (retAddr == Address::INVALID) {
-        // Create the basic block
+        // Create the one and only return statement
         newFrag = cfg->createFragment(std::move(newRTLs), retBB);
         if (newFrag) {
             SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement

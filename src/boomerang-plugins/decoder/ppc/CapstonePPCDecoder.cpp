@@ -117,9 +117,9 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
         }
     }
 
-    result.m_addr   = Address(decodedInstruction->address);
-    result.m_id     = decodedInstruction->id;
-    result.m_size   = decodedInstruction->size;
+    result.m_addr = Address(decodedInstruction->address);
+    result.m_id   = decodedInstruction->id;
+    result.m_size = decodedInstruction->size;
 
     std::strncpy(result.m_mnem.data(), decodedInstruction->mnemonic, MNEM_SIZE);
     std::strncpy(result.m_opstr.data(), decodedInstruction->op_str, OPSTR_SIZE);
@@ -412,10 +412,6 @@ bool CapstonePPCDecoder::isJump(const cs::cs_insn *instruction) const
 
 bool CapstonePPCDecoder::isRet(const cs::cs_insn *instruction) const
 {
-    if (instruction->detail->groups_count > 0) {
-        return isInstructionInGroup(instruction, cs::CS_GRP_RET);
-    }
-
     const int id = instruction->id;
     return id == cs::PPC_INS_BLR;
 }
