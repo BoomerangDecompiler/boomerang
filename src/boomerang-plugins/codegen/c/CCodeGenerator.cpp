@@ -2390,6 +2390,7 @@ void CCodeGenerator::generateCode_Branch(const IRFragment *frag,
         psi                               = cs->getSwitchInfo();
 
         // Write the switch header (i.e. "switch (var) {")
+        assert(psi != nullptr);
         addCaseCondHeader(psi->switchExp);
     }
     else {

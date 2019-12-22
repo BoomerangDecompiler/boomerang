@@ -164,7 +164,7 @@ regression_tests = [
     #"ppc/stattest",
     "ppc/sumarray",
     #"ppc/superstat",
-    #"ppc/switch",
+    "ppc/switch",
     "ppc/twoproc",
     "ppc/twoproc2",
     "ppc/uns",

@@ -36,13 +36,9 @@ public:
     /**
      * Called when a switch has been identified. Visits the destinations of the switch,
      * adds out edges to the fragment, etc.
-     *
-     * \note    Used to be called as soon as a switch statement is discovered, but this causes
-     * decoded but unanalyzed BBs (statements not numbered, locations not SSA renamed etc) to appear
-     * in the CFG. This caused problems when there were nested switch statements. Now only called
-     * when re-decoding a switch statement
+     * \returns true if at least one new BasicBlock was found.
      */
-    void processSwitch(IRFragment *frag, UserProc *proc);
+    bool processSwitch(IRFragment *frag, UserProc *proc);
 
     /**
      * Find the number of cases for this switch statement. Assumes that there is a compare and

@@ -230,7 +230,7 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
 
 bool IndirectJumpAnalyzer::decodeIndirectJmp(IRFragment *frag, UserProc *proc)
 {
-    if (frag->isType(FragType::CompJump)) {
+    if (frag->isType(FragType::CompJump) || frag->isType(FragType::Nway)) {
         return analyzeCompJump(frag, proc);
     }
     else if (frag->isType(FragType::CompCall)) {
@@ -288,7 +288,7 @@ int IndirectJumpAnalyzer::findNumCases(const IRFragment *frag)
 }
 
 
-void IndirectJumpAnalyzer::processSwitch(IRFragment *frag, UserProc *proc)
+bool IndirectJumpAnalyzer::processSwitch(IRFragment *frag, UserProc *proc)
 {
     RTL *lastRTL         = frag->getLastRTL();
     const SwitchInfo *si = lastRTL->getHlStmt()->as<CaseStatement>()->getSwitchInfo();
@@ -382,6 +382,18 @@ void IndirectJumpAnalyzer::processSwitch(IRFragment *frag, UserProc *proc)
             break;
         }
     }
+
+    bool newBBs          = false;
+    int i                = 0;
+    BasicBlock *sourceBB = frag->getBB();
+    sourceBB->setType(BBType::Nway);
+
+    for (auto &[_, jumpDest] : dests) {
+        newBBs |= createCompJumpDest(sourceBB, i, jumpDest);
+        i++;
+    }
+
+    return newBBs;
 }
 
 
@@ -487,7 +499,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *frag, UserProc *proc)
             lastStmt->setDest(nullptr);
 
             lastStmt->setSwitchInfo(std::move(swi));
-            processSwitch(frag, proc);
+            foundNewFragments |= processSwitch(frag, proc);
             return foundNewFragments;
         }
     }
@@ -530,7 +542,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *frag, UserProc *proc)
                                                                 switchEntryAddr);
                     }
 
-                    processSwitch(frag, proc);
+                    foundNewFragments |= processSwitch(frag, proc);
                     return foundNewFragments;
                 }
             }
