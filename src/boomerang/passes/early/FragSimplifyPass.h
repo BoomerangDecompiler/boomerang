@@ -25,4 +25,8 @@ public:
 
     /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
+
+private:
+    /// Simplify phis and replace them by Assigns, if possible
+    bool simplifyPhis(UserProc *proc);
 };

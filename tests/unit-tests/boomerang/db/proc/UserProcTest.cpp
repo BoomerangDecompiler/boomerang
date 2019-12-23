@@ -190,6 +190,75 @@ void UserProcTest::testInsertStatementAfter()
 }
 
 
+void UserProcTest::testReplacePhiByAssign()
+{
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+
+    {
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+        proc.getCFG()->createFragment(std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+
+        std::shared_ptr<Assign> as = proc.replacePhiByAssign(nullptr, Location::regOf(REG_X86_EAX));
+        QVERIFY(as == nullptr);
+    }
+
+    {
+        // replace phi
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { phi })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+
+        IRFragment *frag = proc.getCFG()->createFragment(std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+        phi->setFragment(frag);
+
+        auto as = proc.replacePhiByAssign(phi, Location::regOf(REG_X86_EAX));
+        QVERIFY(as != nullptr);
+        QVERIFY(as->isAssign());
+        QVERIFY(*as->getLeft() == *Location::regOf(REG_X86_EAX));
+        QVERIFY(*as->getLeft() == *as->getRight());
+    }
+
+    {
+        // replace first phi, make sure that the assign gets moved after phis
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+
+        std::shared_ptr<PhiAssign> phi1(new PhiAssign(Location::regOf(REG_X86_EAX)));
+        std::shared_ptr<PhiAssign> phi2(new PhiAssign(Location::regOf(REG_X86_EDX)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { phi1, phi2 })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+
+        IRFragment *frag = proc.getCFG()->createFragment(std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+        phi1->setFragment(frag);
+        phi2->setFragment(frag);
+
+        auto as = proc.replacePhiByAssign(phi1, Location::regOf(REG_X86_EAX));
+        QVERIFY(as != nullptr);
+        QVERIFY(as->isAssign());
+        QVERIFY(*as->getLeft() == *Location::regOf(REG_X86_EAX));
+        QVERIFY(*as->getLeft() == *as->getRight());
+
+        QVERIFY(frag->getFirstStmt());
+        QVERIFY(frag->getFirstStmt()->isPhi());
+        QVERIFY(*frag->getFirstStmt()->as<Assignment>()->getLeft() == *Location::regOf(REG_X86_EDX));
+
+        QVERIFY(frag->getLastStmt());
+        QVERIFY(frag->getLastStmt() != frag->getFirstStmt());
+        QVERIFY(frag->getLastStmt()->isAssign());
+        QCOMPARE(frag->getLastStmt()->toString(), "   0 *v* r24 := r24");
+    }
+}
+
+
 void UserProcTest::testAddParameterToSignature()
 {
     UserProc proc(Address(0x1000), "test", nullptr);

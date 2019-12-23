@@ -280,7 +280,14 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
                     asgn->setFragment(frag);
 
                     SharedStmt toDelete = *ss;
-                    *ss                 = asgn;
+
+                    // Erase the phi, and insert the assign after any remaining phis.
+                    // Since all phis have different LHSes, the order does not matter.
+                    ss = rtl->erase(ss);
+                    while (ss != rtl->end() && (*ss)->isPhi()) {
+                        ++ss;
+                    }
+                    rtl->insert(ss, asgn);
 
                     StatementList stmts;
                     getStatements(stmts);
