@@ -558,8 +558,6 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     LowLevelCFG *cfg = proc->getProg()->getCFG();
     ProcCFG *procCFG = proc->getCFG();
 
-    CFGDotWriter().writeCFG(m_program, "cfg.dot");
-
     for (BasicBlock *bb : *cfg) {
         liftBB(bb, proc, callList);
     }
