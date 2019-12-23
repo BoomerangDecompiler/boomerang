@@ -751,10 +751,8 @@ void CallStatement::setDefines(const StatementList &defines)
 }
 
 
-bool CallStatement::ellipsisProcessing(Prog *prog)
+bool CallStatement::ellipsisProcessing(Prog *)
 {
-    Q_UNUSED(prog);
-
     // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
     if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {
         return objcSpecificProcessing(nullptr);
@@ -762,16 +760,16 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     // functions like printf almost always have too many args
     QString name(getDestProc()->getName());
-    int format = -1;
+    int formatstrIdx = -1;
 
     if (((name == "printf") || (name == "scanf"))) {
-        format = 0;
+        formatstrIdx = 0;
     }
     else if ((name == "sprintf") || (name == "fprintf") || (name == "sscanf")) {
-        format = 1;
+        formatstrIdx = 1;
     }
     else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
-        format = getNumArguments() - 1;
+        formatstrIdx = getNumArguments() - 1;
     }
     else {
         return false;
@@ -780,7 +778,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
     LOG_VERBOSE("Ellipsis processing for %1", name);
 
     QString formatStr;
-    SharedExp formatExp = getArgumentExp(format);
+    SharedExp formatExp = getArgumentExp(formatstrIdx);
 
     // We sometimes see a[m[blah{...}]]
     if (formatExp->isAddrOf()) {
@@ -858,8 +856,8 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
     int n = 1; // Count the format string itself (may also be "format" more arguments)
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
-    bool isScanf = name.contains("scanf");
-    int p_idx    = 0;
+    const bool isScanf = name.contains("scanf");
+    int p_idx          = 0;
 
     // TODO: use qregularexpression to match scanf arguments
     while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
@@ -970,8 +968,10 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         }
     }
 
-    setNumArguments(format + n);
+    setNumArguments(formatstrIdx + n);
     m_signature->setHasEllipsis(false); // So we don't do this again
+
+
     return true;
 }
 

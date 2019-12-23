@@ -16,6 +16,7 @@
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 
+
 StatementInitPass::StatementInitPass()
     : IPass("StatementInit", PassID::StatementInit)
 {
@@ -25,6 +26,8 @@ StatementInitPass::StatementInitPass()
 bool StatementInitPass::execute(UserProc *proc)
 {
     proc->getCFG()->clear();
+    proc->removeRetStmt();
+
     if (!proc->getProg()->getFrontEnd()->liftProc(proc)) {
         return false;
     }
