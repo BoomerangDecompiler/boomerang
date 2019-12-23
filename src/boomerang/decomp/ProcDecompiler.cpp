@@ -545,8 +545,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet &visi
     changed |= PassManager::get()->executePass(PassID::LocalAndParamMap, proc);
     changed |= PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     changed |= PassManager::get()->executePass(PassID::Dominators, proc);
-    changed |= PassManager::get()->executePass(PassID::StatementPropagation,
-                                               proc); // Need to propagate into arguments
+    changed |= PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
     assert(m_callStack.back() == proc);
     m_callStack.pop_back();
