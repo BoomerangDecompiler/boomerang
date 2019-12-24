@@ -1061,7 +1061,7 @@ void CallStatement::updateArguments()
     SharedExp loc;
 
     while ((loc = asp.nextArgLoc()) != nullptr) {
-        if (m_proc->filterParams(loc)) {
+        if (!m_proc->canBeParam(loc)) {
             continue;
         }
 
@@ -1100,7 +1100,7 @@ void CallStatement::updateArguments()
             continue;
         }
 
-        if (m_proc->filterParams(lhs)) {
+        if (!m_proc->canBeParam(lhs)) {
             // Filtered out: delete it
             continue;
         }
@@ -1140,7 +1140,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
         const RegNum sp = sig->getStackRegister();
 
         for (SharedExp loc : m_useCol) {
-            if (m_proc->filterReturns(loc)) {
+            if (!m_proc->canBeReturn(loc)) {
                 continue; // Ignore filtered locations
             }
             else if (loc->isRegN(sp)) {

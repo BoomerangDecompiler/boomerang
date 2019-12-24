@@ -354,7 +354,7 @@ void UserProcTest::testLookupParam()
 }
 
 
-void UserProcTest::testFilterParams()
+void UserProcTest::testCanBeParam()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
@@ -362,17 +362,17 @@ void UserProcTest::testFilterParams()
     UserProc *mainProc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x08048328)));
     QVERIFY(mainProc != nullptr && !mainProc->isLib());
 
-    QVERIFY(mainProc->filterParams(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterParams(Location::tempOf(Terminal::get(opTrue))));
-    QVERIFY(mainProc->filterParams(Location::regOf(REG_X86_ESP)));
-    QVERIFY(!mainProc->filterParams(Location::regOf(REG_X86_EDX)));
-    QVERIFY(mainProc->filterParams(Location::memOf(Const::get(0x08048328))));
-    QVERIFY(mainProc->filterParams(Location::memOf(RefExp::get(Location::regOf(REG_X86_ESP), nullptr))));
-    QVERIFY(!mainProc->filterParams(Location::memOf(Binary::get(opPlus,
-                                                                Location::regOf(REG_X86_ESP),
-                                                                Const::get(4)))));
-    QVERIFY(mainProc->filterParams(Location::global("test", mainProc)));
-    QVERIFY(!mainProc->filterParams(Const::get(5)));
+    QVERIFY(!mainProc->canBeParam(Terminal::get(opPC)));
+    QVERIFY(!mainProc->canBeParam(Location::tempOf(Terminal::get(opTrue))));
+    QVERIFY(!mainProc->canBeParam(Location::regOf(REG_X86_ESP)));
+    QVERIFY(mainProc->canBeParam(Location::regOf(REG_X86_EDX)));
+    QVERIFY(!mainProc->canBeParam(Location::memOf(Const::get(0x08048328))));
+    QVERIFY(!mainProc->canBeParam(Location::memOf(RefExp::get(Location::regOf(REG_X86_ESP), nullptr))));
+    QVERIFY(mainProc->canBeParam(Location::memOf(Binary::get(opPlus,
+                                                             Location::regOf(REG_X86_ESP),
+                                                             Const::get(4)))));
+    QVERIFY(!mainProc->canBeParam(Location::global("test", mainProc)));
+    QVERIFY(mainProc->canBeParam(Const::get(5)));
 }
 
 
@@ -389,7 +389,7 @@ void UserProcTest::testRetStmt()
 }
 
 
-void UserProcTest::testFilterReturns()
+void UserProcTest::testCanBeReturn()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(m_project.decodeBinaryFile());
@@ -403,13 +403,13 @@ void UserProcTest::testFilterReturns()
     // test cached preservation TODO
     QVERIFY(mainProc->getRetStmt());
     QVERIFY(mainProc->preservesExp(Location::regOf(REG_X86_EBP)));
-    QVERIFY(mainProc->filterReturns(Location::regOf(REG_X86_EBP)));
+    QVERIFY(!mainProc->canBeReturn(Location::regOf(REG_X86_EBP)));
 
-    QVERIFY(mainProc->filterReturns(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterReturns(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
-    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_X86_ESP)));
-    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_X86_EDX)));
-    QVERIFY(mainProc->filterReturns(Location::memOf(Const::get(0x08048328))));
+    QVERIFY(!mainProc->canBeReturn(Terminal::get(opPC)));
+    QVERIFY(!mainProc->canBeReturn(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(mainProc->canBeReturn(Location::regOf(REG_X86_ESP)));
+    QVERIFY(mainProc->canBeReturn(Location::regOf(REG_X86_EDX)));
+    QVERIFY(!mainProc->canBeReturn(Location::memOf(Const::get(0x08048328))));
 }
 
 

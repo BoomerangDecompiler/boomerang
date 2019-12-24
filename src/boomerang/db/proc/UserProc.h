@@ -189,12 +189,9 @@ public:
     /// Find the implicit definition for \a e and lookup a symbol
     QString lookupParam(SharedConstExp e) const;
 
-    /**
-     * Filter out locations not possible as parameters or arguments.
-     * \returns true if \p e should be filtered out (i.e. removed)
-     * \sa UserProc::filterReturns
-     */
-    bool filterParams(SharedExp e);
+    /// \returns true if \p e can be a parameter of a function.
+    /// \sa UserProc::filterReturns
+    bool canBeParam(const SharedExp &e);
 
 public:
     // return related
@@ -210,12 +207,8 @@ public:
 
     void removeRetStmt() { m_retStatement = nullptr; }
 
-    /**
-     * Filter out locations not possible as return locations.
-     * \returns true if \p e  should be filtered out (i.e. removed)
-     * \sa UserProc::filterParams
-     */
-    bool filterReturns(SharedExp e);
+    /// \returns true if \p e can be a return of a function.
+    bool canBeReturn(const SharedExp &e);
 
 public:
     // local variable related

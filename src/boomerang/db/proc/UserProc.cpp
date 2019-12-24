@@ -341,7 +341,7 @@ void UserProc::addParameterToSignature(SharedExp e, SharedType ty)
 
 void UserProc::insertParameter(SharedExp e, SharedType ty)
 {
-    if (filterParams(e)) {
+    if (!canBeParam(e)) {
         return; // Filtered out
     }
 
@@ -440,24 +440,24 @@ QString UserProc::lookupParam(SharedConstExp e) const
 }
 
 
-bool UserProc::filterParams(SharedExp e)
+bool UserProc::canBeParam(const SharedExp &e)
 {
     switch (e->getOper()) {
-    case opPC: return true;
-    case opTemp: return true;
+    case opPC: return false;
+    case opTemp: return false;
     case opRegOf: {
         if (!e->isRegOfConst()) {
-            return false;
+            return true;
         }
         const int sp = Util::getStackRegisterIndex(m_prog);
-        return e->access<Const, 1>()->getInt() == sp;
+        return e->access<Const, 1>()->getInt() != sp;
     }
 
     case opMemOf: {
         SharedExp addr = e->getSubExp1();
 
         if (addr->isIntConst()) {
-            return true; // Global memory location
+            return false; // Global memory location
         }
 
         if (addr->isSubscript() && addr->access<RefExp>()->isImplicitDef()) {
@@ -469,17 +469,17 @@ bool UserProc::filterParams(SharedExp e)
             }
 
             if (reg->isRegN(sp)) {
-                return true; // Filter out m[sp{-}] assuming it is the return address
+                return false; // Filter out m[sp{-}] assuming it is the return address
             }
         }
 
-        return false; // Might be some weird memory expression that is not a local
+        return true; // Might be some weird memory expression that is not a local
     }
 
     case opGlobal:
-        return true; // Never use globals as argument locations (could appear on RHS of args)
+        return false; // Never use globals as argument locations (could appear on RHS of args)
 
-    default: return false;
+    default: return true;
     }
 }
 
@@ -498,37 +498,42 @@ void UserProc::setRetStmt(const std::shared_ptr<ReturnStatement> &s, Address r)
 }
 
 
-bool UserProc::filterReturns(SharedExp e)
+bool UserProc::canBeReturn(const SharedExp &e)
 {
     if (isPreserved(e)) {
         // If it is preserved, then it can't be a return (since we don't change it)
-        return true;
+        return false;
     }
 
     switch (e->getOper()) {
-    case opPC: return true; // Ignore %pc
+        // Ignore %pc
+    case opPC:
+        return false;
 
-    case opDefineAll: return true; // Ignore <all>
+        // Ignore <all>
+    case opDefineAll:
+        return false;
 
+        // Ignore all temps (should be local to one instruction)
     case opTemp:
-        return true; // Ignore all temps (should be local to one instruction)
+        return false;
 
         // Would like to handle at least %ZF, %CF one day. For now, filter them out
     case opZF:
     case opCF:
     case opNF:
     case opOF:
-    case opFlags: return true;
+    case opFlags: return false;
 
     case opMemOf:
         // Actually, surely all sensible architectures will only every return
         // in registers. So for now, just filter out all mem-ofs
         // return signature->isStackLocal(prog, e); // Filter out local variables
-        return true;
+        return false;
 
-    case opGlobal: return true; // Never return in globals
+    case opGlobal: return false; // Never return in globals
 
-    default: return false;
+    default: return true;
     }
 }
 

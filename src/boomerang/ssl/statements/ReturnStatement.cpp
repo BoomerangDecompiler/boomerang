@@ -417,7 +417,7 @@ void ReturnStatement::updateModifieds()
         std::shared_ptr<Assign> asgn = stmt->as<Assign>();
         SharedExp colLhs             = asgn->getLeft();
 
-        if (m_proc->filterReturns(colLhs)) {
+        if (!m_proc->canBeReturn(colLhs)) {
             continue; // Filtered out
         }
 
@@ -451,7 +451,7 @@ void ReturnStatement::updateModifieds()
             continue; // Not in collector: delete it (don't copy it)
         }
 
-        if (m_proc->filterReturns(lhs)) {
+        if (!m_proc->canBeReturn(lhs)) {
             continue; // Filtered out: delete it
         }
 
@@ -479,7 +479,7 @@ void ReturnStatement::updateReturns()
         bool found    = false;
         SharedExp loc = stmt->as<Assignment>()->getLeft();
 
-        if (m_proc->filterReturns(loc)) {
+        if (!m_proc->canBeReturn(loc)) {
             continue; // Filtered out
         }
 
@@ -518,7 +518,7 @@ void ReturnStatement::updateReturns()
             continue; // Not in modifieds: delete it (don't copy it)
         }
 
-        if (m_proc->filterReturns(lhs)) {
+        if (!m_proc->canBeReturn(lhs)) {
             continue; // Filtered out: delete it
         }
 

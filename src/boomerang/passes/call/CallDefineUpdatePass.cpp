@@ -80,7 +80,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
             std::shared_ptr<Assignment> as = mm->as<Assignment>();
             SharedExp loc                  = as->getLeft();
 
-            if (proc->filterReturns(loc)) {
+            if (!proc->canBeReturn(loc)) {
                 continue;
             }
 
@@ -94,7 +94,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
     else {
         // Ensure that everything in the UseCollector has an entry in oldDefines
         for (SharedExp loc : *callStmt->getUseCollector()) {
-            if (proc->filterReturns(loc)) {
+            if (!proc->canBeReturn(loc)) {
                 continue; // Filtered out
             }
 
@@ -121,7 +121,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
             continue; // Not in collector: delete it (don't copy it)
         }
 
-        if (proc->filterReturns(lhs)) {
+        if (!proc->canBeReturn(lhs)) {
             continue; // Filtered out: delete it
         }
 

@@ -28,10 +28,10 @@ private slots:
     void testInsertParameter();
     void testParamType();
     void testLookupParam();
-    void testFilterParams();
+    void testCanBeParam();
 
     void testRetStmt();
-    void testFilterReturns();
+    void testCanBeReturn();
 
     void testCreateLocal();
     void testAddLocal();
