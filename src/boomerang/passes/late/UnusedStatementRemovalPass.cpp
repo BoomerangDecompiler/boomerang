@@ -27,9 +27,12 @@ UnusedStatementRemovalPass::UnusedStatementRemovalPass()
 
 bool UnusedStatementRemovalPass::execute(UserProc *proc)
 {
+    if (proc->getProg()->getProject()->getSettings()->debugUnused) {
+        proc->numberStatements();
+    }
+
     // Only remove unused statements after decompiling as much as possible of the proc
-    // Remove unused statements
-    RefCounter refCounts; // The map
+    RefCounter refCounts;
     // Count the references first
     updateRefCounts(proc, refCounts);
 
@@ -37,7 +40,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
     if (proc->getProg()->getProject()->getSettings()->removeNull) {
         remUnusedStmtEtc(proc, refCounts);
         removeNullStatements(proc);
-        proc->debugPrintAll("after removing unused and null statements pass 1");
+        proc->debugPrintAll("after removing unused and null statements");
     }
 
     return true;
