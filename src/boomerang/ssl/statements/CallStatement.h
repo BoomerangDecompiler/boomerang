@@ -110,8 +110,6 @@ public:
     // Set ch if changed (bypassed)
     SharedExp bypassRef(const std::shared_ptr<RefExp> &r, bool &changed);
 
-    void clearUseCollector() { m_useCol.clear(); }
-
     /// Find the reaching definition for expression e.
     /// Find the definition for the given expression, using the embedded Collector object
     /// Was called findArgument(), and used implicit arguments and signature parameters

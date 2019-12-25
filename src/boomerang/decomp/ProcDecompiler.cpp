@@ -336,7 +336,6 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     // distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be
     // duplicates, and so the duplicates must be eliminated.
     PassManager::get()->executePass(PassID::PhiPlacement, proc);
-
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Otherwise sometimes sp is not fully propagated
@@ -351,7 +350,6 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     do {
         // Redo the renaming process to take into account the arguments
         change = PassManager::get()->executePass(PassID::PhiPlacement, proc);
-        // E.g. for new arguments
         change |= PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
         // Seed the return statement with reaching definitions
