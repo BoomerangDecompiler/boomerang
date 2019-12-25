@@ -104,7 +104,7 @@ public:
     SharedExp localiseExp(SharedExp e);
 
     /// Localise only components of e, i.e. xxx if e is m[xxx]
-    void localiseComp(SharedExp e); // Localise only xxx of m[xxx]
+    void localiseComp(SharedExp e);
 
     // Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
     // Set ch if changed (bypassed)
@@ -181,10 +181,10 @@ public:
     UseCollector *getUseCollector() { return &m_useCol; }
 
     /// Add x to the UseCollector for this call
-    void useBeforeDefine(SharedExp x) { m_useCol.insert(x); }
+    void useBeforeDefine(SharedExp x) { m_useCol.collectUse(x); }
 
     /// Remove e from the UseCollector
-    void removeLiveness(SharedExp e) { m_useCol.remove(e); }
+    void removeLiveness(SharedExp e) { m_useCol.removeUse(e); }
 
     /// Remove all livenesses
     void removeAllLive() { m_useCol.clear(); }

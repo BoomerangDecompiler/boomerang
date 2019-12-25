@@ -100,7 +100,7 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
                     continue;
                 }
 
-                if (!uc->exists(assgn->getLeft())) {
+                if (!uc->hasUse(assgn->getLeft())) {
                     continue; // Intersection fails
                 }
 

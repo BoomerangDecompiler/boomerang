@@ -48,11 +48,8 @@ public:
     const_iterator end() const { return m_defs.end(); }
 
 public:
-    /// Clone the given Collector into this one
+    /// Clone the given Collector into this one (discard all existing data)
     void makeCloneOf(const DefCollector &other);
-
-    /// \returns true if initialised
-    inline bool isInitialised() const { return m_initialised; }
 
     /// Clear the location set
     void clear();

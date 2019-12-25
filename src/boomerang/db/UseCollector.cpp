@@ -15,23 +15,22 @@
 
 
 UseCollector::UseCollector()
-    : m_initialised(false)
+{
+}
+
+
+UseCollector::~UseCollector()
 {
 }
 
 
 bool UseCollector::operator==(const UseCollector &other) const
 {
-    if (other.m_initialised != m_initialised) {
-        return false;
-    }
-
-    iterator it1, it2;
-
     if (other.m_locs.size() != m_locs.size()) {
         return false;
     }
 
+    iterator it1, it2;
     for (it1 = m_locs.begin(), it2 = other.m_locs.begin(); it1 != m_locs.end(); ++it1, ++it2) {
         if (!(**it1 == **it2)) {
             return false;
@@ -44,7 +43,6 @@ bool UseCollector::operator==(const UseCollector &other) const
 
 void UseCollector::makeCloneOf(const UseCollector &other)
 {
-    m_initialised = other.m_initialised;
     m_locs.clear();
 
     for (auto const &elem : other) {
@@ -56,11 +54,10 @@ void UseCollector::makeCloneOf(const UseCollector &other)
 void UseCollector::clear()
 {
     m_locs.clear();
-    m_initialised = false;
 }
 
 
-void UseCollector::insert(SharedExp e)
+void UseCollector::collectUse(SharedExp e)
 {
     m_locs.insert(e);
 }
@@ -117,13 +114,13 @@ void UseCollector::fromSSAForm(UserProc *proc, const SharedStmt &def)
 }
 
 
-void UseCollector::remove(SharedExp loc)
+void UseCollector::removeUse(SharedExp loc)
 {
     m_locs.remove(loc);
 }
 
 
-void UseCollector::remove(iterator it)
+UseCollector::iterator UseCollector::removeUse(UseCollector::iterator it)
 {
-    m_locs.erase(it);
+    return m_locs.erase(it);
 }

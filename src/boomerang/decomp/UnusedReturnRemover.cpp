@@ -127,7 +127,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
             }
 
             UseCollector *useCol = cc->getUseCollector();
-            unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
+            unionOfCallerLiveLocs.makeUnion(useCol->getUses());
         }
     }
 

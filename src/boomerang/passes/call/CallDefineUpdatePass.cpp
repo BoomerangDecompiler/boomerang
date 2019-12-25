@@ -117,7 +117,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc,
                 continue; // Not in callee returns -> delete it
             }
         }
-        else if (!callStmt->getUseCollector()->exists(lhs)) {
+        else if (!callStmt->getUseCollector()->hasUse(lhs)) {
             continue; // Not in collector: delete it (don't copy it)
         }
 

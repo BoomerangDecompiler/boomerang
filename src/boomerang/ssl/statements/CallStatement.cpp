@@ -74,10 +74,6 @@ void CallStatement::localiseComp(SharedExp e)
 
 SharedExp CallStatement::localiseExp(SharedExp e)
 {
-    if (!m_defCol.isInitialised()) {
-        return e; // Don't attempt to subscript if the data flow not started yet
-    }
-
     Localiser l(this);
     e = e->clone()->acceptModifier(&l);
 
@@ -1128,7 +1124,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
                 continue;
             }
 
-            if (m_useCol.exists(lhs)) {
+            if (m_useCol.hasUse(lhs)) {
                 result->append(dd);
             }
         }

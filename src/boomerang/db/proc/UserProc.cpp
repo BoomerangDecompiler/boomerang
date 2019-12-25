@@ -911,7 +911,7 @@ bool UserProc::searchAndReplace(const Exp &search, SharedExp replace)
 
 void UserProc::markAsInitialParam(const SharedExp &loc)
 {
-    m_procUseCollector.insert(loc);
+    m_procUseCollector.collectUse(loc);
 }
 
 
