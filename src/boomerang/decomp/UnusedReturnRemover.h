@@ -82,6 +82,10 @@ private:
      */
     void updateForUseChange(UserProc *proc);
 
+    /// Remove returns from the return statement to match the signature of \p proc
+    /// \returns true if any change
+    bool removeReturnsToMatchSignature(UserProc *proc);
+
 private:
     Prog *m_prog;
     ProcSet m_removeRetSet; ///< UserProcs that need their returns updated

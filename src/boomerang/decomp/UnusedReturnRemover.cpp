@@ -99,45 +99,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     }
 
     if (proc->getSignature()->isForced()) {
-        // Respect the forced signature, but use it to remove returns if necessary
-        bool removedRets = false;
-
-        for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
-            assert(*retIt != nullptr && (*retIt)->isAssign());
-            std::shared_ptr<Assign> retDef = (*retIt)->as<Assign>();
-            SharedExp lhs                  = retDef->getLeft();
-
-            // For each location in the returns, check if in the signature
-            bool found = false;
-
-            for (int i = 0; i < proc->getSignature()->getNumReturns(); i++) {
-                if (*proc->getSignature()->getReturnExp(i) == *lhs) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                ++retIt; // Yes, in signature; OK
-            }
-            else {
-                if (m_prog->getProject()->getSettings()->debugUnused) {
-                    LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)",
-                            retDef, proc->getName());
-                }
-
-                // This return is not in the signature. Remove it
-                retIt       = proc->getRetStmt()->erase(retIt);
-                removedRets = true;
-            }
-        }
-
-        if (removedRets) {
-            // Still may have effects on calls or now unused statements
-            updateForUseChange(proc);
-        }
-
-        return removedRets;
+        return removeReturnsToMatchSignature(proc);
     }
 
     // FIXME: this needs to be more sensible when we don't decompile down from main! Probably should
@@ -145,8 +107,8 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     LocationSet unionOfCallerLiveLocs;
 
     if (proc->getName() == "main") { // Probably not needed: main is forced so handled above
-        // Just insert one return for main. Note: at present, the first parameter is still the stack
-        // pointer
+        // Just insert one return for main.
+        // Note: at present, the first parameter is still the stack pointer
         if (proc->getSignature()->getNumReturns() <= 1) {
             // handle the case of missing main() signature
             LOG_WARN("main signature definition is missing; assuming void main()");
@@ -247,20 +209,15 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     std::map<std::shared_ptr<CallStatement>, UseCollector> callLiveness;
 
     for (IRFragment *frag : *proc->getCFG()) {
-        IRFragment::RTLRIterator rrit;
-        StatementList::reverse_iterator srit;
-        std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
-            frag->getLastStmt(rrit, srit));
+        const SharedStmt last = frag->getLastStmt();
 
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
+        if (!last || !last->isCall()) {
             continue;
         }
 
-        UserProc *dest = dynamic_cast<UserProc *>(c->getDestProc());
-
         // Not interested in unanalysed indirect calls (not sure) or calls to lib procs
-        if (dest == nullptr) {
+        std::shared_ptr<CallStatement> c = last->as<CallStatement>();
+        if (!c->getDestProc() || c->getDestProc()->isLib()) {
             continue;
         }
 
@@ -334,4 +291,48 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
             m_removeRetSet.insert(static_cast<UserProc *>(call->getDestProc()));
         }
     }
+}
+
+
+bool UnusedReturnRemover::removeReturnsToMatchSignature(UserProc *proc)
+{
+    // Respect the forced signature, but use it to remove returns if necessary
+    bool removedRets = false;
+
+    for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
+        assert(*retIt != nullptr && (*retIt)->isAssign());
+        std::shared_ptr<Assign> retDef = (*retIt)->as<Assign>();
+        const SharedExp lhs            = retDef->getLeft();
+
+        // For each location in the returns, check if in the signature
+        bool found = false;
+
+        for (int i = 0; i < proc->getSignature()->getNumReturns(); i++) {
+            if (*proc->getSignature()->getReturnExp(i) == *lhs) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            ++retIt; // Yes, in signature; OK
+        }
+        else {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
+                LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", retDef,
+                        proc->getName());
+            }
+
+            // This return is not in the signature. Remove it
+            retIt       = proc->getRetStmt()->erase(retIt);
+            removedRets = true;
+        }
+    }
+
+    if (removedRets) {
+        // Still may have effects on calls or now unused statements
+        updateForUseChange(proc);
+    }
+
+    return removedRets;
 }
