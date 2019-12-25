@@ -447,7 +447,7 @@ void ReturnStatement::updateModifieds()
         std::shared_ptr<Assignment> asgn = (*rit)->as<Assignment>();
         SharedExp lhs                    = asgn->getLeft();
 
-        if (!m_col.existsOnLeft(lhs)) {
+        if (!m_col.hasDefOf(lhs)) {
             continue; // Not in collector: delete it (don't copy it)
         }
 
