@@ -310,8 +310,6 @@ void ProcCFG::print(OStream &out) const
     for (IRFragment *frag : *this) {
         frag->print(out);
     }
-
-    out << '\n';
 }
 
 

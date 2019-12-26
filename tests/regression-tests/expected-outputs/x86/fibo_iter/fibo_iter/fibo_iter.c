@@ -32,8 +32,8 @@ __size32 fib(int param1)
         if (param1 > 2) {
             edx = param1 - 2;
             do {
-                ecx_1 = ecx;
                 edx_1 = edx;
+                ecx_1 = ecx;
                 ecx = ecx_1 + ebx;
                 edx = edx_1 - 1;
                 ebx = ecx_1;

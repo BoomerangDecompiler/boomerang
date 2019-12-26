@@ -13,6 +13,7 @@
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/ProgSymbolWriter.h"
@@ -392,10 +393,12 @@ void Project::addWatcher(IWatcher *watcher)
 }
 
 
-void Project::alertDecompileDebugPoint(UserProc *p, const char *description)
+void Project::alertDecompileDebugPoint(UserProc *p, const QString &description)
 {
+    p->debugPrintAll(description);
+
     for (IWatcher *elem : m_watchers) {
-        elem->onDecompileDebugPoint(p, description);
+        elem->onDecompileDebugPoint(p, qPrintable(description));
     }
 }
 

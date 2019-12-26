@@ -123,13 +123,14 @@ bool PassManager::executePass(IPass *pass, UserProc *proc)
     assert(pass != nullptr);
     LOG_VERBOSE("Executing pass '%1' for '%2'", pass->getName(), proc->getName());
 
-    const bool changed = pass->execute(proc);
+    const bool change = pass->execute(proc);
 
-    QString msg = QString("after executing pass '%1'").arg(pass->getName());
-    proc->debugPrintAll(qPrintable(msg));
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
+    if (Log::getOrCreateLog().getLogLevel() >= LogLevel::Verbose1) {
+        const QString msg = QString("after executing pass '%1'").arg(pass->getName());
+        proc->debugPrintAll(msg);
+    }
 
-    return changed;
+    return change;
 }
 
 

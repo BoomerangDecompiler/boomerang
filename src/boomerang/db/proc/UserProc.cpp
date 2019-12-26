@@ -979,10 +979,7 @@ void UserProc::print(OStream &out) const
         out << "  " << tgt2 << "\n";
     }
 
-    QString tgt3;
-    OStream ost3(&tgt3);
-    m_cfg->print(ost3);
-    out << tgt3 << "\n";
+    m_cfg->print(out);
 }
 
 

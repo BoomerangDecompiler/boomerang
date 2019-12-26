@@ -240,10 +240,6 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
 
         PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
         PassManager::get()->executePass(PassID::StatementPropagation, proc);
-
-        if (m_prog->getProject()->getSettings()->verboseOutput) {
-            proc->debugPrintAll("after propagating locals");
-        }
     }
 
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, proc);
@@ -253,7 +249,6 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
         PassManager::get()->executePass(PassID::ParameterSymbolMap, proc);
-        proc->debugPrintAll("after adding new parameters");
     }
 
     // Or just CallArgumentUpdate?

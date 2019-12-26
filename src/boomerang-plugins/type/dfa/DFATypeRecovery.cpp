@@ -243,7 +243,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 {
     ProcCFG *cfg = proc->getCFG();
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "before data-flow type analysis");
 
     // First use the type information from the signature.
     // Sometimes needed to split variables
@@ -291,17 +291,12 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     }
 
     if (proc->getProg()->getProject()->getSettings()->debugTA) {
-        LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
+        LOG_MSG("### Results for data-flow based type analysis for %1 ###", proc->getName());
         printResults(stmts, iter);
-        LOG_MSG("### End results for Data flow based type analysis for %1 ###", proc->getName());
+        LOG_MSG("### End results for data-flow based type analysis for %1 ###", proc->getName());
     }
 
     // Now use the type information gathered
-
-    proc->getProg()->getProject()->alertDecompileDebugPoint(
-        proc, "Before other uses of DFA type analysis");
-    proc->debugPrintAll("Before other uses of DFA type analysis");
-
     Prog *_prog = proc->getProg();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
@@ -498,8 +493,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         }
     }
 
-    proc->debugPrintAll("After application of DFA type analysis");
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "after data-flow type analysis");
 }
 
 
