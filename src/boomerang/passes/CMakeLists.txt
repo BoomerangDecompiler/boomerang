@@ -9,7 +9,6 @@
 
 list(APPEND boomerang-passes-sources
     passes/Pass
-    passes/PassGroup
     passes/PassManager
 
     passes/dataflow/DominatorPass

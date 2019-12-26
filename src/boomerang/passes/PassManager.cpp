@@ -97,21 +97,6 @@ PassManager *PassManager::get()
 }
 
 
-bool PassManager::createPassGroup(const QString &name, const std::initializer_list<IPass *> &passes)
-{
-    auto it = m_passGroups.find(name);
-    if (it != m_passGroups.end()) {
-        LOG_WARN("Cannot create pass group with name '%1': "
-                 "A group of the same name already exists",
-                 name);
-        return false;
-    }
-
-    m_passGroups.insert(name, PassGroup(name, passes));
-    return true;
-}
-
-
 bool PassManager::executePass(PassID passID, UserProc *proc)
 {
     return executePass(getPass(passID), proc);
@@ -131,26 +116,6 @@ bool PassManager::executePass(IPass *pass, UserProc *proc)
     }
 
     return change;
-}
-
-
-bool PassManager::executePassGroup(const QString &name, UserProc *proc)
-{
-    auto it = m_passGroups.find(name);
-    if (it == m_passGroups.end()) {
-        throw std::invalid_argument(
-            QString("Pass group '%1' does not exist").arg(name).toStdString());
-    }
-
-    const PassGroup &group = it.value();
-    bool changed           = false;
-
-    LOG_VERBOSE("Executing pass group '%1' for '%2'", name, proc->getName());
-    for (IPass *pass : group) {
-        changed |= executePass(pass, proc);
-    }
-
-    return changed;
 }
 
 
