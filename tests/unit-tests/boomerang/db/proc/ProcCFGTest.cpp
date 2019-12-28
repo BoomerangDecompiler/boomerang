@@ -36,7 +36,7 @@ void ProcCFGTest::testHasFragment()
 
     {
         UserProc proc1(Address(0x1000), "test", nullptr);
-        IRFragment *frag = proc1.getCFG()->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag = proc1.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb1);
         QVERIFY(proc1.getCFG()->hasFragment(frag));
     }
 
@@ -44,8 +44,8 @@ void ProcCFGTest::testHasFragment()
         UserProc proc1(Address(0x1000), "test1", nullptr);
         UserProc proc2(Address(0x2000), "test2", nullptr);
 
-        IRFragment *frag1 = proc1.getCFG()->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
-        IRFragment *frag2 = proc2.getCFG()->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
+        IRFragment *frag1 = proc1.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag2 = proc2.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x2000), 1, 1), bb2);
 
         QVERIFY(frag1 != nullptr);
         QVERIFY(frag2 != nullptr);
@@ -67,7 +67,7 @@ void ProcCFGTest::testCreateFragment()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        IRFragment *frag = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb1);
         QVERIFY(frag != nullptr);
         QVERIFY(frag->isType(FragType::Oneway));
         QCOMPARE(frag->getLowAddr(), Address(0x1000));
@@ -81,7 +81,7 @@ void ProcCFGTest::testCreateFragment()
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
 
-        IRFragment *frag = cfg->createFragment(createRTLs(Address(0x1000), 1, 0), bb1);
+        IRFragment *frag = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 0), bb1);
         QVERIFY(frag != nullptr);
         QVERIFY(frag->isType(FragType::Oneway));
         QCOMPARE(frag->getLowAddr(), Address(0x1000));
@@ -119,13 +119,13 @@ void ProcCFGTest::testEntryAndExitFragment()
     {
         UserProc proc(Address(0x1000), "test", nullptr);
         ProcCFG *cfg = proc.getCFG();
-        IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 4, 1), bb1);
+        IRFragment *frag1 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 4, 1), bb1);
         cfg->setEntryAndExitFragment(frag1);
 
         QCOMPARE(cfg->getEntryFragment(), frag1);
         QCOMPARE(cfg->getExitFragment(), nullptr);
 
-        IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x1004), 4, 1), bb2);
+        IRFragment *frag2 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1004), 4, 1), bb2);
         cfg->addEdge(frag1, frag2);
 
         cfg->setEntryAndExitFragment(frag1);
@@ -157,7 +157,7 @@ void ProcCFGTest::testRemoveFragment()
         bb2->setProc(&proc);
 
 
-        IRFragment *frag = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag = cfg->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb1);
         QCOMPARE(cfg->getNumFragments(), 1);
 
         cfg->removeFragment(frag);
@@ -173,8 +173,8 @@ void ProcCFGTest::testRemoveFragment()
         bb1->setProc(&proc);
         bb2->setProc(&proc);
 
-        IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
-        IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
+        IRFragment *frag1 = cfg->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag2 = cfg->createFragment(FragType::Ret,  createRTLs(Address(0x2000), 1, 1), bb2);
         cfg->addEdge(frag1, frag2);
         QVERIFY(cfg->isWellFormed());
 
@@ -214,8 +214,8 @@ void ProcCFGTest::testAddEdge()
         bb1->setProc(&proc);
         bb2->setProc(&proc);
 
-        IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 2, 1), bb1);
-        IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 2, 1), bb2);
+        IRFragment *frag1 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 2, 1), bb1);
+        IRFragment *frag2 = cfg->createFragment(FragType::Ret,    createRTLs(Address(0x2000), 2, 1), bb2);
 
         cfg->addEdge(frag1, frag2);
 
@@ -245,7 +245,7 @@ void ProcCFGTest::testAddEdge()
         bb1->setProc(&proc);
         bb2->setProc(&proc);
 
-        IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 2, 1), bb1);
+        IRFragment *frag1 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 2, 1), bb1);
         cfg->addEdge(frag1, frag1);
 
         QCOMPARE(frag1->getNumSuccessors(), 1);
@@ -284,7 +284,7 @@ void ProcCFGTest::testIsWellFormed()
         bb1->setProc(&proc);
         bb2->setProc(&proc);
 
-        cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
+        cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb1);
         QVERIFY(cfg->isWellFormed());
     }
 
@@ -296,8 +296,8 @@ void ProcCFGTest::testIsWellFormed()
         bb1->setProc(&proc);
         bb2->setProc(nullptr);
 
-        cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
-        cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
+        cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb1);
+        cfg->createFragment(FragType::Ret,    createRTLs(Address(0x2000), 1, 1), bb2);
 
         QVERIFY(!cfg->isWellFormed());
 
@@ -311,8 +311,8 @@ void ProcCFGTest::testIsWellFormed()
         bb1->setProc(&proc);
         bb2->setProc(&proc);
 
-        IRFragment *frag1 = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb1);
-        IRFragment *frag2 = cfg->createFragment(createRTLs(Address(0x2000), 1, 1), bb2);
+        IRFragment *frag1 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb1);
+        IRFragment *frag2 = cfg->createFragment(FragType::Ret,    createRTLs(Address(0x2000), 1, 1), bb2);
 
         frag1->addSuccessor(frag2);
         QVERIFY(!cfg->isWellFormed());

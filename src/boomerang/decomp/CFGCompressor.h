@@ -38,4 +38,6 @@ private:
 
     /// Removes fragments that are not reachable from the entry fragment.
     bool removeOrphanFragments(ProcCFG *cfg);
+
+    bool compressFallthroughs(ProcCFG *cfg);
 };

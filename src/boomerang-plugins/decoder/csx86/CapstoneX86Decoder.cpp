@@ -222,11 +222,11 @@ bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, LiftedI
         *insn.m_operands[1] == *Const::get(Address(0xFFFFFFF0U))) {
 
         // special hack to ignore 'and esp, 0xfffffff0' in startup code
-        lifted.appendRTL(std::make_unique<RTL>(insn.m_addr), 0);
+        lifted.addPart(std::make_unique<RTL>(insn.m_addr));
     }
     // clang-format on
     else {
-        lifted.appendRTL(createRTLForInstruction(insn), 0);
+        lifted.addPart(createRTLForInstruction(insn));
     }
 
     return lifted.getFirstRTL() != nullptr;
@@ -454,6 +454,19 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
     // exit:
     //
 
+    if (m_debugMode) {
+        const std::size_t numOperands = insn.getNumOperands();
+        QString argNames;
+        for (std::size_t i = 0; i < numOperands; i++) {
+            if (i != 0) {
+                argNames += " ";
+            }
+            argNames += insn.m_operands[i]->toString();
+        }
+
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
+    }
+
     const SharedExp dest   = insn.m_operands[0];
     const SharedExp src    = insn.m_operands[1];
     const std::size_t size = dest->isRegOfConst()
@@ -464,6 +477,8 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
 
     const int init    = insn.m_id == cs::X86_INS_BSF ? 0 : size - 1;
     const OPER incdec = insn.m_id == cs::X86_INS_BSF ? opPlus : opMinus;
+
+    LiftedInstructionPart *rtls[4];
 
     // first RTL
     {
@@ -477,7 +492,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
         rtl->append(b);
 
-        result.appendRTL(std::move(rtl), 0);
+        rtls[0] = result.addPart(std::move(rtl));
     }
 
     // second RTL
@@ -489,12 +504,12 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
 
-        result.appendRTL(std::move(rtl), 1);
+        rtls[1] = result.addPart(std::move(rtl));
     }
 
     // third RTL
     {
-        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 0));
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 2));
 
         rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
                                              Binary::get(incdec, dest->clone(), Const::get(1))));
@@ -506,8 +521,22 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
                                    Const::get(0)));
         rtl->append(b);
 
-        result.appendRTL(std::move(rtl), 2);
+        rtls[2] = result.addPart(std::move(rtl));
     }
+
+    // fourth (empty) RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 3));
+        rtls[3] = result.addPart(std::move(rtl));
+    }
+
+    result.addEdge(rtls[0], rtls[3]);
+    result.addEdge(rtls[0], rtls[1]);
+
+    result.addEdge(rtls[1], rtls[2]);
+
+    result.addEdge(rtls[2], rtls[2]);
+    result.addEdge(rtls[2], rtls[3]);
 
     return true;
 }

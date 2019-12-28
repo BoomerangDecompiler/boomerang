@@ -161,8 +161,10 @@ IRFragment *StringInstructionProcessor::splitForBranch(IRFragment *frag, RTL *st
     const bool entryFragNeedsUpdate = !haveA && frag == m_proc->getCFG()->getEntryFragment();
     m_proc->getCFG()->removeFragment(frag);
 
-    IRFragment *skipFrag = m_proc->getCFG()->createFragment(std::move(skipFragRTLs), origBB);
-    IRFragment *rptFrag  = m_proc->getCFG()->createFragment(std::move(rptFragRTLs), origBB);
+    IRFragment *skipFrag = m_proc->getCFG()->createFragment(FragType::Twoway,
+                                                            std::move(skipFragRTLs), origBB);
+    IRFragment *rptFrag = m_proc->getCFG()->createFragment(FragType::Twoway, std::move(rptFragRTLs),
+                                                           origBB);
 
     assert(skipFrag && rptFrag);
 

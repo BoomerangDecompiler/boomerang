@@ -31,7 +31,9 @@ IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
     , m_listOfRTLs(std::move(rtls))
     , m_fragType(FragType::Fall)
 {
-    assert(m_listOfRTLs && !m_listOfRTLs->empty());
+    assert(m_listOfRTLs != nullptr);
+    assert(!m_listOfRTLs->empty());
+
     updateAddresses();
 }
 

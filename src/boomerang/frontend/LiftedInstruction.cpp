@@ -12,12 +12,11 @@
 
 LiftedInstruction::LiftedInstruction()
 {
-    reset();
 }
 
 
 LiftedInstruction::LiftedInstruction(LiftedInstruction &&other)
-    : m_rtls(std::move(other.m_rtls))
+    : m_parts(std::move(other.m_parts))
 {
 }
 
@@ -29,57 +28,32 @@ LiftedInstruction::~LiftedInstruction()
 
 LiftedInstruction &LiftedInstruction::operator=(LiftedInstruction &&other)
 {
-    m_rtls = std::move(other.m_rtls);
+    m_parts = std::move(other.m_parts);
 
     return *this;
 }
 
 
-void LiftedInstruction::reset()
+LiftedInstructionPart *LiftedInstruction::addPart(std::unique_ptr<RTL> rtl)
 {
-    m_rtls.clear();
+    m_parts.push_back(std::move(rtl));
+    return &m_parts.back();
 }
 
 
-void LiftedInstruction::appendRTL(std::unique_ptr<RTL> rtl, int numRTLsBefore)
+void LiftedInstruction::addEdge(LiftedInstructionPart *from, LiftedInstructionPart *to)
 {
-    assert(m_rtls.size() == (std::size_t)numRTLsBefore);
-    Q_UNUSED(numRTLsBefore);
+    assert(from != nullptr);
+    assert(to != nullptr);
 
-    m_rtls.push_back(std::move(rtl));
+    from->addSuccessor(to);
+    to->addPredecessor(from);
 }
 
 
-std::unique_ptr<RTL> LiftedInstruction::useSingleRTL()
+std::list<LiftedInstructionPart> LiftedInstruction::use()
 {
-    assert(this->isSingleRTL());
-    std::unique_ptr<RTL> rtl = std::move(m_rtls.front());
-    reset();
-    return rtl;
-}
-
-
-RTLList LiftedInstruction::useRTLs()
-{
-    RTLList &&rtls = std::move(m_rtls);
-    reset();
-    return std::move(rtls);
-}
-
-
-void LiftedInstruction::addEdge(const RTL *from, const RTL *to)
-{
-    m_edges.push_back({ from, to });
-}
-
-
-RTL *LiftedInstruction::getFirstRTL()
-{
-    return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
-}
-
-
-const RTL *LiftedInstruction::getFirstRTL() const
-{
-    return !m_rtls.empty() ? m_rtls.front().get() : nullptr;
+    auto parts = std::move(m_parts);
+    m_parts.clear();
+    return parts;
 }

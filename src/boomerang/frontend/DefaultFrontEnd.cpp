@@ -157,7 +157,6 @@ bool DefaultFrontEnd::disassembleAll()
                     continue;
                 }
 
-
                 // Not yet disassembled - do it now
                 if (!disassembleFragment(userProc, userProc->getEntryAddress())) {
                     return false;
@@ -544,8 +543,9 @@ bool DefaultFrontEnd::disassembleFragment(UserProc *proc, Address addr)
     }     // while getNextAddress() != Address::INVALID
 
     tagFunctionBBs(proc);
-
+    proc->setStatus(ProcStatus::Decoded);
     m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
+
     LOG_VERBOSE("### Finished disassembling proc '%1' ###", proc->getName());
     return true;
 }
@@ -563,13 +563,11 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     }
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
-        Address dest = callStmt->getFixedDest();
-
         // Don't visit the destination of a register call
-        Function *np = callStmt->getDestProc();
+        const Address dest = callStmt->getFixedDest();
+        Function *np       = callStmt->getDestProc();
 
         if ((np == nullptr) && (dest != Address::INVALID)) {
-            // np = newProc(proc->getProg(), dest);
             np = proc->getProg()->getOrCreateFunction(dest);
         }
 
@@ -579,12 +577,28 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     }
 
     // add edges for fragments
-    for (IRFragment *frag : *procCFG) {
-        const BasicBlock *bb = frag->getBB();
+    while (!m_needSuccessors.empty()) {
+        IRFragment *frag = m_needSuccessors.front();
+        m_needSuccessors.pop_front();
 
-        for (BasicBlock *succ : bb->getSuccessors()) {
-            IRFragment *succFragment = procCFG->getFragmentByAddr(succ->getLowAddr());
-            procCFG->addEdge(frag, succFragment);
+        const BasicBlock *bb = frag->getBB();
+        auto it              = std::find_if(
+            bb->getInsns().begin(), bb->getInsns().end(),
+            [frag, this](const MachineInstruction &insn) { return m_lastFragment[&insn] == frag; });
+
+        assert(it != bb->getInsns().end());
+        std::advance(it, 1);
+
+        if (it == bb->getInsns().end()) {
+            for (BasicBlock *succ : bb->getSuccessors()) {
+                IRFragment *succFrag = m_firstFragment[&succ->getInsns().front()];
+                procCFG->addEdge(frag, succFrag);
+            }
+        }
+        else {
+            // this is within a BB
+            IRFragment *succFrag = m_firstFragment[&(*it)];
+            procCFG->addEdge(frag, succFrag);
         }
     }
 
@@ -593,12 +607,12 @@ bool DefaultFrontEnd::liftProc(UserProc *proc)
     IRFragment::RTLIterator rit;
     StatementList::iterator sit;
 
-    for (IRFragment *bb : *procCFG) {
-        for (SharedStmt stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
-             stmt            = bb->getNextStmt(rit, sit)) {
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
             assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
             stmt->setProc(proc);
-            stmt->setFragment(bb);
+            stmt->setFragment(frag);
         }
     }
 
@@ -739,7 +753,7 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, LiftedInst
                   "treating instruction as NOP",
                   insn.m_templateName, insn.m_addr);
 
-        lifted.appendRTL(std::make_unique<RTL>(insn.m_addr), 0);
+        lifted.addPart(std::make_unique<RTL>(insn.m_addr));
     }
 
     return true;
@@ -753,7 +767,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
         return false;
     }
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
     ProcCFG *procCFG = proc->getCFG();
 
     for (const MachineInstruction &insn : currentBB->getInsns()) {
@@ -764,219 +777,316 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
             return false;
         }
 
-        for (auto ss = lifted.getFirstRTL()->begin(); ss != lifted.getFirstRTL()->end(); ++ss) {
-            SharedStmt s = *ss;
-            s->setProc(proc); // let's do this really early!
-            s->simplify();
+        if (!lifted.isSimple()) {
+            // this is bsf/bsr/rep* etc.
+            std::list<LiftedInstructionPart> parts = lifted.use();
+            std::list<IRFragment *> frags;
 
-            auto jumpStmt = std::dynamic_pointer_cast<GotoStatement>(s);
+            for (std::size_t i = 0; i < parts.size(); ++i) {
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                bbRTLs->push_back(std::move(std::next(parts.begin(), i)->m_rtl));
 
-            // Check for a call to an already existing procedure (including self recursive umps),
-            // or to the PLT (note that a LibProc entry for the PLT function may not yet exist)
-            if (s->getKind() == StmtType::Goto) {
-                preprocessProcGoto(ss, jumpStmt->getFixedDest(),
-                                   lifted.getFirstRTL()->getStatements(), lifted.getFirstRTL());
-                s = *ss; // *ss can be changed within preprocessProcGoto
+                FragType fragType = FragType::Fall;
+                if (!bbRTLs->back()->empty()) {
+                    switch (bbRTLs->back()->back()->getKind()) {
+                    case StmtType::Goto: fragType = FragType::Oneway; break;
+                    case StmtType::Branch: fragType = FragType::Twoway; break;
+                    default: fragType = FragType::Fall; break;
+                    }
+                }
+
+                IRFragment *frag = procCFG->createFragment(fragType, std::move(bbRTLs), currentBB);
+                frags.push_back(frag);
             }
 
-            switch (s->getKind()) {
-            case StmtType::Case: {
-                SharedExp jumpDest = jumpStmt->getDest();
+            assert(parts.size() == frags.size());
 
-                // Check for indirect calls to library functions, especially in Win32 programs
-                if (refersToImportedFunction(jumpDest)) {
-                    LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.",
-                                jumpStmt);
+            for (std::size_t i = 0; i < parts.size(); ++i) {
+                LiftedInstructionPart &part = *std::next(parts.begin(), i);
+                IRFragment *frag            = *std::next(frags.begin(), i);
 
-                    // jump to a library function
-                    // replace with a call ret
-                    const BinarySymbol
-                        *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
-                            jumpDest->access<Const, 1>()->getAddr());
-                    assert(sym != nullptr);
+                for (LiftedInstructionPart *succ : part.getSuccessors()) {
+                    const std::size_t idx = std::distance(
+                        parts.begin(), std::find_if(parts.begin(), parts.end(),
+                                                    [succ](auto &a) { return &a == succ; }));
 
-                    QString func = sym->getName();
-                    std::shared_ptr<CallStatement> call(new CallStatement);
-                    call->setDest(jumpDest->clone());
-                    LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
+                    IRFragment *succFrag = *std::next(frags.begin(), idx);
+                    procCFG->addEdge(frag, succFrag);
+                }
+            }
 
-                    if (lp == nullptr) {
-                        LOG_FATAL("getLibraryProc() returned nullptr");
-                    }
+            m_firstFragment[&insn] = frags.front();
+            m_lastFragment[&insn]  = frags.back();
+            m_needSuccessors.push_back(frags.back());
+            continue;
+        }
 
-                    call->setDestProc(lp);
+        std::unique_ptr<RTL> rtl = lifted.useSingleRTL();
 
-                    std::unique_ptr<RTL> rtl(new RTL(lifted.getFirstRTL()->getAddress(), { call }));
-                    bbRTLs->push_back(std::move(rtl));
+        if (rtl->empty()) {
+            auto rtls = std::make_unique<RTLList>();
+            rtls->push_back(std::move(rtl));
 
-                    IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
-                    appendSyntheticReturn(callFrag);
+            IRFragment *frag = procCFG->createFragment(FragType::Fall, std::move(rtls), currentBB);
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+            m_needSuccessors.push_back(frag);
+            continue;
+        }
 
-                    if (lifted.getFirstRTL()->getAddress() == proc->getEntryAddress()) {
-                        // it's a thunk
-                        // Proc *lp = prog->findProc(func.c_str());
-                        func = "__imp_" + func;
-                        proc->setName(func);
-                        // lp->setName(func.c_str());
-                        m_program->getProject()->alertSignatureUpdated(proc);
-                    }
+        for (SharedStmt s : *rtl) {
+            // Make sure only last statements are CTIs (but also allow non-CTIs)
+            assert(s != nullptr);
+            assert(s->isAssignment() || (rtl->back() == s));
 
-                    callList.push_back(call);
+            s->setProc(proc); // let's do this really early!
+            s->simplify();
+        }
+
+        // Check for a call to an already existing procedure (including self recursive jumps),
+        // or to the PLT (note that a LibProc entry for the PLT function may not yet exist)
+        if (!rtl->empty() && rtl->back()->isGoto()) {
+            std::shared_ptr<GotoStatement> jumpStmt = rtl->back()->as<GotoStatement>();
+            preprocessProcGoto(std::prev(rtl->end()), jumpStmt->getFixedDest(),
+                               rtl->getStatements(), rtl.get());
+        }
+
+
+        SharedStmt s                            = rtl->back();
+        std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(s);
+
+
+        switch (s->getKind()) {
+        case StmtType::Case: {
+            SharedExp jumpDest = jumpStmt->getDest();
+
+            // Check for indirect calls to library functions, especially in Win32 programs
+            if (refersToImportedFunction(jumpDest)) {
+                LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.", jumpStmt);
+
+                // jump to a library function
+                // replace with a call/ret
+                const BinarySymbol
+                    *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
+                        jumpDest->access<Const, 1>()->getAddr());
+                assert(sym != nullptr);
+
+                QString func = sym->getName();
+                std::shared_ptr<CallStatement> call(new CallStatement);
+                call->setDest(jumpDest->clone());
+                LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
+
+                if (lp == nullptr) {
+                    LOG_FATAL("getOrCreateLibraryProc() returned nullptr");
+                }
+
+                call->setDestProc(lp);
+
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                std::unique_ptr<RTL> callRTL(new RTL(rtl->getAddress(), { call }));
+                bbRTLs->push_back(std::move(callRTL));
+
+                IRFragment *callFrag   = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
+
+                appendSyntheticReturn(callFrag);
+
+                if (rtl->getAddress() == proc->getEntryAddress()) {
+                    // it's a thunk
+                    // Proc *lp = prog->findProc(func.c_str());
+                    func = "__imp_" + func;
+                    proc->setName(func);
+                    // lp->setName(func.c_str());
+                    m_program->getProject()->alertSignatureUpdated(proc);
+                }
+
+                callList.push_back(call);
+                rtl.reset();
+                break;
+            }
+
+            // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
+            // to be a switch stmt
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
+            IRFragment *frag       = procCFG->createFragment(FragType::CompJump, std::move(bbRTLs),
+                                                       currentBB);
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+
+            if (currentBB->getNumSuccessors() > 0) {
+                m_needSuccessors.push_back(frag);
+            }
+
+            LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr, jumpDest);
+        } break;
+
+        case StmtType::Call: {
+            std::shared_ptr<CallStatement> call = s->as<CallStatement>();
+
+            // Check for a dynamic linked library function
+            if (refersToImportedFunction(call->getDest())) {
+                // Dynamic linked proc pointers are treated as static.
+                Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
+                QString name       = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(linkedAddr)
+                                   ->getName();
+
+                Function *function = proc->getProg()->getOrCreateLibraryProc(name);
+                call->setDestProc(function);
+                call->setIsComputed(false);
+            }
+
+            const Address functionAddr = getAddrOfLibraryThunk(call, proc);
+            if (functionAddr != Address::INVALID) {
+                // Yes, it's a library function. Look up its name.
+                QString name = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(functionAddr)
+                                   ->getName();
+
+                // Assign the proc to the call
+                Function *p = proc->getProg()->getOrCreateLibraryProc(name);
+
+                if (call->getDestProc()) {
+                    // prevent unnecessary __imp procs
+                    m_program->removeFunction(call->getDestProc()->getName());
+                }
+
+                call->setDestProc(p);
+                call->setIsComputed(false);
+                call->setDest(Location::memOf(Const::get(functionAddr)));
+            }
+
+            // Treat computed and static calls separately
+            if (call->isComputed()) {
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                bbRTLs->push_back(std::move(rtl));
+
+                IRFragment *callFrag   = procCFG->createFragment(FragType::CompCall,
+                                                               std::move(bbRTLs), currentBB);
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
+                m_needSuccessors.push_back(callFrag);
+
+                extraProcessCall(callFrag);
+
+                // Add this call to the list of calls to analyse. We won't
+                // be able to analyse it's callee(s), of course.
+                callList.push_back(call);
+            }
+            else {
+                // Static call
+                const Address callAddr = call->getFixedDest();
+
+                // Call the virtual helper function. If implemented, will check for
+                // machine specific funcion calls
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                if (isHelperFunc(callAddr, insn.m_addr, *bbRTLs)) {
+                    IRFragment *frag = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+                    m_firstFragment[&insn] = frag;
+                    m_lastFragment[&insn]  = frag;
+                    m_needSuccessors.push_back(frag);
+
+                    rtl.reset(); // Discard the call semantics
                     break;
                 }
 
-                // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
-                // to be a switch stmt
-                bbRTLs->push_back(lifted.useSingleRTL());
+                bbRTLs->push_back(std::move(rtl));
 
-                procCFG->createFragment(std::move(bbRTLs), currentBB);
-                LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr, jumpDest);
-            } break;
+                // Add this non computed call site to the set of call sites which need
+                // to be analysed later.
+                callList.push_back(call);
 
-            case StmtType::Call: {
-                std::shared_ptr<CallStatement> call = s->as<CallStatement>();
-
-                // Check for a dynamic linked library function
-                if (refersToImportedFunction(call->getDest())) {
-                    // Dynamic linked proc pointers are treated as static.
-                    Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                    QString name       = m_program->getBinaryFile()
-                                       ->getSymbols()
-                                       ->findSymbolByAddress(linkedAddr)
-                                       ->getName();
-
-                    Function *function = proc->getProg()->getOrCreateLibraryProc(name);
-                    call->setDestProc(function);
-                    call->setIsComputed(false);
-                }
-
-                const Address functionAddr = getAddrOfLibraryThunk(call, proc);
-                if (functionAddr != Address::INVALID) {
-                    // Yes, it's a library function. Look up its name.
-                    QString name = m_program->getBinaryFile()
-                                       ->getSymbols()
-                                       ->findSymbolByAddress(functionAddr)
-                                       ->getName();
-
-                    // Assign the proc to the call
-                    Function *p = proc->getProg()->getOrCreateLibraryProc(name);
-
-                    if (call->getDestProc()) {
-                        // prevent unnecessary __imp procs
-                        m_program->removeFunction(call->getDestProc()->getName());
-                    }
-
-                    call->setDestProc(p);
-                    call->setIsComputed(false);
-                    call->setDest(Location::memOf(Const::get(functionAddr)));
-                }
-
-                // Treat computed and static calls separately
-                if (call->isComputed()) {
-                    bbRTLs->push_back(lifted.useSingleRTL());
-
-                    IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs), currentBB);
-                    extraProcessCall(callFrag);
-
-                    // Add this call to the list of calls to analyse. We won't
-                    // be able to analyse it's callee(s), of course.
+                // Record the called address as the start of a new procedure if it
+                // didn't already exist.
+                if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
+                    (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
                     callList.push_back(call);
+
+                    if (m_program->getProject()->getSettings()->traceDecoder) {
+                        LOG_MSG("p%1", callAddr);
+                    }
+                }
+
+                // Check if this is the _exit or exit function. May prevent us from
+                // attempting to decode invalid instructions, and getting invalid stack
+                // height errors
+                QString procName = m_program->getSymbolNameByAddr(callAddr);
+
+                if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
+                    Address a = call->getDest()->access<Const, 1>()->getAddr();
+                    procName  = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(a)
+                                   ->getName();
+                }
+
+                IRFragment *callFrag = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+
+                CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
+
+                if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
+                    // Make sure it has a return appended (so there is only one exit
+                    // from the function)
+                    appendSyntheticReturn(callFrag);
+                    extraProcessCall(callFrag);
                 }
                 else {
-                    // Static call
-                    const Address callAddr = call->getFixedDest();
-
-                    // Call the virtual helper function. If implemented, will check for
-                    // machine specific funcion calls
-                    if (isHelperFunc(callAddr, insn.m_addr, *bbRTLs)) {
-                        // We have already added to BB_rtls
-                        lifted.useSingleRTL(); // Discard the call semantics
-                        break;
-                    }
-
-                    bbRTLs->push_back(lifted.useSingleRTL());
-
-                    // Add this non computed call site to the set of call sites which need
-                    // to be analysed later.
-                    callList.push_back(call);
-
-                    // Record the called address as the start of a new procedure if it
-                    // didn't already exist.
-                    if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
-                        (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
-                        callList.push_back(call);
-
-                        if (m_program->getProject()->getSettings()->traceDecoder) {
-                            LOG_MSG("p%1", callAddr);
-                        }
-                    }
-
-                    // Check if this is the _exit or exit function. May prevent us from
-                    // attempting to decode invalid instructions, and getting invalid stack
-                    // height errors
-                    QString procName = m_program->getSymbolNameByAddr(callAddr);
-
-                    if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
-                        Address a = call->getDest()->access<Const, 1>()->getAddr();
-                        procName  = m_program->getBinaryFile()
-                                       ->getSymbols()
-                                       ->findSymbolByAddress(a)
-                                       ->getName();
-                    }
-
-                    if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
-                        // Make sure it has a return appended (so there is only one exit
-                        // from the function)
-                        IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
-                                                                       currentBB);
+                    if (call->isReturnAfterCall()) {
                         appendSyntheticReturn(callFrag);
-                        extraProcessCall(callFrag);
                     }
                     else {
-                        // Create the new basic block
-                        IRFragment *callFrag = procCFG->createFragment(std::move(bbRTLs),
-                                                                       currentBB);
-
-                        if (call->isReturnAfterCall()) {
-                            appendSyntheticReturn(callFrag);
-                        }
-
-                        extraProcessCall(callFrag);
+                        m_needSuccessors.push_back(callFrag);
                     }
+
+                    extraProcessCall(callFrag);
                 }
-            } break;
 
-            case StmtType::Ret: {
-                // Create the list of RTLs for the next basic block and
-                // continue with the next instruction.
-                bbRTLs->push_back(lifted.useSingleRTL());
-                createReturnBlock(std::move(bbRTLs), currentBB);
-            } break;
-
-            case StmtType::Goto:
-            case StmtType::Branch:
-            case StmtType::Assign:
-            case StmtType::BoolAssign:
-                //                 case StmtType::PhiAssign:
-                //                 case StmtType::ImpAssign:
-                break;
-            case StmtType::INVALID:
-            default: assert(false); break;
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
             }
+        } break;
 
-            if (lifted.getFirstRTL() == nullptr) {
-                break;
-            }
+        case StmtType::Ret: {
+            // Create the list of RTLs for the next basic block and
+            // continue with the next instruction.
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
+            createReturnBlock(std::move(bbRTLs), currentBB);
+        } break;
+
+        case StmtType::Goto:
+        case StmtType::Branch:
+        case StmtType::Assign:
+        case StmtType::BoolAssign: break;
+        case StmtType::INVALID:
+        default: assert(false); break;
         }
 
-        if (lifted.getFirstRTL() != nullptr && bbRTLs != nullptr) {
-            // we have yet put the RTL into the list -> do it now
-            bbRTLs->push_back(lifted.useSingleRTL());
-        }
-    }
+        if (rtl) {
+            // we have not put the RTL into a fragment as yet
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
 
-    if (bbRTLs != nullptr) {
-        procCFG->createFragment(std::move(bbRTLs), currentBB);
+            FragType fragType;
+            switch (bbRTLs->back()->back()->getKind()) {
+            case StmtType::Goto: fragType = FragType::Oneway; break;
+            case StmtType::Branch: fragType = FragType::Twoway; break;
+            default: fragType = FragType::Fall; break;
+            }
+
+            IRFragment *frag = procCFG->createFragment(fragType, std::move(bbRTLs), currentBB);
+
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+            m_needSuccessors.push_back(frag);
+        }
     }
 
     return true;
@@ -994,12 +1104,14 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
 
     if (retAddr == Address::INVALID) {
         // Create the one and only return statement
-        newFrag = cfg->createFragment(std::move(newRTLs), retBB);
+        newFrag = cfg->createFragment(FragType::Ret, std::move(newRTLs), retBB);
         if (newFrag) {
             SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
             proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
-            newFrag->setType(FragType::Ret);
         }
+
+        m_firstFragment[&retBB->getInsns().back()] = newFrag;
+        m_lastFragment[&retBB->getInsns().back()]  = newFrag;
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
@@ -1021,12 +1133,15 @@ IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs,
         }
 
         retRTL->append(std::make_shared<GotoStatement>(retAddr));
-        newFrag = cfg->createFragment(std::move(newRTLs), retBB);
+        newFrag = cfg->createFragment(FragType::Oneway, std::move(newRTLs), retBB);
 
         if (newFrag) {
             // make sure the return fragment only consists of a single RTL
             origRetFrag = cfg->splitFragment(origRetFrag, retAddr);
             cfg->addEdge(newFrag, origRetFrag);
+
+            m_firstFragment[&retBB->getInsns().back()] = newFrag;
+            m_lastFragment[&retBB->getInsns().back()]  = newFrag;
         }
     }
 
@@ -1060,13 +1175,17 @@ void DefaultFrontEnd::appendSyntheticReturn(IRFragment *callFrag)
     assert(callFrag->getNumSuccessors() == 0);
     auto bbRTLs = std::make_unique<RTLList>();
     std::unique_ptr<RTL> rtl(
-        new RTL(callFrag->getHiAddr(), { std::make_shared<ReturnStatement>() }));
+        new RTL(callFrag->getHiAddr() + 1, { std::make_shared<ReturnStatement>() }));
 
     bbRTLs->push_back(std::move(rtl));
 
     UserProc *proc      = callFrag->getProc();
     IRFragment *retFrag = createReturnBlock(std::move(bbRTLs), callFrag->getBB());
+    assert(proc->getCFG()->hasFragment(callFrag));
     proc->getCFG()->addEdge(callFrag, retFrag);
+
+    m_firstFragment[&callFrag->getBB()->getInsns().back()] = callFrag;
+    m_lastFragment[&callFrag->getBB()->getInsns().back()]  = callFrag;
 }
 
 

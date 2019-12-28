@@ -38,7 +38,7 @@ IRFragment *createBBAndFragment(LowLevelCFG *cfg, BBType bbType, Address addr, U
 {
     BasicBlock *bb = cfg->createBB(bbType, createInsns(addr, 1));
     bb->setProc(proc);
-    return proc->getCFG()->createFragment(createRTLs(addr, 1, 1), bb);
+    return proc->getCFG()->createFragment((FragType)bbType, createRTLs(addr, 1, 1), bb);
 }
 
 
@@ -50,7 +50,7 @@ void DataFlowTest::testCalculateDominators1()
     DataFlow *df = proc.getDataFlow();
 
     BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
-    IRFragment *entry = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), bb);
+    IRFragment *entry = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb);
 
     proc.setEntryFragment();
 
@@ -69,9 +69,9 @@ void DataFlowTest::testCalculateDominators2()
     DataFlow *df = proc.getDataFlow();
 
     BasicBlock *entryBB = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
-    IRFragment *entry   = cfg->createFragment(createRTLs(Address(0x1000), 1, 1), entryBB);
+    IRFragment *entry   = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), entryBB);
     BasicBlock *exitBB  = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1001), 1));
-    IRFragment *exit    = cfg->createFragment(createRTLs(Address(0x1001), 1, 1), exitBB);
+    IRFragment *exit    = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1001), 1, 1), exitBB);
 
     cfg->addEdge(entry, exit);
     proc.setEntryFragment();

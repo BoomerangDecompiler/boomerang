@@ -172,4 +172,10 @@ protected:
 
     /// Map from address to meaningful name
     std::map<Address, QString> m_refHints;
+
+    std::map<const MachineInstruction *, IRFragment *> m_firstFragment;
+    std::map<const MachineInstruction *, IRFragment *> m_lastFragment;
+
+    /// Stores the list of fragments needing successors during lifting
+    std::list<IRFragment *> m_needSuccessors;
 };

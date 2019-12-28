@@ -10,7 +10,21 @@
 #pragma once
 
 
+#include "boomerang/db/GraphNode.h"
 #include "boomerang/ssl/RTL.h"
+
+
+class BOOMERANG_API LiftedInstructionPart : public GraphNode<LiftedInstructionPart>
+{
+public:
+    LiftedInstructionPart(std::unique_ptr<RTL> rtl)
+        : m_rtl(std::move(rtl))
+    {
+    }
+
+public:
+    std::unique_ptr<RTL> m_rtl;
+};
 
 
 /**
@@ -23,13 +37,6 @@
 class BOOMERANG_API LiftedInstruction
 {
 public:
-    struct Edge
-    {
-        const RTL *from;
-        const RTL *to;
-    };
-
-public:
     LiftedInstruction();
     LiftedInstruction(const LiftedInstruction &) = delete;
     LiftedInstruction(LiftedInstruction &&);
@@ -41,24 +48,27 @@ public:
     LiftedInstruction &operator=(LiftedInstruction &&);
     // clang-fomat on
 
-    /// Resets all the fields to their default values.
-    void reset();
+    void reset() { m_parts.clear(); }
 
-    bool isSingleRTL() const { return m_rtls.size() == 1; }
+    bool isSimple() const { return m_parts.size() == 1; }
 
-    void appendRTL(std::unique_ptr<RTL> rtl, int numRTLsBefore);
+    LiftedInstructionPart *addPart(std::unique_ptr<RTL> rtl);
 
-    std::unique_ptr<RTL> useSingleRTL();
-    RTLList useRTLs();
+    void addEdge(LiftedInstructionPart *from, LiftedInstructionPart *to);
 
-    RTL *getFirstRTL();
-    const RTL *getFirstRTL() const;
+    std::list<LiftedInstructionPart> use();
 
-public:
-    void addEdge(const RTL *from, const RTL *to);
-    const std::list<Edge> &getEdges() const { return m_edges; }
+    RTL *getFirstRTL() { return m_parts.front().m_rtl.get(); }
+    const RTL *getFirstRTL() const { return m_parts.front().m_rtl.get(); }
+
+    std::unique_ptr<RTL> useSingleRTL()
+    {
+        assert(m_parts.size() == 1);
+        std::unique_ptr<RTL> result = std::move(m_parts.back().m_rtl);
+        m_parts.clear();
+        return result;
+    }
 
 private:
-    RTLList m_rtls;
-    std::list<Edge> m_edges;
+    std::list<LiftedInstructionPart> m_parts;
 };

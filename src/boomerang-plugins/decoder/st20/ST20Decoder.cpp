@@ -219,7 +219,7 @@ bool ST20Decoder::disassembleInstruction(Address pc, ptrdiff_t delta, MachineIns
 
 bool ST20Decoder::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
 {
-    lifted.appendRTL(instantiateRTL(insn), 0);
+    lifted.addPart(instantiateRTL(insn));
 
     return lifted.getFirstRTL() != nullptr;
 }

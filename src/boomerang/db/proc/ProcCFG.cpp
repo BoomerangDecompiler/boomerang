@@ -55,14 +55,15 @@ bool ProcCFG::hasFragment(const IRFragment *frag) const
 }
 
 
-IRFragment *ProcCFG::createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb)
+IRFragment *ProcCFG::createFragment(FragType fragType, std::unique_ptr<RTLList> rtls,
+                                    BasicBlock *bb)
 {
     assert(bb != nullptr);
 
     IRFragment *frag = new IRFragment(bb, std::move(rtls));
     m_fragmentSet.insert(frag);
 
-    frag->setType((FragType)bb->getType());
+    frag->setType(fragType);
     frag->updateAddresses();
     return frag;
 }
@@ -90,9 +91,7 @@ IRFragment *ProcCFG::splitFragment(IRFragment *frag, Address splitAddr)
                   [&newRTLs](std::unique_ptr<RTL> &rtl) { newRTLs->push_back(std::move(rtl)); });
     frag->getRTLs()->erase(it, frag->getRTLs()->end());
 
-    IRFragment *newFrag = createFragment(std::move(newRTLs), frag->getBB());
-    newFrag->setType(frag->getType());
-
+    IRFragment *newFrag = createFragment(frag->getType(), std::move(newRTLs), frag->getBB());
     frag->setType(FragType::Fall);
     addEdge(frag, newFrag);
 

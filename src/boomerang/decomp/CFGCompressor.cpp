@@ -17,6 +17,44 @@
 #include "boomerang/util/log/Log.h"
 
 #include <deque>
+#include <stack>
+
+
+/**
+ * Stack where each element is present at most once
+ */
+template<typename T>
+class UniqueStack
+{
+public:
+    bool empty() const { return m_stack.empty(); }
+
+    T pop()
+    {
+        T val = m_stack.back();
+        m_stack.pop_back();
+        return val;
+    }
+
+    // Push a new item onto the stack. If the item already exists, nothing happens
+    void push(T val)
+    {
+        if (std::find(m_stack.begin(), m_stack.end(), val) == m_stack.end()) {
+            m_stack.push_back(val);
+        }
+    }
+
+    void erase(T val)
+    {
+        auto it = std::find(m_stack.begin(), m_stack.end(), val);
+        if (it != m_stack.end()) {
+            m_stack.erase(it);
+        }
+    }
+
+private:
+    std::deque<T> m_stack;
+};
 
 
 bool CFGCompressor::compressCFG(ProcCFG *cfg)
@@ -31,6 +69,8 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
 
     changed |= removeEmptyJumps(cfg);
     changed |= removeOrphanFragments(cfg);
+    changed |= compressFallthroughs(cfg);
+
     return changed;
 }
 
@@ -115,4 +155,113 @@ bool CFGCompressor::removeOrphanFragments(ProcCFG *cfg)
     }
 
     return fragsRemoved;
+}
+
+
+bool CFGCompressor::compressFallthroughs(ProcCFG *cfg)
+{
+    std::unordered_set<IRFragment *> visited;
+    UniqueStack<IRFragment *> toVisit;
+
+    IRFragment *entry = cfg->getEntryFragment();
+    if (!entry) {
+        return false;
+    }
+
+    bool change = false;
+    toVisit.push(entry);
+
+    while (!toVisit.empty()) {
+        IRFragment *current = toVisit.pop();
+
+        if (visited.find(current) != visited.end()) {
+            continue;
+        }
+
+        visited.insert(current);
+
+        if (current->getNumSuccessors() != 1) {
+            for (IRFragment *succ : current->getSuccessors()) {
+                toVisit.push(succ);
+            }
+            continue;
+        }
+
+        IRFragment *succ = current->getSuccessor(0);
+        if (succ->getNumPredecessors() != 1) {
+            toVisit.push(succ);
+            continue;
+        }
+        else if (!current->isEmpty() && !current->getLastStmt()->isAssignment()) {
+            toVisit.push(succ);
+            continue;
+        }
+
+        SharedStmt succFirst = succ->getFirstStmt();
+        if (succFirst->isPhi() || succFirst->isImplicit()) {
+            toVisit.push(succ);
+            continue;
+        }
+        else if (succ->getBB() != current->getBB()) {
+            toVisit.push(succ);
+            continue;
+        }
+
+        std::unique_ptr<RTLList> combined(new RTLList);
+        for (auto &rtl : *current->getRTLs()) {
+            combined->push_back(std::move(rtl));
+        }
+        current->getRTLs()->clear();
+
+        for (auto &rtl : *succ->getRTLs()) {
+            combined->push_back(std::move(rtl));
+        }
+        succ->getRTLs()->clear();
+
+        IRFragment *combinedFrag = cfg->createFragment(succ->getType(), std::move(combined),
+                                                       succ->getBB());
+
+        for (IRFragment *pred : current->getPredecessors()) {
+            for (int i = 0; i < pred->getNumSuccessors(); ++i) {
+                if (pred->getSuccessor(i) == current) {
+                    pred->setSuccessor(i, combinedFrag);
+                    combinedFrag->addPredecessor(pred);
+                }
+            }
+        }
+
+        for (IRFragment *succ2 : succ->getSuccessors()) {
+            for (int i = 0; i < succ2->getNumPredecessors(); ++i) {
+                if (succ2->getPredecessor(i) == succ) {
+                    succ2->setPredecessor(i, combinedFrag);
+                    combinedFrag->addSuccessor(succ2);
+                }
+            }
+        }
+
+        IRFragment::RTLIterator rit;
+        RTL::iterator sit;
+
+        for (SharedStmt s = combinedFrag->getFirstStmt(rit, sit); s != nullptr;
+             s            = combinedFrag->getNextStmt(rit, sit)) {
+            s->setFragment(combinedFrag);
+        }
+
+        if (current == cfg->getEntryFragment()) {
+            cfg->setEntryAndExitFragment(combinedFrag);
+        }
+
+        visited.erase(current);
+        visited.erase(succ);
+        toVisit.erase(current);
+        toVisit.erase(succ);
+        toVisit.push(combinedFrag);
+
+        cfg->removeFragment(current);
+        cfg->removeFragment(succ);
+
+        change = true;
+    }
+
+    return change;
 }

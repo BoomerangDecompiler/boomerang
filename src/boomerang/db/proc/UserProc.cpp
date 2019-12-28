@@ -1489,6 +1489,7 @@ bool UserProc::prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &las
                 }
                 else if (s && s->isAssign()) {
                     if (refsTo.find(s) != refsTo.end()) {
+                        numberStatements();
                         LOG_ERROR("Detected ref loop %1", s);
                         LOG_ERROR("refsTo: ");
 

@@ -147,7 +147,7 @@ bool CapstonePPCDecoder::disassembleInstruction(Address pc, ptrdiff_t delta,
 
 bool CapstonePPCDecoder::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
 {
-    lifted.appendRTL(createRTLForInstruction(insn), 0);
+    lifted.addPart(createRTLForInstruction(insn));
 
     return lifted.getFirstRTL() != nullptr;
 }

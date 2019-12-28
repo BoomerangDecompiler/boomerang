@@ -89,7 +89,7 @@ public:
 
     /// Create a new fragment with the given semantics and add it to this CFG.
     /// \returns the newly created fragment.
-    IRFragment *createFragment(std::unique_ptr<RTLList> rtls, BasicBlock *bb);
+    IRFragment *createFragment(FragType fragType, std::unique_ptr<RTLList> rtls, BasicBlock *bb);
 
     /// Split the given fragment in two at the given address, if possible.
     /// If the split is successful, returns the new fragment containing the RTLs

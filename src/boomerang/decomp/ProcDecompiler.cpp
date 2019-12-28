@@ -91,7 +91,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
             SharedStmt hl = frag->getRTLs()->back()->getHlStmt();
 
-            if (!hl->isCall()) {
+            if (!hl || !hl->isCall()) {
                 LOG_WARN("Fragment at address %1 is a CALL but last stmt is not a call: %2",
                          frag->getLowAddr(), hl);
                 continue;
