@@ -185,10 +185,10 @@ IRFragment *StringInstructionProcessor::splitForBranch(IRFragment *frag, RTL *st
     }
 
     bFrag->removePredecessor(frag);
-    m_proc->getCFG()->addEdge(skipFrag, bFrag);
-    m_proc->getCFG()->addEdge(skipFrag, rptFrag);
-    m_proc->getCFG()->addEdge(rptFrag, bFrag);
-    m_proc->getCFG()->addEdge(rptFrag, rptFrag);
+    m_proc->getCFG()->addEdge(skipFrag, bFrag);   // BTHEN
+    m_proc->getCFG()->addEdge(skipFrag, rptFrag); // BELSE
+    m_proc->getCFG()->addEdge(rptFrag, rptFrag);  // BTHEN
+    m_proc->getCFG()->addEdge(rptFrag, bFrag);    // BELSE
 
     if (entryFragNeedsUpdate) {
         m_proc->getCFG()->setEntryAndExitFragment(skipFrag);

@@ -548,9 +548,9 @@ REPIFZ  := REP   . STRFL;
 REPIFNZ := REPNE . STRFL;
 REPALL  := REPS  . STRNF;
 
-INSTRUCTION REPIFZ[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ZF };
-INSTRUCTION REPIFNZ[X] . ALLSZ[Y] (dest, src)             { *1* %RPT := ~%ZF };
-INSTRUCTION REPALL[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := 1 };
+INSTRUCTION REPIFZ[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0 &&  %ZF };
+INSTRUCTION REPIFNZ[X] . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0 && ~%ZF };
+INSTRUCTION REPALL[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0         };
 
 
 #

@@ -58,8 +58,30 @@ bool X86FrontEnd::liftProc(UserProc *proc)
     // Process away %rpt and %skip
     processStringInst(proc);
 
+    IRFragment::RTLIterator rit;
+    StatementList::iterator sit;
+    ProcCFG *procCFG = proc->getCFG();
+
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setFragment(frag);
+        }
+    }
+
     // Process code for side effects of overlapped registers
     processOverlapped(proc);
+
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setFragment(frag);
+        }
+    }
 
     return true;
 }
