@@ -60,23 +60,19 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
     }
 
     if (DEBUG_PARAMS) {
-        LOG_VERBOSE("Finding final parameters for %1", getName());
+        LOG_VERBOSE("Finding final parameters for '%1'", proc->getName());
     }
 
     //    int sp = signature->getStackRegister();
     proc->getSignature()->setNumParams(0); // Clear any old ideas
-    StatementList stmts;
-    proc->getStatements(stmts);
 
-    for (SharedStmt s : stmts) {
-        // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at
-        // the start of the program
-        if (!s->isImplicit()) {
-            // Note: phis can get converted to assignments, but I hope that this is only later on:
-            // check this!
-            break; // Stop after reading all implicit assignments
-        }
+    IRFragment *entry = proc->getEntryFragment();
+    RTLList::iterator rit;
+    RTL::iterator sit;
 
+    // implicit assignments will be first, then other statements
+    for (SharedStmt s = entry->getFirstStmt(rit, sit); s && s->isImplicit();
+         s            = entry->getNextStmt(rit, sit)) {
         SharedExp e = s->as<ImplicitAssign>()->getLeft();
 
         if (proc->getSignature()->findParam(e) == -1) {
@@ -84,8 +80,8 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
                 LOG_VERBOSE("Potential param %1", e);
             }
 
-            // I believe that the only true parameters will be registers or memofs that look like
-            // locals (stack pararameters)
+            // I believe that the only true parameters will be registers or memofs
+            // that look like locals (stack pararameters)
             if (!(e->isRegOf() || proc->isLocalOrParamPattern(e))) {
                 continue;
             }
