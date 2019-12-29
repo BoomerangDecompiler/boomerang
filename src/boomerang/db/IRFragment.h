@@ -47,17 +47,19 @@ enum class FragType
 class BOOMERANG_API IRFragment : public GraphNode<IRFragment>
 {
 public:
+    typedef uint32 FragID;
+
     typedef RTLList::iterator RTLIterator;
     typedef RTLList::reverse_iterator RTLRIterator;
 
 public:
-    IRFragment(BasicBlock *bb, Address lowAddr);
-    IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls);
-    IRFragment(const IRFragment &);
-    IRFragment(IRFragment &&) = default;
-    ~IRFragment()             = default;
+    IRFragment(FragID id, BasicBlock *bb, Address lowAddr);
+    IRFragment(FragID id, BasicBlock *bb, std::unique_ptr<RTLList> rtls);
+    IRFragment(const IRFragment &) = delete;
+    IRFragment(IRFragment &&)      = default;
+    ~IRFragment()                  = default;
 
-    IRFragment &operator=(const IRFragment &);
+    IRFragment &operator=(const IRFragment &) = delete;
     IRFragment &operator=(IRFragment &&) = default;
 
     bool operator<(const IRFragment &rhs) const;
@@ -174,11 +176,11 @@ public:
     QString toString() const;
 
 public:
+    FragID m_id         = -1;
+    FragType m_fragType = FragType::Invalid;
     BasicBlock *m_bb;
     std::unique_ptr<RTLList> m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;
-
-    FragType m_fragType = FragType::Invalid;
 };

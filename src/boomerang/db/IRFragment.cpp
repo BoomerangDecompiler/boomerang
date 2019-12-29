@@ -19,17 +19,19 @@
 #include "boomerang/util/log/Log.h"
 
 
-IRFragment::IRFragment(BasicBlock *bb, Address lowAddr)
-    : m_bb(bb)
+IRFragment::IRFragment(FragID fragID, BasicBlock *bb, Address lowAddr)
+    : m_id(fragID)
+    , m_bb(bb)
     , m_lowAddr(lowAddr)
 {
 }
 
 
-IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
-    : m_bb(bb)
-    , m_listOfRTLs(std::move(rtls))
+IRFragment::IRFragment(FragID fragID, BasicBlock *bb, std::unique_ptr<RTLList> rtls)
+    : m_id(fragID)
     , m_fragType(FragType::Fall)
+    , m_bb(bb)
+    , m_listOfRTLs(std::move(rtls))
 {
     assert(m_listOfRTLs != nullptr);
     assert(!m_listOfRTLs->empty());
@@ -38,46 +40,9 @@ IRFragment::IRFragment(BasicBlock *bb, std::unique_ptr<RTLList> rtls)
 }
 
 
-IRFragment::IRFragment(const IRFragment &other)
-{
-    *this = other;
-}
-
-
-IRFragment &IRFragment::operator=(const IRFragment &other)
-{
-    m_bb       = other.m_bb;
-    m_lowAddr  = other.m_lowAddr;
-    m_highAddr = other.m_highAddr;
-    m_fragType = other.m_fragType;
-
-    if (other.m_listOfRTLs) {
-        // make a deep copy of the RTL list
-        std::unique_ptr<RTLList> newList(new RTLList());
-        newList->resize(other.m_listOfRTLs->size());
-
-        RTLList::const_iterator srcIt = other.m_listOfRTLs->begin();
-        RTLList::const_iterator endIt = other.m_listOfRTLs->end();
-        RTLList::iterator destIt      = newList->begin();
-
-        while (srcIt != endIt) {
-            *destIt++ = std::make_unique<RTL>(**srcIt++);
-        }
-
-        m_listOfRTLs = std::move(newList);
-    }
-
-    return *this;
-}
-
-
 bool IRFragment::operator<(const IRFragment &rhs) const
 {
-    if (m_bb && rhs.m_bb) {
-        return m_bb->getLowAddr() < rhs.m_bb->getLowAddr();
-    }
-
-    return m_bb < rhs.m_bb;
+    return m_id < rhs.m_id;
 }
 
 

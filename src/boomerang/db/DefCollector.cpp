@@ -69,7 +69,7 @@ SharedExp DefCollector::findDefFor(const SharedExp &e) const
 }
 
 
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
+void DefCollector::updateDefs(std::map<SharedExp, std::stack<SharedStmt>, lessExpStar> &Stacks,
                               UserProc *proc)
 {
     for (auto &Stack : Stacks) {
@@ -78,7 +78,7 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessEx
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto re = RefExp::get(Stack.first->clone(), Stack.second.back());
+        auto re = RefExp::get(Stack.first->clone(), Stack.second.top());
         std::shared_ptr<Assign> as(new Assign(Stack.first->clone(), re));
         as->setProc(proc); // Simplify sometimes needs this
         collectDef(as);

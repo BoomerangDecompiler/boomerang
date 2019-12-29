@@ -153,6 +153,8 @@ public:
 private:
     FragmentSet::iterator findFragment(const IRFragment *frag) const;
 
+    IRFragment::FragID getNextFragID() const { return m_nextID++; }
+
 private:
     UserProc *m_myProc = nullptr;      ///< Procedure to which this CFG belongs.
     FragmentSet m_fragmentSet;         ///< The set hoding all fragments for this proc
@@ -166,4 +168,6 @@ private:
     /// True when the implicits are done; they can cause problems
     /// (e.g. with ad-hoc global assignment)
     bool m_implicitsDone = false;
+
+    static IRFragment::FragID m_nextID;
 };

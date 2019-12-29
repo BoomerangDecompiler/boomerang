@@ -75,6 +75,8 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     PassManager::get()->executePass(PassID::StatementInit, proc);
     project->alertDecompileDebugPoint(proc, "after lifting");
 
+    proc->numberStatements();
+
     earlyDecompile(proc);
 
     if (project->getSettings()->decodeChildren) {

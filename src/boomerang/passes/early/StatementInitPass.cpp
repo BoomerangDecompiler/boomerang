@@ -15,7 +15,6 @@
 #include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/util/CFGDotWriter.h"
 
 
 StatementInitPass::StatementInitPass()

@@ -19,7 +19,6 @@ class IRFragmentTest : public BoomerangTest
 
 private slots:
     void testConstruct();
-    void testAssign();
 
     void testGetType();
     void testRemoveRTL();

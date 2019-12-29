@@ -200,6 +200,7 @@ void PhiAssign::simplify()
 void PhiAssign::putAt(IRFragment *frag, const SharedStmt &def, SharedExp e)
 {
     assert(e); // should be something surely
+    assert(*e == *getLeft());
 
     // Can't use operator[] here since PhiInfo is not default-constructible
     PhiDefs::iterator it = m_defs.find(frag);

@@ -77,7 +77,7 @@ regression_tests = [
     "x86/bswap",
     "x86/callchain",
     "x86/chararray",
-    #"x86/encrypt",
+    "x86/encrypt",
     "x86/fbranch",
     "x86/fbranch2",
     "x86/fbranch_sahf",

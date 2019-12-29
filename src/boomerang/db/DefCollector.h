@@ -13,8 +13,8 @@
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/StatementSet.h"
 
-#include <deque>
 #include <map>
+#include <stack>
 
 
 class Statement;
@@ -66,7 +66,7 @@ public:
 
     /// Update the definitions with the current set of reaching definitions
     /// \p proc is the enclosing procedure
-    void updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
+    void updateDefs(std::map<SharedExp, std::stack<SharedStmt>, lessExpStar> &Stacks,
                     UserProc *proc);
 
     /// Search and replace all occurrences

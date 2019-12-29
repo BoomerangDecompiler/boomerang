@@ -23,6 +23,9 @@
 #include <cassert>
 
 
+IRFragment::FragID ProcCFG::m_nextID = 0;
+
+
 ProcCFG::ProcCFG(UserProc *proc)
     : m_myProc(proc)
 {
@@ -60,7 +63,7 @@ IRFragment *ProcCFG::createFragment(FragType fragType, std::unique_ptr<RTLList> 
 {
     assert(bb != nullptr);
 
-    IRFragment *frag = new IRFragment(bb, std::move(rtls));
+    IRFragment *frag = new IRFragment(getNextFragID(), bb, std::move(rtls));
     m_fragmentSet.insert(frag);
 
     frag->setType(fragType);
@@ -259,7 +262,6 @@ SharedStmt ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
     // location We don't clone the copy in the map. So if the location is a m[...], the same type
     // information is available in the definition as at all uses
     m_implicitMap[exp] = def;
-
     return def;
 }
 

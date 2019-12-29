@@ -33,7 +33,6 @@
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/NamedType.h"
-#include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/util/log/Log.h"
 
 #include <stack>
@@ -1028,8 +1027,6 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
 
                 IRFragment *callFrag = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
                                                                currentBB);
-
-                CFGDotWriter().writeCFG(proc->getProg(), "cfg.dot");
 
                 if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                     // Make sure it has a return appended (so there is only one exit
