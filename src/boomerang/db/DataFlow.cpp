@@ -327,9 +327,8 @@ bool DataFlow::placePhiFunctions()
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
-            // If this is a childless call
+            // If this is a childless call, then this block defines every variable
             if (stmt->isCall() && stmt->as<CallStatement>()->isChildless()) {
-                // then this block defines every variable
                 m_defallsites.insert(n);
             }
 

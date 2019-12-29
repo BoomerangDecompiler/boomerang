@@ -20,8 +20,12 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -81,6 +85,41 @@ void DataFlowTest::testCalculateDominators2()
     QCOMPARE(df->getSemiDominator(exit), entry);
 
     QCOMPARE(df->getDominanceFrontier(entry), std::set<const IRFragment *>({}));
+    QCOMPARE(df->getDominanceFrontier(exit), std::set<const IRFragment *>({}));
+}
+
+
+void DataFlowTest::testCalculateDominatorsSelfLoop()
+{
+    Prog prog("test", nullptr);
+    UserProc proc(Address(0x1000), "test", nullptr);
+    ProcCFG *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
+
+    BasicBlock *entryBB  = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+    IRFragment *entry    = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), entryBB);
+    BasicBlock *middleBB = prog.getCFG()->createBB(BBType::Twoway, createInsns(Address(0x1001), 1));
+    IRFragment *middle   = cfg->createFragment(FragType::Twoway, createRTLs(Address(0x1001), 1, 1), middleBB);
+    BasicBlock *exitBB   = prog.getCFG()->createBB(BBType::Ret, createInsns(Address(0x1002), 1));
+    IRFragment *exit     = cfg->createFragment(FragType::Ret, createRTLs(Address(0x1002), 1, 1), exitBB);
+
+    cfg->addEdge(entry, middle);
+    cfg->addEdge(middle, middle);
+    cfg->addEdge(middle, exit);
+
+    proc.setEntryFragment();
+
+    QVERIFY(df->calculateDominators());
+    QCOMPARE(df->getSemiDominator(entry), entry);
+    QCOMPARE(df->getSemiDominator(middle), entry);
+    QCOMPARE(df->getSemiDominator(exit), middle);
+
+    QCOMPARE(df->getDominator(entry), entry);
+    QCOMPARE(df->getDominator(middle), entry);
+    QCOMPARE(df->getDominator(exit), middle);
+
+    QCOMPARE(df->getDominanceFrontier(entry), std::set<const IRFragment *>({}));
+    QCOMPARE(df->getDominanceFrontier(middle), std::set<const IRFragment *>({ middle }));
     QCOMPARE(df->getDominanceFrontier(exit), std::set<const IRFragment *>({}));
 }
 
@@ -257,6 +296,75 @@ void DataFlowTest::testRenameVars()
 
     QCOMPARE(PassManager::get()->executePass(PassID::BlockVarRename, proc), true);
     QCOMPARE(PassManager::get()->executePass(PassID::BlockVarRename, proc), false);
+}
+
+
+void DataFlowTest::testRenameVarsSelfLoop()
+{
+    Prog prog("test", &m_project);
+    UserProc *proc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+
+    ProcCFG *cfg = proc->getCFG();
+    DataFlow *df = proc->getDataFlow();
+
+    // set up:
+    // int eax = 42; do { --eax; } while (eax != 0); return;
+    {
+        BasicBlock *entryBB  = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+        IRFragment *entry    = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), entryBB);
+        BasicBlock *middleBB = prog.getCFG()->createBB(BBType::Twoway, createInsns(Address(0x1001), 1));
+        IRFragment *middle   = cfg->createFragment(FragType::Twoway, createRTLs(Address(0x1001), 1, 1), middleBB);
+        BasicBlock *exitBB   = prog.getCFG()->createBB(BBType::Ret, createInsns(Address(0x1002), 1));
+        IRFragment *exit     = cfg->createFragment(FragType::Ret, createRTLs(Address(0x1002), 1, 1), exitBB);
+
+        cfg->addEdge(entry, middle);
+        cfg->addEdge(middle, middle);
+        cfg->addEdge(middle, exit);
+
+        proc->setEntryFragment();
+
+        auto branch = std::make_shared<BranchStatement>();
+        branch->setCondType(BranchType::JNE);
+        branch->setCondExpr(Binary::get(opNotEqual, Location::regOf(REG_X86_EAX), Const::get(0)));
+        branch->setDest(Address(0x1001));
+
+        entry->getRTLs()->front()->clear();
+        entry->getRTLs()->front()->append(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Const::get(42)));
+
+        middle->getRTLs()->front()->clear();
+        middle->getRTLs()->front()->append(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Binary::get(opMinus, Location::regOf(REG_X86_EAX), Const::get(1))));
+        middle->getRTLs()->front()->append(branch);
+
+        exit->getRTLs()->front()->clear();
+        exit->getRTLs()->front()->append(std::make_shared<ReturnStatement>());
+    }
+
+    QVERIFY(df->calculateDominators());
+    QVERIFY(df->placePhiFunctions());
+    proc->numberStatements(); // After placing phi functions!
+
+    QCOMPARE(PassManager::get()->executePass(PassID::BlockVarRename, proc), false);
+
+    compareLongStrings(cfg->toString(),
+        "Control Flow Graph:\n"
+        "Oneway BB:\n"
+        "  in edges: \n"
+        "  out edges: 0x00001001 \n"
+        "0x00001000    1 *v* r24 := 42\n"
+        "Twoway BB:\n"
+        "  in edges: 0x00001000(0x00001000) 0x00001001(0x00001001) \n"
+        "  out edges: 0x00001001 0x00001002 \n"
+        "0x00000000    2 *v* r24 := phi{1 3}\n"
+        "0x00001001    3 *v* r24 := r24{2} - 1\n"
+        "              4 BRANCH 0x00001001, condition not equals\n"
+        "High level: r24{3} ~= 0\n"
+        "Ret BB:\n"
+        "  in edges: 0x00001001(0x00001001) \n"
+        "  out edges: \n"
+        "0x00001002    5 RET\n"
+        "              Modifieds: <None>\n"
+        "              Reaching definitions: r24=r24{3}\n"
+    );
 }
 
 
