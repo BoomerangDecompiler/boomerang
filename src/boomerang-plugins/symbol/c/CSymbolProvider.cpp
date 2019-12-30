@@ -100,7 +100,7 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(Prog *prog, const QString &fname)
     const CallConv cc = prog->isWin32() ? CallConv::Pascal : CallConv::C;
 
     if (driver.parse(fname, prog->getMachine(), cc) != 0) {
-        LOG_ERROR("Cannot read symbol file '%1': %2", fname);
+        LOG_ERROR("Cannot read symbol file '%1'");
         return false;
     }
 
