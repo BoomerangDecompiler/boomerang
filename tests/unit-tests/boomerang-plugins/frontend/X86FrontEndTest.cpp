@@ -149,8 +149,7 @@ void X86FrontEndTest::test3()
     {
         QVERIFY(fe->decodeInstruction(Address(0x804834e), insn, lifted));
         lifted.getFirstRTL()->print(strm);
-        expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
-                           "              0 *32* r28 := r28 + 4\n"
+        expected = QString("0x0804834e    0 *32* r28 := r28 + 4\n"
                            "              0 RET\n"
                            "              Modifieds: <None>\n"
                            "              Reaching definitions: <None>\n");

@@ -125,7 +125,7 @@ void ProcCFGTest::testEntryAndExitFragment()
         QCOMPARE(cfg->getEntryFragment(), frag1);
         QCOMPARE(cfg->getExitFragment(), nullptr);
 
-        IRFragment *frag2 = cfg->createFragment(FragType::Oneway, createRTLs(Address(0x1004), 4, 1), bb2);
+        IRFragment *frag2 = cfg->createFragment(FragType::Ret, createRTLs(Address(0x1004), 4, 1), bb2);
         cfg->addEdge(frag1, frag2);
 
         cfg->setEntryAndExitFragment(frag1);

@@ -231,7 +231,7 @@ void DataFlowTest::testPlacePhi()
         actual << (int)bb << " ";
     }
 
-    QCOMPARE(actualStr, QString("6 7 10 14 15 "));
+    QCOMPARE(actualStr, QString("1 4 8 12 14 "));
 }
 
 
