@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 /** address: 0x00001c34 */
 __size32 fib(int param1)
 {
-    int g3; 		// r3
-    int g3_2; 		// r3{4}
+    int g3_2; 		// r3{5}
+    int g3_5; 		// r3{4}
     int local0; 		// m[g1 - 28]
 
     if (param1 <= 1) {
@@ -31,10 +31,10 @@ __size32 fib(int param1)
         }
     }
     else {
-        g3_2 = fib(param1 - 1);
-        g3 = fib(g3_2 - 1);
-        printf("%d", g3_2 + g3);
-        local0 = g3_2;
+        g3_5 = fib(param1 - 1);
+        g3_2 = fib(g3_5 - 1);
+        printf("%d", g3_5 + g3_2);
+        local0 = g3_5;
     }
     return local0;
 }
