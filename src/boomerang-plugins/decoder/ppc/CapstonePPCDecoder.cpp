@@ -404,7 +404,9 @@ bool CapstonePPCDecoder::isJump(const cs::cs_insn *instruction) const
         id == cs::PPC_INS_BA ||
         id == cs::PPC_INS_BC ||
         id == cs::PPC_INS_BCA ||
-        id == cs::PPC_INS_BCTR;
+        id == cs::PPC_INS_BCTR ||
+        id == cs::PPC_INS_BDNZ ||
+        id == cs::PPC_INS_BDNZL;
     // clang-format on
 }
 
