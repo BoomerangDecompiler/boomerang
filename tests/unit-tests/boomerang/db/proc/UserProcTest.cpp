@@ -893,11 +893,11 @@ void UserProcTest::testAllPhisHaveDefs()
     IRFragment *frag = proc.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 0), bb1);
     proc.setEntryFragment();
 
-    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
+    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EDX));
     QVERIFY(ias != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    std::shared_ptr<PhiAssign> phi1 = frag->addPhi(Location::regOf(REG_X86_EDX));
+    std::shared_ptr<PhiAssign> phi1 = frag->addPhi(Location::regOf(REG_X86_EAX));
     QVERIFY(phi1 != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 

@@ -117,7 +117,7 @@ public:
     SharedConstStmt getStmtAt(IRFragment *frag) const;
 
     /// Update the statement at index \p idx
-    void putAt(IRFragment *idx, const SharedStmt &d, SharedExp e);
+    void putAt(IRFragment *idx, const SharedStmt &def, SharedExp usedExp);
 
     size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs &getDefs() { return m_defs; }
