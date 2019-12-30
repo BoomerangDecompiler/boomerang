@@ -474,6 +474,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet &visi
 
     proc->setStatus(ProcStatus::InCycle); // So the calls are treated as childless
     project->alertDecompiling(proc);
+    LOG_MSG("Decompiling proc '%1' in recursion group", proc->getName());
     earlyDecompile(proc);
 
     // The standard preservation analysis should automatically perform conditional preservation.
@@ -538,7 +539,7 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet> &grou
         }
     }
 
-    LOG_VERBOSE("=== End recursion group analysis ===");
+    LOG_MSG("=== End recursion group analysis ===");
     for (UserProc *proc : *group) {
         proc->getProg()->getProject()->alertEndDecompile(proc);
     }
