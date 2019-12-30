@@ -3388,21 +3388,18 @@ INSTRUCTION "RCR.rm32.imm32" (dest, src) {
 
 # RET
 INSTRUCTION "RET" () {
-    *32* %pc := m[%esp]
     *32* %esp := %esp + 4
     ret
 };
 
 
 INSTRUCTION "RET.imm16" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
 
 
 INSTRUCTION "RET.imm32" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
@@ -3410,19 +3407,16 @@ INSTRUCTION "RET.imm32" (offset) {
 
 # RETF
 INSTRUCTION "RETF" () {
-    *32* %pc := m[%esp]
     *32* %esp := %esp + 4
     ret
 };
 
 INSTRUCTION "RETF.imm16" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
 
 INSTRUCTION "RETF.imm32" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
