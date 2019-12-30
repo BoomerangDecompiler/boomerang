@@ -752,6 +752,7 @@ bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, LiftedInst
                   "treating instruction as NOP",
                   insn.m_templateName, insn.m_addr);
 
+        lifted.reset();
         lifted.addPart(std::make_unique<RTL>(insn.m_addr));
     }
 
