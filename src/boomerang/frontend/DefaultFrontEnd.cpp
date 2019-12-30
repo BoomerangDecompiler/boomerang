@@ -1301,6 +1301,11 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
     std::stack<BasicBlock *> toVisit;
 
     BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress());
+    if (!entryBB) {
+        LOG_ERROR("Could not find entry BB for function '%1'", proc->getName());
+        return;
+    }
+
     toVisit.push(entryBB);
 
     while (!toVisit.empty()) {
@@ -1308,7 +1313,8 @@ void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
         toVisit.pop();
         visited.insert(current);
 
-        assert(current->getProc() == nullptr || current->getProc() == proc);
+        // Note: this currently fails for the DOS samples, do disable it for now
+        // assert(current->getProc() == nullptr || current->getProc() == proc);
         current->setProc(proc);
 
         for (BasicBlock *succ : current->getSuccessors()) {

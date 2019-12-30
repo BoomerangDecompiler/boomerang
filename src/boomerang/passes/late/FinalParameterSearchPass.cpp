@@ -67,6 +67,10 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
     proc->getSignature()->setNumParams(0); // Clear any old ideas
 
     IRFragment *entry = proc->getEntryFragment();
+    if (!entry) {
+        return true;
+    }
+
     RTLList::iterator rit;
     RTL::iterator sit;
 
