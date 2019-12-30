@@ -2550,6 +2550,12 @@ INSTRUCTION "LAHF" () {
 };
 
 
+# LCALL
+INSTRUCTION "LCALL.imm16.imm16" (seg, addr) {
+    call seg << 4 + addr
+};
+
+
 # LDS
 INSTRUCTION "LDS.reg16.rm16" (dest, src) {
     *16* %ds  := src@[16:31]
