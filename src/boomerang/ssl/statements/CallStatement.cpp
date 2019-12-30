@@ -923,7 +923,7 @@ bool CallStatement::ellipsisProcessing(Prog *)
         switch (ch) {
         case 'd':
         case 'i': // Signed integer
-            addSigParam(IntegerType::get(veryLong ? 64 : 32), isScanf);
+            addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
             break;
 
         case 'u':
