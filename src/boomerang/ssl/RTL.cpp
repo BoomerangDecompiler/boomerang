@@ -80,12 +80,6 @@ void RTL::deepCopyList(StmtList &dest) const
 void RTL::append(const SharedStmt &s)
 {
     assert(s != nullptr);
-
-    if (!empty() && back()->isFlagAssign()) {
-        insert(std::prev(end()), s);
-        return;
-    }
-
     m_stmts.push_back(s);
 }
 
