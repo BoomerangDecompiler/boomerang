@@ -127,7 +127,7 @@ public:
     /// Get the fragment with the entry point address for this procedure.
     /// \note (not always the first fragment)
     /// \returns   Pointer to the entry point fragment, or nullptr if not found
-    IRFragment *getEntryFragment();
+    IRFragment *getEntryFragment() const;
 
     /// Set the entry fragment for this procedure (constructor has the entry address)
     void setEntryFragment();

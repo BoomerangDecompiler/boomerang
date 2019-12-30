@@ -101,7 +101,7 @@ void UserProc::setDecoded()
 }
 
 
-IRFragment *UserProc::getEntryFragment()
+IRFragment *UserProc::getEntryFragment() const
 {
     return m_cfg->getEntryFragment();
 }
