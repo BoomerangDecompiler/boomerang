@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     g0 = *(g31 + 724);
     *(__size32*)(g30 + 64) = g0;
     g0 = *(g30 + 64);
-    (**(g30 + 64))(g0, g31, g0, g30, g31, 0x1d88, g0, <all>, local0, local1, local2, local3, local4, g3, g4);
+    (**(g30 + 64))(g0, g3, g31, g0, g30, g31, 0x1d88, g0, <all>, local0, local1, local2, local3, local4, g4);
     return 0;
 }
 

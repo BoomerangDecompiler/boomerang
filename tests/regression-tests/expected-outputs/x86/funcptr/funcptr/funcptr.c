@@ -7,8 +7,8 @@ int main(int argc, char *argv[])
 {
     __size32 eax; 		// r24
     int ebp; 		// r29
-    __size32 ecx; 		// r25
-    __size32 edx; 		// r26
+    int ecx; 		// r25
+    int edx; 		// r26
     void *esp; 		// r28
     void *esp_1; 		// r28{1}
     int local0; 		// m[esp - 4]

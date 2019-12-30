@@ -13,7 +13,7 @@ int main(union { int; char *[] *; } argc, union { int; char *[] *; } argv)
     int CR6; 		// r106
     __size32 CR7; 		// r107
     unsigned int g0; 		// r0
-    unsigned int g0_1; 		// r0{44}
+    unsigned int g0_1; 		// r0{38}
     int g3; 		// r3
     char * *g3_1; 		// r3
     int g5; 		// r5

@@ -4,8 +4,8 @@ int main(int argc, char *argv[]);
 /** address: 0x08048948 */
 int main(int argc, char *argv[])
 {
-    int local0; 		// m[esp - 8]
-    unsigned int local1; 		// m[esp - 12]
+    union { int; void *; } local0; 		// m[esp - 8]
+    union { unsigned int; void *; } local1; 		// m[esp - 12]
 
     scanf("%d", &local0);
     scanf("%d", &local1);

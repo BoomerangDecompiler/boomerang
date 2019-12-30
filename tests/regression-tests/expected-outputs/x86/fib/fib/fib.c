@@ -17,16 +17,16 @@ __size32 fib(int param1)
 {
     int eax; 		// r24
     int eax_1; 		// r24{4}
-    int local4; 		// m[esp - 12]
+    int local0; 		// m[esp - 12]
 
     if (param1 <= 1) {
-        local4 = param1;
+        local0 = param1;
     }
     else {
         eax_1 = fib(param1 - 1);
         eax = fib(param1 - 2);
-        local4 = eax_1 + eax;
+        local0 = eax_1 + eax;
     }
-    return local4;
+    return local0;
 }
 

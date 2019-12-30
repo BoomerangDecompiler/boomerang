@@ -6,10 +6,10 @@ __size32 f(int param1);
 __size32 h(int param1);
 __size32 j(int param1);
 __size32 l(union { int; __size32 *; } param1);
-__size32 e(int param1);
-__size32 g(union { int; __size32 *; } param1);
-__size32 i(int param1);
 __size32 k(int param1);
+__size32 e(int param1);
+__size32 i(int param1);
+__size32 g(union { int; __size32 *; } param1);
 
 union { int; __size32 *; } global_0x080486c4[];
 
@@ -136,6 +136,20 @@ __size32 l(union { int; __size32 *; } param1)
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }
 
+/** address: 0x080485a4 */
+__size32 k(int param1)
+{
+    int eax; 		// r24
+    int ecx; 		// r25
+    int edx; 		// r26
+
+    eax = printf("k(%d)\n", param1); /* Warning: also results in ecx, edx */
+    if (param1 > 1) {
+        eax = e(param1 - 1); /* Warning: also results in ecx, edx */
+    }
+    return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+}
+
 /** address: 0x0804849b */
 __size32 e(int param1)
 {
@@ -148,6 +162,15 @@ __size32 e(int param1)
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }
 
+/** address: 0x0804855a */
+__size32 i(int param1)
+{
+    int eax; 		// r24
+
+    eax = printf("i(%d)\n", param1);
+    return eax;
+}
+
 /** address: 0x080484f8 */
 __size32 g(union { int; __size32 *; } param1)
 {
@@ -158,29 +181,6 @@ __size32 g(union { int; __size32 *; } param1)
     eax = printf("g(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 > 1) {
         eax = f(param1 - 1); /* Warning: also results in ecx, edx */
-    }
-    return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
-}
-
-/** address: 0x0804855a */
-__size32 i(int param1)
-{
-    int eax; 		// r24
-
-    eax = printf("i(%d)\n", param1);
-    return eax;
-}
-
-/** address: 0x080485a4 */
-__size32 k(int param1)
-{
-    int eax; 		// r24
-    int ecx; 		// r25
-    int edx; 		// r26
-
-    eax = printf("k(%d)\n", param1); /* Warning: also results in ecx, edx */
-    if (param1 > 1) {
-        eax = e(param1 - 1); /* Warning: also results in ecx, edx */
     }
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
 }

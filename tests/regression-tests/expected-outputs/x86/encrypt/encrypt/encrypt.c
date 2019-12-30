@@ -1,13 +1,13 @@
 int main(int argc, char *argv[]);
-void rux_encrypt(void *param1);
+void rux_encrypt(__size32 *param1);
 
 
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
 {
-    ssize_t eax; 		// r24
+    void *eax; 		// r24
     int esp; 		// r28
-    int local0; 		// m[esp - 8]
+    __size32 local0; 		// m[esp - 8]
 
     for(;;) {
         eax = read(0, &local0, 4);
@@ -26,15 +26,35 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x08048504 */
-void rux_encrypt(void *param1)
+void rux_encrypt(__size32 *param1)
 {
     unsigned char bl; 		// r11
-    unsigned char bl_1; 		// r11{7}
-    unsigned char bl_4; 		// r11{10}
+    unsigned char bl_1; 		// r11{18}
+    unsigned char bl_4; 		// r11{21}
     unsigned char cl; 		// r9
-    void *esp; 		// r28
+    unsigned int ecx; 		// r25
+    unsigned int ecx_1; 		// r25{2}
+    unsigned int ecx_2; 		// r25{8}
+    union { int; __size32 *; } edi; 		// r31
+    __size32 *esi; 		// r30
+    union { int; __size32 *; } esp; 		// r28
     unsigned int local0; 		// m[esp - 6]
+    unsigned int local2; 		// ecx_1{2}
 
+    edi = (esp - 40);
+    esi = 0x8048614;
+    ecx = 8;
+    local2 = ecx;
+    if (0) {
+        do {
+            ecx_1 = local2;
+            *(__size32*)edi = *esi;
+            esi +=  (DF == 0) ? 4 : -4;
+            edi +=  (DF == 0) ? 4 : -4;
+            ecx_2 = ecx_1 - 1;
+            local2 = ecx_2;
+        } while (ecx_1 != 1);
+    }
     local0 = 0;
     while (local0 <= 3) {
         bl_1 = *((local0) + param1);

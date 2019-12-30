@@ -34,7 +34,7 @@ void atexit(atexitfunc param1)
 /** address: 0x080486cc */
 void MAIN__(char param1)
 {
-    __size32 local4; 		// m[esp - 16]
+    __size32 local0; 		// m[esp - 16]
 
     s_wsle(0x8049afc);
     do_lio(0x80489ac, 0x80489a8, "Input num:Input out of rangeTwo!Three!Four!", 10);
@@ -42,17 +42,17 @@ void MAIN__(char param1)
     s_rsle(0x8049b10);
     do_lio(0x80489b0, 0x80489a8, &param1, 4);
     e_rsle();
-    local4 = 0x8048760;
+    local0 = 0x8048760;
     if (param1 == 2) {
-        local4 = 0x8048793;
+        local0 = 0x8048793;
     }
     if (param1 == 3) {
-        local4 = 0x80487c3;
+        local0 = 0x80487c3;
     }
     if (param1 == 4) {
-        local4 = 0x80487f3;
+        local0 = 0x80487f3;
     }
-    switch(local4) {
+    switch(local0) {
     case 0x8048760:
         s_wsle(0x8049b24);
         do_lio(0x80489ac, 0x80489a8, "Input out of rangeTwo!Three!Four!", 18);
