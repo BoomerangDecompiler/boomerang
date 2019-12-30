@@ -548,38 +548,38 @@ void IRFragment::simplify()
         }
     }
 
-    if (m_bb->isType(BBType::Twoway)) {
+    if (isType(FragType::Twoway)) {
         assert(getNumSuccessors() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-            m_bb->setType(BBType::Fall);
+            setType(FragType::Fall);
         }
         else {
             RTL *last = m_listOfRTLs->back().get();
 
             if (last->size() == 0) {
-                m_bb->setType(BBType::Fall);
+                setType(FragType::Fall);
             }
             else if (last->back()->isGoto()) {
-                m_bb->setType(BBType::Oneway);
+                setType(FragType::Oneway);
             }
             else if (!last->back()->isBranch()) {
-                m_bb->setType(BBType::Fall);
+                setType(FragType::Fall);
             }
             else if (getNumSuccessors() == 2 && getSuccessor(BTHEN) == getSuccessor(BELSE)) {
-                m_bb->setType(BBType::Oneway);
+                setType(FragType::Oneway);
             }
         }
 
-        if (m_bb->isType(BBType::Fall)) {
-            BasicBlock *redundant = m_bb->getSuccessor(BTHEN);
-            m_bb->removeSuccessor(redundant);
-            redundant->removePredecessor(m_bb);
+        if (isType(FragType::Fall)) {
+            IRFragment *redundant = getSuccessor(BTHEN);
+            removeSuccessor(redundant);
+            redundant->removePredecessor(this);
         }
-        else if (m_bb->isType(BBType::Oneway)) {
-            BasicBlock *redundant = m_bb->getSuccessor(BELSE);
-            m_bb->removeSuccessor(redundant);
-            redundant->removePredecessor(m_bb);
+        else if (isType(FragType::Oneway)) {
+            IRFragment *redundant = getSuccessor(BELSE);
+            removeSuccessor(redundant);
+            redundant->removePredecessor(this);
         }
 
         assert(m_bb->getProc()->getCFG()->isWellFormed());
