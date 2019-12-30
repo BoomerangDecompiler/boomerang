@@ -52,6 +52,23 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             continue;
         }
 
+        if (a->isEmpty() || isOnlyBranch(a)) {
+            if (a->getSuccessor(BTHEN) == a) {
+                for (IRFragment *pred : a->getPredecessors()) {
+                    proc->getCFG()->replaceEdge(pred, a, a->getSuccessor(BELSE));
+                }
+                fragsToRemove.insert(a);
+                continue;
+            }
+            else if (a->getSuccessor(BELSE) == a) {
+                for (IRFragment *pred : a->getPredecessors()) {
+                    proc->getCFG()->replaceEdge(pred, a, a->getSuccessor(BTHEN));
+                }
+                fragsToRemove.insert(a);
+                continue;
+            }
+        }
+
         IRFragment *b = a->getSuccessor(BELSE);
         if (!b || !b->isType(FragType::Twoway)) {
             continue;

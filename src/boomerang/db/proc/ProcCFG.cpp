@@ -187,6 +187,21 @@ void ProcCFG::addEdge(IRFragment *sourceFrag, IRFragment *destFrag)
 }
 
 
+void ProcCFG::replaceEdge(IRFragment *src, IRFragment *oldDest, IRFragment *newDest)
+{
+    assert(oldDest->isSuccessorOf(src));
+
+    for (int i = 0; i < src->getNumSuccessors(); ++i) {
+        if (src->getSuccessor(i) == oldDest) {
+            oldDest->removePredecessor(src);
+            newDest->addPredecessor(src);
+            src->setSuccessor(i, newDest);
+            return;
+        }
+    }
+}
+
+
 bool ProcCFG::isWellFormed() const
 {
     for (const IRFragment *frag : *this) {

@@ -118,6 +118,9 @@ public:
     /// Add an edge from \p sourceFrag to \p destFrag.
     void addEdge(IRFragment *sourceFrag, IRFragment *destFrag);
 
+    /// Replace the edge \p src -> \p oldDest by \p src -> \p newDest
+    void replaceEdge(IRFragment *src, IRFragment *oldDest, IRFragment *newDest);
+
     /// Checks if all out edges are valid.
     /// Also checks that the CFG does not contain interprocedural edges.
     /// By definition, the empty CFG is well-formed.
