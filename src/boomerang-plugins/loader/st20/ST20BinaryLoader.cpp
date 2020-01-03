@@ -13,6 +13,7 @@
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/ByteUtil.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QFile>
 

@@ -115,8 +115,14 @@ private:
                                                                                                    \
         Q_DECL_EXPORT Interface *initPlugin(Project *project)                                      \
         {                                                                                          \
-            if (!g_pluginInstance) {                                                               \
-                g_pluginInstance = new Classname(project);                                         \
+            try {                                                                                  \
+                if (!g_pluginInstance) {                                                           \
+                    g_pluginInstance = new Classname(project);                                     \
+                }                                                                                  \
+            }                                                                                      \
+            catch (const std::runtime_error &err) {                                                \
+                LOG_ERROR("Error during plugin initialization: %1", err.what());                   \
+                return nullptr;                                                                    \
             }                                                                                      \
             return g_pluginInstance;                                                               \
         }                                                                                          \
