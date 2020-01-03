@@ -60,6 +60,7 @@ bool BlockVarRenamePass::execute(UserProc *proc)
     }
 #endif
 
+    stacks.clear();
     return changed;
 }
 
