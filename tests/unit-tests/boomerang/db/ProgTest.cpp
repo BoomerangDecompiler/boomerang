@@ -525,7 +525,7 @@ void ProgTest::testMakeArrayType()
     std::shared_ptr<ArrayType> ty = prog.makeArrayType(Address::INVALID, CharType::get());
     QVERIFY(*ty == *ArrayType::get(CharType::get()));
 
-    m_project.loadBinaryFile(HELLO_X86);
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     BinarySymbol *helloworld = m_project.getLoadedBinaryFile()->getSymbols()
         ->createSymbol(Address(0x80483FC), "helloworld");
 
@@ -545,7 +545,7 @@ void ProgTest::testMarkGlobalUsed()
     Prog prog("test", nullptr);
     QVERIFY(!prog.markGlobalUsed(Address::INVALID));
 
-    m_project.loadBinaryFile(HELLO_X86);
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC)));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), IntegerType::get(32, Sign::Signed)));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), ArrayType::get(CharType::get(), 15)));
@@ -554,12 +554,13 @@ void ProgTest::testMarkGlobalUsed()
 
 void ProgTest::testGlobalType()
 {
-    m_project.loadBinaryFile(HELLO_X86);
+    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(m_project.getProg()->getGlobalType("") == nullptr);
     QVERIFY(m_project.getProg()->getGlobals().empty());
 
-    m_project.getProg()->createGlobal(Address(0x80483FC),
+    Global *g = m_project.getProg()->createGlobal(Address(0x80483FC),
         ArrayType::get(CharType::get(), 15), QString("helloworld"));
+    QVERIFY(g != nullptr);
 
     SharedType ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
