@@ -53,10 +53,12 @@ bool BlockVarRenamePass::execute(UserProc *proc)
     const FragIndex entryIdx = proc->getDataFlow()->fragToIdx(entryFrag);
     const bool changed       = renameBlockVars(proc, entryIdx);
 
+#ifndef NDEBUG
     for (auto &[var, stack] : stacks) {
         Q_UNUSED(var);
         assert(stack.empty());
     }
+#endif
 
     return changed;
 }
