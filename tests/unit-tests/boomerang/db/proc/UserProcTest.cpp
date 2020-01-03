@@ -853,7 +853,7 @@ void UserProcTest::testFindFirstSymbol()
 void UserProcTest::testSearchAndReplace()
 {
     Prog prog("test", nullptr);
-    BasicBlock *bb1 = m_project.getProg()->getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
 
     UserProc proc(Address(0x1000), "test", nullptr);
 
