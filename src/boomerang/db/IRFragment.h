@@ -176,7 +176,7 @@ public:
     QString toString() const;
 
 public:
-    FragID m_id         = -1;
+    FragID m_id         = (FragID)-1;
     FragType m_fragType = FragType::Invalid;
     BasicBlock *m_bb;
     std::unique_ptr<RTLList> m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
