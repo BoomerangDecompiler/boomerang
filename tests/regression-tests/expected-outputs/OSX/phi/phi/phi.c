@@ -20,22 +20,22 @@ __size32 fib(int param1)
 {
     int g3_2; 		// r3{5}
     int g3_5; 		// r3{4}
-    int local0; 		// m[g1 - 28]
+    int local6; 		// m[g1 - 28]
 
     if (param1 <= 1) {
         if (param1 != 1) {
-            local0 = param1;
+            local6 = param1;
         }
         else {
-            local0 = 1;
+            local6 = 1;
         }
     }
     else {
         g3_5 = fib(param1 - 1);
         g3_2 = fib(g3_5 - 1);
         printf("%d", g3_5 + g3_2);
-        local0 = g3_5;
+        local6 = g3_5;
     }
-    return local0;
+    return local6;
 }
 
