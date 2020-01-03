@@ -54,10 +54,10 @@ Address PPCFrontEnd::findMainEntryPoint(bool &gotMain)
 }
 
 
-bool PPCFrontEnd::disassembleFragment(UserProc *proc, Address entryAddr)
+bool PPCFrontEnd::disassembleProc(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::disassembleFragment(proc, entryAddr)) {
+    if (!DefaultFrontEnd::disassembleProc(proc, entryAddr)) {
         return false;
     }
 

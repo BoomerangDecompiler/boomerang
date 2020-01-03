@@ -69,8 +69,8 @@ public:
     /// \copydoc IFrontEnd::disassembleFunctionAtAddr
     [[nodiscard]] bool disassembleFunctionAtAddr(Address addr) override;
 
-    /// \copydoc IFrontEnd::disassembleFragment
-    [[nodiscard]] bool disassembleFragment(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    [[nodiscard]] bool disassembleProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::liftProc
     [[nodiscard]] bool liftProc(UserProc *proc) override;

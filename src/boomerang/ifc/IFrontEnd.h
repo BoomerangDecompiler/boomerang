@@ -53,7 +53,7 @@ public:
     /// \param proc the procedure object
     /// \param addr the entry address of \p proc
     /// \returns true for a good decode (no illegal instructions)
-    [[nodiscard]] virtual bool disassembleFragment(UserProc *proc, Address addr) = 0;
+    [[nodiscard]] virtual bool disassembleProc(UserProc *proc, Address addr) = 0;
 
     /// Lift all instructions for a proc.
     /// \returns true on success, false on failure

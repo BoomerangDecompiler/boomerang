@@ -40,13 +40,13 @@ public:
 public:
     bool initialize(Project *project) override;
 
-    /// \copydoc IFrontEnd::processProc
-    bool disassembleFragment(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    bool disassembleProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::liftProc
     bool liftProc(UserProc *proc) override;
 
-    /// \copydoc IFrontEnd::getMainEntryPoint
+    /// \copydoc IFrontEnd::findMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
 
 protected:

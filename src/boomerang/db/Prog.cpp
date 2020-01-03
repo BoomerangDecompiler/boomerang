@@ -636,7 +636,7 @@ bool Prog::decodeFragment(UserProc *proc, Address a)
 {
     if ((a >= m_binaryFile->getImage()->getLimitTextLow()) &&
         (a < m_binaryFile->getImage()->getLimitTextHigh())) {
-        return m_fe->disassembleFragment(proc, a);
+        return m_fe->disassembleProc(proc, a);
     }
     else {
         LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
@@ -651,7 +651,7 @@ bool Prog::reDecode(UserProc *proc)
         return false;
     }
 
-    return m_fe->disassembleFragment(proc, proc->getEntryAddress());
+    return m_fe->disassembleProc(proc, proc->getEntryAddress());
 }
 
 

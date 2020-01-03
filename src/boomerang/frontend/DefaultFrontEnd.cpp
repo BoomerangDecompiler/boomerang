@@ -157,7 +157,7 @@ bool DefaultFrontEnd::disassembleAll()
                 }
 
                 // Not yet disassembled - do it now
-                if (!disassembleFragment(userProc, userProc->getEntryAddress())) {
+                if (!disassembleProc(userProc, userProc->getEntryAddress())) {
                     return false;
                 }
 
@@ -201,7 +201,7 @@ bool DefaultFrontEnd::disassembleFunctionAtAddr(Address addr)
         return false;
     }
 
-    if (disassembleFragment(proc, addr)) {
+    if (disassembleProc(proc, addr)) {
         proc->setDecoded();
     }
 
@@ -209,7 +209,7 @@ bool DefaultFrontEnd::disassembleFunctionAtAddr(Address addr)
 }
 
 
-bool DefaultFrontEnd::disassembleFragment(UserProc *proc, Address addr)
+bool DefaultFrontEnd::disassembleProc(UserProc *proc, Address addr)
 {
     LOG_VERBOSE("### Disassembing proc '%1' at address %2 ###", proc->getName(), addr);
 

@@ -852,7 +852,7 @@ bool IndirectJumpAnalyzer::createCompJumpDest(BasicBlock *sourceBB, int destIdx,
     BasicBlock *destBB = prog->getCFG()->getBBStartingAt(destAddr);
 
     addCFGEdge(sourceBB, destIdx, destBB);
-    return prog->getFrontEnd()->disassembleFragment(sourceBB->getProc(), destAddr);
+    return prog->getFrontEnd()->disassembleProc(sourceBB->getProc(), destAddr);
 }
 
 
