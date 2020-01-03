@@ -388,7 +388,8 @@ bool IndirectJumpAnalyzer::processSwitch(IRFragment *frag, UserProc *proc)
     BasicBlock *sourceBB = frag->getBB();
     sourceBB->setType(BBType::Nway);
 
-    for (auto &[_, jumpDest] : dests) {
+    for (auto &[srcFrag, jumpDest] : dests) {
+        Q_UNUSED(srcFrag);
         newBBs |= createCompJumpDest(sourceBB, i, jumpDest);
         i++;
     }
