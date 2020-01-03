@@ -41,11 +41,11 @@ bool FragSimplifyPass::simplifyPhis(UserProc *proc)
         thisChange = false;
 
         for (IRFragment *frag : *proc->getCFG()) {
-            RTL *phiRTL = frag->getRTLs() && !frag->getRTLs()->empty()
+            RTL *phiRTL = frag && frag->getRTLs() && !frag->getRTLs()->empty()
                               ? frag->getRTLs()->front().get()
                               : nullptr;
 
-            if (phiRTL->getAddress() != Address::ZERO) {
+            if (!phiRTL || phiRTL->getAddress() != Address::ZERO) {
                 // no phis
                 continue;
             }
