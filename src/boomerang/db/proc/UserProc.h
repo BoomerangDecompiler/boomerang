@@ -385,7 +385,7 @@ private:
     ProcStatus m_status = ProcStatus::Undecoded;
 
     /// Number of the next local. Can't use locals.size() because some get deleted
-    int m_nextLocal = 0;
+    uint32 m_nextLocal = 0;
 
     std::unique_ptr<ProcCFG> m_cfg; ///< The control flow graph.
 
