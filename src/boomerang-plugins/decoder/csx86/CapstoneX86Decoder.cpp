@@ -134,6 +134,11 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 CapstoneX86Decoder::CapstoneX86Decoder(Project *project)
     : CapstoneDecoder(project, cs::CS_ARCH_X86, cs::CS_MODE_32, "ssl/x86.ssl")
 {
+    // check that all required registers are present
+    if (m_dict.getRegDB()->getRegNameByNum(REG_X86_ESP).isEmpty()) {
+        throw std::runtime_error("Required register #28 (%esp) not present");
+    }
+
     m_insn = cs::cs_malloc(m_handle);
 }
 
