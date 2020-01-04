@@ -348,17 +348,19 @@ bool DataFlow::placePhiFunctions()
     }
 
     bool change = false;
-    // For each variable a (in defsites, i.e. defined anywhere)
-    for (auto &val : m_defsites) {
-        SharedExp a = val.first;
 
-        // Those variables that are defined everywhere (i.e. in defallsites)
-        // need to be defined at every defsite, too
-        for (FragIndex da : m_defallsites) {
-            m_defsites[a].insert(da);
+    // Those variables that are defined everywhere (i.e. in defallsites)
+    // need to be defined at every defsite, too
+    for (FragIndex defallsite : m_defallsites) {
+        for (auto &[exp, defsites] : m_defsites) {
+            Q_UNUSED(exp);
+            defsites.insert(defallsite);
         }
+    }
 
-        std::set<FragIndex> W = m_defsites[a];
+    // For each variable a defined anywhere
+    for (auto &[a, defsites] : m_defsites) {
+        std::set<FragIndex> W = defsites;
 
         while (!W.empty()) {
             // Pop first node from W
