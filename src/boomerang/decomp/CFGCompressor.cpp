@@ -251,6 +251,8 @@ bool CFGCompressor::compressFallthroughs(ProcCFG *cfg)
             cfg->setEntryAndExitFragment(combinedFrag);
         }
 
+        const bool exitFragNeedsUpdate = (succ == cfg->getExitFragment());
+
         visited.erase(current);
         visited.erase(succ);
         toVisit.erase(current);
@@ -259,6 +261,10 @@ bool CFGCompressor::compressFallthroughs(ProcCFG *cfg)
 
         cfg->removeFragment(current);
         cfg->removeFragment(succ);
+
+        if (exitFragNeedsUpdate) {
+            cfg->setEntryAndExitFragment(cfg->getEntryFragment());
+        }
 
         change = true;
     }

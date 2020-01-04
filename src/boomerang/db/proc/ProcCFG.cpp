@@ -341,6 +341,7 @@ QString ProcCFG::toString() const
 void ProcCFG::setEntryAndExitFragment(IRFragment *entryFrag)
 {
     m_entryFrag = entryFrag;
+    m_exitFrag = nullptr;
 
     for (IRFragment *frag : *this) {
         if (frag->isType(FragType::Ret)) {
