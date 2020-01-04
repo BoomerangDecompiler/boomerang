@@ -2892,6 +2892,13 @@ INSTRUCTION "MUL.rm8" (src) {
     MULTFLAGS8(tmph)
 };
 
+INSTRUCTION "MUL.rm16" (src) {
+    *32* tmp1 := %ax * src
+    *16* %ax := tmp1
+    *16* %dx := tmp1 >> 16
+    MULTFLAGS16(tmp1)
+};
+
 INSTRUCTION "MUL.rm32" (src) {
     *32* tmp1 := src
     *64* tmpl := zfill(32, 64, %eax) * zfill(32, 64, tmp1)
