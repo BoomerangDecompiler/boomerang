@@ -100,13 +100,13 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(Prog *prog, const QString &fname)
     const CallConv cc = prog->isWin32() ? CallConv::Pascal : CallConv::C;
 
     if (driver.parse(fname, prog->getMachine(), cc) != 0) {
-        LOG_ERROR("Cannot read symbol file '%1'");
+        LOG_ERROR("Cannot read symbol file '%1'", fname);
         return false;
     }
 
     for (std::shared_ptr<Symbol> &sym : driver.symbols) {
-        if (sym->sig) {
-            QString name         = sym->sig->getName();
+        if (sym->sig != nullptr) {
+            const QString name   = sym->sig->getName();
             Module *targetModule = prog->getOrInsertModuleForSymbol(name);
 
             auto bin_sym     = prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
@@ -123,9 +123,6 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(Prog *prog, const QString &fname)
             }
         }
         else {
-            QString name  = sym->name;
-            SharedType ty = sym->ty;
-
             prog->createGlobal(sym->addr, sym->ty, sym->name);
         }
     }
