@@ -19,7 +19,6 @@ from filecmp import dircmp
 
 # These files are used for checking for regressions
 regression_tests = [
-    "elf32-ppc/fibo",
     "elf32-ppc/hello",
     "elf32-ppc/minmax",
     "elf32-ppc/switch",
@@ -60,7 +59,6 @@ regression_tests = [
     "OSX/o4/uns",
     "OSX/ohello",
     "OSX/paramchain",
-    "OSX/phi",
     "OSX/phi2",
     "OSX/printpi",
     "OSX/set",
@@ -71,7 +69,6 @@ regression_tests = [
     "OSX/twoproc2",
     "OSX/uns",
 
-    "x86/asgngoto",
     "x86/branch",
     "x86/branch-linux",
     "x86/bswap",
@@ -82,8 +79,6 @@ regression_tests = [
     "x86/fbranch2",
     "x86/fbranch_sahf",
     "x86/fib",
-    "x86/fibo3",
-    "x86/fibo4",
     "x86/fibo_iter",
     "x86/funcptr",
     "x86/hello",
@@ -124,7 +119,6 @@ regression_tests = [
     "ppc/condcodexform",
     "ppc/daysofxmas",
     "ppc/fbranch",
-    "ppc/fibo2",
     "ppc/fibo_iter",
     "ppc/fromssa2",
     "ppc/global1",
@@ -135,7 +129,6 @@ regression_tests = [
     "ppc/manyparams",
     "ppc/minmax",
     "ppc/minmax2",
-    "ppc/o4/fibo",
     "ppc/o4/fibo2",
     "ppc/o4/funcptr",
     "ppc/o4/global1",
@@ -192,6 +185,8 @@ smoke_tests = [
     "dos/STRLEN.EXE",
     "dos/TESTLONG.EXE",
 
+    "elf32-ppc/fibo",
+
     "OSX/daysofxmas",
     "OSX/fib",
     "OSX/fibo2",
@@ -213,9 +208,11 @@ smoke_tests = [
     "OSX/o4/semi",
     "OSX/o4/sumarray",
     "OSX/o4/switch",
+    "OSX/phi",
     "OSX/semi",
     "OSX/switch",
 
+    "x86/asgngoto",
     "x86/ass2.Linux",
     "x86/ass3.Linux",
     "x86/banner",
@@ -224,6 +221,8 @@ smoke_tests = [
     "x86/fedora2_true",
     "x86/fedora3_true",
     "x86/fibo2",
+    "x86/fibo3",
+    "x86/fibo4",
     "x86/fibo-O4",
     "x86/fromssa2",
     "x86/frontier",
@@ -244,6 +243,7 @@ smoke_tests = [
 
     "ppc/fib",
     "ppc/fibo",
+    "ppc/fibo2",
     "ppc/frontier",
     "ppc/funcptr",
     "ppc/global2",
@@ -253,6 +253,7 @@ smoke_tests = [
     "ppc/o4/daysofxmas",
     "ppc/o4/fbranch",
     "ppc/o4/fib",
+    "ppc/o4/fibo",
     "ppc/o4/fibo_iter",
     "ppc/o4/fromssa2",
     "ppc/o4/frontier",
