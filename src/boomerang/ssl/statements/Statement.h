@@ -101,13 +101,19 @@ class BOOMERANG_API Statement : public std::enable_shared_from_this<Statement>
 
 public:
     Statement();
-    Statement(const Statement &other) = default;
-    Statement(Statement &&other)      = default;
+    Statement(const Statement &other);
+    Statement(Statement &&other) = default;
 
     virtual ~Statement() = default;
 
-    Statement &operator=(const Statement &other) = default;
+    Statement &operator=(const Statement &other);
     Statement &operator=(Statement &&other) = default;
+
+public:
+    bool operator==(const Statement &rhs) const;
+    bool operator!=(const Statement &rhs) const { return !(*this == rhs); }
+
+    bool operator<(const Statement &rhs) const;
 
 public:
     /// Typecast this type to another type.
@@ -124,6 +130,12 @@ public:
 public:
     /// Make copy of self, and make the copy a derived object if needed.
     virtual SharedStmt clone() const = 0;
+
+    uint32 getID() const
+    {
+        assert(m_id != (uint32)-1);
+        return m_id;
+    }
 
     /// \returns the fragment that this statement is part of.
     IRFragment *getFragment() { return m_fragment; }
@@ -311,6 +323,7 @@ protected:
     IRFragment *m_fragment = nullptr; ///< contains a pointer to the enclosing fragment
     UserProc *m_proc       = nullptr; ///< procedure containing this statement
     int m_number           = -1;      ///< Statement number for printing
+    uint32 m_id            = (uint32)-1;
 
     StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. StmtType::Branch)
 };

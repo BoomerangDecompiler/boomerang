@@ -103,7 +103,11 @@ bool RefExp::operator<(const Exp &o) const
         return false;
     }
 
-    return m_def < static_cast<const RefExp &>(o).m_def;
+    if (!m_def || !static_cast<const RefExp &>(o).m_def) {
+        return m_def < static_cast<const RefExp &>(o).m_def;
+    }
+
+    return *m_def < *static_cast<const RefExp &>(o).m_def;
 }
 
 
