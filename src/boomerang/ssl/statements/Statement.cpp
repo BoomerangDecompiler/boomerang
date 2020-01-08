@@ -40,7 +40,8 @@ Statement::Statement()
 
 
 Statement::Statement(const Statement &other)
-    : m_fragment(other.m_fragment)
+    : enable_shared_from_this(other)
+    , m_fragment(other.m_fragment)
     , m_proc(other.m_proc)
     , m_number(other.m_number)
 {
@@ -50,6 +51,10 @@ Statement::Statement(const Statement &other)
 
 Statement &Statement::operator=(const Statement &other)
 {
+    if (this == &other) {
+        return *this;
+    }
+
     m_fragment = other.m_fragment;
     m_proc     = other.m_proc;
     m_number   = other.m_number;

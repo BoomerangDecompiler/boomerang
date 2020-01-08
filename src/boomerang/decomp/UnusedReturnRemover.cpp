@@ -23,7 +23,7 @@
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 
-bool lessUserProc(const UserProc *lhs, const UserProc *rhs)
+bool compareUserProc(const UserProc *lhs, const UserProc *rhs)
 {
     if (lhs && rhs) {
         return lhs->getEntryAddress() < rhs->getEntryAddress();
@@ -57,7 +57,7 @@ bool UnusedReturnRemover::removeUnusedReturns()
     // (no caller uses potential returns for child), and sometimes up the call tree
     // (removal of returns and/or dead code removes parameters, which affects all callers).
     while (!m_removeRetSet.empty()) {
-        auto it = std::min_element(m_removeRetSet.begin(), m_removeRetSet.end(), lessUserProc);
+        auto it = std::min_element(m_removeRetSet.begin(), m_removeRetSet.end(), compareUserProc);
         assert(*it != nullptr);
         const bool removedReturns = removeUnusedParamsAndReturns(*it);
 
