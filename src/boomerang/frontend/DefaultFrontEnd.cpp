@@ -552,6 +552,18 @@ bool DefaultFrontEnd::disassembleProc(UserProc *proc, Address addr)
 
 bool DefaultFrontEnd::liftProc(UserProc *proc)
 {
+    const bool ok = liftProcImpl(proc);
+
+    // clean up
+    m_firstFragment.clear();
+    m_lastFragment.clear();
+
+    return ok;
+}
+
+
+bool DefaultFrontEnd::liftProcImpl(UserProc *proc)
+{
     std::list<std::shared_ptr<CallStatement>> callList;
 
     LowLevelCFG *cfg = proc->getProg()->getCFG();

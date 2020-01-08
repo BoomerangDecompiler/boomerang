@@ -43,13 +43,13 @@ public:
     /// \copydoc IFrontEnd::disassembleProc
     bool disassembleProc(UserProc *proc, Address addr) override;
 
-    /// \copydoc IFrontEnd::liftProc
-    bool liftProc(UserProc *proc) override;
-
     /// \copydoc IFrontEnd::findMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
 
 protected:
+    /// \copydoc DefaultFrontEnd::liftProcImpl
+    bool liftProcImpl(UserProc *proc) override;
+
     /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
     virtual void extraProcessCall(IRFragment *callFrag) override;

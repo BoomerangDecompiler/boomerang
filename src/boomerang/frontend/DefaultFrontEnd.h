@@ -73,7 +73,8 @@ public:
     [[nodiscard]] bool disassembleProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::liftProc
-    [[nodiscard]] bool liftProc(UserProc *proc) override;
+    /// \note Derived classes should implement \ref liftProcImpl
+    [[nodiscard]] bool liftProc(UserProc *proc) final override;
 
     /// Disassemble and lift a single instruction at address \p addr
     /// \returns true on success
@@ -123,6 +124,9 @@ protected:
     /// Lifts a single instruction \p insn to an RTL.
     /// \returns true on success
     bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted);
+
+    /// Does the actual lifting for \ref DefaultFrontEnd::liftProc
+    virtual bool liftProcImpl(UserProc *proc);
 
 private:
     bool liftBB(BasicBlock *bb, UserProc *proc,

@@ -49,9 +49,9 @@ bool X86FrontEnd::disassembleProc(UserProc *function, Address addr)
 }
 
 
-bool X86FrontEnd::liftProc(UserProc *proc)
+bool X86FrontEnd::liftProcImpl(UserProc *proc)
 {
-    if (!DefaultFrontEnd::liftProc(proc)) {
+    if (!DefaultFrontEnd::liftProcImpl(proc)) {
         return false;
     }
 
