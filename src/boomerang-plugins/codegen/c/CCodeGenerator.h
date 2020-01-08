@@ -330,10 +330,11 @@ private:
     void appendLine(const QString &s);
 
 private:
-    int m_indent = 0;                       ///< Current indentation depth
-    std::map<QString, SharedType> m_locals; ///< All locals in a Proc
-    std::unordered_set<Address::value_type>
-        m_usedLabels; ///< All used goto labels. (lowAddr of fragment)
+    /// Current indentation depth
+    int m_indent = 0;
+
+    /// All used goto labels. (lowAddr of fragment)
+    std::unordered_set<Address::value_type> m_usedLabels;
     std::unordered_set<const IRFragment *> m_generatedFrags;
 
     UserProc *m_proc = nullptr;

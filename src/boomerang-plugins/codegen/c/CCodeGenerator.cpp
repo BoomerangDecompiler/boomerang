@@ -918,7 +918,6 @@ void CCodeGenerator::addLocal(const QString &name, SharedType type, bool last)
     }
 
     appendLine(tgt);
-    m_locals[name] = type->clone();
 
     if (last) {
         appendLine("");
