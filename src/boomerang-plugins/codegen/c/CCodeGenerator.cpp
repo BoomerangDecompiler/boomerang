@@ -1019,6 +1019,7 @@ void CCodeGenerator::appendExp(OStream &str, const SharedConstExp &exp, OpPrec c
                 case '\?': str << "'\\?'"; break;
                 case '\'': str << "'\\''"; break;
                 case '\"': str << "'\\\"'"; break;
+                case 0: str << "0"; break;
                 default: str << "'" << static_cast<char>(K) << "'";
                 }
             }
