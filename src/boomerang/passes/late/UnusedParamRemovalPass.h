@@ -10,13 +10,11 @@
 #pragma once
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/Pass.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 
 #include <set>
-
-
-typedef std::set<UserProc *> ProcSet;
 
 
 /// Removes unused function parameters from a function.

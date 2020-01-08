@@ -10,15 +10,13 @@
 #pragma once
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 
 #include <set>
 
 
 class Prog;
-class UserProc;
-
-typedef std::set<UserProc *> ProcSet;
 
 
 class UnusedReturnRemover

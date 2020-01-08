@@ -36,7 +36,14 @@ enum class ProcStatus : uint8_t
 };
 
 
-typedef std::set<UserProc *> ProcSet;
+class BOOMERANG_API lessUserProc
+{
+public:
+    bool operator()(const UserProc *lhs, const UserProc *rhs) const;
+};
+
+
+typedef std::set<UserProc *, lessUserProc> ProcSet;
 typedef std::list<UserProc *> ProcList;
 
 

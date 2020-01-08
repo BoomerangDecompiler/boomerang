@@ -35,6 +35,16 @@
 #include "boomerang/visitor/stmtmodifier/StmtSubscriptReplacer.h"
 
 
+bool lessUserProc::operator()(const UserProc *lhs, const UserProc *rhs) const
+{
+    if (!lhs || !rhs) {
+        return lhs < rhs;
+    }
+
+    return lhs->getEntryAddress() < rhs->getEntryAddress();
+}
+
+
 UserProc::UserProc(Address address, const QString &name, Module *module)
     : Function(address, std::make_shared<Signature>(name), module)
     , m_cfg(new ProcCFG(this))
