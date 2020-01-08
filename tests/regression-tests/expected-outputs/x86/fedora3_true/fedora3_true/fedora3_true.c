@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     union { void * () *x91; unsigned int *; __size8 *; } edi_1; 		// r31{16}
     union { void * () *x92; unsigned int *; __size8 *; } edi_2; 		// r31{19}
     int edx; 		// r26
-    union { void * () *x152; unsigned int *; __size8 *; } esi; 		// r30
-    union { void * () *x152; unsigned int *; __size8 *; } esi_1; 		// r30{15}
-    union { void * () *x155; unsigned int *; __size8 *; } esi_2; 		// r30{18}
+    union { unsigned int *; __size8 *; } esi; 		// r30
+    union { unsigned int *; __size8 *; } esi_1; 		// r30{15}
+    union { unsigned int *; __size8 *; } esi_2; 		// r30{18}
     int esp; 		// r28
     union { int; int *; } esp_1; 		// r28{32}
     union { int; int *; } esp_2; 		// r28{38}
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     union { int; int *; } local10; 		// esp_6{48}
     int local5; 		// ecx_2{5}
     __size32 local6; 		// ecx_5{14}
-    union { void * () *x152; unsigned int *; __size8 *; } local7; 		// esi_1{15}
+    union { unsigned int *; __size8 *; } local7; 		// esi_1{15}
     union { void * () *x91; unsigned int *; __size8 *; } local8; 		// edi_1{16}
     union { int; int *; } local9; 		// esp{34}
 
