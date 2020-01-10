@@ -239,7 +239,7 @@ regression_tests = [
     "x86/twoproc3",
     "x86/uns",
 
-    #"windows/typetest.exe"
+    "windows/typetest.exe"
 ]
 
 # These files are used for checking for crashes or failures only
