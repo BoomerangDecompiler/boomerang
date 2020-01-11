@@ -2,10 +2,12 @@ v0.6.0 (in development)
 -----------------------
 - Improved: Instruction semantics definition format.
 
-v0.5.2 (in development)
------------------------
+v0.5.2 (2020-1-11)
+------------------
 - Fixed: Crash when checking whether a LibProc returns while no FrontEnd is loaded.
 - Fixed: Crash when re-decoding while no FrontEnd is loaded.
+- Fixed: Whitespace issue in log output.
+- Fixed: Attempt to load 8 bit executables even though Boomerang does not support them.
 
 v0.5.1 (2019-10-11)
 -------------------

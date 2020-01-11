@@ -153,7 +153,7 @@ bool CapstoneX86Decoder::initialize(Project *project)
     case 16: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_16); break;
     case 32: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_32); break;
     case 64: cs::cs_option(m_handle, cs::CS_OPT_MODE, cs::CS_MODE_64); break;
-    default: break;
+    default: return false;
     }
 
     return true;
