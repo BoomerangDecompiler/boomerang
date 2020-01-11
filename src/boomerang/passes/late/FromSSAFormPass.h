@@ -53,4 +53,6 @@ private:
 
     /// map registers and temporaries to local variables
     void mapRegistersToLocals(const SharedStmt &stmt);
+
+    void removePhis(UserProc *proc);
 };
