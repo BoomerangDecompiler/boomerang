@@ -100,6 +100,8 @@ void Win32BinaryLoader::initialize(BinaryFile *file, BinarySymbolTable *symbols)
     unload();
     m_binaryImage = file->getImage();
     m_symbols     = symbols;
+
+    file->setBitness(32);
 }
 
 
