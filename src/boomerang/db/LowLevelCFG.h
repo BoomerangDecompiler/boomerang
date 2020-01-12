@@ -133,13 +133,6 @@ public:
     /// Check if the given address is the start of a complete basic block.
     bool isStartOfCompleteBB(Address addr) const;
 
-    /// \returns the entry BB of this CFG
-    BasicBlock *getEntryBB() { return m_entryBB; }
-    const BasicBlock *getEntryBB() const { return m_entryBB; }
-
-    /// Set the entry bb to \p entryBB
-    void setEntryBB(BasicBlock *entryBB);
-
     /// Completely removes a single BB from this CFG.
     /// \note \p bb is invalid after this function returns.
     void removeBB(BasicBlock *bb);
@@ -208,6 +201,5 @@ private:
     void insertBB(BasicBlock *bb);
 
 private:
-    BasicBlock *m_entryBB = nullptr; ///< The BB corresponding to the entry point of the program.
     BBStartMap m_bbStartMap;         ///< The Address to BB map
 };

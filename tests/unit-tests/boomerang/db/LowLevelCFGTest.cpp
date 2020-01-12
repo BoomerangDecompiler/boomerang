@@ -216,24 +216,6 @@ void LowLevelCFGTest::testIsStartOfCompleteBB()
 }
 
 
-void LowLevelCFGTest::testEntryBB()
-{
-    LowLevelCFG cfg;
-
-    {
-        cfg.setEntryBB(nullptr);
-
-        QVERIFY(cfg.getEntryBB() == nullptr);
-    }
-
-    {
-        BasicBlock *bb1 = cfg.createBB(BBType::Oneway, createInsns(Address(0x1000), 4));
-        cfg.setEntryBB(bb1);
-        QVERIFY(cfg.getEntryBB() == bb1);
-    }
-}
-
-
 void LowLevelCFGTest::testRemoveBB()
 {
     {

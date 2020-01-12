@@ -220,12 +220,6 @@ bool LowLevelCFG::isStartOfCompleteBB(Address addr) const
 }
 
 
-void LowLevelCFG::setEntryBB(BasicBlock *entryBB)
-{
-    m_entryBB = entryBB;
-}
-
-
 void LowLevelCFG::removeBB(BasicBlock *bb)
 {
     if (bb == nullptr) {

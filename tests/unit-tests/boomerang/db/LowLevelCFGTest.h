@@ -27,7 +27,6 @@ private slots:
     void testGetBBStartingAt();
     void testIsStartOfBB();
     void testIsStartOfCompleteBB();
-    void testEntryBB(); // getEntryBB / setEntryBB
     void testRemoveBB();
     void testAddEdge();
     void testIsWellFormed();
