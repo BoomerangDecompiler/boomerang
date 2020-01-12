@@ -53,9 +53,9 @@ typedef std::shared_ptr<const Type> SharedConstType;
  *                      Exp (abstract)
  *                    ____/  |     \
  *                   /       |      \
- *                Unary     Const   Terminal
- *   TypedExp____/  |   \
- *    RefExp____/ Binary Location
+ *                _Unary    Const   Terminal
+ *      TypedExp_/  |   \
+ *       RefExp_/ Binary Location
  *                  |
  *               Ternary
  */
@@ -77,7 +77,7 @@ public:
 
     /// Type sensitive equality
     virtual bool operator==(const Exp &o) const = 0;
-    bool operator!=(const Exp &o) { return !(*this == o); }
+    bool operator!=(const Exp &o) const { return !(*this == o); }
 
     /// Type sensitive less than
     virtual bool operator<(const Exp &o) const = 0;
