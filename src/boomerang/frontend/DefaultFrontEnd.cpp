@@ -593,9 +593,13 @@ bool DefaultFrontEnd::liftProcImpl(UserProc *proc)
         m_needSuccessors.pop_front();
 
         const BasicBlock *bb = frag->getBB();
-        auto it              = std::find_if(
-            bb->getInsns().begin(), bb->getInsns().end(),
-            [frag, this](const MachineInstruction &insn) { return m_lastFragment[&insn] == frag; });
+
+        // clang-format off
+        auto it = std::find_if(bb->getInsns().begin(), bb->getInsns().end(),
+            [frag, this](const MachineInstruction &insn) {
+                return m_lastFragment[&insn] == frag;
+            });
+        // clang-format on
 
         assert(it != bb->getInsns().end());
         std::advance(it, 1);
