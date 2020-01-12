@@ -9,7 +9,9 @@
 #pragma endregion License
 #pragma once
 
+
 #include <cstdint>
+
 
 /// \file ElfTypes.h This file contains the elf format support structures
 /// \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
