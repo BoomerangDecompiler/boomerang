@@ -72,18 +72,17 @@ public:
     /**
      * Create a new Basic Block for this CFG.
      * If the BB is blocked by a larger complete BB, the existing BB will be split at the first
-     * address of \p bbRTLs; in this case this function returns nullptr (since no BB was created).
+     * address of \p bbInsns; in this case this function returns nullptr (since no BB was created).
      * The case of the new BB being blocked by a smaller complete BB is not handled by this method;
      * use \ref ProcCFG::ensureBBExists instead.
      *
      * The new BB might also be blocked by exising incomplete BBs.
      * If this is the case, the new BB will be split at all blocking incomplete BBs,
-     * and fallthrough edges will be added between parts of the split BB.
+     * and fallthrough edges will be added between parts of the split BB(s).
      * In this case, the incomplete BBs will be removed (since we just completed them).
      *
      * \param bbType Type of the new Basic Block
-     * \param bbRTLs RTL list with semantics of all instructions contained in this BB.
-     *               Must not be empty.
+     * \param bbInsns list of instructions contained in this BB. Must not be empty.
      *
      * \returns the newly created BB, or the exisitng BB if the new BB is the same as
      * another exising complete BB.
@@ -93,21 +92,20 @@ public:
 
     /**
      * Creates a new incomplete BB at address \p startAddr.
-     * Creating an incomplete BB will cause the ProcCFG to not be well-fomed until all
+     * Creating an incomplete BB will cause the CFG to not be well-fomed until all
      * incomplete BBs are completed by calling \ref createBB.
      */
     BasicBlock *createIncompleteBB(Address startAddr);
 
     /**
-     * Ensures that \p addr is the start of a complete or incomplete BasicBlock.
+     * Ensures that \p addr is the start of a complete or incomplete BasicBlock. If there is no
+     * BB at address \p addr, an incomplete BB is created.
      *
-     * Explicit labels are addresses that have already been tagged as being labels
-     * due to transfers of control to that address (i.e. they are the start of a complete Basic
-     * Block). Non explicit labels are addresses that are in the middle of a complete Basic Block.
-     * In this case, the existing complete BB is split. If \p currBB is the BB that gets split,
-     * \p currBB is updated to point to the "high" part of the split BB (address wise).
+     * If \p currBB is the BB that gets split, \p currBB is updated to point to the "high" part
+     * of the split BB (address wise). This can happen e.g. when discovering a backwards jump
+     * from the end of the current BB into the middle of the current BB.
      *
-     * \param  addr   native (source) address to check
+     * \param  addr   address to check
      * \param  currBB See above
      * \returns true if the BB starting at \p address is (now) complete, false otherwise.
      */
@@ -135,7 +133,7 @@ public:
     /// Check if the given address is the start of a complete basic block.
     bool isStartOfCompleteBB(Address addr) const;
 
-    /// \returns the entry BB of the procedure of this CFG
+    /// \returns the entry BB of this CFG
     BasicBlock *getEntryBB() { return m_entryBB; }
     const BasicBlock *getEntryBB() const { return m_entryBB; }
 
@@ -199,8 +197,10 @@ private:
      * \param   bb         pointer to the BB to be split
      * \param   splitAddr  address of RTL to become the start of the new BB
      * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only
-     * modifies the top part to not overlap. If this is the case, the RTLs of the original BB are
-     * deleted. \returns If the merge is successful, returns the "high" part of the split BB.
+     * modifies the top part to not overlap. If this is the case, the RTLs of the original BB
+     * are deleted.
+     *
+     * \returns If the merge is successful, returns the "high" part of the split BB.
      * Otherwise, returns the original BB.
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
