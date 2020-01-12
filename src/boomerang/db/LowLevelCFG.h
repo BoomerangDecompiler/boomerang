@@ -201,5 +201,7 @@ private:
     void insertBB(BasicBlock *bb);
 
 private:
-    BBStartMap m_bbStartMap;         ///< The Address to BB map
+    /// Maps start addresses to BasicBlocks. Note that at most one BasicBlock
+    /// can start at a given address.
+    BBStartMap m_bbStartMap;
 };
