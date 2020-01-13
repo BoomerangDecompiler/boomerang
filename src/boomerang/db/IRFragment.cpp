@@ -532,7 +532,7 @@ void IRFragment::setCond(const SharedExp &e)
 
     // it should contain a BranchStatement
     for (auto it = last->rbegin(); it != last->rend(); ++it) {
-        if ((*it)->getKind() == StmtType::Branch) {
+        if ((*it)->isBranch()) {
             (*it)->as<BranchStatement>()->setCondExpr(e);
             return;
         }
@@ -590,18 +590,18 @@ void IRFragment::simplify()
 void IRFragment::print(OStream &os) const
 {
     switch (getType()) {
-    case FragType::Oneway: os << "Oneway BB"; break;
-    case FragType::Twoway: os << "Twoway BB"; break;
-    case FragType::Nway: os << "Nway BB"; break;
-    case FragType::Call: os << "Call BB"; break;
-    case FragType::Ret: os << "Ret BB"; break;
-    case FragType::Fall: os << "Fall BB"; break;
-    case FragType::CompJump: os << "Computed jump BB"; break;
-    case FragType::CompCall: os << "Computed call BB"; break;
-    case FragType::Invalid: os << "Invalid BB"; break;
+    case FragType::Oneway: os << "Oneway"; break;
+    case FragType::Twoway: os << "Twoway"; break;
+    case FragType::Nway: os << "Nway"; break;
+    case FragType::Call: os << "Call"; break;
+    case FragType::Ret: os << "Ret"; break;
+    case FragType::Fall: os << "Fall"; break;
+    case FragType::CompJump: os << "Computed Jump"; break;
+    case FragType::CompCall: os << "Computed Call"; break;
+    case FragType::Invalid: os << "Invalid"; break;
     }
 
-    os << ":\n";
+    os << " Fragment:\n";
     os << "  in edges: ";
 
     for (IRFragment *frag : getPredecessors()) {

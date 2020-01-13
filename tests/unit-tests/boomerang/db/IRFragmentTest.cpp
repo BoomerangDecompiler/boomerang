@@ -145,7 +145,7 @@ void IRFragmentTest::testAddImplicit()
     QVERIFY(bb1.getFirstStmt() == imp);
 
     const QString expected(
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := -\n"
@@ -171,7 +171,7 @@ void IRFragmentTest::testAddPhi()
     QVERIFY(bb1.getFirstStmt() == phi);
 
     const QString expected(
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := phi{}\n"
@@ -197,7 +197,7 @@ void IRFragmentTest::testAddImplicitOverPhi()
     QVERIFY(nullptr == bb1.addImplicitAssign(Terminal::get(opCF)));
 
     QString expected(
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := phi{}\n"
@@ -219,7 +219,7 @@ void IRFragmentTest::testAddPhiOverImplict()
     QVERIFY(nullptr == bb1.addPhi(Terminal::get(opCF)));
 
     QString expected(
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := -\n"

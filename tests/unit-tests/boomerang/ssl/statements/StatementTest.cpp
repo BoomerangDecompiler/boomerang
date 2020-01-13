@@ -79,7 +79,7 @@ void StatementTest::testEmpty()
 
     QString expected = QString(
             "Control Flow Graph:\n"
-            "Ret BB:\n"
+            "Ret Fragment:\n"
             "  in edges: \n"
             "  out edges: \n"
             "0x00000123\n\n"
@@ -142,11 +142,11 @@ void StatementTest::testFlow()
     // to r24 is removed
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 5\n"
@@ -211,11 +211,11 @@ void StatementTest::testKill()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -273,11 +273,11 @@ void StatementTest::testUse()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r28 := 1000\n"
@@ -341,11 +341,11 @@ void StatementTest::testUseOverKill()
     // compare it to expected
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -410,11 +410,11 @@ void StatementTest::testUseOverBB()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010\n"
@@ -472,11 +472,11 @@ void StatementTest::testUseKill()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -537,11 +537,11 @@ void StatementTest::testEndlessLoop()
     // int i = 5; do { i++; } while (true);
     // TODO: is the phi really needed?
     QString expected = "Control Flow Graph:\n"
-                       "Fall BB:\n"
+                       "Fall Fragment:\n"
                        "  in edges: \n"
                        "  out edges: 0x00001010 \n"
                        "0x00001000    1 *i32* r24 := 5\n"
-                       "Oneway BB:\n"
+                       "Oneway Fragment:\n"
                        "  in edges: 0x00001000(0x00001000) 0x00001010(0x00001010) \n"
                        "  out edges: 0x00001010 \n"
                        "0x00000000    2 *i32* r24 := phi{1 3}\n"
@@ -797,7 +797,7 @@ void StatementTest::testRecursion()
 
     const QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001008 \n"
         "0x00000000    1 *union* r28 := -\n"
@@ -805,7 +805,7 @@ void StatementTest::testRecursion()
         "              3 *v* m[r28{1} + 4] := -\n"
         "0x00001004\n"
         "0x00001006    4 *union* r28 := r28{1} - 8\n"
-        "Call BB:\n"
+        "Call Fragment:\n"
         "  in edges: 0x00001006(0x00001004) 0x00001008(0x00001008) \n"
         "  out edges: 0x00001008 0x0000100c \n"
         "0x00000000    5 *union* r28 := phi{4 7}\n"
@@ -814,7 +814,7 @@ void StatementTest::testRecursion()
         "              Reaching definitions: r28=r28{5} - 4,   r29=r29{2},   m[r28{1} + 4]=m[r28{1} + 4]{3},\n"
         "                m[r28{1} - 4]=r29{2},   m[r28{1} - 8]=m[r28{1} + 4]{3} + 1\n"
         "              Live variables: r28\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001008(0x00001008) \n"
         "  out edges: \n"
         "0x0000100c    8 RET\n"
