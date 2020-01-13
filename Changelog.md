@@ -2,7 +2,9 @@ v0.6.0 (in development)
 -----------------------
 - Fixed: Crash when plugin interface constructor throws an exception.
 - Fixed: Crash when generating code for unions containing function pointers in some cases.
+- Fixed: Possible crash when assigning a BasicBlock to itself.
 - Fixed: Wrong decompilation of switch statements in some cases.
+- Fixed: When --decode-only is specified, the -gd switch has no effect.
 - Fixed: Wrong decompilation of Fortran-style switch statements.
 - Fixed: Wrong decompilation of x86 binaries containing `bsf` or `bsr`.
 - Fixed: Wrong decompilation of x86 binaries containing instructions with a `rep` prefix.
@@ -11,10 +13,13 @@ v0.6.0 (in development)
 - Fixed: Missing semantics for 16-bit x86 `mul` instruction.
 - Fixed: Non-deterministic naming of locals in decompilation output.
 - Fixed: Non-deterministic decompilation of mutually recursive functions.
+- Fixed: When --decode-only is specified, the -gd switch has no effect.
+- Feature: Added ability to specify call, return or jump semantics in SSL specification files.
 - Feature: Separate disassembly and lifting of machine instructions.
 - Improved: Instruction semantics definition format.
 - Improved: Dot file output (-gd) now also outputs machine instructions (not just IR).
 - Improved: CMake configuration speed.
+- Changed: Renamed pentium -> x86.
 - Removed: SPARC support.
 
 v0.5.2 (2020-1-11)
