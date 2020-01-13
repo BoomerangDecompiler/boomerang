@@ -547,7 +547,6 @@ int CommandlineDriver::decompile(const QString &fname, const QString &pname)
         return 1;
     }
 
-
     if (m_project->getSettings()->stopBeforeDecompile) {
         if (!m_project->getSettings()->dotFile.isEmpty()) {
             CFGDotWriter().writeCFG(m_project->getProg(), m_project->getSettings()->dotFile);
@@ -556,7 +555,6 @@ int CommandlineDriver::decompile(const QString &fname, const QString &pname)
         return 0;
     }
 
-    LOG_MSG("Decompiling...");
     m_project->decompileBinaryFile();
 
     if (!m_project->getSettings()->dotFile.isEmpty()) {
@@ -570,9 +568,9 @@ int CommandlineDriver::decompile(const QString &fname, const QString &pname)
 
     time_t end;
     time(&end);
-    int hours = static_cast<int>((end - start) / 60 / 60);
-    int mins  = static_cast<int>((end - start) / 60 - hours * 60);
-    int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
+    const int hours = static_cast<int>((end - start) / 60 / 60);
+    const int mins  = static_cast<int>((end - start) / 60 - hours * 60);
+    const int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
 
     LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
     return 0;

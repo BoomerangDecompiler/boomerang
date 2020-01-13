@@ -216,6 +216,7 @@ bool Project::decompileBinaryFile()
         return false;
     }
 
+    LOG_MSG("Decompiling...");
     ProgDecompiler dcomp(m_prog.get());
     dcomp.decompile();
 
