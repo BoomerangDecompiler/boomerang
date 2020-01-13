@@ -10,12 +10,11 @@
 #pragma once
 
 
-#include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
 #include "boomerang/ifc/IFrontEnd.h"
+#include "boomerang/ssl/RTL.h"
 
 #include <map>
-#include <memory>
 
 
 class Function;
@@ -24,11 +23,13 @@ class RTL;
 class IDecoder;
 class Exp;
 class Prog;
-class DecodeResult;
+class LiftedInstruction;
 class Signature;
 class Statement;
 class CallStatement;
 class BinaryFile;
+class MachineInstruction;
+class IRFragment;
 
 class QString;
 
@@ -51,37 +52,37 @@ public:
     DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
+    /// \copydoc IFrontEnd::initialize
     bool initialize(Project *project) override;
 
     /// \copydoc IFrontEnd::getDecoder
     IDecoder *getDecoder() override { return m_decoder; }
     const IDecoder *getDecoder() const override { return m_decoder; }
 
-    /// \copydoc IFrontEnd::decodeEntryPointsRecursive
-    bool decodeEntryPointsRecursive(bool decodeMain = true) override;
+public:
+    /// \copydoc IFrontEnd::disassembleEntryPoints
+    [[nodiscard]] bool disassembleEntryPoints() override;
 
-    /// \copydoc IFrontEnd::decodeRecursive
-    bool decodeRecursive(Address addr) override;
+    /// \copydoc IFrontEnd::disassembleAll
+    [[nodiscard]] bool disassembleAll() override;
 
-    /// \copydoc IFrontEnd::decodeUndecoded
-    bool decodeUndecoded() override;
+    /// \copydoc IFrontEnd::disassembleFunctionAtAddr
+    [[nodiscard]] bool disassembleFunctionAtAddr(Address addr) override;
 
-    /// \copydoc IFrontEnd::decodeFragment
-    bool decodeFragment(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    [[nodiscard]] bool disassembleProc(UserProc *proc, Address addr) override;
 
-    /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::liftProc
+    /// \note Derived classes should implement \ref liftProcImpl
+    [[nodiscard]] bool liftProc(UserProc *proc) final override;
 
-    /// Decode a single instruction at address \p addr
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult &result);
-
-    /// Do extra processing of call instructions.
-    /// Does nothing by default.
-    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                  const RTLList &BB_rtls);
+    /// Disassemble and lift a single instruction at address \p addr
+    /// \returns true on success
+    [[nodiscard]] bool decodeInstruction(Address pc, MachineInstruction &insn,
+                                         LiftedInstruction &lifted);
 
 public:
-    /// \copydoc IFrontEnd::getEntryPoints
+    /// \copydoc IFrontEnd::findEntryPoints
     std::vector<Address> findEntryPoints() override;
 
     /// \copydoc IFrontEnd::isNoReturnCallDest
@@ -90,10 +91,11 @@ public:
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString &name) override;
 
-    /// \copydoc IFrontEnd::saveDecodedRTL
-    void saveDecodedRTL(Address a, RTL *rtl) override;
-
 protected:
+    /// Do extra processing of call instructions.
+    /// Does nothing by default.
+    virtual void extraProcessCall(IRFragment *callFrag);
+
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
      * \param proc      pointer to enclosing UserProc
@@ -102,8 +104,7 @@ protected:
      *                  (including a ReturnStatement as the last statement)
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> bb_rtls,
-                                  std::unique_ptr<RTL> returnRTL);
+    IRFragment *createReturnBlock(std::unique_ptr<RTLList> rtls, BasicBlock *retBB);
 
     /**
      * Given the dest of a call, determine if this is a machine specific helper function with
@@ -115,7 +116,22 @@ protected:
      */
     virtual bool isHelperFunc(Address dest, Address addr, RTLList &lrtl);
 
+protected:
+    /// Disassemble a single instruction at address \p pc
+    /// \returns true on success
+    bool disassembleInstruction(Address pc, MachineInstruction &insn);
+
+    /// Lifts a single instruction \p insn to an RTL.
+    /// \returns true on success
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted);
+
+    /// Does the actual lifting for \ref DefaultFrontEnd::liftProc
+    virtual bool liftProcImpl(UserProc *proc);
+
 private:
+    bool liftBB(BasicBlock *bb, UserProc *proc,
+                std::list<std::shared_ptr<CallStatement>> &callList);
+
     /// \returns true iff \p exp is a memof that references the address of an imported function.
     bool refersToImportedFunction(const SharedExp &exp);
 
@@ -128,10 +144,10 @@ private:
      * \param proc    the enclosing UserProc
      * \param callRTL the current RTL with the call instruction
      */
-    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
+    void appendSyntheticReturn(IRFragment *callFrag);
 
     /**
-     * Change a jump to a call if the jump destination is an impoted function.
+     * Change a jump to a call if the jump destination is an imported function.
      * \sa refersToImportedFunction
      */
     void preprocessProcGoto(RTL::StmtList::iterator ss, Address dest, const RTL::StmtList &sl,
@@ -148,6 +164,10 @@ private:
     Address getAddrOfLibraryThunk(const std::shared_ptr<CallStatement> &call, UserProc *proc);
 
 protected:
+    /// After disassembly, tag all the BBs that are part of \p proc
+    void tagFunctionBBs(UserProc *proc);
+
+protected:
     IDecoder *m_decoder      = nullptr;
     BinaryFile *m_binaryFile = nullptr;
     Prog *m_program          = nullptr;
@@ -157,7 +177,9 @@ protected:
     /// Map from address to meaningful name
     std::map<Address, QString> m_refHints;
 
-    /// Map from address to previously decoded RTLs for decoded indirect control transfer
-    /// instructions
-    std::map<Address, RTL *> m_previouslyDecoded;
+    std::map<const MachineInstruction *, IRFragment *> m_firstFragment;
+    std::map<const MachineInstruction *, IRFragment *> m_lastFragment;
+
+    /// Stores the list of fragments needing successors during lifting
+    std::list<IRFragment *> m_needSuccessors;
 };

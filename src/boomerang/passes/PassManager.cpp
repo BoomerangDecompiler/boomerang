@@ -17,7 +17,7 @@
 #include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/passes/dataflow/DominatorPass.h"
 #include "boomerang/passes/dataflow/PhiPlacementPass.h"
-#include "boomerang/passes/early/BBSimplifyPass.h"
+#include "boomerang/passes/early/FragSimplifyPass.h"
 #include "boomerang/passes/early/GlobalConstReplacePass.h"
 #include "boomerang/passes/early/StatementInitPass.h"
 #include "boomerang/passes/early/StatementPropagationPass.h"
@@ -59,7 +59,7 @@ PassManager::PassManager()
     registerPass(PassID::StatementInit, std::make_unique<StatementInitPass>());
     registerPass(PassID::GlobalConstReplace, std::make_unique<GlobalConstReplacePass>());
     registerPass(PassID::StatementPropagation, std::make_unique<StatementPropagationPass>());
-    registerPass(PassID::BBSimplify, std::make_unique<BBSimplifyPass>());
+    registerPass(PassID::FragSimplify, std::make_unique<FragSimplifyPass>());
     registerPass(PassID::CallAndPhiFix, std::make_unique<CallAndPhiFixPass>());
     registerPass(PassID::SPPreservation, std::make_unique<SPPreservationPass>());
     registerPass(PassID::PreservationAnalysis, std::make_unique<PreservationAnalysisPass>());
@@ -97,21 +97,6 @@ PassManager *PassManager::get()
 }
 
 
-bool PassManager::createPassGroup(const QString &name, const std::initializer_list<IPass *> &passes)
-{
-    auto it = m_passGroups.find(name);
-    if (it != m_passGroups.end()) {
-        LOG_WARN("Cannot create pass group with name '%1': "
-                 "A group of the same name already exists",
-                 name);
-        return false;
-    }
-
-    m_passGroups.insert(name, PassGroup(name, passes));
-    return true;
-}
-
-
 bool PassManager::executePass(PassID passID, UserProc *proc)
 {
     return executePass(getPass(passID), proc);
@@ -123,33 +108,14 @@ bool PassManager::executePass(IPass *pass, UserProc *proc)
     assert(pass != nullptr);
     LOG_VERBOSE("Executing pass '%1' for '%2'", pass->getName(), proc->getName());
 
-    const bool changed = pass->execute(proc);
+    const bool change = pass->execute(proc);
 
-    QString msg = QString("after executing pass '%1'").arg(pass->getName());
-    proc->debugPrintAll(qPrintable(msg));
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
-
-    return changed;
-}
-
-
-bool PassManager::executePassGroup(const QString &name, UserProc *proc)
-{
-    auto it = m_passGroups.find(name);
-    if (it == m_passGroups.end()) {
-        throw std::invalid_argument(
-            QString("Pass group '%1' does not exist").arg(name).toStdString());
+    if (Log::getOrCreateLog().getLogLevel() >= LogLevel::Verbose1) {
+        const QString msg = QString("after executing pass '%1'").arg(pass->getName());
+        proc->debugPrintAll(msg);
     }
 
-    const PassGroup &group = it.value();
-    bool changed           = false;
-
-    LOG_VERBOSE("Executing pass group '%1' for '%2'", name, proc->getName());
-    for (IPass *pass : group) {
-        changed |= executePass(pass, proc);
-    }
-
-    return changed;
+    return change;
 }
 
 

@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+
 #include <algorithm>
 #include <utility>
 

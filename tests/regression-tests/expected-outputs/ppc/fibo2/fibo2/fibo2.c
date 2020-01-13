@@ -29,8 +29,8 @@ __size32 fib1()
 /** address: 0x10000480 */
 __size32 fib2(int param1)
 {
+    int g29; 		// r29
     int g3; 		// r3
-    int g3_1; 		// r3{5}
     __size32 g9; 		// r9
     int local0; 		// m[g1 - 20]
 
@@ -38,9 +38,9 @@ __size32 fib2(int param1)
         local0 = param1;
     }
     else {
-        g3_1 = fib1();
+        fib1();
         g3 = fib1(); /* Warning: also results in g9 */
-        local0 = g3_1 + g3;
+        local0 = g29 + g3;
     }
     return local0; /* WARNING: Also returning: g9 := g9 */
 }

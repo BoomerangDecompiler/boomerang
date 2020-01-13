@@ -32,8 +32,8 @@ public:
     PPCFrontEnd &operator=(PPCFrontEnd &&other) = default;
 
 public:
-    /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address entryAddr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    virtual bool disassembleProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;

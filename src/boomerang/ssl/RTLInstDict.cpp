@@ -71,10 +71,15 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
     }
 
     if (m_verboseOutput) {
-        OStream q_cout(stdout);
-        q_cout << "\n=======Expanded RTL template dictionary=======\n";
-        print(q_cout);
-        q_cout << "\n==============================================\n\n";
+        QString s;
+        OStream os(&s);
+        print(os);
+
+        LOG_VERBOSE("");
+        LOG_VERBOSE("=======Expanded RTL template dictionary=======");
+        LOG_VERBOSE("%1", s);
+        LOG_VERBOSE("==============================================");
+        LOG_VERBOSE("");
     }
 
     return true;
@@ -112,9 +117,9 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
     // before trying the verbose instructions
     auto dict_entry = m_instructions.find({ name, args.size() });
     if (dict_entry == m_instructions.end()) {
-        LOG_VERBOSE("Cannot instatiate instruction '%1' at address %2: "
-                    "No instruction template takes %3 arguments",
-                    name, natPC, args.size());
+        LOG_ERROR("Cannot instatiate instruction '%1' at address %2: "
+                  "No instruction template takes %3 arguments",
+                  name, natPC, args.size());
         return nullptr; // instruction not found
     }
 

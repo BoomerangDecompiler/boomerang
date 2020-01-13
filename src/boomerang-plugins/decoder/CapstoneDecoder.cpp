@@ -43,11 +43,6 @@ CapstoneDecoder::CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode
         LOG_ERROR("Cannot read SSL file '%1'", realSSLFileName);
         throw std::runtime_error("Cannot read SSL file");
     }
-
-    // check that all required registers are present
-    if (m_dict.getRegDB()->getRegNameByNum(REG_X86_ESP).isEmpty()) {
-        throw std::runtime_error("Required register #28 (%esp) not present");
-    }
 }
 
 
@@ -64,7 +59,7 @@ bool CapstoneDecoder::initialize(Project *project)
 }
 
 
-bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group)
+bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group) const
 {
     for (int i = 0; i < instruction->detail->groups_count; i++) {
         if (instruction->detail->groups[i] == group) {
@@ -73,10 +68,4 @@ bool CapstoneDecoder::isInstructionInGroup(const cs::cs_insn *instruction, uint8
     }
 
     return false;
-}
-
-
-bool CapstoneDecoder::isSPARCRestore(Address, ptrdiff_t) const
-{
-    return false; // Overridden in CapstoneSPARCDecoder
 }

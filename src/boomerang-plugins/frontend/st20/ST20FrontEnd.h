@@ -17,7 +17,7 @@
 /**
  * Contains routines to manage the decoding of st20
  * instructions and the instantiation to RTLs, removing st20
- * dependent features such as delay slots in the process.
+ * dependent features in the process.
  */
 class BOOMERANG_PLUGIN_API ST20FrontEnd : public DefaultFrontEnd
 {
@@ -34,9 +34,9 @@ public:
     ST20FrontEnd &operator=(ST20FrontEnd &&other) = default;
 
 public:
-    /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address entryAddr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    virtual bool disassembleProc(UserProc *proc, Address entryAddr) override;
 
-    /// \copydoc IFrontEnd::getMainEntryPoint
+    /// \copydoc IFrontEnd::findMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
 };

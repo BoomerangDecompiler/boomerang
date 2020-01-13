@@ -74,10 +74,6 @@ void CallStatement::localiseComp(SharedExp e)
 
 SharedExp CallStatement::localiseExp(SharedExp e)
 {
-    if (!m_defCol.isInitialised()) {
-        return e; // Don't attempt to subscript if the data flow not started yet
-    }
-
     Localiser l(this);
     e = e->clone()->acceptModifier(&l);
 
@@ -118,7 +114,7 @@ void CallStatement::setArguments(const StatementList &args)
         if (arg->isAssign()) {
             std::shared_ptr<Assign> asgn = arg->as<Assign>();
             asgn->setProc(m_proc);
-            asgn->setBB(m_bb);
+            asgn->setFragment(m_fragment);
         }
     }
 }
@@ -161,7 +157,7 @@ void CallStatement::setSigArguments()
             m_signature->getParamType(i)->clone(), e->clone(), e->clone());
 
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         asgn->setNumber(m_number);
 
@@ -356,9 +352,9 @@ SharedStmt CallStatement::clone() const
     }
 
     // Statement members
-    ret->m_bb     = m_bb;
-    ret->m_proc   = m_proc;
-    ret->m_number = m_number;
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
     return ret;
 }
 
@@ -526,7 +522,7 @@ bool CallStatement::tryConvertToDirect()
         SharedExp a = sig->getParamExp(i);
         std::shared_ptr<Assign> asgn(new Assign(VoidType::get(), a->clone(), a->clone()));
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         m_arguments.append(asgn);
     }
 
@@ -542,8 +538,8 @@ bool CallStatement::tryConvertToDirect()
 
     // 4
     m_isComputed = false;
-    assert(m_bb->getType() == BBType::CompCall);
-    m_bb->setType(BBType::Call);
+    assert(m_fragment->isType(FragType::CompCall));
+    m_fragment->setType(FragType::Call);
     m_proc->addCallee(m_procDest);
 
     LOG_VERBOSE("Result of convertToDirect: true");
@@ -607,7 +603,7 @@ void CallStatement::setNumArguments(int n)
 
         std::shared_ptr<Assign> asgn(new Assign(ty, a->clone(), a->clone()));
         asgn->setProc(m_proc);
-        asgn->setBB(m_bb);
+        asgn->setFragment(m_fragment);
         m_arguments.append(asgn);
     }
 }
@@ -751,10 +747,8 @@ void CallStatement::setDefines(const StatementList &defines)
 }
 
 
-bool CallStatement::ellipsisProcessing(Prog *prog)
+bool CallStatement::ellipsisProcessing(Prog *)
 {
-    Q_UNUSED(prog);
-
     // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
     if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {
         return objcSpecificProcessing(nullptr);
@@ -762,16 +756,16 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     // functions like printf almost always have too many args
     QString name(getDestProc()->getName());
-    int format = -1;
+    int formatstrIdx = -1;
 
     if (((name == "printf") || (name == "scanf"))) {
-        format = 0;
+        formatstrIdx = 0;
     }
     else if ((name == "sprintf") || (name == "fprintf") || (name == "sscanf")) {
-        format = 1;
+        formatstrIdx = 1;
     }
     else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
-        format = getNumArguments() - 1;
+        formatstrIdx = getNumArguments() - 1;
     }
     else {
         return false;
@@ -780,7 +774,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
     LOG_VERBOSE("Ellipsis processing for %1", name);
 
     QString formatStr;
-    SharedExp formatExp = getArgumentExp(format);
+    SharedExp formatExp = getArgumentExp(formatstrIdx);
 
     // We sometimes see a[m[blah{...}]]
     if (formatExp->isAddrOf()) {
@@ -858,8 +852,8 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
     int n = 1; // Count the format string itself (may also be "format" more arguments)
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
-    bool isScanf = name.contains("scanf");
-    int p_idx    = 0;
+    const bool isScanf = name.contains("scanf");
+    int p_idx          = 0;
 
     // TODO: use qregularexpression to match scanf arguments
     while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
@@ -929,7 +923,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         switch (ch) {
         case 'd':
         case 'i': // Signed integer
-            addSigParam(IntegerType::get(veryLong ? 64 : 32), isScanf);
+            addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
             break;
 
         case 'u':
@@ -970,8 +964,10 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         }
     }
 
-    setNumArguments(format + n);
+    setNumArguments(formatstrIdx + n);
     m_signature->setHasEllipsis(false); // So we don't do this again
+
+
     return true;
 }
 
@@ -984,7 +980,7 @@ std::shared_ptr<Assign> CallStatement::makeArgAssign(SharedType ty, SharedExp e)
     SharedExp rhs = localiseExp(e->clone());
     std::shared_ptr<Assign> asgn(new Assign(ty, lhs, rhs));
     asgn->setProc(m_proc);
-    asgn->setBB(m_bb);
+    asgn->setFragment(m_fragment);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     ProcCFG *cfg = m_proc->getCFG();
 
@@ -1061,7 +1057,7 @@ void CallStatement::updateArguments()
     SharedExp loc;
 
     while ((loc = asp.nextArgLoc()) != nullptr) {
-        if (m_proc->filterParams(loc)) {
+        if (!m_proc->canBeParam(loc)) {
             continue;
         }
 
@@ -1085,7 +1081,7 @@ void CallStatement::updateArguments()
             asgn->setNumber(m_number);
             // as->setParent(this);
             asgn->setProc(m_proc);
-            asgn->setBB(m_bb);
+            asgn->setFragment(m_fragment);
 
             oldArguments.append(asgn);
         }
@@ -1100,7 +1096,7 @@ void CallStatement::updateArguments()
             continue;
         }
 
-        if (m_proc->filterParams(lhs)) {
+        if (!m_proc->canBeParam(lhs)) {
             // Filtered out: delete it
             continue;
         }
@@ -1128,7 +1124,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
                 continue;
             }
 
-            if (m_useCol.exists(lhs)) {
+            if (m_useCol.hasUse(lhs)) {
                 result->append(dd);
             }
         }
@@ -1140,7 +1136,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
         const RegNum sp = sig->getStackRegister();
 
         for (SharedExp loc : m_useCol) {
-            if (m_proc->filterReturns(loc)) {
+            if (!m_proc->canBeReturn(loc)) {
                 continue; // Ignore filtered locations
             }
             else if (loc->isRegN(sp)) {

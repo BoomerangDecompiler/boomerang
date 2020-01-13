@@ -33,7 +33,7 @@ std::shared_ptr<FuncType> FuncType::get(const std::shared_ptr<Signature> &sig)
 
 SharedType FuncType::clone() const
 {
-    return FuncType::get(m_signature);
+    return FuncType::get(m_signature ? m_signature->clone() : nullptr);
 }
 
 

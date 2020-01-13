@@ -29,10 +29,12 @@ Assignment::Assignment(SharedExp lhs)
     , m_lhs(lhs)
 {
     if (lhs && lhs->isRegOfConst()) {
-        if (lhs->access<Location>()->getProc()) {
-            const RegNum n = lhs->access<Const, 1>()->getInt();
-            m_type         = SizeType::get(
-                lhs->access<Location>()->getProc()->getProg()->getRegSizeByNum(n));
+        UserProc *proc = lhs->access<Location>()->getProc();
+        if (proc) {
+            const RegNum n   = lhs->access<Const, 1>()->getInt();
+            const Prog *prog = proc->getProg();
+
+            m_type = SizeType::get(prog->getRegSizeByNum(n));
         }
     }
 }

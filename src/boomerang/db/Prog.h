@@ -38,6 +38,7 @@ class Module;
 class Project;
 class Signature;
 class ISymbolProvider;
+class LowLevelCFG;
 
 
 class BOOMERANG_API Prog
@@ -72,6 +73,9 @@ public:
 
     BinaryFile *getBinaryFile() { return m_binaryFile; }
     const BinaryFile *getBinaryFile() const { return m_binaryFile; }
+
+    LowLevelCFG *getCFG() { return m_cfg.get(); }
+    const LowLevelCFG *getCFG() const { return m_cfg.get(); }
 
     /**
      * Creates a new empty module.
@@ -149,7 +153,7 @@ public:
     QString getRegNameByNum(RegNum regNum) const;
     int getRegSizeByNum(RegNum regNum) const;
 
-    /// Get a code for the machine e.g. MACHINE_SPARC
+    /// Get a code for the machine e.g. Machine::X86
     Machine getMachine() const;
 
     void readDefaultLibraryCatalogues();
@@ -251,6 +255,8 @@ private:
     IFrontEnd *m_fe          = nullptr; ///< Pointer to the FrontEnd object for the project
     Module *m_rootModule     = nullptr; ///< Root of the module tree
     ModuleList m_moduleList;            ///< The Modules that make up this program
+
+    std::unique_ptr<LowLevelCFG> m_cfg;
 
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;

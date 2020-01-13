@@ -12,6 +12,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -21,16 +22,20 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/frontend/LiftedInstruction.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/NamedType.h"
 #include "boomerang/util/log/Log.h"
+
+#include <stack>
 
 
 DefaultFrontEnd::DefaultFrontEnd(Project *project)
@@ -60,44 +65,43 @@ bool DefaultFrontEnd::initialize(Project *project)
 }
 
 
-bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
+bool DefaultFrontEnd::disassembleEntryPoints()
 {
-    if (!decodeMain) {
-        return true;
-    }
+    BinaryImage *image    = m_program->getBinaryFile()->getImage();
+    const Address lowAddr = image->getLimitTextLow();
+    const int numBytes    = (image->getLimitTextHigh() - lowAddr).value();
 
-    BinaryImage *image = m_program->getBinaryFile()->getImage();
-
-    Interval<Address> extent(image->getLimitTextLow(), image->getLimitTextHigh());
-
-    m_program->getProject()->alertStartDecode(extent.lower(),
-                                              (extent.upper() - extent.lower()).value());
+    m_program->getProject()->alertStartDecode(lowAddr, numBytes);
 
     bool gotMain;
-    Address a = findMainEntryPoint(gotMain);
-    LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
+    const Address mainAddr = findMainEntryPoint(gotMain);
 
-    if (a == Address::INVALID) {
-        std::vector<Address> entrypoints = findEntryPoints();
-
-        for (auto &entrypoint : entrypoints) {
-            if (!decodeRecursive(entrypoint)) {
-                return false;
-            }
-        }
-
-        return true;
+    if (gotMain) {
+        LOG_MSG("Found main at address %1", mainAddr);
+    }
+    else {
+        LOG_WARN("Could not find main, falling back to entry point(s)");
     }
 
-    decodeRecursive(a);
-    m_program->addEntryPoint(a);
+    if (!gotMain) {
+        std::vector<Address> entrypoints = findEntryPoints();
+
+        return std::all_of(entrypoints.begin(), entrypoints.end(),
+                           [this](Address entry) { return disassembleFunctionAtAddr(entry); });
+    }
+
+    if (!disassembleFunctionAtAddr(mainAddr)) {
+        return false;
+    }
+
+    m_program->addEntryPoint(mainAddr);
 
     if (!gotMain) {
         return true; // Decoded successfully, but patterns don't match a known main() pattern
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-    QString name                  = m_program->getSymbolNameByAddr(a);
+    QString name                  = m_program->getSymbolNameByAddr(mainAddr);
 
     if (name == nullptr) {
         name = mainName[0];
@@ -108,10 +112,10 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
             continue;
         }
 
-        Function *proc = m_program->getFunctionByAddr(a);
+        Function *proc = m_program->getFunctionByAddr(mainAddr);
 
         if (proc == nullptr) {
-            LOG_WARN("No proc found for address %1", a);
+            LOG_WARN("No proc found for address %1", mainAddr);
             return false;
         }
 
@@ -123,7 +127,6 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
         else {
             proc->setSignature(fty->getSignature()->clone());
             proc->getSignature()->setName(name);
-            // proc->getSignature()->setFullSig(true); // Don't add or remove parameters
             proc->getSignature()->setForced(true); // Don't add or remove parameters
         }
 
@@ -134,39 +137,10 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 }
 
 
-bool DefaultFrontEnd::decodeRecursive(Address addr)
-{
-    assert(addr != Address::INVALID);
-
-    Function *newProc = m_program->getOrCreateFunction(addr);
-
-    // Sometimes, we have to adjust the entry address since
-    // the instruction at addr is just a jump to another address.
-    addr = newProc->getEntryAddress();
-    LOG_MSG("Starting decode at address %1", addr);
-    UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
-
-    if (proc == nullptr) {
-        LOG_MSG("No proc found at address %1", addr);
-        return false;
-    }
-    else if (proc->isLib()) {
-        LOG_MSG("NOT decoding library proc at address %1", addr);
-        return false;
-    }
-
-    if (processProc(proc, addr)) {
-        proc->setDecoded();
-    }
-
-    return m_program->isWellFormed();
-}
-
-
-bool DefaultFrontEnd::decodeUndecoded()
+bool DefaultFrontEnd::disassembleAll()
 {
     bool change = true;
-    LOG_MSG("Looking for undecoded procedures to decode...");
+    LOG_MSG("Looking for functions to disassemble...");
 
     while (change) {
         change = false;
@@ -178,19 +152,17 @@ bool DefaultFrontEnd::decodeUndecoded()
                 }
 
                 UserProc *userProc = static_cast<UserProc *>(function);
-
                 if (userProc->isDecoded()) {
                     continue;
                 }
 
-                // undecoded userproc.. decode it
-                change = true;
-
-                if (!processProc(userProc, userProc->getEntryAddress())) {
+                // Not yet disassembled - do it now
+                if (!disassembleProc(userProc, userProc->getEntryAddress())) {
                     return false;
                 }
 
                 userProc->setDecoded();
+                change = true;
 
                 // Break out of the loops if not decoding children
                 if (!m_program->getProject()->getSettings()->decodeChildren) {
@@ -208,165 +180,126 @@ bool DefaultFrontEnd::decodeUndecoded()
 }
 
 
-bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
+bool DefaultFrontEnd::disassembleFunctionAtAddr(Address addr)
 {
-    if (m_program->getProject()->getSettings()->traceDecoder) {
-        LOG_MSG("Decoding fragment at address %1", a);
+    assert(addr != Address::INVALID);
+
+    Function *newProc = m_program->getOrCreateFunction(addr);
+
+    // Sometimes, we have to adjust the entry address since
+    // the instruction at addr is just a jump to another address.
+    addr = newProc->getEntryAddress();
+    LOG_MSG("Starting disassembly at address %1", addr);
+    UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
+
+    if (proc == nullptr) {
+        LOG_MSG("No proc found at address %1", addr);
+        return false;
+    }
+    else if (proc->isLib()) {
+        LOG_MSG("NOT decoding library proc at address %1", addr);
+        return false;
     }
 
-    return processProc(proc, a);
+    if (disassembleProc(proc, addr)) {
+        proc->setDecoded();
+    }
+
+    return m_program->isWellFormed();
 }
 
 
-bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
+bool DefaultFrontEnd::disassembleProc(UserProc *proc, Address addr)
 {
-    BasicBlock *currentBB;
+    LOG_VERBOSE("### Disassembing proc '%1' at address %2 ###", proc->getName(), addr);
 
-    LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
-
-    // We have a set of CallStatement pointers. These may be disregarded if this is a speculative
-    // decode that fails (i.e. an illegal instruction is found). If not, this set will be used to
-    // add to the set of calls to be analysed in the ProcCFG, and also to call newProc()
-    std::list<std::shared_ptr<CallStatement>> callList;
-
-    // Indicates whether or not the next instruction to be decoded is the lexical successor of the
-    // current one. Will be true for all NCTs and for CTIs with a fall through branch.
-    bool sequentialDecode = true;
-
-    ProcCFG *cfg = proc->getCFG();
+    LowLevelCFG *cfg = proc->getProg()->getCFG();
     assert(cfg);
 
-    // Initialise the queue of control flow targets that have yet to be decoded.
     m_targetQueue.initial(addr);
-
-    // Clear the pointer used by the caller prologue code to access the last call rtl of this
-    // procedure decoder.resetLastCall();
 
     int numBytesDecoded = 0;
     Address startAddr   = addr;
     Address lastAddr    = addr;
+    MachineInstruction insn;
 
-    while ((addr = m_targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
-        // The list of RTLs for the current basic block
-        std::unique_ptr<RTLList> BB_rtls(new RTLList);
+    while ((addr = m_targetQueue.popAddress(*cfg)) != Address::INVALID) {
+        std::list<MachineInstruction> bbInsns;
 
-        // Keep decoding sequentially until a CTI without a fall through branch is decoded
-        DecodeResult inst;
+        // Indicates whether or not the next instruction to be decoded is the lexical successor of
+        // the current one. Will be true for all NCTs and for CTIs with a fall through branch.
+        bool sequentialDecode = true;
 
         while (sequentialDecode) {
-            // Decode and classify the current source instruction
-            if (m_program->getProject()->getSettings()->traceDecoder) {
-                LOG_MSG("*%1", addr);
+            BasicBlock *existingBB = cfg->getBBStartingAt(addr);
+            if (existingBB) {
+                if (!bbInsns.empty()) {
+                    // if bbInsns is not empty, the previous instruction was not a CTI.
+                    // Complete the BB as a fallthrough
+                    BasicBlock *newBB = cfg->createBB(BBType::Fall, bbInsns);
+                    bbInsns.clear();
+                    cfg->addEdge(newBB, existingBB);
+                }
+
+                if (existingBB->isComplete()) {
+                    break; // do not disassemble BB twice
+                }
             }
 
-            if (!decodeSingleInstruction(addr, inst)) {
-                // Do not throw away previously decoded instrucions before the invalid one
-                if (BB_rtls && !BB_rtls->empty()) {
-                    cfg->createBB(BBType::Fall, std::move(BB_rtls));
+            if (!disassembleInstruction(addr, insn)) {
+                // We might have disassembled a valid instruction, but the disassembler
+                // does not recognize it. Do not throw away previous instructions;
+                // instead, create a new BB from them
+                if (!bbInsns.empty()) {
+                    cfg->createBB(BBType::Fall, bbInsns);
                 }
 
-                QString message;
-                BinaryImage *image = m_program->getBinaryFile()->getImage();
-
-                Byte insnData[4] = { 0 };
-                bool print       = true;
-                for (int i = 0; i < 4; i++) {
-                    if (!image->readNative1(addr + i, insnData[i])) {
-                        print = false;
-                        break;
-                    }
-                }
-
-                if (print) {
-                    // clang-format off
-                    message.sprintf("Encountered invalid instruction at address %s: "
-                                    "0x%02X 0x%02X 0x%02X 0x%02X",
-                                    qPrintable(addr.toString()),
-                                    insnData[0],
-                                    insnData[1],
-                                    insnData[2],
-                                    insnData[3]);
-                    // clang-format on
-                    LOG_WARN(message);
-                }
-
-                assert(!inst.valid);
+                LOG_ERROR("Encountered invalid instruction");
+                sequentialDecode = false;
                 break; // try next instruction in queue
             }
-            else if (!inst.rtl || inst.rtl->empty()) {
-                LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
-                if (!inst.rtl) {
-                    inst.rtl.reset(new RTL(addr));
-                }
-            }
 
-            // Need to construct a new list of RTLs if a basic block has just been finished but
-            // decoding is continuing from its lexical successor
-            if (BB_rtls == nullptr) {
-                BB_rtls.reset(new std::list<std::unique_ptr<RTL>>());
-            }
-
-            if (!inst.valid) {
-                // Alert the watchers to the problem
-                m_program->getProject()->alertBadDecode(addr);
-
-                // An invalid instruction. Most likely because a call did not return (e.g. call
-                // _exit()), etc. Best thing is to emit an INVALID BB, and continue with valid
-                // instructions Emit the RTL anyway, so we have the address and maybe some other
-                // clues
-                BB_rtls->push_back(std::make_unique<RTL>(addr));
-                cfg->createBB(BBType::Invalid, std::move(BB_rtls));
-                break; // try the next instruction in the queue
+            if (m_program->getProject()->getSettings()->traceDecoder) {
+                LOG_MSG("*%1 %2 %3", addr, insn.m_mnem.data(), insn.m_opstr.data());
             }
 
             // alert the watchers that we have decoded an instruction
-            m_program->getProject()->alertInstructionDecoded(addr, inst.numBytes);
-            numBytesDecoded += inst.numBytes;
+            numBytesDecoded += insn.m_size;
+            m_program->getProject()->alertInstructionDecoded(addr, insn.m_size);
 
-            // Check if this is an already decoded jump instruction (from a previous pass with
-            // propagation etc) If so, we throw away the just decoded RTL (but we still may have
-            // needed to calculate the number of bytes.. ick.)
-            std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(addr);
+            // classify the current instruction. If it is not a CTI,
+            // continue disassembling sequentially
+            const bool isCTI = insn.isInGroup(MIGroup::Call) || insn.isInGroup(MIGroup::Jump) ||
+                               insn.isInGroup(MIGroup::Ret);
 
-            if (ff != m_previouslyDecoded.end()) {
-                inst.rtl.reset(ff->second);
-            }
+            if (!isCTI) {
+                addr += insn.m_size;
+                bbInsns.push_back(insn);
 
-            if (!inst.rtl) {
-                // This can happen if an instruction is "cancelled", e.g. call to __main in a hppa
-                // program Just ignore the whole instruction
-                if (inst.numBytes > 0) {
-                    addr += inst.numBytes;
-                }
-
+                lastAddr = std::max(lastAddr, addr);
                 continue;
             }
 
-            // Display RTL representation if asked
-            if (m_program->getProject()->getSettings()->printRTLs) {
-                QString tgt;
-                OStream st(&tgt);
-                inst.rtl->print(st);
-                LOG_MSG(tgt);
+            // this is a CTI. Lift the instruction to gain access to call/jump semantics
+            LiftedInstruction lifted;
+            if (!liftInstruction(insn, lifted)) {
+                LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
+                          insn.m_opstr.data());
+
+                // try next insruction in queue
+                sequentialDecode = false;
+                break;
             }
 
-            // Make a copy (!) of the list. This is needed temporarily to work around the following
-            // problem. We are currently iterating an RTL, which could be a return instruction. The
-            // RTL is passed to createReturnBlock; if this is not the first return statement, it
-            // will get cleared, and this will cause problems with the current iteration. The
-            // effects seem to be worse for MSVC/Windows. This problem will likely be easier to cope
-            // with when the RTLs are removed, and there are special Statements to mark the start of
-            // instructions (and their native address).
-            // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL
-            // followed by a return if it points to the start of a known procedure
-            RTL::StmtList sl(inst.rtl->getStatements());
+            bbInsns.push_back(insn);
+            const RTL::StmtList &sl = lifted.getFirstRTL()->getStatements();
 
             for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 SharedStmt s = *ss;
                 s->setProc(proc); // let's do this really early!
 
-                if (m_refHints.find(inst.rtl->getAddress()) != m_refHints.end()) {
-                    const QString &name(m_refHints[inst.rtl->getAddress()]);
+                if (m_refHints.find(lifted.getFirstRTL()->getAddress()) != m_refHints.end()) {
+                    const QString &name(m_refHints[lifted.getFirstRTL()->getAddress()]);
                     Address globAddr = m_program->getGlobalAddrByName(name);
 
                     if (globAddr != Address::INVALID) {
@@ -376,144 +309,90 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 s->simplify();
-                std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(
-                    s);
+            }
 
-                // Check for a call to an already existing procedure (including self recursive
-                // jumps), or to the PLT (note that a LibProc entry for the PLT function may not yet
-                // exist)
-                if (s->getKind() == StmtType::Goto) {
-                    preprocessProcGoto(ss, jumpStmt->getFixedDest(), sl, inst.rtl.get());
-                    s = *ss; // *ss can be changed within processProc
-                }
-
+            for (SharedStmt s : sl) {
                 switch (s->getKind()) {
                 case StmtType::Goto: {
-                    Address jumpDest = jumpStmt->getFixedDest();
+                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                    assert(jump != nullptr);
+                    const Address jumpDest = jump->getFixedDest();
+                    sequentialDecode       = false;
 
-                    // Handle one way jumps and computed jumps separately
-                    if (jumpDest != Address::INVALID) {
-                        BB_rtls->push_back(std::move(inst.rtl));
+                    // computed unconditional jumps have CaseStatement as last statement
+                    // and not Goto
+                    if (jumpDest == Address::INVALID) {
+                        break;
+                    }
+
+                    // Static unconditional jump
+                    BasicBlock *currentBB = cfg->createBB(BBType::Oneway, bbInsns);
+
+                    // Exit the switch now if the basic block already existed
+                    if (currentBB == nullptr) {
+                        break;
+                    }
+
+                    // Check if this is a jump to an already existing function. If so, this is
+                    // actually a call that immediately returns afterwards
+                    Function *destProc = m_program->getFunctionByAddr(jumpDest);
+                    if (destProc && destProc != reinterpret_cast<Function *>(-1)) {
                         sequentialDecode = false;
+                        break;
+                    }
 
-                        currentBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
-
-                        // Exit the switch now if the basic block already existed
-                        if (currentBB == nullptr) {
-                            break;
-                        }
-
-                        // Add the out edge if it is to a destination within the
-                        // procedure
-                        if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                            m_targetQueue.visit(cfg, jumpDest, currentBB);
-                            cfg->addEdge(currentBB, jumpDest);
-                        }
-                        else {
-                            LOG_WARN("Goto instruction at address %1 branches beyond end of "
-                                     "section, to %2",
-                                     addr, jumpDest);
-                        }
+                    BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(jumpDest);
+                    if (sym && sym->isFunction()) {
+                        sequentialDecode = false;
+                        break;
+                    }
+                    else if (jumpDest <
+                             m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                        // Add the out edge if it is to a destination within the procedure
+                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
+                        cfg->addEdge(currentBB, jumpDest);
+                    }
+                    else {
+                        LOG_WARN("Goto instruction at address %1 branches beyond end of "
+                                 "section, to %2",
+                                 addr, jumpDest);
                     }
                 } break;
 
                 case StmtType::Case: {
-                    SharedExp jumpDest = jumpStmt->getDest();
-
-                    if (jumpDest == nullptr) { // Happens if already analysed (now redecoding)
-                        BB_rtls->push_back(std::move(inst.rtl));
-
-                        // processSwitch will update num outedges
-                        currentBB = cfg->createBB(BBType::Nway, std::move(BB_rtls));
-
-                        // decode arms, set out edges, etc
-                        IndirectJumpAnalyzer().processSwitch(currentBB, proc);
-                        sequentialDecode = false; // Don't decode after the jump
-                        break;                    // Just leave it alone
-                    }
-
-                    // Check for indirect calls to library functions, especially in Win32 programs
-                    if (refersToImportedFunction(jumpDest)) {
-                        LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.",
-                                    jumpStmt);
-
-                        // jump to a library function
-                        // replace with a call ret
-                        const BinarySymbol
-                            *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
-                                jumpDest->access<Const, 1>()->getAddr());
-                        assert(sym != nullptr);
-                        QString func = sym->getName();
-                        std::shared_ptr<CallStatement> call(new CallStatement);
-                        call->setDest(jumpDest->clone());
-                        LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
-
-                        if (lp == nullptr) {
-                            LOG_FATAL("getLibraryProc() returned nullptr");
-                        }
-
-                        call->setDestProc(lp);
-                        BB_rtls->push_back(
-                            std::unique_ptr<RTL>(new RTL(inst.rtl->getAddress(), { call })));
-
-                        currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                        appendSyntheticReturn(currentBB, proc, inst.rtl.get());
-                        sequentialDecode = false;
-
-                        if (inst.rtl->getAddress() == proc->getEntryAddress()) {
-                            // it's a thunk
-                            // Proc *lp = prog->findProc(func.c_str());
-                            func = "__imp_" + func;
-                            proc->setName(func);
-                            // lp->setName(func.c_str());
-                            m_program->getProject()->alertSignatureUpdated(proc);
-                        }
-
-                        callList.push_back(call);
-                        ss = sl.end();
-                        ss--; // get out of the loop
-                        break;
-                    }
-
-                    BB_rtls->push_back(std::move(inst.rtl));
-
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
-                    cfg->createBB(BBType::CompJump, std::move(BB_rtls));
-
-                    LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
-
+                    cfg->createBB(BBType::CompJump, bbInsns);
                     sequentialDecode = false;
-                    break;
-                }
+                } break;
 
                 case StmtType::Branch: {
-                    Address jumpDest = jumpStmt->getFixedDest();
-                    BB_rtls->push_back(std::move(inst.rtl));
-
-                    currentBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
+                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                    BasicBlock *currentBB               = cfg->createBB(BBType::Twoway, bbInsns);
 
                     // Stop decoding sequentially if the basic block already existed otherwise
                     // complete the basic block
                     if (currentBB == nullptr) {
                         sequentialDecode = false;
+                        break;
+                    }
+
+                    // Add the out edge if it is to a destination within the section
+                    const Address jumpDest = jump->getFixedDest();
+
+                    if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
+                        cfg->addEdge(currentBB, jumpDest);
                     }
                     else {
-                        // Add the out edge if it is to a destination within the section
-                        if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                            m_targetQueue.visit(cfg, jumpDest, currentBB);
-                            cfg->addEdge(currentBB, jumpDest);
-                        }
-                        else {
-                            LOG_WARN("Branch instruction at address %1 branches beyond end of "
-                                     "section, to %2",
-                                     addr, jumpDest);
-                            currentBB->setType(BBType::Oneway);
-                        }
-
-                        // Add the fall-through outedge
-                        cfg->addEdge(currentBB, addr + inst.numBytes);
+                        LOG_WARN("Branch instruction at address %1 branches beyond end of "
+                                 "section, to %2",
+                                 addr, jumpDest);
+                        currentBB->setType(BBType::Oneway);
                     }
+
+                    // Add the fall-through outedge
+                    cfg->addEdge(currentBB, addr + insn.m_size);
                 } break;
 
                 case StmtType::Call: {
@@ -522,11 +401,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                     // Check for a dynamic linked library function
                     if (refersToImportedFunction(call->getDest())) {
                         // Dynamic linked proc pointers are treated as static.
-                        Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                        QString name       = m_program->getBinaryFile()
-                                           ->getSymbols()
-                                           ->findSymbolByAddress(linkedAddr)
-                                           ->getName();
+                        const Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
+                        const QString name       = m_program->getBinaryFile()
+                                                 ->getSymbols()
+                                                 ->findSymbolByAddress(linkedAddr)
+                                                 ->getName();
 
                         Function *function = proc->getProg()->getOrCreateLibraryProc(name);
                         call->setDestProc(function);
@@ -537,7 +416,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                     }
 
-                    Address functionAddr = getAddrOfLibraryThunk(call, proc);
+                    const Address functionAddr = getAddrOfLibraryThunk(call, proc);
                     if (functionAddr != Address::INVALID) {
                         // Yes, it's a library function. Look up its name.
                         QString name = m_program->getBinaryFile()
@@ -546,7 +425,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                            ->getName();
 
                         // Assign the proc to the call
-                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
+                        Function *p = m_program->getOrCreateLibraryProc(name);
 
                         if (call->getDestProc()) {
                             // prevent unnecessary __imp procs
@@ -564,8 +443,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Treat computed and static calls separately
                     if (call->isComputed()) {
-                        BB_rtls->push_back(std::move(inst.rtl));
-                        currentBB = cfg->createBB(BBType::CompCall, std::move(BB_rtls));
+                        BasicBlock *currentBB = cfg->createBB(BBType::CompCall, bbInsns);
 
                         // Stop decoding sequentially if the basic block already
                         // existed otherwise complete the basic block
@@ -573,45 +451,26 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                             sequentialDecode = false;
                         }
                         else {
-                            cfg->addEdge(currentBB, addr + inst.numBytes);
+                            cfg->addEdge(currentBB, addr + insn.m_size);
+                            bbInsns.clear(); // start a new BB
+                            sequentialDecode = true;
                         }
-
-                        // Add this call to the list of calls to analyse. We won't
-                        // be able to analyse it's callee(s), of course.
-                        callList.push_back(call);
                     }
                     else {
                         // Static call
-                        Address callAddr = call->getFixedDest();
+                        const Address callAddr = call->getFixedDest();
 
                         // Calls with 0 offset (i.e. call the next instruction) are simply
                         // pushing the PC to the stack. Treat these as non-control flow
                         // instructions and continue.
-                        if (callAddr == addr + inst.numBytes) {
+                        if (callAddr == addr + insn.m_size) {
                             break;
                         }
-
-                        // Call the virtual helper function. If implemented, will check for
-                        // machine specific funcion calls
-                        if (isHelperFunc(callAddr, addr, *BB_rtls)) {
-                            // We have already added to BB_rtls
-                            inst.rtl.reset(); // Discard the call semantics
-                            break;
-                        }
-
-                        RTL *rtl = inst.rtl.get();
-                        BB_rtls->push_back(std::move(inst.rtl));
-
-                        // Add this non computed call site to the set of call sites which need
-                        // to be analysed later.
-                        callList.push_back(call);
 
                         // Record the called address as the start of a new procedure if it
                         // didn't already exist.
                         if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
-                            (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
-                            callList.push_back(call);
-
+                            (m_program->getFunctionByAddr(callAddr) == nullptr)) {
                             if (m_program->getProject()->getSettings()->traceDecoder) {
                                 LOG_MSG("p%1", callAddr);
                             }
@@ -633,64 +492,35 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                             // Make sure it has a return appended (so there is only one exit
                             // from the function)
-                            currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                            appendSyntheticReturn(currentBB, proc, rtl);
-
-                            // Stop decoding sequentially
+                            cfg->createBB(BBType::Call, bbInsns);
                             sequentialDecode = false;
                         }
                         else {
                             // Create the new basic block
-                            currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                            BB_rtls   = nullptr;
+                            BasicBlock *currentBB = cfg->createBB(BBType::Call, bbInsns);
 
-                            if (call->isReturnAfterCall()) {
-                                // Constuct the RTLs for the new basic block
-                                std::unique_ptr<RTLList> rtls(new RTLList);
-                                rtls->push_back(std::unique_ptr<RTL>(
-                                    new RTL(rtl->getAddress() + 1,
-                                            { std::make_shared<ReturnStatement>() })));
-                                BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
-
-                                // Add out edge from call to return
-                                cfg->addEdge(currentBB, returnBB);
-
-                                // Mike: do we need to set return locations?
-                                // This ends the function
-                                sequentialDecode = false;
+                            // Add the fall through edge if the block didn't
+                            // already exist
+                            if (currentBB != nullptr) {
+                                cfg->addEdge(currentBB, addr + insn.m_size);
                             }
-                            else {
-                                // Add the fall through edge if the block didn't
-                                // already exist
-                                if (currentBB != nullptr) {
-                                    cfg->addEdge(currentBB, addr + inst.numBytes);
-                                }
-                            }
+
+                            // start a new bb
+                            bbInsns.clear();
+                            sequentialDecode = true;
                         }
                     }
+                } break;
 
-                    if (currentBB && currentBB->getRTLs()) {
-                        extraProcessCall(call, *currentBB->getRTLs());
-                    }
-
-                    // make sure we already moved the created RTL into a BB
-                    assert(BB_rtls == nullptr);
-                    break;
-                }
-
-                case StmtType::Ret:
-                    // Stop decoding sequentially
+                case StmtType::Ret: {
+                    cfg->createBB(BBType::Ret, bbInsns);
                     sequentialDecode = false;
-
-                    // Create the list of RTLs for the next basic block and
-                    // continue with the next instruction.
-                    createReturnBlock(proc, std::move(BB_rtls), std::move(inst.rtl));
-                    break;
+                } break;
 
                 case StmtType::BoolAssign:
-                // This is just an ordinary instruction; no control transfer
-                // Fall through
-                // FIXME: Do we need to do anything here?
+                    // This is just an ordinary instruction; no control transfer
+                    // Fall through
+                    // FIXME: Do we need to do anything here?
                 case StmtType::Assign:
                 case StmtType::PhiAssign:
                 case StmtType::ImpAssign:
@@ -706,59 +536,49 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 }
             }
 
-            if (BB_rtls != nullptr && inst.rtl != nullptr) {
-                // If non null, we haven't put this RTL into a the current BB as yet
-                BB_rtls->push_back(std::move(inst.rtl));
-            }
-
-            if (inst.reDecode) {
-                // Special case: redecode the last instruction, without advancing addr by
-                // numBytes
-                continue;
-            }
-
-            addr += inst.numBytes;
-
-            if (addr > lastAddr) {
-                lastAddr = addr;
-            }
-
-            // If sequentially decoding, check if the next address happens to be the start of an
-            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and
-            // no need to decode again (unless it's an incomplete BB, then we do decode it). In
-            // fact, mustn't decode twice, because it will muck up the coverage, but also will
-            // cause subtle problems like add a call to the list of calls to be processed, then
-            // delete the call RTL
-            if (sequentialDecode && cfg->isStartOfBB(addr)) {
-                // Create the fallthrough BB, if there are any RTLs at all
-                if (BB_rtls) {
-                    BasicBlock *bb = cfg->createBB(BBType::Fall, std::move(BB_rtls));
-
-                    // Add an out edge to this address
-                    if (bb) {
-                        cfg->addEdge(bb, addr);
-                    }
-                }
-
-                // Pick a new address to decode from, if the BB is complete
-                if (!cfg->isStartOfIncompleteBB(addr)) {
-                    sequentialDecode = false;
-                }
-            }
+            addr += insn.m_size;
+            lastAddr = std::max(lastAddr, addr);
         } // while sequentialDecode
+    }     // while getNextAddress() != Address::INVALID
 
-        sequentialDecode = true;
-    } // while getNextAddress() != Address::INVALID
+    tagFunctionBBs(proc);
+    proc->setStatus(ProcStatus::Decoded);
+    m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
 
+    LOG_VERBOSE("### Finished disassembling proc '%1' ###", proc->getName());
+    return true;
+}
+
+
+bool DefaultFrontEnd::liftProc(UserProc *proc)
+{
+    const bool ok = liftProcImpl(proc);
+
+    // clean up
+    m_firstFragment.clear();
+    m_lastFragment.clear();
+
+    return ok;
+}
+
+
+bool DefaultFrontEnd::liftProcImpl(UserProc *proc)
+{
+    std::list<std::shared_ptr<CallStatement>> callList;
+
+    LowLevelCFG *cfg = proc->getProg()->getCFG();
+    ProcCFG *procCFG = proc->getCFG();
+
+    for (BasicBlock *bb : *cfg) {
+        liftBB(bb, proc, callList);
+    }
 
     for (const std::shared_ptr<CallStatement> &callStmt : callList) {
-        Address dest = callStmt->getFixedDest();
-
         // Don't visit the destination of a register call
-        Function *np = callStmt->getDestProc();
+        const Address dest = callStmt->getFixedDest();
+        Function *np       = callStmt->getDestProc();
 
         if ((np == nullptr) && (dest != Address::INVALID)) {
-            // np = newProc(proc->getProg(), dest);
             np = proc->getProg()->getOrCreateFunction(dest);
         }
 
@@ -767,118 +587,124 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
         }
     }
 
-    m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
+    // add edges for fragments
+    while (!m_needSuccessors.empty()) {
+        IRFragment *frag = m_needSuccessors.front();
+        m_needSuccessors.pop_front();
 
-    LOG_VERBOSE("### Finished decoding proc '%1' ###", proc->getName());
+        const BasicBlock *bb = frag->getBB();
+
+        // clang-format off
+        auto it = std::find_if(bb->getInsns().begin(), bb->getInsns().end(),
+            [frag, this](const MachineInstruction &insn) {
+                return m_lastFragment[&insn] == frag;
+            });
+        // clang-format on
+
+        assert(it != bb->getInsns().end());
+        std::advance(it, 1);
+
+        if (it == bb->getInsns().end()) {
+            for (BasicBlock *succ : bb->getSuccessors()) {
+                IRFragment *succFrag = m_firstFragment[&succ->getInsns().front()];
+                procCFG->addEdge(frag, succFrag);
+            }
+        }
+        else {
+            // this is within a BB
+            IRFragment *succFrag = m_firstFragment[&(*it)];
+            procCFG->addEdge(frag, succFrag);
+        }
+    }
+
+    procCFG->setEntryAndExitFragment(procCFG->getFragmentByAddr(proc->getEntryAddress()));
+
+    IRFragment::RTLIterator rit;
+    StatementList::iterator sit;
+
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setFragment(frag);
+        }
+    }
 
     return true;
 }
 
 
-bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
+bool DefaultFrontEnd::decodeInstruction(Address pc, MachineInstruction &insn,
+                                        LiftedInstruction &result)
 {
-    BinaryImage *image = m_program->getBinaryFile()->getImage();
-    if (!image || (image->getSectionByAddr(pc) == nullptr)) {
-        LOG_ERROR("Attempted to decode outside any known section at address %1", pc);
-        result.valid = false;
-        return false;
-    }
-
-    const BinarySection *section = image->getSectionByAddr(pc);
-    if (section->getHostAddr() == HostAddress::INVALID) {
-        LOG_ERROR("Attempted to decode instruction in unmapped section '%1' at address %2",
-                  section->getName(), pc);
-        return false;
-    }
-
-    ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
-
-    try {
-        return m_decoder->decodeInstruction(pc, host_native_diff, result);
-    }
-    catch (std::runtime_error &e) {
-        LOG_ERROR("%1", e.what());
-        result.valid = false;
-        return false;
-    }
-}
-
-
-void DefaultFrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &, const RTLList &)
-{
+    return disassembleInstruction(pc, insn) && liftInstruction(insn, result);
 }
 
 
 std::vector<Address> DefaultFrontEnd::findEntryPoints()
 {
     std::vector<Address> entrypoints;
-    bool gotMain = false;
-    // AssemblyLayer
-    Address a = findMainEntryPoint(gotMain);
+
+    bool gotMain;
+    const Address a = findMainEntryPoint(gotMain);
 
     // TODO: find exported functions and add them too ?
-    if (a != Address::INVALID) {
-        entrypoints.push_back(a);
+    if (gotMain) {
+        return { a };
     }
-    else {             // try some other tricks
-        QString fname; // = m_program->getProject()->getSettings()->getFilename();
 
-        // X11 Module
-        if (fname.endsWith("_drv.o")) {
-            int seploc = fname.lastIndexOf(QDir::separator());
-            QString p  = fname.mid(seploc + 1); // part after the last path separator
+    // try some other tricks
+    const QString fname; // = m_program->getProject()->getSettings()->getFilename();
+    const BinarySymbolTable *syms = m_program->getBinaryFile()->getSymbols();
 
-            if (p != fname) {
-                QString name = p.mid(0, p.length() - 6) + "ModuleData";
-                const BinarySymbol
-                    *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(name);
+    // X11 Module
+    if (fname.endsWith("_drv.o")) {
+        const int seploc = fname.lastIndexOf(QDir::separator());
+        const QString p  = fname.mid(seploc + 1); // part after the last path separator
 
-                if (p_sym) {
-                    Address tmpaddr = p_sym->getLocation();
-
-
-                    BinaryImage *image = m_program->getBinaryFile()->getImage();
-                    DWord vers = 0, setup = 0, teardown = 0;
-                    bool ok = true;
-                    ok &= image->readNative4(tmpaddr, vers);
-                    ok &= image->readNative4(tmpaddr, setup);
-                    ok &= image->readNative4(tmpaddr, teardown);
-
-                    // TODO: find use for vers ?
-                    const Address setupAddr    = Address(setup);
-                    const Address teardownAddr = Address(teardown);
-
-                    if (ok) {
-                        if (!setupAddr.isZero()) {
-                            if (createFunctionForEntryPoint(setupAddr, "ModuleSetupProc")) {
-                                entrypoints.push_back(setupAddr);
-                            }
-                        }
-
-                        if (!teardownAddr.isZero()) {
-                            if (createFunctionForEntryPoint(teardownAddr, "ModuleTearDownProc")) {
-                                entrypoints.push_back(teardownAddr);
-                            }
-                        }
-                    }
-                }
-            }
+        if (p == fname) {
+            return {};
         }
 
-        // Linux kernel module
-        if (fname.endsWith(".ko")) {
-            const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(
-                "init_module");
+        const QString name      = p.mid(0, p.length() - 6) + "ModuleData";
+        const BinarySymbol *sym = syms->findSymbolByName(name);
+        if (!sym) {
+            return {};
+        }
 
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
+        const Address tmpaddr = sym->getLocation();
 
-            p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("cleanup_module");
+        const BinaryImage *image = m_program->getBinaryFile()->getImage();
+        DWord vers = 0, setup = 0, teardown = 0;
+        bool ok = true;
+        ok &= image->readNative4(tmpaddr, vers);
+        ok &= image->readNative4(tmpaddr, setup);
+        ok &= image->readNative4(tmpaddr, teardown);
 
-            if (p_sym) {
-                entrypoints.push_back(p_sym->getLocation());
-            }
+        if (!ok) {
+            return {};
+        }
+
+        // TODO: find use for vers ?
+        if (setup != 0 && createFunctionForEntryPoint(Address(setup), "ModuleSetupProc")) {
+            entrypoints.push_back(Address(setup));
+        }
+
+        if (teardown != 0 && createFunctionForEntryPoint(Address(teardown), "ModuleTearDownProc")) {
+            entrypoints.push_back(Address(teardown));
+        }
+    }
+    // Linux kernel module
+    else if (fname.endsWith(".ko")) {
+        const BinarySymbol *sym = syms->findSymbolByName("init_module");
+        if (sym) {
+            entrypoints.push_back(sym->getLocation());
+        }
+
+        sym = syms->findSymbolByName("cleanup_module");
+        if (sym) {
+            entrypoints.push_back(sym->getLocation());
         }
     }
 
@@ -888,15 +714,10 @@ std::vector<Address> DefaultFrontEnd::findEntryPoints()
 
 bool DefaultFrontEnd::isNoReturnCallDest(const QString &name) const
 {
-    // clang-format off
-    return
-        name == "_exit" ||
-        name == "exit" ||
-        name == "ExitProcess" ||
-        name == "abort" ||
-        name == "_assert" ||
-        name == "__debugbreak";
-    // clang-format on
+    std::vector<QString> names = { "__exit", "exit",    "ExitProcess",
+                                   "abort",  "_assert", "__debugbreak" };
+
+    return std::find(names.begin(), names.end(), name) != names.end();
 }
 
 
@@ -906,48 +727,417 @@ void DefaultFrontEnd::addRefHint(Address addr, const QString &name)
 }
 
 
-void DefaultFrontEnd::saveDecodedRTL(Address a, RTL *rtl)
+void DefaultFrontEnd::extraProcessCall(IRFragment *)
 {
-    m_previouslyDecoded[a] = rtl;
 }
 
 
-BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls,
-                                               std::unique_ptr<RTL> returnRTL)
+bool DefaultFrontEnd::disassembleInstruction(Address pc, MachineInstruction &insn)
 {
-    ProcCFG *cfg = proc->getCFG();
-
-    // Add the RTL to the list; this has the semantics for the return instruction as well as the
-    // ReturnStatement The last Statement may get replaced with a GotoStatement
-    if (BB_rtls == nullptr) {
-        BB_rtls.reset(new RTLList); // In case no other semantics
+    BinaryImage *image = m_program->getBinaryFile()->getImage();
+    if (!image || (image->getSectionByAddr(pc) == nullptr)) {
+        LOG_ERROR("Attempted to disassemble outside any known section at address %1", pc);
+        return false;
     }
 
-    RTL *retRTL = returnRTL.get();
-    BB_rtls->push_back(std::move(returnRTL));
-    Address retAddr   = proc->getRetAddr();
-    BasicBlock *newBB = nullptr;
+    const BinarySection *section = image->getSectionByAddr(pc);
+    if (section->getHostAddr() == HostAddress::INVALID) {
+        LOG_ERROR("Attempted to disassemble instruction in unmapped section '%1' at address %2",
+                  section->getName(), pc);
+        return false;
+    }
+
+    const ptrdiff_t hostNativeDiff = (section->getHostAddr() - section->getSourceAddr()).value();
+
+    try {
+        return m_decoder->disassembleInstruction(pc, hostNativeDiff, insn);
+    }
+    catch (std::runtime_error &e) {
+        LOG_ERROR("%1", e.what());
+        return false;
+    }
+}
+
+
+bool DefaultFrontEnd::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
+{
+    const bool ok = m_decoder->liftInstruction(insn, lifted);
+
+    if (!ok) {
+        LOG_ERROR("Cannot find instruction template '%1' at address %2, "
+                  "treating instruction as NOP",
+                  insn.m_templateName, insn.m_addr);
+
+        lifted.reset();
+        lifted.addPart(std::make_unique<RTL>(insn.m_addr));
+    }
+
+    return true;
+}
+
+
+bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
+                             std::list<std::shared_ptr<CallStatement>> &callList)
+{
+    if (!currentBB || currentBB->getProc() != proc) {
+        return false;
+    }
+
+    ProcCFG *procCFG = proc->getCFG();
+
+    for (const MachineInstruction &insn : currentBB->getInsns()) {
+        LiftedInstruction lifted;
+        if (!m_decoder->liftInstruction(insn, lifted)) {
+            LOG_ERROR("Cannot lift instruction '%1 %2 %3'", insn.m_addr, insn.m_mnem.data(),
+                      insn.m_opstr.data());
+            return false;
+        }
+
+        if (!lifted.isSimple()) {
+            // this is bsf/bsr/rep* etc.
+            std::list<LiftedInstructionPart> parts = lifted.use();
+            std::list<IRFragment *> frags;
+
+            for (std::size_t i = 0; i < parts.size(); ++i) {
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                bbRTLs->push_back(std::move(std::next(parts.begin(), i)->m_rtl));
+
+                FragType fragType = FragType::Fall;
+                if (!bbRTLs->back()->empty()) {
+                    switch (bbRTLs->back()->back()->getKind()) {
+                    case StmtType::Goto: fragType = FragType::Oneway; break;
+                    case StmtType::Branch: fragType = FragType::Twoway; break;
+                    default: fragType = FragType::Fall; break;
+                    }
+                }
+
+                IRFragment *frag = procCFG->createFragment(fragType, std::move(bbRTLs), currentBB);
+                frags.push_back(frag);
+            }
+
+            assert(parts.size() == frags.size());
+
+            for (std::size_t i = 0; i < parts.size(); ++i) {
+                LiftedInstructionPart &part = *std::next(parts.begin(), i);
+                IRFragment *frag            = *std::next(frags.begin(), i);
+
+                for (LiftedInstructionPart *succ : part.getSuccessors()) {
+                    const std::size_t idx = std::distance(
+                        parts.begin(), std::find_if(parts.begin(), parts.end(),
+                                                    [succ](auto &a) { return &a == succ; }));
+
+                    IRFragment *succFrag = *std::next(frags.begin(), idx);
+                    procCFG->addEdge(frag, succFrag);
+                }
+            }
+
+            m_firstFragment[&insn] = frags.front();
+            m_lastFragment[&insn]  = frags.back();
+            m_needSuccessors.push_back(frags.back());
+            continue;
+        }
+
+        std::unique_ptr<RTL> rtl = lifted.useSingleRTL();
+
+        if (rtl->empty()) {
+            auto rtls = std::make_unique<RTLList>();
+            rtls->push_back(std::move(rtl));
+
+            IRFragment *frag = procCFG->createFragment(FragType::Fall, std::move(rtls), currentBB);
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+            m_needSuccessors.push_back(frag);
+            continue;
+        }
+
+        for (SharedStmt s : *rtl) {
+            // Make sure only last statements are CTIs (but also allow non-CTIs)
+            assert(s != nullptr);
+            assert(s->isAssignment() || (rtl->back() == s));
+
+            s->setProc(proc); // let's do this really early!
+            s->simplify();
+        }
+
+        // Check for a call to an already existing procedure (including self recursive jumps),
+        // or to the PLT (note that a LibProc entry for the PLT function may not yet exist)
+        if (!rtl->empty() && rtl->back()->isGoto()) {
+            std::shared_ptr<GotoStatement> jumpStmt = rtl->back()->as<GotoStatement>();
+            preprocessProcGoto(std::prev(rtl->end()), jumpStmt->getFixedDest(),
+                               rtl->getStatements(), rtl.get());
+        }
+
+
+        SharedStmt s                            = rtl->back();
+        std::shared_ptr<GotoStatement> jumpStmt = std::dynamic_pointer_cast<GotoStatement>(s);
+
+
+        switch (s->getKind()) {
+        case StmtType::Case: {
+            SharedExp jumpDest = jumpStmt->getDest();
+
+            // Check for indirect calls to library functions, especially in Win32 programs
+            if (refersToImportedFunction(jumpDest)) {
+                LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.", jumpStmt);
+
+                // jump to a library function
+                // replace with a call/ret
+                const BinarySymbol
+                    *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
+                        jumpDest->access<Const, 1>()->getAddr());
+                assert(sym != nullptr);
+
+                QString func = sym->getName();
+                std::shared_ptr<CallStatement> call(new CallStatement);
+                call->setDest(jumpDest->clone());
+                LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
+
+                if (lp == nullptr) {
+                    LOG_FATAL("getOrCreateLibraryProc() returned nullptr");
+                }
+
+                call->setDestProc(lp);
+
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                std::unique_ptr<RTL> callRTL(new RTL(rtl->getAddress(), { call }));
+                bbRTLs->push_back(std::move(callRTL));
+
+                IRFragment *callFrag   = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
+
+                appendSyntheticReturn(callFrag);
+
+                if (rtl->getAddress() == proc->getEntryAddress()) {
+                    // it's a thunk
+                    // Proc *lp = prog->findProc(func.c_str());
+                    func = "__imp_" + func;
+                    proc->setName(func);
+                    // lp->setName(func.c_str());
+                    m_program->getProject()->alertSignatureUpdated(proc);
+                }
+
+                callList.push_back(call);
+                rtl.reset();
+                break;
+            }
+
+            // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
+            // to be a switch stmt
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
+            IRFragment *frag       = procCFG->createFragment(FragType::CompJump, std::move(bbRTLs),
+                                                       currentBB);
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+
+            if (currentBB->getNumSuccessors() > 0) {
+                m_needSuccessors.push_back(frag);
+            }
+
+            LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", insn.m_addr, jumpDest);
+        } break;
+
+        case StmtType::Call: {
+            std::shared_ptr<CallStatement> call = s->as<CallStatement>();
+
+            // Check for a dynamic linked library function
+            if (refersToImportedFunction(call->getDest())) {
+                // Dynamic linked proc pointers are treated as static.
+                Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
+                QString name       = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(linkedAddr)
+                                   ->getName();
+
+                Function *function = proc->getProg()->getOrCreateLibraryProc(name);
+                call->setDestProc(function);
+                call->setIsComputed(false);
+            }
+
+            const Address functionAddr = getAddrOfLibraryThunk(call, proc);
+            if (functionAddr != Address::INVALID) {
+                // Yes, it's a library function. Look up its name.
+                QString name = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(functionAddr)
+                                   ->getName();
+
+                // Assign the proc to the call
+                Function *p = proc->getProg()->getOrCreateLibraryProc(name);
+
+                if (call->getDestProc()) {
+                    // prevent unnecessary __imp procs
+                    m_program->removeFunction(call->getDestProc()->getName());
+                }
+
+                call->setDestProc(p);
+                call->setIsComputed(false);
+                call->setDest(Location::memOf(Const::get(functionAddr)));
+            }
+
+            // Treat computed and static calls separately
+            if (call->isComputed()) {
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                bbRTLs->push_back(std::move(rtl));
+
+                IRFragment *callFrag   = procCFG->createFragment(FragType::CompCall,
+                                                               std::move(bbRTLs), currentBB);
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
+                m_needSuccessors.push_back(callFrag);
+
+                extraProcessCall(callFrag);
+
+                // Add this call to the list of calls to analyse. We won't
+                // be able to analyse it's callee(s), of course.
+                callList.push_back(call);
+            }
+            else {
+                // Static call
+                const Address callAddr = call->getFixedDest();
+
+                // Call the virtual helper function. If implemented, will check for
+                // machine specific funcion calls
+                std::unique_ptr<RTLList> bbRTLs(new RTLList);
+                if (isHelperFunc(callAddr, insn.m_addr, *bbRTLs)) {
+                    IRFragment *frag = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+                    m_firstFragment[&insn] = frag;
+                    m_lastFragment[&insn]  = frag;
+                    m_needSuccessors.push_back(frag);
+
+                    rtl.reset(); // Discard the call semantics
+                    break;
+                }
+
+                bbRTLs->push_back(std::move(rtl));
+
+                // Add this non computed call site to the set of call sites which need
+                // to be analysed later.
+                callList.push_back(call);
+
+                // Record the called address as the start of a new procedure if it
+                // didn't already exist.
+                if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
+                    (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
+                    callList.push_back(call);
+
+                    if (m_program->getProject()->getSettings()->traceDecoder) {
+                        LOG_MSG("p%1", callAddr);
+                    }
+                }
+
+                // Check if this is the _exit or exit function. May prevent us from
+                // attempting to decode invalid instructions, and getting invalid stack
+                // height errors
+                QString procName = m_program->getSymbolNameByAddr(callAddr);
+
+                if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
+                    Address a = call->getDest()->access<Const, 1>()->getAddr();
+                    procName  = m_program->getBinaryFile()
+                                   ->getSymbols()
+                                   ->findSymbolByAddress(a)
+                                   ->getName();
+                }
+
+                IRFragment *callFrag = procCFG->createFragment(FragType::Call, std::move(bbRTLs),
+                                                               currentBB);
+
+                if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
+                    // Make sure it has a return appended (so there is only one exit
+                    // from the function)
+                    appendSyntheticReturn(callFrag);
+                    extraProcessCall(callFrag);
+                }
+                else {
+                    if (call->isReturnAfterCall()) {
+                        appendSyntheticReturn(callFrag);
+                    }
+                    else {
+                        m_needSuccessors.push_back(callFrag);
+                    }
+
+                    extraProcessCall(callFrag);
+                }
+
+                m_firstFragment[&insn] = callFrag;
+                m_lastFragment[&insn]  = callFrag;
+            }
+        } break;
+
+        case StmtType::Ret: {
+            // Create the list of RTLs for the next basic block and
+            // continue with the next instruction.
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
+            createReturnBlock(std::move(bbRTLs), currentBB);
+        } break;
+
+        case StmtType::Goto:
+        case StmtType::Branch:
+        case StmtType::Assign:
+        case StmtType::BoolAssign: break;
+        case StmtType::INVALID:
+        default: assert(false); break;
+        }
+
+        if (rtl) {
+            // we have not put the RTL into a fragment as yet
+            std::unique_ptr<RTLList> bbRTLs(new RTLList);
+            bbRTLs->push_back(std::move(rtl));
+
+            FragType fragType;
+            switch (bbRTLs->back()->back()->getKind()) {
+            case StmtType::Goto: fragType = FragType::Oneway; break;
+            case StmtType::Branch: fragType = FragType::Twoway; break;
+            default: fragType = FragType::Fall; break;
+            }
+
+            IRFragment *frag = procCFG->createFragment(fragType, std::move(bbRTLs), currentBB);
+
+            m_firstFragment[&insn] = frag;
+            m_lastFragment[&insn]  = frag;
+            m_needSuccessors.push_back(frag);
+        }
+    }
+
+    return true;
+}
+
+
+IRFragment *DefaultFrontEnd::createReturnBlock(std::unique_ptr<RTLList> newRTLs, BasicBlock *retBB)
+{
+    UserProc *proc = retBB->getProc();
+    ProcCFG *cfg   = proc->getCFG();
+
+    RTL *retRTL         = newRTLs->back().get();
+    Address retAddr     = proc->getRetAddr();
+    IRFragment *newFrag = nullptr;
 
     if (retAddr == Address::INVALID) {
-        // Create the basic block
-        newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
-        if (newBB) {
+        // Create the one and only return statement
+        newFrag = cfg->createFragment(FragType::Ret, std::move(newRTLs), retBB);
+        if (newFrag) {
             SharedStmt s = retRTL->back(); // The last statement should be the ReturnStatement
             proc->setRetStmt(s->as<ReturnStatement>(), retRTL->getAddress());
         }
+
+        m_firstFragment[&retBB->getInsns().back()] = newFrag;
+        m_lastFragment[&retBB->getInsns().back()]  = newFrag;
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
         // sometimes be extra semantics associated with a return (e.g. x86 ret instruction adds to
-        // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
-        // returning a value as part of the restore instruction) are assumed to appear in a
-        // previous RTL. It is assumed that THE return statement will have the same semantics
-        // (NOTE: may not always be valid). To avoid this assumption, we need branches to
-        // statements, not just to native addresses (RTLs).
-        BasicBlock *retBB = proc->getCFG()->findRetNode();
-        assert(retBB);
+        // the stack pointer before setting %pc and branching). Other semantics are assumed
+        // to appear in a previous RTL. It is assumed that THE return statement will have
+        // the same semantics (NOTE: may not always be valid). To avoid this assumption,
+        // we need branches to statements, not just to native addresses (RTLs).
+        IRFragment *origRetFrag = proc->getCFG()->findRetFragment();
+        assert(origRetFrag);
 
-        if (retBB->getFirstStmt()->isReturn()) {
+        if (origRetFrag->getFirstStmt()->isReturn()) {
             // ret node has no semantics, clearly we need to keep ours
             assert(!retRTL->empty());
             retRTL->pop_back();
@@ -957,21 +1147,19 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         }
 
         retRTL->append(std::make_shared<GotoStatement>(retAddr));
-        newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
+        newFrag = cfg->createFragment(FragType::Oneway, std::move(newRTLs), retBB);
 
-        if (newBB) {
-            cfg->ensureBBExists(retAddr, retBB);
-            cfg->addEdge(newBB, retBB);
+        if (newFrag) {
+            // make sure the return fragment only consists of a single RTL
+            origRetFrag = cfg->splitFragment(origRetFrag, retAddr);
+            cfg->addEdge(newFrag, origRetFrag);
 
-            // Visit the return instruction. This will be needed in most cases to split the
-            // return BB (if it has other instructions before the return instruction).
-            m_targetQueue.visit(cfg, retAddr, newBB);
+            m_firstFragment[&retBB->getInsns().back()] = newFrag;
+            m_lastFragment[&retBB->getInsns().back()]  = newFrag;
         }
     }
 
-    // make sure the RTLs have been moved into the BB
-    assert(BB_rtls == nullptr);
-    return newBB;
+    return newFrag;
 }
 
 
@@ -996,15 +1184,22 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp &exp)
 }
 
 
-void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
+void DefaultFrontEnd::appendSyntheticReturn(IRFragment *callFrag)
 {
-    std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(
-        new RTL(callRTL->getAddress(), { std::make_shared<ReturnStatement>() }));
-    BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
+    assert(callFrag->getNumSuccessors() == 0);
+    auto bbRTLs = std::make_unique<RTLList>();
+    std::unique_ptr<RTL> rtl(
+        new RTL(callFrag->getHiAddr() + 1, { std::make_shared<ReturnStatement>() }));
 
-    assert(callBB->getNumSuccessors() == 0);
-    proc->getCFG()->addEdge(callBB, retBB);
+    bbRTLs->push_back(std::move(rtl));
+
+    UserProc *proc      = callFrag->getProc();
+    IRFragment *retFrag = createReturnBlock(std::move(bbRTLs), callFrag->getBB());
+    assert(proc->getCFG()->hasFragment(callFrag));
+    proc->getCFG()->addEdge(callFrag, retFrag);
+
+    m_firstFragment[&callFrag->getBB()->getInsns().back()] = callFrag;
+    m_lastFragment[&callFrag->getBB()->getInsns().back()]  = callFrag;
 }
 
 
@@ -1089,29 +1284,19 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
         return Address::INVALID;
     }
 
-    DecodeResult decoded;
-    if (!decodeSingleInstruction(callAddr, decoded)) {
+    MachineInstruction insn;
+    LiftedInstruction lifted;
+
+    if (!decodeInstruction(callAddr, insn, lifted)) {
         return Address::INVALID;
     }
 
-    // Make sure to re-decode the instruction as often as necessary, but throw away the results.
-    // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
-    if (decoded.reDecode) {
-        DecodeResult dummy;
-        do {
-            decodeSingleInstruction(callAddr, dummy);
-            dummy.rtl.reset();
-        } while (dummy.reDecode);
-    }
-
-    if (decoded.rtl->empty()) {
-        decoded.rtl.reset();
+    if (lifted.getFirstRTL()->empty()) {
         return Address::INVALID;
     }
 
-    SharedStmt firstStmt = decoded.rtl->front();
+    SharedStmt firstStmt = lifted.getFirstRTL()->front();
     if (!firstStmt) {
-        decoded.rtl.reset();
         return Address::INVALID;
     }
 
@@ -1120,9 +1305,39 @@ Address DefaultFrontEnd::getAddrOfLibraryThunk(const std::shared_ptr<CallStateme
 
     std::shared_ptr<GotoStatement> jmpStmt = std::dynamic_pointer_cast<GotoStatement>(firstStmt);
     if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
-        decoded.rtl.reset();
         return Address::INVALID;
     }
 
     return jmpStmt->getDest()->access<Const, 1>()->getAddr();
+}
+
+
+void DefaultFrontEnd::tagFunctionBBs(UserProc *proc)
+{
+    std::set<BasicBlock *> visited;
+    std::stack<BasicBlock *> toVisit;
+
+    BasicBlock *entryBB = m_program->getCFG()->getBBStartingAt(proc->getEntryAddress());
+    if (!entryBB) {
+        LOG_ERROR("Could not find entry BB for function '%1'", proc->getName());
+        return;
+    }
+
+    toVisit.push(entryBB);
+
+    while (!toVisit.empty()) {
+        BasicBlock *current = toVisit.top();
+        toVisit.pop();
+        visited.insert(current);
+
+        // Note: this currently fails for the DOS samples, do disable it for now
+        // assert(current->getProc() == nullptr || current->getProc() == proc);
+        current->setProc(proc);
+
+        for (BasicBlock *succ : current->getSuccessors()) {
+            if (visited.find(succ) == visited.end()) {
+                toVisit.push(succ);
+            }
+        }
+    }
 }

@@ -103,7 +103,6 @@ int getStackOffset(SharedConstExp e, int sp)
 int getStackRegisterIndex(const Prog *prog)
 {
     switch (prog->getMachine()) {
-    case Machine::SPARC: return REG_SPARC_SP;
     case Machine::X86: return REG_X86_ESP;
     case Machine::PPC: return REG_PPC_G1;
     case Machine::ST20: return REG_ST20_SP;

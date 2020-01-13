@@ -98,7 +98,7 @@ private:
     void addSymbolsForSection(int secIndex);
 
     /// FIXME: this function is way off the rails. It seems to always overwrite the relocation entry
-    /// with the 32 bit value from the symbol table. Totally invalid for SPARC, and most X86
+    /// with the 32 bit value from the symbol table. Totally for most X86
     /// relocations! So currently not called
     void addRelocsAsSyms(uint32_t secIndex);
 

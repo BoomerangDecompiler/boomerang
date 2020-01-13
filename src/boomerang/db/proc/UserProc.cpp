@@ -35,6 +35,16 @@
 #include "boomerang/visitor/stmtmodifier/StmtSubscriptReplacer.h"
 
 
+bool lessUserProc::operator()(const UserProc *lhs, const UserProc *rhs) const
+{
+    if (!lhs || !rhs) {
+        return lhs < rhs;
+    }
+
+    return lhs->getEntryAddress() < rhs->getEntryAddress();
+}
+
+
 UserProc::UserProc(Address address, const QString &name, Module *module)
     : Function(address, std::make_shared<Signature>(name), module)
     , m_cfg(new ProcCFG(this))
@@ -101,16 +111,16 @@ void UserProc::setDecoded()
 }
 
 
-BasicBlock *UserProc::getEntryBB()
+IRFragment *UserProc::getEntryFragment() const
 {
-    return m_cfg->getEntryBB();
+    return m_cfg->getEntryFragment();
 }
 
 
-void UserProc::setEntryBB()
+void UserProc::setEntryFragment()
 {
-    BasicBlock *entryBB = m_cfg->getBBStartingAt(m_entryAddress);
-    m_cfg->setEntryAndExitBB(entryBB);
+    IRFragment *entryFrag = m_cfg->getFragmentByAddr(m_entryAddress);
+    m_cfg->setEntryAndExitFragment(entryFrag);
 }
 
 
@@ -124,10 +134,10 @@ void UserProc::numberStatements() const
 {
     int stmtNumber = 0;
 
-    for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLIterator rit;
+    for (IRFragment *frag : *m_cfg) {
+        IRFragment::RTLIterator rit;
         StatementList::iterator sit;
-        for (SharedStmt s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (SharedStmt s = frag->getFirstStmt(rit, sit); s; s = frag->getNextStmt(rit, sit)) {
             s->setNumber(++stmtNumber);
         }
     }
@@ -136,8 +146,8 @@ void UserProc::numberStatements() const
 
 void UserProc::getStatements(StatementList &stmts) const
 {
-    for (const BasicBlock *bb : *m_cfg) {
-        bb->appendStatementsTo(stmts);
+    for (const IRFragment *frag : *m_cfg) {
+        frag->appendStatementsTo(stmts);
     }
 
     for (SharedStmt s : stmts) {
@@ -176,13 +186,13 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
         ++provenIt;
     }
 
-    // remove from BB/RTL
-    BasicBlock *bb = stmt->getBB(); // Get our enclosing BB
-    if (!bb) {
+    // remove from fragment/RTL
+    IRFragment *frag = stmt->getFragment(); // Get our enclosing fragment
+    if (!frag) {
         return false;
     }
 
-    for (auto &rtl : *bb->getRTLs()) {
+    for (auto &rtl : *frag->getRTLs()) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -197,26 +207,26 @@ bool UserProc::removeStatement(const SharedStmt &stmt)
 
 std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left, SharedExp right)
 {
-    BasicBlock *bb = nullptr;
+    IRFragment *frag = nullptr;
     std::shared_ptr<Assign> as(new Assign(left, right));
 
-    if (s == nullptr) {
-        // This means right is supposed to be a parameter.
-        // We can insert the assignment at the start of the entryBB
-        bb = m_cfg->getEntryBB();
+    if (s) {
+        // An ordinary definition; put the assignment right after s
+        frag = s->getFragment();
     }
     else {
-        // An ordinary definition; put the assignment right after s
-        bb = s->getBB();
+        // This means right is supposed to be a parameter.
+        // We can insert the assignment at the start of the entry fragment
+        frag = m_cfg->getEntryFragment();
     }
 
     as->setProc(this);
-    as->setBB(bb);
+    as->setFragment(frag);
 
-    if (s) {
+    if (s != nullptr) {
         // Insert the new assignment directly after s,
-        // or near the end of the existing BB if s has been removed already.
-        for (auto &rtl : *bb->getRTLs()) {
+        // or near the end of the existing fragment if s has been removed already.
+        for (auto &rtl : *frag->getRTLs()) {
             for (auto it = rtl->begin(); it != rtl->end(); ++it) {
                 if (*it == s) {
                     rtl->insert(++it, as);
@@ -226,7 +236,7 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         }
     }
 
-    auto &lastRTL = bb->getRTLs()->back();
+    auto &lastRTL = frag->getRTLs()->back();
     if (lastRTL->empty() || lastRTL->back()->isAssignment()) {
         lastRTL->append(as);
     }
@@ -234,28 +244,25 @@ std::shared_ptr<Assign> UserProc::insertAssignAfter(SharedStmt s, SharedExp left
         // do not insert after a Branch statement etc.
         lastRTL->insert(std::prev(lastRTL->end()), as);
     }
+
     return as;
 }
 
 
 bool UserProc::insertStatementAfter(const SharedStmt &afterThis, const SharedStmt &stmt)
 {
+    assert(afterThis != nullptr);
     assert(!afterThis->isBranch());
 
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
+    IRFragment *frag = afterThis->getFragment();
+    assert(frag != nullptr);
 
-        if (rtls == nullptr) {
-            continue; // e.g. bb is (as yet) invalid
-        }
-
-        for (const auto &rtl : *rtls) {
-            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
-                if (*ss == afterThis) {
-                    rtl->insert(std::next(ss), stmt);
-                    stmt->setBB(bb);
-                    return true;
-                }
+    for (auto &rtl : *frag->getRTLs()) {
+        for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
+            if (*ss == afterThis) {
+                rtl->insert(std::next(ss), stmt);
+                stmt->setFragment(frag);
+                return true;
             }
         }
     }
@@ -270,8 +277,8 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
     // I believe we always want to propagate to these ex-phi's; check!
     SharedExp newRhs = rhs->propagateAll();
 
-    for (BasicBlock *bb : *m_cfg) {
-        for (const auto &rtl : *bb->getRTLs()) {
+    for (IRFragment *frag : *m_cfg) {
+        for (const auto &rtl : *frag->getRTLs()) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
                 if (*ss == orig) {
                     // convert *ss to an Assign
@@ -280,10 +287,17 @@ std::shared_ptr<Assign> UserProc::replacePhiByAssign(const std::shared_ptr<const
                     asgn->setType(orig->getType()->clone());
                     asgn->setNumber(orig->getNumber());
                     asgn->setProc(orig->getProc());
-                    asgn->setBB(bb);
+                    asgn->setFragment(frag);
 
                     SharedStmt toDelete = *ss;
-                    *ss                 = asgn;
+
+                    // Erase the phi, and insert the assign after any remaining phis.
+                    // Since all phis have different LHSes, the order does not matter.
+                    ss = rtl->erase(ss);
+                    while (ss != rtl->end() && (*ss)->isPhi()) {
+                        ++ss;
+                    }
+                    rtl->insert(ss, asgn);
 
                     StatementList stmts;
                     getStatements(stmts);
@@ -337,7 +351,7 @@ void UserProc::addParameterToSignature(SharedExp e, SharedType ty)
 
 void UserProc::insertParameter(SharedExp e, SharedType ty)
 {
-    if (filterParams(e)) {
+    if (!canBeParam(e)) {
         return; // Filtered out
     }
 
@@ -436,24 +450,24 @@ QString UserProc::lookupParam(SharedConstExp e) const
 }
 
 
-bool UserProc::filterParams(SharedExp e)
+bool UserProc::canBeParam(const SharedExp &e)
 {
     switch (e->getOper()) {
-    case opPC: return true;
-    case opTemp: return true;
+    case opPC: return false;
+    case opTemp: return false;
     case opRegOf: {
         if (!e->isRegOfConst()) {
-            return false;
+            return true;
         }
         const int sp = Util::getStackRegisterIndex(m_prog);
-        return e->access<Const, 1>()->getInt() == sp;
+        return e->access<Const, 1>()->getInt() != sp;
     }
 
     case opMemOf: {
         SharedExp addr = e->getSubExp1();
 
         if (addr->isIntConst()) {
-            return true; // Global memory location
+            return false; // Global memory location
         }
 
         if (addr->isSubscript() && addr->access<RefExp>()->isImplicitDef()) {
@@ -465,17 +479,17 @@ bool UserProc::filterParams(SharedExp e)
             }
 
             if (reg->isRegN(sp)) {
-                return true; // Filter out m[sp{-}] assuming it is the return address
+                return false; // Filter out m[sp{-}] assuming it is the return address
             }
         }
 
-        return false; // Might be some weird memory expression that is not a local
+        return true; // Might be some weird memory expression that is not a local
     }
 
     case opGlobal:
-        return true; // Never use globals as argument locations (could appear on RHS of args)
+        return false; // Never use globals as argument locations (could appear on RHS of args)
 
-    default: return false;
+    default: return true;
     }
 }
 
@@ -494,37 +508,42 @@ void UserProc::setRetStmt(const std::shared_ptr<ReturnStatement> &s, Address r)
 }
 
 
-bool UserProc::filterReturns(SharedExp e)
+bool UserProc::canBeReturn(const SharedExp &e)
 {
     if (isPreserved(e)) {
         // If it is preserved, then it can't be a return (since we don't change it)
-        return true;
+        return false;
     }
 
     switch (e->getOper()) {
-    case opPC: return true; // Ignore %pc
+        // Ignore %pc
+    case opPC:
+        return false;
 
-    case opDefineAll: return true; // Ignore <all>
+        // Ignore <all>
+    case opDefineAll:
+        return false;
 
+        // Ignore all temps (should be local to one instruction)
     case opTemp:
-        return true; // Ignore all temps (should be local to one instruction)
+        return false;
 
         // Would like to handle at least %ZF, %CF one day. For now, filter them out
     case opZF:
     case opCF:
     case opNF:
     case opOF:
-    case opFlags: return true;
+    case opFlags: return false;
 
     case opMemOf:
         // Actually, surely all sensible architectures will only every return
         // in registers. So for now, just filter out all mem-ofs
         // return signature->isStackLocal(prog, e); // Filter out local variables
-        return true;
+        return false;
 
-    case opGlobal: return true; // Never return in globals
+    case opGlobal: return false; // Never return in globals
 
-    default: return false;
+    default: return true;
     }
 }
 
@@ -821,11 +840,11 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs)
 {
     assert(cs);
 
-    BasicBlock::RTLRIterator rrit;
+    IRFragment::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
-    for (BasicBlock *bb : *m_cfg) {
-        SharedStmt s = bb->getLastStmt(rrit, srit);
+    for (IRFragment *frag : *m_cfg) {
+        SharedStmt s = frag->getLastStmt(rrit, srit);
         if (!s || !s->isCall()) {
             continue;
         }
@@ -902,7 +921,7 @@ bool UserProc::searchAndReplace(const Exp &search, SharedExp replace)
 
 void UserProc::markAsInitialParam(const SharedExp &loc)
 {
-    m_procUseCollector.insert(loc);
+    m_procUseCollector.collectUse(loc);
 }
 
 
@@ -970,10 +989,7 @@ void UserProc::print(OStream &out) const
         out << "  " << tgt2 << "\n";
     }
 
-    QString tgt3;
-    OStream ost3(&tgt3);
-    m_cfg->print(ost3);
-    out << tgt3 << "\n";
+    m_cfg->print(out);
 }
 
 
@@ -1483,6 +1499,7 @@ bool UserProc::prover(SharedExp query, std::set<std::shared_ptr<PhiAssign>> &las
                 }
                 else if (s && s->isAssign()) {
                     if (refsTo.find(s) != refsTo.end()) {
+                        numberStatements();
                         LOG_ERROR("Detected ref loop %1", s);
                         LOG_ERROR("refsTo: ");
 
@@ -1612,14 +1629,14 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
         return false;
     }
 
-    BasicBlock *exitbb = m_cfg->getExitBB();
+    IRFragment *exitFrag = m_cfg->getExitFragment();
 
-    if (exitbb == nullptr) {
+    if (exitFrag == nullptr) {
         return true;
     }
 
-    if (exitbb->getNumPredecessors() == 1) {
-        SharedStmt s = exitbb->getPredecessor(0)->getLastStmt();
+    if (exitFrag->getNumPredecessors() == 1) {
+        SharedStmt s = exitFrag->getPredecessor(0)->getLastStmt();
 
         if (!s || !s->isCall()) {
             return false;
@@ -1633,7 +1650,7 @@ bool UserProc::isNoReturnInternal(std::set<const Function *> &visited) const
 
             if (visited.find(callee) != visited.end()) {
                 // we have found a procedure involved in tail recursion (either self or mutual).
-                // Assume we have not found all the BBs yet that reach the return statement.
+                // Assume we have not yet found all the fragments that reach the return statement.
                 return false;
             }
             else if (callee->isLib()) {

@@ -29,6 +29,16 @@ enum class SwitchType : char
 
 struct SwitchInfo
 {
+public:
+    ~SwitchInfo()
+    {
+        if (switchType == SwitchType::F) {
+            int *arr = reinterpret_cast<int *>(tableAddr.value());
+            delete[] arr;
+        }
+    }
+
+public:
     SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
     SwitchType switchType; ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
     int lowerBound;        ///< Lower bound of the switch variable

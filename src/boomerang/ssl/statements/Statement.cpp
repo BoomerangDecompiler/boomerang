@@ -27,13 +27,53 @@
 
 
 SharedStmt Statement::wild = SharedStmt(new Assign(Terminal::get(opNil), Terminal::get(opNil)));
+static uint32 m_nextStmtID = 0;
 
 
 Statement::Statement()
-    : m_bb(nullptr)
+    : m_fragment(nullptr)
     , m_proc(nullptr)
     , m_number(0)
 {
+    m_id = m_nextStmtID++;
+}
+
+
+Statement::Statement(const Statement &other)
+    : enable_shared_from_this(other)
+    , m_fragment(other.m_fragment)
+    , m_proc(other.m_proc)
+    , m_number(other.m_number)
+{
+    m_id = m_nextStmtID++;
+}
+
+
+Statement &Statement::operator=(const Statement &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    m_fragment = other.m_fragment;
+    m_proc     = other.m_proc;
+    m_number   = other.m_number;
+
+    m_id = m_nextStmtID++;
+
+    return *this;
+}
+
+
+bool Statement::operator==(const Statement &rhs) const
+{
+    return getID() == rhs.getID();
+}
+
+
+bool Statement::operator<(const Statement &rhs) const
+{
+    return getID() < rhs.getID();
 }
 
 

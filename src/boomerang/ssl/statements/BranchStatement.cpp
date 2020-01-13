@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "BranchStatement.h"
 
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -65,52 +65,52 @@ void BranchStatement::setCondExpr(SharedExp pe)
 }
 
 
-BasicBlock *BranchStatement::getFallBB() const
+IRFragment *BranchStatement::getFallFragment() const
 {
-    if (!m_bb || m_bb->getNumSuccessors() != 2) {
+    if (!m_fragment || m_fragment->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    return m_bb->getSuccessor(BELSE);
+    return m_fragment->getSuccessor(BELSE);
 }
 
 
-void BranchStatement::setFallBB(BasicBlock *destBB)
+void BranchStatement::setFallFragment(IRFragment *destFrag)
 {
-    if (!m_bb || m_bb->getNumSuccessors() != 2) {
+    if (!m_fragment || m_fragment->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_bb->getSuccessor(BELSE);
-    if (destBB != oldDestBB) {
-        oldDestBB->removePredecessor(m_bb);
-        m_bb->setSuccessor(BELSE, destBB);
-        destBB->addPredecessor(m_bb);
+    IRFragment *oldDestFrag = m_fragment->getSuccessor(BELSE);
+    if (destFrag != oldDestFrag) {
+        oldDestFrag->removePredecessor(m_fragment);
+        m_fragment->setSuccessor(BELSE, destFrag);
+        destFrag->addPredecessor(m_fragment);
     }
 }
 
 
-BasicBlock *BranchStatement::getTakenBB() const
+IRFragment *BranchStatement::getTakenFragment() const
 {
-    if (!m_bb || m_bb->getNumSuccessors() != 2) {
+    if (!m_fragment || m_fragment->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    return m_bb->getSuccessor(BTHEN);
+    return m_fragment->getSuccessor(BTHEN);
 }
 
 
-void BranchStatement::setTakenBB(BasicBlock *destBB)
+void BranchStatement::setTakenFragment(IRFragment *destFrag)
 {
-    if (!m_bb || m_bb->getNumSuccessors() != 2) {
+    if (!m_fragment || m_fragment->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_bb->getSuccessor(BTHEN);
-    if (destBB != oldDestBB) {
-        oldDestBB->removePredecessor(m_bb);
-        m_bb->setSuccessor(BTHEN, destBB);
-        destBB->addPredecessor(m_bb);
+    IRFragment *oldDestFrag = m_fragment->getSuccessor(BTHEN);
+    if (destFrag != oldDestFrag) {
+        oldDestFrag->removePredecessor(m_fragment);
+        m_fragment->setSuccessor(BTHEN, destFrag);
+        destFrag->addPredecessor(m_fragment);
     }
 }
 
@@ -210,9 +210,9 @@ SharedStmt BranchStatement::clone() const
     ret->m_cond       = m_cond ? m_cond->clone() : nullptr;
     ret->m_isFloat    = m_isFloat;
     // Statement members
-    ret->m_bb     = m_bb;
-    ret->m_proc   = m_proc;
-    ret->m_number = m_number;
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
 
     return ret;
 }

@@ -24,6 +24,7 @@ private slots:
     /// Test calculating (semi-)dominators and the Dominance Frontier
     void testCalculateDominators1();
     void testCalculateDominators2();
+    void testCalculateDominatorsSelfLoop();
     void testCalculateDominatorsComplex();
 
     /// Test the placing of phi functions
@@ -34,4 +35,5 @@ private slots:
 
     /// Test the renaming of variables
     void testRenameVars();
+    void testRenameVarsSelfLoop();
 };

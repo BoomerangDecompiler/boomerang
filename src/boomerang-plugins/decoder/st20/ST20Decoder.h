@@ -46,10 +46,10 @@ public:
 
 public:
     /// \copydoc IDecoder::decodeInstruction
-    bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
+    bool disassembleInstruction(Address pc, ptrdiff_t delta, MachineInstruction &result) override;
 
-    /// \returns false
-    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
+    /// \copydoc IDecoder::liftInstruction
+    bool liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted) override;
 
 private:
     /**
@@ -65,8 +65,7 @@ private:
      * \param   args Semantic String ptrs representing actual operands
      * \returns an instantiated list of Exps
      */
-    std::unique_ptr<RTL> instantiate(Address pc, const char *name,
-                                     const std::initializer_list<SharedExp> &args = {});
+    std::unique_ptr<RTL> instantiateRTL(const MachineInstruction &insn);
 
     /// \param prefixTotal The sum of all prefixes
     /// \returns the name of an instruction determined by its prefixes (e.g. 0x53 -> mul)

@@ -100,7 +100,7 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
                     continue;
                 }
 
-                if (!uc->exists(assgn->getLeft())) {
+                if (!uc->hasUse(assgn->getLeft())) {
                     continue; // Intersection fails
                 }
 
@@ -231,7 +231,8 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
         // type information becomes inaccessible)
     } while (doEllipsisProcessing(up));
 
-    PassManager::get()->executePass(PassID::BBSimplify, up); // In case there are new struct members
+    // In case there are new struct members
+    PassManager::get()->executePass(PassID::FragSimplify, up);
 
     if (function->getProg()->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("=== End type analysis for %1 ===", getName());
@@ -242,11 +243,10 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 {
     ProcCFG *cfg = proc->getCFG();
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "before data-flow type analysis");
 
     // First use the type information from the signature.
-    // Sometimes needed to split variables (e.g. argc as a
-    // int and char* in sparc/switch_gcc)
+    // Sometimes needed to split variables
     bool ch = dfaTypeAnalysis(proc->getSignature().get(), cfg);
     StatementList stmts;
     proc->getStatements(stmts);
@@ -291,17 +291,12 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     }
 
     if (proc->getProg()->getProject()->getSettings()->debugTA) {
-        LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
+        LOG_MSG("### Results for data-flow based type analysis for %1 ###", proc->getName());
         printResults(stmts, iter);
-        LOG_MSG("### End results for Data flow based type analysis for %1 ###", proc->getName());
+        LOG_MSG("### End results for data-flow based type analysis for %1 ###", proc->getName());
     }
 
     // Now use the type information gathered
-
-    proc->getProg()->getProject()->alertDecompileDebugPoint(
-        proc, "Before other uses of DFA type analysis");
-    proc->debugPrintAll("Before other uses of DFA type analysis");
-
     Prog *_prog = proc->getProg();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
@@ -498,8 +493,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         }
     }
 
-    proc->debugPrintAll("After application of DFA type analysis");
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "after data-flow type analysis");
 }
 
 
@@ -529,23 +523,15 @@ bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, ProcCFG *cfg)
 }
 
 
-// bool DFATypeRecovery::dfaTypeAnalysis(const SharedStmt &i)
-// {
-//     Q_UNUSED(i);
-//     assert(false);
-//     return false;
-// }
-
-
 bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
 {
     bool ch = false;
 
-    for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator rrit;
+    for (IRFragment *frag : *proc->getCFG()) {
+        IRFragment::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
         std::shared_ptr<CallStatement> c = std::dynamic_pointer_cast<CallStatement>(
-            bb->getLastStmt(rrit, srit));
+            frag->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

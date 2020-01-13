@@ -424,17 +424,6 @@ void SignatureTest::testGetABIDefines()
     QVERIFY(defs.findOnLeft(Location::regOf(REG_X86_EDX)) != nullptr);
     defs.clear();
 
-    QVERIFY(Signature::getABIDefines(Machine::SPARC, defs));
-    QVERIFY(defs.size() == 7);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O0)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O1)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O2)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O3)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O4)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_O5)) != nullptr);
-    QVERIFY(defs.findOnLeft(Location::regOf(REG_SPARC_G1)) != nullptr);
-    defs.clear();
-
     QVERIFY(Signature::getABIDefines(Machine::PPC, defs));
     QVERIFY(defs.size() == 10);
     QVERIFY(defs.findOnLeft(Location::regOf(REG_PPC_G3)) != nullptr);

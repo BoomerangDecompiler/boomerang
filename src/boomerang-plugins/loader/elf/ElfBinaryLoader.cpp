@@ -734,10 +734,7 @@ Machine ElfBinaryLoader::getMachine() const
 {
     const SWord elfMachine = elfRead2(&m_elfHeader->e_machine);
 
-    if ((elfMachine == EM_SPARC) || (elfMachine == EM_SPARC32PLUS)) {
-        return Machine::SPARC;
-    }
-    else if (elfMachine == EM_386) {
+    if (elfMachine == EM_386) {
         return Machine::X86;
     }
     else if (elfMachine == EM_PPC) {
@@ -861,7 +858,6 @@ void ElfBinaryLoader::applyRelocations()
         if (ps.sectionType == SHT_RELA) {
             const Elf32_Rela *relaEntries = reinterpret_cast<const Elf32_Rela *>(
                 ps.imagePtr.value());
-            const DWord numEntries = ps.Size / sizeof(Elf32_Rela);
 
             if (relaEntries == nullptr) {
                 LOG_WARN("Cannot read relocation entries from invalid section %1", i);
@@ -875,28 +871,6 @@ void ElfBinaryLoader::applyRelocations()
             }
 
             switch (machine) {
-            case EM_SPARC:
-                // NOTE: the r_offset is different for .o files (E_REL in the e_type header field)
-                // than for exe's and shared objects!
-                for (DWord u = 0; u < numEntries; u++) {
-                    Elf32_Byte relType = ELF32_R_TYPE(elfRead4(&relaEntries[u].r_info));
-                    // Elf32_Word symTabIndex = ELF32_R_SYM(elfRead4(&relaEntries[u].r_info));
-
-                    switch (relType) {
-                    case R_SPARC_NONE: // just ignore (common)
-                        break;
-
-                    // TODO These relocation types need to be implemented.
-                    case R_SPARC_HI22:
-                    case R_SPARC_LO10:
-                    case R_SPARC_COPY:
-                    case R_SPARC_GLOB_DAT:
-                    case R_SPARC_JMP_SLOT:
-                    default: LOG_WARN("Unhandled SPARC relocation type %1", relType); break;
-                    }
-                }
-                break;
-
             default: LOG_WARN("Unhandled relocation!"); break;
             }
         }

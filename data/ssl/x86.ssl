@@ -548,9 +548,9 @@ REPIFZ  := REP   . STRFL;
 REPIFNZ := REPNE . STRFL;
 REPALL  := REPS  . STRNF;
 
-INSTRUCTION REPIFZ[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ZF };
-INSTRUCTION REPIFNZ[X] . ALLSZ[Y] (dest, src)             { *1* %RPT := ~%ZF };
-INSTRUCTION REPALL[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := 1 };
+INSTRUCTION REPIFZ[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0 &&  %ZF };
+INSTRUCTION REPIFNZ[X] . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0 && ~%ZF };
+INSTRUCTION REPALL[X]  . ALLSZ[Y] (dest, src)             { *1* %RPT := %ecx ~= 0         };
 
 
 #
@@ -2208,6 +2208,12 @@ INSTRUCTION "FUCOMIP.reg80" (reg) {
     FPOP
 };
 
+# To fix issue with Capstone next branch and 3.0.5 used by Ubuntu
+INSTRUCTION "FUCOMPI.reg80" (reg) {
+    SUBFLAGSFL(%st, reg)
+    FPOP
+};
+
 
 # FUCOMP
 INSTRUCTION "FUCOMP" () {
@@ -2544,7 +2550,18 @@ INSTRUCTION "LAHF" () {
 };
 
 
+# LCALL
+INSTRUCTION "LCALL.imm16.imm16" (seg, addr) {
+    call seg << 4 + addr
+};
+
+
 # LDS
+INSTRUCTION "LDS.reg16.rm16" (dest, src) {
+    *16* %ds  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LDS.reg16.rm32" (dest, src) {
     *16* %ds  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2580,6 +2597,11 @@ INSTRUCTION "LEAVE" () {
 
 
 # LES
+INSTRUCTION "LES.reg16.rm16" (dest, src) {
+    *16* %es  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LES.reg16.rm32" (dest, src) {
     *16* %es  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2592,6 +2614,11 @@ INSTRUCTION "LES.reg32.rm32" (dest, src) {
 
 
 # LFS
+INSTRUCTION "LFS.reg16.rm16" (dest, src) {
+    *16* %fs  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LFS.reg16.rm32" (dest, src) {
     *16* %fs  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2604,6 +2631,11 @@ INSTRUCTION "LFS.reg32.rm32" (dest, src) {
 
 
 # LGS
+INSTRUCTION "LGS.reg16.rm16" (dest, src) {
+    *16* %gs  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LGS.reg16.rm32" (dest, src) {
     *16* %gs  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2652,6 +2684,11 @@ INSTRUCTION "LOOPNE.imm32" (dest) {
 
 
 # LSS
+INSTRUCTION "LSS.reg16.rm16" (dest, src) {
+    *16* %ss  := src@[16:31]
+    *16* dest := src@[0:15]
+};
+
 INSTRUCTION "LSS.reg16.rm32" (dest, src) {
     *16* %ss  := src@[16:31]
     *16* dest := src@[0:15]
@@ -2853,6 +2890,13 @@ INSTRUCTION "MUL.rm8" (src) {
     *16* tmph := %al * src
     *16* %ax := tmph
     MULTFLAGS8(tmph)
+};
+
+INSTRUCTION "MUL.rm16" (src) {
+    *32* tmp1 := %ax * src
+    *16* %ax := tmp1
+    *16* %dx := tmp1 >> 16
+    MULTFLAGS16(tmp1)
 };
 
 INSTRUCTION "MUL.rm32" (src) {
@@ -3357,21 +3401,18 @@ INSTRUCTION "RCR.rm32.imm32" (dest, src) {
 
 # RET
 INSTRUCTION "RET" () {
-    *32* %pc := m[%esp]
     *32* %esp := %esp + 4
     ret
 };
 
 
 INSTRUCTION "RET.imm16" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
 
 
 INSTRUCTION "RET.imm32" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
@@ -3379,19 +3420,16 @@ INSTRUCTION "RET.imm32" (offset) {
 
 # RETF
 INSTRUCTION "RETF" () {
-    *32* %pc := m[%esp]
     *32* %esp := %esp + 4
     ret
 };
 
 INSTRUCTION "RETF.imm16" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };
 
 INSTRUCTION "RETF.imm32" (offset) {
-    *32* %pc := m[%esp + offset]
     *32* %esp := %esp + 4 + offset
     ret
 };

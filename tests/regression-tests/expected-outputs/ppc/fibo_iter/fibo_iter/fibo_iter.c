@@ -22,9 +22,9 @@ __size32 fib(int param1)
     int local1; 		// m[g1 - 36]
     int local2; 		// m[g1 - 32]
     int local3; 		// m[g1 - 28]
-    int local4; 		// m[g1 - 32]{10}
-    int local5; 		// m[g1 - 32]{13}
-    int local9; 		// local4{10}
+    int local4; 		// m[g1 - 32]{11}
+    int local5; 		// m[g1 - 32]{15}
+    int local9; 		// local4{11}
 
     if (param1 > 1) {
         local1 = 2;

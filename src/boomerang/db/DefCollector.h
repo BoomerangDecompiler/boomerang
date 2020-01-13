@@ -13,8 +13,8 @@
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/StatementSet.h"
 
-#include <deque>
 #include <map>
+#include <stack>
 
 
 class Statement;
@@ -48,49 +48,34 @@ public:
     const_iterator end() const { return m_defs.end(); }
 
 public:
-    /// Clone the given Collector into this one
+    /// Clone the given Collector into this one (discard existing data)
     void makeCloneOf(const DefCollector &other);
 
-    /// \returns true if initialised
-    inline bool isInitialised() const { return m_initialised; }
-
-    /// Clear the location set
+    /// Remove all collected definitions
     void clear();
 
-    /**
-     * Insert a new member (make sure none exists yet).
-     * Takes ownership of the pointer. Deletes \p a
-     * if the LHS of \p a is already present.
-     */
-    void insert(const std::shared_ptr<Assign> &a);
+    /// Insert a new collected def. If the LHS of \p a already exists, nothing happens.
+    void collectDef(const std::shared_ptr<Assign> &a);
 
-    /// Print the collected locations to stream os
-    void print(OStream &os) const;
+    /// \returns true if any assignment in this collector assigns to \p e on the LHS.
+    bool hasDefOf(const SharedExp &e) const;
 
-    bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
+    /// Find the RHS expression for the LHS \p e.
+    /// If not found, returns nullptr.
+    SharedExp findDefFor(const SharedExp &e) const;
 
-    /**
-     * Update the definitions with the current set of reaching definitions
-     * proc is the enclosing procedure
-     */
-    void updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
+    /// Update the definitions with the current set of reaching definitions
+    /// \p proc is the enclosing procedure
+    void updateDefs(std::map<SharedExp, std::stack<SharedStmt>, lessExpStar> &Stacks,
                     UserProc *proc);
-
-    /**
-     * Find the definition for a location.
-     * Find the definition for e that reaches this Collector.
-     * If none reaches here, return nullptr
-     */
-    SharedExp findDefFor(SharedExp e) const;
 
     /// Search and replace all occurrences
     void searchReplaceAll(const Exp &pattern, SharedExp replacement, bool &change);
 
+public:
+    /// Print the collected locations to stream \p os
+    void print(OStream &os) const;
+
 private:
-    /**
-     * True if initialised. When not initialised, callees should not
-     * subscript parameters inserted into the associated CallStatement
-     */
-    bool m_initialised = false;
     AssignSet m_defs; ///< The set of definitions.
 };

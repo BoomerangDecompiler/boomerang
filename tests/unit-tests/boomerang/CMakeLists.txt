@@ -7,7 +7,7 @@
 #
 
 
-# add submodlules for testing
+# add submodules for testing
 add_subdirectory(core)
 add_subdirectory(db)
 add_subdirectory(ssl)

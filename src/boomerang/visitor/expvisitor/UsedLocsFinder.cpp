@@ -59,7 +59,6 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal> &exp)
     case opFflags:
     case opDefineAll:
     // Fall through
-    // The carry flag can be used in some SPARC idioms, etc
     case opDF:
     case opCF:
     case opZF:

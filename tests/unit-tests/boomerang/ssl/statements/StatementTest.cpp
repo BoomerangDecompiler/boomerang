@@ -79,7 +79,7 @@ void StatementTest::testEmpty()
 
     QString expected = QString(
             "Control Flow Graph:\n"
-            "Ret BB:\n"
+            "Ret Fragment:\n"
             "  in edges: \n"
             "  out edges: \n"
             "0x00000123\n\n"
@@ -142,11 +142,11 @@ void StatementTest::testFlow()
     // to r24 is removed
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 5\n"
@@ -211,11 +211,11 @@ void StatementTest::testKill()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -273,11 +273,11 @@ void StatementTest::testUse()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r28 := 1000\n"
@@ -341,11 +341,11 @@ void StatementTest::testUseOverKill()
     // compare it to expected
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -410,11 +410,11 @@ void StatementTest::testUseOverBB()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010\n"
@@ -472,11 +472,11 @@ void StatementTest::testUseKill()
 
     QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001010 \n"
         "0x00001000\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
@@ -537,11 +537,11 @@ void StatementTest::testEndlessLoop()
     // int i = 5; do { i++; } while (true);
     // TODO: is the phi really needed?
     QString expected = "Control Flow Graph:\n"
-                       "Fall BB:\n"
+                       "Fall Fragment:\n"
                        "  in edges: \n"
                        "  out edges: 0x00001010 \n"
                        "0x00001000    1 *i32* r24 := 5\n"
-                       "Oneway BB:\n"
+                       "Oneway Fragment:\n"
                        "  in edges: 0x00001000(0x00001000) 0x00001010(0x00001010) \n"
                        "  out edges: 0x00001010 \n"
                        "0x00000000    2 *i32* r24 := phi{1 3}\n"
@@ -554,92 +554,88 @@ void StatementTest::testEndlessLoop()
 
 void StatementTest::testLocationSet()
 {
-    auto rof = Location::regOf(REG_SPARC_O4); // r12
-    Const&      theReg = *std::dynamic_pointer_cast<Const>(rof->getSubExp1());
     LocationSet ls;
 
+    {
+        ls.insert(Location::regOf(REG_X86_AL));
+        ls.insert(Location::regOf(REG_X86_AH));
+        ls.insert(Location::regOf(REG_X86_EDI));
+        ls.insert(Location::regOf(REG_X86_EAX));
+        ls.insert(Location::regOf(REG_X86_AH)); // do not insert twice
 
-    ls.insert(rof->clone()); // ls has r12
-    theReg.setInt(REG_SPARC_O0);
-    ls.insert(rof->clone()); // ls has r8 r12
-    theReg.setInt(REG_SPARC_I7);
-    ls.insert(rof->clone()); // ls has r8 r12 r31
-    theReg.setInt(REG_SPARC_I0);
-    ls.insert(rof->clone()); // ls has r8 r12 r24 r31
-    theReg.setInt(REG_SPARC_O4);
-    ls.insert(rof->clone()); // Note: r12 already inserted
+        QCOMPARE(ls.size(), 4);
 
-    QCOMPARE(ls.size(), 4);
-    theReg.setInt(REG_SPARC_O0);
-    auto ii = ls.begin();
-    QVERIFY(*rof == **ii); // First element should be r8
+        auto ii = ls.begin();
+        QVERIFY(**ii == *Location::regOf(REG_X86_AL));
 
-    theReg.setInt(REG_SPARC_O4);
-    SharedExp e = *(++ii);
-    QVERIFY(*rof == *e); // Second should be r12
+        std::advance(ii, 1);
+        QVERIFY(**ii == *Location::regOf(REG_X86_AH));
 
-    theReg.setInt(REG_SPARC_I0);
-    e = *(++ii);
-    QVERIFY(*rof == *e); // Next should be r24
-    theReg.setInt(REG_SPARC_I7);
-    e = *(++ii);
-    QVERIFY(*rof == *e);                                                                      // Last should be r31
+        std::advance(ii, 1);
+        QVERIFY(**ii == *Location::regOf(REG_X86_EAX));
 
-    Location mof(opMemOf, Binary::get(opPlus, Location::regOf(REG_SPARC_O6), Const::get(4)), nullptr); // m[r14 + 4]
-    ls.insert(mof.clone());                                                                  // ls should be r8 r12 r24 r31 m[r14 + 4]
-    ls.insert(mof.clone());
+        std::advance(ii, 1);
+        QVERIFY(**ii == *Location::regOf(REG_X86_EDI));
+    }
 
-    QCOMPARE(ls.size(), 5); // Should have 5 elements
+    {
+        auto mof = Location::memOf(Binary::get(opPlus,
+                                            Location::regOf(REG_X86_DH),
+                                            Const::get(4)),
+                                nullptr); // m[r14 + 4]
+        ls.insert(mof->clone());
+        ls.insert(mof->clone());
 
-    ii = --ls.end();
-    QVERIFY(mof == **ii);   // Last element should be m[r14 + 4] now
+        QCOMPARE(ls.size(), 5);
+
+        auto ii = std::prev(ls.end());
+        QVERIFY(**ii == *mof);
+    }
+
     LocationSet ls2 = ls;
-    SharedExp   e2  = *ls2.begin();
-    QVERIFY(!(e2 == *ls.begin())); // Must be cloned
-    QCOMPARE(ls2.size(), 5);
+    QCOMPARE(ls2.size(), ls.size());
 
-    theReg.setInt(REG_SPARC_O0);
-    QVERIFY(*rof == **ls2.begin()); // First elements should compare equal
+    for (auto it1 = ls.begin(), it2 = ls2.begin(); it1 != ls.end(); ++it1, ++it2) {
+        QVERIFY(*it2 != *it1);
+        QVERIFY(**it2 == **it1);
+    }
 
-    theReg.setInt(REG_SPARC_O4);
-    e = *(++ls2.begin());          // Second element
-    QVERIFY(e != nullptr);
-    QVERIFY(rof != nullptr);
-    QCOMPARE(e->toString(), rof->toString());            // ... should be r12
+    {
+        std::shared_ptr<Assign> s10(new Assign(Const::get(0), Const::get(0)));
+        std::shared_ptr<Assign> s20(new Assign(Const::get(0), Const::get(0)));
+        s10->setNumber(10);
+        s20->setNumber(20);
 
-    std::shared_ptr<Assign> s10(new Assign(Const::get(0), Const::get(0)));
-    std::shared_ptr<Assign> s20(new Assign(Const::get(0), Const::get(0)));
-    s10->setNumber(10);
-    s20->setNumber(20);
+        std::shared_ptr<RefExp> r1 = RefExp::get(Location::regOf(REG_X86_AL), s10);
+        std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(REG_X86_AL), s20);
+        ls.insert(r1); // ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
 
-    std::shared_ptr<RefExp> r1 = RefExp::get(Location::regOf(REG_SPARC_O0), s10);
-    std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(REG_SPARC_O0), s20);
-    ls.insert(r1); // ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
+        QCOMPARE(ls.size(), 6);
+        SharedExp dummy;
+        QVERIFY(!ls.findDifferentRef(r1, dummy));
+        QVERIFY(ls.findDifferentRef(r2, dummy));
 
-    QCOMPARE(ls.size(), 6);
-    SharedExp dummy;
-    QVERIFY(!ls.findDifferentRef(r1, dummy));
-    QVERIFY(ls.findDifferentRef(r2, dummy));
+        SharedExp r8 = Location::regOf(REG_X86_AL);
+        QVERIFY(!ls.containsImplicit(r8));
 
-    SharedExp r8 = Location::regOf(REG_SPARC_O0);
-    QVERIFY(!ls.containsImplicit(r8));
+        std::shared_ptr<RefExp> r3(new RefExp(Location::regOf(REG_X86_AL), nullptr));
+        ls.insert(r3);
+        QVERIFY(ls.containsImplicit(r8));
+        ls.remove(r3);
 
-    std::shared_ptr<RefExp> r3(new RefExp(Location::regOf(REG_SPARC_O0), nullptr));
-    ls.insert(r3);
-    QVERIFY(ls.containsImplicit(r8));
-    ls.remove(r3);
+        std::shared_ptr<ImplicitAssign> zero(new ImplicitAssign(r8));
+        std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(REG_X86_AL), zero));
+        ls.insert(r4);
 
-    std::shared_ptr<ImplicitAssign> zero(new ImplicitAssign(r8));
-    std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(REG_SPARC_O0), zero));
-    ls.insert(r4);
-    QVERIFY(ls.containsImplicit(r8));
+        QVERIFY(ls.containsImplicit(r8));
+    }
 }
 
 
 void StatementTest::testWildLocationSet()
 {
-    Location rof12(opRegOf, Const::get(REG_SPARC_O4), nullptr);
-    Location rof13(opRegOf, Const::get(REG_SPARC_O5), nullptr);
+    Location rof12(opRegOf, Const::get(REG_X86_AH), nullptr);
+    Location rof13(opRegOf, Const::get(REG_X86_CH), nullptr);
     std::shared_ptr<Assign> a10(new Assign);
     std::shared_ptr<Assign> a20(new Assign);
 
@@ -651,8 +647,8 @@ void StatementTest::testWildLocationSet()
     std::shared_ptr<RefExp> r13_10(new RefExp(rof13.clone(), a10));
     std::shared_ptr<RefExp> r13_20(new RefExp(rof13.clone(), a20));
     std::shared_ptr<RefExp> r13_0(new RefExp(rof13.clone(), nullptr));
-    std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_SPARC_O3), a10));
-    std::shared_ptr<RefExp> r22_10(new RefExp(Location::regOf(REG_SPARC_L6), a10));
+    std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_X86_BL), a10));
+    std::shared_ptr<RefExp> r24_10(new RefExp(Location::regOf(REG_X86_EAX), a10));
 
     LocationSet ls;
     ls.insert(r12_10);
@@ -666,7 +662,7 @@ void StatementTest::testWildLocationSet()
     QVERIFY(ls.contains(wildr12));
     std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), STMT_WILD));
     QVERIFY(ls.contains(wildr13));
-    std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(REG_SPARC_O2), STMT_WILD));
+    std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(REG_X86_DL), STMT_WILD));
     QVERIFY(!ls.contains(wildr10));
 
     // Test findDifferentRef
@@ -680,11 +676,11 @@ void StatementTest::testWildLocationSet()
 
     // Next 4 should fail
     QVERIFY(!ls.findDifferentRef(r11_10, x));
-    QVERIFY(!ls.findDifferentRef(r22_10, x));
+    QVERIFY(!ls.findDifferentRef(r24_10, x));
     ls.insert(r11_10);
-    ls.insert(r22_10);
+    ls.insert(r24_10);
     QVERIFY(!ls.findDifferentRef(r11_10, x));
-    QVERIFY(!ls.findDifferentRef(r22_10, x));
+    QVERIFY(!ls.findDifferentRef(r24_10, x));
 }
 
 
@@ -801,7 +797,7 @@ void StatementTest::testRecursion()
 
     const QString expected =
         "Control Flow Graph:\n"
-        "Fall BB:\n"
+        "Fall Fragment:\n"
         "  in edges: \n"
         "  out edges: 0x00001008 \n"
         "0x00000000    1 *union* r28 := -\n"
@@ -809,7 +805,7 @@ void StatementTest::testRecursion()
         "              3 *v* m[r28{1} + 4] := -\n"
         "0x00001004\n"
         "0x00001006    4 *union* r28 := r28{1} - 8\n"
-        "Call BB:\n"
+        "Call Fragment:\n"
         "  in edges: 0x00001006(0x00001004) 0x00001008(0x00001008) \n"
         "  out edges: 0x00001008 0x0000100c \n"
         "0x00000000    5 *union* r28 := phi{4 7}\n"
@@ -818,7 +814,7 @@ void StatementTest::testRecursion()
         "              Reaching definitions: r28=r28{5} - 4,   r29=r29{2},   m[r28{1} + 4]=m[r28{1} + 4]{3},\n"
         "                m[r28{1} - 4]=r29{2},   m[r28{1} - 8]=m[r28{1} + 4]{3} + 1\n"
         "              Live variables: r28\n"
-        "Ret BB:\n"
+        "Ret Fragment:\n"
         "  in edges: 0x00001008(0x00001008) \n"
         "  out edges: \n"
         "0x0000100c    8 RET\n"
@@ -833,7 +829,7 @@ void StatementTest::testRecursion()
 
 void StatementTest::testClone()
 {
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99))));
+    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_AL), Binary::get(opPlus, Location::regOf(REG_X86_CL), Const::get(99))));
     std::shared_ptr<Assign> a2(new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"), Location::param("y")));
     std::shared_ptr<Assign> a3(new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"), Location::param("q")));
 
@@ -867,7 +863,7 @@ void StatementTest::testIsAssign()
     QString     actual;
     OStream st(&actual);
     // r2 := 99
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_SPARC_G2), Const::get(99)));
+    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_DX), Const::get(99)));
 
     a->print(st);
     QString expected("   0 *v* r2 := 99");
@@ -885,10 +881,10 @@ void StatementTest::testIsFlagAssgn()
     // FLAG addFlags(r2 , 99)
     Assign fc(Terminal::get(opFlags),
               Binary::get(opFlagCall, Const::get("addFlags"),
-                          Binary::get(opList, Location::regOf(REG_SPARC_G2), Const::get(99))));
+                          Binary::get(opList, Location::regOf(REG_X86_DX), Const::get(99))));
     CallStatement   call;
     BranchStatement br;
-    Assign          as(Location::regOf(REG_SPARC_O1), Binary::get(opPlus, Location::regOf(REG_SPARC_O2), Const::get(4)));
+    Assign          as(Location::regOf(REG_X86_CL), Binary::get(opPlus, Location::regOf(REG_X86_DL), Const::get(4)));
 
     QString     actual;
     QString     expected("   0 *v* %flags := addFlags( r2, 99 )");
@@ -1090,7 +1086,7 @@ void StatementTest::testBypass()
     prog->setFrontEnd(fe);
 
     fe->decodeEntryPointsRecursive();
-    fe->decodeUndecoded();
+    fe->disassembleAll();
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);

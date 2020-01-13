@@ -13,6 +13,7 @@
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/ProgSymbolWriter.h"
@@ -271,9 +272,6 @@ IFrontEnd *Project::createFrontEnd()
 
         switch (getLoadedBinaryFile()->getMachine()) {
         case Machine::X86: plugin = m_pluginManager->getPluginByName("X86 FrontEnd plugin"); break;
-        case Machine::SPARC:
-            plugin = m_pluginManager->getPluginByName("SPARC FrontEnd plugin");
-            break;
         case Machine::PPC: plugin = m_pluginManager->getPluginByName("PPC FrontEnd plugin"); break;
         case Machine::ST20:
             plugin = m_pluginManager->getPluginByName("ST20 FrontEnd plugin");
@@ -321,7 +319,7 @@ bool Project::decodeAll()
         LOG_MSG("Decoding entry point...");
     }
 
-    if (!m_fe || !m_fe->decodeEntryPointsRecursive(getSettings()->decodeMain)) {
+    if (!m_fe || (getSettings()->decodeMain && !m_fe->disassembleEntryPoints())) {
         LOG_ERROR("Aborting load due to decode failure");
         return false;
     }
@@ -335,7 +333,7 @@ bool Project::decodeAll()
     if (getSettings()->decodeChildren) {
         // this causes any undecoded userprocs to be decoded
         LOG_MSG("Decoding anything undecoded...");
-        if (!m_fe->decodeUndecoded()) {
+        if (!m_fe->disassembleAll()) {
             LOG_ERROR("Aborting load due to decode failure");
             return false;
         }
@@ -396,10 +394,12 @@ void Project::addWatcher(IWatcher *watcher)
 }
 
 
-void Project::alertDecompileDebugPoint(UserProc *p, const char *description)
+void Project::alertDecompileDebugPoint(UserProc *p, const QString &description)
 {
+    p->debugPrintAll(description);
+
     for (IWatcher *elem : m_watchers) {
-        elem->onDecompileDebugPoint(p, description);
+        elem->onDecompileDebugPoint(p, qPrintable(description));
     }
 }
 

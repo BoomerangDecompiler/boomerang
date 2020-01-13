@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     g5 = *(argv + 4);
     if (argc > 2) {
-        g3 = strlen(g5);
+        g3_1 = strlen(g5);
         g31 = g3;
         g30 = g3;
         printf("%d", g3 * 2);

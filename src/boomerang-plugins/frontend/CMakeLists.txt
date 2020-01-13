@@ -22,13 +22,6 @@ BOOMERANG_ADD_FRONTEND(
 )
 
 BOOMERANG_ADD_FRONTEND(
-    NAME "SPARC"
-    SOURCES
-        sparc/SPARCFrontEnd.cpp
-        sparc/SPARCFrontEnd.h
-)
-
-BOOMERANG_ADD_FRONTEND(
     NAME "PPC"
     SOURCES
         ppc/PPCFrontEnd.cpp

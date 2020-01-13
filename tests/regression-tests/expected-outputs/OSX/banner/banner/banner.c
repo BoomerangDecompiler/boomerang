@@ -6,9 +6,9 @@ int main(int argc, char *argv[])
 {
     int XERCA; 		// r202
     unsigned int g0; 		// r0
-    union { int; __size8 *; } g1; 		// r1
-    int g10; 		// r10
-    int g11; 		// r11
+    union { unsigned int; __size8 *; } g1; 		// r1
+    union { unsigned int; __size8 *; } g10; 		// r10
+    union { int; __size8 *; } *g11; 		// r11
     int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 104]

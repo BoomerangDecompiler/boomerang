@@ -25,29 +25,15 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-bool BasicBlock::BBComparator::operator()(const BasicBlock *bb1, const BasicBlock *bb2) const
-{
-    // special case: in test code, we have statements that do not belong to BBs.
-    // Thus, bb is nullptr
-    if (bb1 && bb2) {
-        return bb1->getLowAddr() < bb2->getLowAddr();
-    }
-    else {
-        // compare pointers
-        return bb1 < bb2;
-    }
-}
-
-
 SharedStmt PhiAssign::clone() const
 {
     std::shared_ptr<PhiAssign> pa(new PhiAssign(m_type, m_lhs));
 
-    for (const auto &[bb, ref] : m_defs) {
+    for (const auto &[frag, ref] : m_defs) {
         assert(ref->getSubExp1());
 
-        // Clone the expression pointer, but not the statement pointer (never moves)
-        pa->m_defs.insert({ bb, RefExp::get(ref->getSubExp1()->clone(), ref->getDef()) });
+        // Clone the expression pointer, but not the fragment pointer (never moves)
+        pa->m_defs.insert({ frag, RefExp::get(ref->getSubExp1()->clone(), ref->getDef()) });
     }
 
     return pa;
@@ -69,13 +55,14 @@ void PhiAssign::printCompact(OStream &os) const
     }
 
     os << " := phi";
-    for (const auto &[bb, ref] : m_defs) {
-        Q_UNUSED(bb);
+    for (const auto &[frag, ref] : m_defs) {
+        Q_UNUSED(frag);
         Q_UNUSED(ref);
 
         assert(ref->getSubExp1() != nullptr);
         assert(*ref->getSubExp1() == *m_lhs);
     }
+
     os << "{";
 
     for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
@@ -207,62 +194,18 @@ bool PhiAssign::accept(StmtPartModifier *v)
 void PhiAssign::simplify()
 {
     m_lhs = m_lhs->simplify();
-
-    if (m_defs.empty()) {
-        return;
-    }
-
-    bool allSame        = true;
-    SharedStmt firstDef = (*begin())->getDef();
-    UserProc *proc      = this->getProc();
-
-    for (auto &refExp : *this) {
-        if (refExp->getDef() != firstDef) {
-            allSame = false;
-            break;
-        }
-    }
-
-    if (allSame) {
-        LOG_VERBOSE("all the same in %1", shared_from_this());
-        proc->replacePhiByAssign(shared_from_this()->as<PhiAssign>(), RefExp::get(m_lhs, firstDef));
-        return;
-    }
-
-    bool onlyOneNotThis = true;
-    SharedStmt notthis  = STMT_WILD;
-
-    for (const std::shared_ptr<RefExp> &ref : *this) {
-        SharedStmt def = ref->getDef();
-        if (def == shared_from_this()) {
-            continue; // ok
-        }
-        else if (notthis == STMT_WILD) {
-            notthis = def;
-        }
-        else {
-            onlyOneNotThis = false;
-            break;
-        }
-    }
-
-    if (onlyOneNotThis && (notthis != STMT_WILD)) {
-        LOG_VERBOSE("All but one not this in %1", shared_from_this());
-
-        proc->replacePhiByAssign(shared_from_this()->as<PhiAssign>(), RefExp::get(m_lhs, notthis));
-        return;
-    }
 }
 
 
-void PhiAssign::putAt(BasicBlock *bb, const SharedStmt &def, SharedExp e)
+void PhiAssign::putAt(IRFragment *frag, const SharedStmt &def, SharedExp e)
 {
     assert(e); // should be something surely
+    assert(*e == *getLeft());
 
     // Can't use operator[] here since PhiInfo is not default-constructible
-    PhiDefs::iterator it = m_defs.find(bb);
+    PhiDefs::iterator it = m_defs.find(frag);
     if (it == m_defs.end()) {
-        m_defs.insert({ bb, RefExp::get(e, def) });
+        m_defs.insert({ frag, RefExp::get(e, def) });
     }
     else {
         it->second->setDef(def);
@@ -271,14 +214,14 @@ void PhiAssign::putAt(BasicBlock *bb, const SharedStmt &def, SharedExp e)
 }
 
 
-SharedConstStmt PhiAssign::getStmtAt(BasicBlock *idx) const
+SharedConstStmt PhiAssign::getStmtAt(IRFragment *idx) const
 {
     PhiDefs::const_iterator it = m_defs.find(idx);
     return (it != m_defs.end()) ? it->second->getDef() : nullptr;
 }
 
 
-SharedStmt PhiAssign::getStmtAt(BasicBlock *idx)
+SharedStmt PhiAssign::getStmtAt(IRFragment *idx)
 {
     PhiDefs::iterator it = m_defs.find(idx);
     return (it != m_defs.end()) ? it->second->getDef() : nullptr;

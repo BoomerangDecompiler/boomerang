@@ -55,9 +55,9 @@ SharedStmt ReturnStatement::clone() const
     ret->m_col.makeCloneOf(m_col);
 
     // Statement members
-    ret->m_bb     = m_bb;
-    ret->m_proc   = m_proc;
-    ret->m_number = m_number;
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
 
     return ret;
 }
@@ -397,9 +397,10 @@ void ReturnStatement::updateModifieds()
 
     m_modifieds.clear();
 
-    if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessors()[0]->getLastStmt()->isCall()) {
+    if ((m_fragment->getNumPredecessors() == 1) &&
+        m_fragment->getPredecessor(0)->getLastStmt()->isCall()) {
         std::shared_ptr<CallStatement>
-            call = m_bb->getPredecessors()[0]->getLastStmt()->as<CallStatement>();
+            call = m_fragment->getPredecessor(0)->getLastStmt()->as<CallStatement>();
 
         IFrontEnd *fe = m_proc->getProg()->getFrontEnd();
         if (call->getDestProc() && fe->isNoReturnCallDest(call->getDestProc()->getName())) {
@@ -416,7 +417,7 @@ void ReturnStatement::updateModifieds()
         std::shared_ptr<Assign> asgn = stmt->as<Assign>();
         SharedExp colLhs             = asgn->getLeft();
 
-        if (m_proc->filterReturns(colLhs)) {
+        if (!m_proc->canBeReturn(colLhs)) {
             continue; // Filtered out
         }
 
@@ -433,7 +434,7 @@ void ReturnStatement::updateModifieds()
             std::shared_ptr<ImplicitAssign> ias(
                 new ImplicitAssign(asgn->getType()->clone(), asgn->getLeft()->clone()));
             ias->setProc(m_proc); // Comes from the Collector
-            ias->setBB(m_bb);
+            ias->setFragment(m_fragment);
             oldMods.append(ias);
         }
     }
@@ -446,11 +447,11 @@ void ReturnStatement::updateModifieds()
         std::shared_ptr<Assignment> asgn = (*rit)->as<Assignment>();
         SharedExp lhs                    = asgn->getLeft();
 
-        if (!m_col.existsOnLeft(lhs)) {
+        if (!m_col.hasDefOf(lhs)) {
             continue; // Not in collector: delete it (don't copy it)
         }
 
-        if (m_proc->filterReturns(lhs)) {
+        if (!m_proc->canBeReturn(lhs)) {
             continue; // Filtered out: delete it
         }
 
@@ -478,7 +479,7 @@ void ReturnStatement::updateReturns()
         bool found    = false;
         SharedExp loc = stmt->as<Assignment>()->getLeft();
 
-        if (m_proc->filterReturns(loc)) {
+        if (!m_proc->canBeReturn(loc)) {
             continue; // Filtered out
         }
 
@@ -502,7 +503,7 @@ void ReturnStatement::updateReturns()
             SharedExp rhs = m_col.findDefFor(loc);
             std::shared_ptr<Assign> asgn(new Assign(loc->clone(), rhs->clone()));
             asgn->setProc(m_proc);
-            asgn->setBB(m_bb);
+            asgn->setFragment(m_fragment);
             oldRets.append(asgn);
         }
     }
@@ -517,7 +518,7 @@ void ReturnStatement::updateReturns()
             continue; // Not in modifieds: delete it (don't copy it)
         }
 
-        if (m_proc->filterReturns(lhs)) {
+        if (!m_proc->canBeReturn(lhs)) {
             continue; // Filtered out: delete it
         }
 

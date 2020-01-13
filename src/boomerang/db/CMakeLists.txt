@@ -13,6 +13,9 @@ list(APPEND boomerang-db-sources
     db/DebugInfo
     db/DefCollector
     db/Global
+    db/GraphNode
+    db/LowLevelCFG
+    db/IRFragment
     db/Prog
     db/UseCollector
 
@@ -36,7 +39,6 @@ list(APPEND boomerang-db-sources
     db/signature/Parameter
     db/signature/Return
     db/signature/PPCSignature
-    db/signature/SPARCSignature
     db/signature/ST20Signature
     db/signature/Win32Signature
     db/signature/X86Signature

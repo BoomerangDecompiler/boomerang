@@ -361,7 +361,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         }
         else if (op1 == 0xE9) {
             // Follow the jump
-            int off = READ4_LE(*(m_image + rva + 1));
+            const int off = READ4_LE(*(m_image + rva + 1));
             rva += off + 5;
             continue;
         }

@@ -41,12 +41,16 @@ void CapstonePPCDecoderTest::testInstructions()
     QFETCH(InstructionData, insnData);
     QFETCH(QString, expectedResult);
 
-    DecodeResult result;
+    MachineInstruction insn;
+    LiftedInstruction result;
     Address sourceAddr = Address(0x1000);
     ptrdiff_t diff     = (HostAddress(&insnData) - sourceAddr).value();
-    QVERIFY(m_decoder->decodeInstruction(sourceAddr, diff, result));
-    result.rtl->simplify();
-    QCOMPARE(result.rtl->toString(), expectedResult);
+
+    QVERIFY(m_decoder->disassembleInstruction(sourceAddr, diff, insn));
+    QVERIFY(m_decoder->liftInstruction(insn, result));
+
+    result.getFirstRTL()->simplify();
+    QCOMPARE(result.getFirstRTL()->toString(), expectedResult);
 }
 
 

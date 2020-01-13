@@ -10,15 +10,13 @@
 #pragma once
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 
 #include <set>
 
 
 class Prog;
-class UserProc;
-
-typedef std::set<UserProc *> ProcSet;
 
 
 class UnusedReturnRemover
@@ -81,6 +79,10 @@ private:
      * \sa removeRedundantReturns().
      */
     void updateForUseChange(UserProc *proc);
+
+    /// Remove returns from the return statement to match the signature of \p proc
+    /// \returns true if any change
+    bool removeReturnsToMatchSignature(UserProc *proc);
 
 private:
     Prog *m_prog;

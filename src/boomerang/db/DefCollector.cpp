@@ -15,20 +15,61 @@
 #include <QtAlgorithms>
 
 
+#define DEFCOL_COLS 120
+
+
 DefCollector::~DefCollector()
 {
-    clear();
+}
+
+
+void DefCollector::makeCloneOf(const DefCollector &other)
+{
+    m_defs.clear();
+
+    for (const auto &elem : other) {
+        m_defs.insert(elem->clone()->as<Assign>());
+    }
 }
 
 
 void DefCollector::clear()
 {
     m_defs.clear();
-    m_initialised = false;
 }
 
 
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &Stacks,
+void DefCollector::collectDef(const std::shared_ptr<Assign> &a)
+{
+    if (hasDefOf(a->getLeft())) {
+        return;
+    }
+
+    m_defs.insert(a);
+}
+
+
+bool DefCollector::hasDefOf(const SharedExp &e) const
+{
+    return m_defs.definesLoc(e);
+}
+
+
+SharedExp DefCollector::findDefFor(const SharedExp &e) const
+{
+    for (std::shared_ptr<Assign> def : m_defs) {
+        SharedExp lhs = def->getLeft();
+
+        if (*lhs == *e) {
+            return def->getRight();
+        }
+    }
+
+    return nullptr; // Not explicitly defined here
+}
+
+
+void DefCollector::updateDefs(std::map<SharedExp, std::stack<SharedStmt>, lessExpStar> &Stacks,
                               UserProc *proc)
 {
     for (auto &Stack : Stacks) {
@@ -37,17 +78,21 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<SharedStmt>, lessEx
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto re = RefExp::get(Stack.first->clone(), Stack.second.back());
+        auto re = RefExp::get(Stack.first->clone(), Stack.second.top());
         std::shared_ptr<Assign> as(new Assign(Stack.first->clone(), re));
         as->setProc(proc); // Simplify sometimes needs this
-        insert(as);
+        collectDef(as);
     }
-
-    m_initialised = true;
 }
 
 
-#define DEFCOL_COLS 120
+void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &changed)
+{
+    for (auto def : m_defs) {
+        changed |= def->searchAndReplace(from, to);
+    }
+}
+
 
 void DefCollector::print(OStream &os) const
 {
@@ -86,49 +131,4 @@ void DefCollector::print(OStream &os) const
         os << tgt;
         col += len;
     }
-}
-
-
-SharedExp DefCollector::findDefFor(SharedExp e) const
-{
-    for (std::shared_ptr<Assign> def : m_defs) {
-        SharedExp lhs = def->getLeft();
-
-        if (*lhs == *e) {
-            return def->getRight();
-        }
-    }
-
-    return nullptr; // Not explicitly defined here
-}
-
-
-void DefCollector::makeCloneOf(const DefCollector &other)
-{
-    m_initialised = other.m_initialised;
-    m_defs.clear();
-
-    for (const auto &elem : other) {
-        m_defs.insert(elem->clone()->as<Assign>());
-    }
-}
-
-
-void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &changed)
-{
-    for (auto def : m_defs) {
-        changed |= def->searchAndReplace(from, to);
-    }
-}
-
-
-void DefCollector::insert(const std::shared_ptr<Assign> &a)
-{
-    SharedExp l = a->getLeft();
-
-    if (existsOnLeft(l)) {
-        return;
-    }
-
-    m_defs.insert(a);
 }

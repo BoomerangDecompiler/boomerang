@@ -35,34 +35,65 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool X86FrontEnd::processProc(UserProc *function, Address addr)
+bool X86FrontEnd::disassembleProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::processProc(function, addr)) {
+    if (!DefaultFrontEnd::disassembleProc(function, addr)) {
         return false;
     }
 
     // This will get done twice; no harm
-    function->setEntryBB();
-
-
-    // Process away %rpt and %skip
-    processStringInst(function);
-
-    // Process code for side effects of overlapped registers
-    processOverlapped(function);
+    function->setEntryFragment();
 
     return true;
 }
 
 
-bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
+bool X86FrontEnd::liftProcImpl(UserProc *proc)
 {
-    if (dest == Address::INVALID) {
+    if (!DefaultFrontEnd::liftProcImpl(proc)) {
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddr(dest);
+    // Process away %rpt and %skip
+    processStringInst(proc);
+
+    IRFragment::RTLIterator rit;
+    StatementList::iterator sit;
+    ProcCFG *procCFG = proc->getCFG();
+
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setFragment(frag);
+        }
+    }
+
+    // Process code for side effects of overlapped registers
+    processOverlapped(proc);
+
+    for (IRFragment *frag : *procCFG) {
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            assert(stmt->getProc() == nullptr || stmt->getProc() == proc);
+            stmt->setProc(proc);
+            stmt->setFragment(frag);
+        }
+    }
+
+    return true;
+}
+
+
+bool X86FrontEnd::isHelperFunc(Address callDest, Address addr, RTLList &lrtl)
+{
+    if (callDest == Address::INVALID) {
+        return false;
+    }
+
+    const QString name = m_program->getSymbolNameByAddr(callDest);
 
     if (name.isEmpty()) {
         return false;
@@ -90,7 +121,7 @@ bool X86FrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
                         Const::get(32)));
         newRTL->append(a);
 
-        // Append this RTL to the list of RTLs for this BB
+        // Append this RTL to the list of RTLs for this fragment
         lrtl.push_back(std::move(newRTL));
 
         // Return true, so the caller knows not to create a HLCall
@@ -168,21 +199,21 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
     // them. This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA
     // followed by a push of eax and then the call to main.  Or a call to __libc_start_main
     Address dest;
+    MachineInstruction insn;
+    LiftedInstruction lifted;
 
     do {
-        DecodeResult inst;
-        decodeSingleInstruction(addr, inst);
-
-        if (inst.rtl == nullptr) {
+        lifted.reset();
+        if (!decodeInstruction(addr, insn, lifted)) {
             // Must have gotten out of step
             break;
         }
 
         std::shared_ptr<const CallStatement> call = nullptr;
 
-        if (!inst.rtl->empty()) {
-            call = (inst.rtl->back()->getKind() == StmtType::Call)
-                       ? inst.rtl->back()->as<CallStatement>()
+        if (!lifted.getFirstRTL()->empty()) {
+            call = (lifted.getFirstRTL()->back()->getKind() == StmtType::Call)
+                       ? lifted.getFirstRTL()->back()->as<CallStatement>()
                        : nullptr;
         }
 
@@ -192,19 +223,21 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                                       : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
-            const int oldInstLength = inst.numBytes;
+            const int oldInsnLength = insn.m_size;
 
-            if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
+            lifted.reset();
+            if (decodeInstruction(addr + oldInsnLength, insn, lifted) &&
+                (lifted.getFirstRTL()->size() == 2)) {
                 // using back instead of rtl[1], since size()==2
                 std::shared_ptr<const Assign> asgn = std::dynamic_pointer_cast<const Assign>(
-                    inst.rtl->back());
+                    lifted.getFirstRTL()->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_X86_EAX))) {
-                    decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
-
-                    if (!inst.rtl->empty() && inst.rtl->back()->isCall()) {
-                        std::shared_ptr<CallStatement> main = inst.rtl->back()->as<CallStatement>();
-
+                    lifted.reset();
+                    if (decodeInstruction(addr + oldInsnLength + insn.m_size, insn, lifted) &&
+                        !lifted.getFirstRTL()->empty() && lifted.getFirstRTL()->back()->isCall()) {
+                        std::shared_ptr<CallStatement>
+                            main = lifted.getFirstRTL()->back()->as<CallStatement>();
                         if (main->getFixedDest() != Address::INVALID) {
                             symbols->createSymbol(main->getFixedDest(), "WinMain");
                             gotMain = true;
@@ -226,10 +259,14 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
                 // Note: For GCC3, the RTL has the following pattern:
                 //   m[esp-4] = K
                 //   esp = esp-4
-                decodeSingleInstruction(prevAddr, inst);
-                if (inst.valid && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
-                    std::shared_ptr<Assign> a = inst.rtl->front()->as<Assign>(); // Get m[esp-4] = K
-                    SharedExp rhs             = a->getRight();
+
+                lifted.reset();
+                if (decodeInstruction(prevAddr, insn, lifted) &&
+                    lifted.getFirstRTL()->size() == 2 &&
+                    lifted.getFirstRTL()->front()->isAssign()) {
+                    std::shared_ptr<Assign>
+                        a         = lifted.getFirstRTL()->front()->as<Assign>(); // Get m[esp-4] = K
+                    SharedExp rhs = a->getRight();
                     if (rhs->isIntConst()) {
                         gotMain = true;
                         return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
@@ -240,7 +277,9 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const SharedConstStmt lastStmt = !inst.rtl->empty() ? inst.rtl->back() : nullptr;
+        const SharedConstStmt lastStmt = !lifted.getFirstRTL()->empty()
+                                             ? lifted.getFirstRTL()->back()
+                                             : nullptr;
 
         if (lastStmt && lastStmt->isGoto()) {
             // Example: Borland often starts with a branch
@@ -248,7 +287,7 @@ Address X86FrontEnd::findMainEntryPoint(bool &gotMain)
             addr = lastStmt->as<const GotoStatement>()->getFixedDest();
         }
         else {
-            addr += inst.numBytes;
+            addr += insn.m_size;
         }
     } while (--numInstructionsLeft > 0);
 
@@ -297,14 +336,14 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
         }
     }
 
-    std::set<BasicBlock *> bbs;
+    std::set<IRFragment *> frags;
 
     for (SharedStmt s : stmts) {
-        if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
+        if (isOverlappedRegsProcessed(s->getFragment())) { // never redo processing
             continue;
         }
 
-        bbs.insert(s->getBB());
+        frags.insert(s->getFragment());
 
         if (!s->isAssignment()) {
             continue;
@@ -322,17 +361,19 @@ void X86FrontEnd::processOverlapped(UserProc *proc)
         }
     }
 
-    // set a flag for every BB we've processed so we don't do them again
-    m_overlappedRegsProcessed.insert(bbs.begin(), bbs.end());
+    // set a flag for every fragment we've processed so we don't do them again
+    m_overlappedRegsProcessed.insert(frags.begin(), frags.end());
 }
 
 
-void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                   const RTLList &BB_rtls)
+void X86FrontEnd::extraProcessCall(IRFragment *callFrag)
 {
+    const std::shared_ptr<CallStatement> call = callFrag->getLastStmt()->as<CallStatement>();
     if (!call->getDestProc()) {
         return;
     }
+
+    const RTLList &fragRTLs = *callFrag->getRTLs();
 
     // looking for function pointers
     auto calledSig = call->getDestProc()->getSignature();
@@ -373,8 +414,8 @@ void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
         SharedExp found = nullptr;
         int pushcount   = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin();
-             itr != BB_rtls.rend() && !found; ++itr) {
+        for (RTLList::const_reverse_iterator itr = fragRTLs.rbegin();
+             itr != fragRTLs.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
@@ -478,8 +519,7 @@ void X86FrontEnd::extraProcessCall(const std::shared_ptr<CallStatement> &call,
         bool found    = false;
         int pushcount = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin();
-             itr != BB_rtls.rend() && !found; ++itr) {
+        for (auto itr = fragRTLs.rbegin(); itr != fragRTLs.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

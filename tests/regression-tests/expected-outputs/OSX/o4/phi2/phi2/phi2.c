@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
     int g29; 		// r29
     int g3; 		// r3
     char *g30; 		// r30
-    int g3_2; 		// r3{6}
-    int g3_5; 		// r3{8}
+    int g3_2; 		// r3{7}
+    int g3_5; 		// r3{9}
 
     g30 = *(argv + 4);
     if (argc <= 2) {

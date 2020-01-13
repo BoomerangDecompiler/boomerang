@@ -53,9 +53,9 @@ typedef std::shared_ptr<const Type> SharedConstType;
  *                      Exp (abstract)
  *                    ____/  |     \
  *                   /       |      \
- *                Unary     Const   Terminal
- *   TypedExp____/  |   \
- *    RefExp____/ Binary Location
+ *                _Unary    Const   Terminal
+ *      TypedExp_/  |   \
+ *       RefExp_/ Binary Location
  *                  |
  *               Ternary
  */
@@ -77,7 +77,7 @@ public:
 
     /// Type sensitive equality
     virtual bool operator==(const Exp &o) const = 0;
-    bool operator!=(const Exp &o) { return !(*this == o); }
+    bool operator!=(const Exp &o) const { return !(*this == o); }
 
     /// Type sensitive less than
     virtual bool operator<(const Exp &o) const = 0;
@@ -575,59 +575,6 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_X86_FSW RegNum(40)
 #define REG_X86_FSTP RegNum(41)
 #define REG_X86_FCW RegNum(42)
-
-
-// SPARC
-#define REG_SPARC_G0 RegNum(0)
-#define REG_SPARC_G1 RegNum(1)
-#define REG_SPARC_G2 RegNum(2)
-#define REG_SPARC_G3 RegNum(3)
-#define REG_SPARC_G4 RegNum(4)
-#define REG_SPARC_G5 RegNum(5)
-#define REG_SPARC_G6 RegNum(6)
-#define REG_SPARC_G7 RegNum(7)
-#define REG_SPARC_O0 RegNum(8)
-#define REG_SPARC_O1 RegNum(9)
-#define REG_SPARC_O2 RegNum(10)
-#define REG_SPARC_O3 RegNum(11)
-#define REG_SPARC_O4 RegNum(12)
-#define REG_SPARC_O5 RegNum(13)
-#define REG_SPARC_O6 RegNum(14)
-#define REG_SPARC_O7 RegNum(15)
-#define REG_SPARC_L0 RegNum(16)
-#define REG_SPARC_L1 RegNum(17)
-#define REG_SPARC_L2 RegNum(18)
-#define REG_SPARC_L3 RegNum(19)
-#define REG_SPARC_L4 RegNum(20)
-#define REG_SPARC_L5 RegNum(21)
-#define REG_SPARC_L6 RegNum(22)
-#define REG_SPARC_L7 RegNum(23)
-#define REG_SPARC_I0 RegNum(24)
-#define REG_SPARC_I1 RegNum(25)
-#define REG_SPARC_I2 RegNum(26)
-#define REG_SPARC_I3 RegNum(27)
-#define REG_SPARC_I4 RegNum(28)
-#define REG_SPARC_I5 RegNum(29)
-#define REG_SPARC_I6 RegNum(30)
-#define REG_SPARC_I7 RegNum(31)
-
-#define REG_SPARC_SP RegNum(14) // stack pointer
-#define REG_SPARC_FP RegNum(30) // frame pointer
-
-#define REG_SPARC_F0 RegNum(32)
-#define REG_SPARC_F31 RegNum(63)
-#define REG_SPARC_F0TO1 RegNum(64)
-#define REG_SPARC_F28TO31 RegNum(87)
-#define REG_SPARC_F0TO3 RegNum(80)
-
-#define REG_SPARC_Y RegNum(100)
-#define REG_SPARC_CWP RegNum(101)
-#define REG_SPARC_TBR RegNum(102)
-#define REG_SPARC_WIM RegNum(103)
-#define REG_SPARC_PSR RegNum(104)
-#define REG_SPARC_FSR RegNum(105)
-
-#define REG_SPARC_ICC RegNum(200)
 
 // PPC
 #define REG_PPC_SP RegNum(1)

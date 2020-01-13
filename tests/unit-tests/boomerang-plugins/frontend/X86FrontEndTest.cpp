@@ -43,29 +43,39 @@ void X86FrontEndTest::test1()
     QVERIFY(gotMain && addr != Address::INVALID);
 
     // Decode first instruction
-    DecodeResult inst;
-    fe->decodeSingleInstruction(addr, inst);
-    inst.rtl->print(strm);
+    MachineInstruction insn;
+    LiftedInstruction lifted;
 
-    expected = "0x08048328    0 *32* m[r28 - 4] := r29\n"
-               "              0 *32* r28 := r28 - 4\n";
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+        lifted.getFirstRTL()->print(strm);
 
-    addr += inst.numBytes;
-    fe->decodeSingleInstruction(addr, inst);
-    inst.rtl->print(strm);
-    expected = QString("0x08048329    0 *32* r29 := r28\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+        expected = "0x08048328    0 *32* m[r28 - 4] := r29\n"
+                   "              0 *32* r28 := r28 - 4\n";
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
 
-    addr = Address(0x804833b);
-    fe->decodeSingleInstruction(addr, inst);
-    inst.rtl->print(strm);
-    expected = QString("0x0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
-                       "              0 *32* r28 := r28 - 4\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        addr += insn.m_size;
+        QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048329    0 *32* r29 := r28\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
+
+    {
+        addr = Address(0x804833b);
+        QVERIFY(fe->decodeInstruction(addr, insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
+                           "              0 *32* r28 := r28 - 4\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+    }
 }
 
 
@@ -76,30 +86,39 @@ void X86FrontEndTest::test2()
     X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    DecodeResult inst;
+    MachineInstruction insn;
+    LiftedInstruction lifted;
+
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
 
-    fe->decodeSingleInstruction(Address(0x08048345), inst);
-    inst.rtl->print(strm);
-    expected = QString("0x08048345    0 *32* tmp1 := r28\n"
-                       "              0 *32* r28 := r28 + 16\n"
-                       "              0 *v* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x08048345), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048345    0 *32* tmp1 := r28\n"
+                           "              0 *32* r28 := r28 + 16\n"
+                           "              0 *v* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x08048348), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048348    0 *32* r24 := 0\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
 
-    fe->decodeSingleInstruction(Address(0x08048348), inst);
-    inst.rtl->print(strm);
-    expected = QString("0x08048348    0 *32* r24 := 0\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
-
-    fe->decodeSingleInstruction(Address(0x8048329), inst);
-    inst.rtl->print(strm);
-    expected = QString("0x08048329    0 *32* r29 := r28\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x8048329), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048329    0 *32* r29 := r28\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+    }
 }
 
 
@@ -110,29 +129,33 @@ void X86FrontEndTest::test3()
     X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    DecodeResult inst;
+    MachineInstruction insn;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
 
-    QVERIFY(fe->decodeSingleInstruction(Address(0x804834d), inst));
-    inst.rtl->print(strm);
-    expected = QString("0x0804834d    0 *32* r28 := r29\n"
-                       "              0 *32* r29 := m[r28]\n"
-                       "              0 *32* r28 := r28 + 4\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x804834d), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x0804834d    0 *32* r28 := r29\n"
+                           "              0 *32* r29 := m[r28]\n"
+                           "              0 *32* r28 := r28 + 4\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
 
-    QVERIFY(fe->decodeSingleInstruction(Address(0x804834e), inst));
-    inst.rtl->print(strm);
-    expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
-                       "              0 *32* r28 := r28 + 4\n"
-                       "              0 RET\n"
-                       "              Modifieds: <None>\n"
-                       "              Reaching definitions: <None>\n");
-
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x804834e), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x0804834e    0 *32* r28 := r28 + 4\n"
+                           "              0 RET\n"
+                           "              Modifieds: <None>\n"
+                           "              Reaching definitions: <None>\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+    }
 }
 
 
@@ -143,35 +166,45 @@ void X86FrontEndTest::testBranch()
     X86FrontEnd *fe = dynamic_cast<X86FrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    DecodeResult inst;
+    MachineInstruction insn;
+    LiftedInstruction lifted;
     QString      expected;
     QString      actual;
     OStream  strm(&actual);
 
     // jne
-    QVERIFY(fe->decodeSingleInstruction(Address(0x8048979), inst));
-    inst.rtl->print(strm);
-    expected = QString("0x08048979    0 BRANCH 0x08048988, condition "
-                       "not equals\n"
-                       "High level: %flags\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x8048979), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048979    0 BRANCH 0x08048988, condition "
+                           "not equals\n"
+                           "High level: %flags\n");
+
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
 
     // jg
-    QVERIFY(fe->decodeSingleInstruction(Address(0x80489c1), inst));
-    inst.rtl->print(strm);
-    expected = QString("0x080489c1    0 BRANCH 0x080489d5, condition signed greater\n"
-                       "High level: %flags\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x80489c1), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x080489c1    0 BRANCH 0x080489d5, condition signed greater\n"
+                           "High level: %flags\n");
+        QCOMPARE(actual, expected);
+        actual.clear();
+        lifted.reset();
+    }
 
     // jbe
-    QVERIFY(fe->decodeSingleInstruction(Address(0x8048a1b), inst));
-    inst.rtl->print(strm);
-    expected = QString("0x08048a1b    0 BRANCH 0x08048a2a, condition unsigned less or equals\n"
+    {
+        QVERIFY(fe->decodeInstruction(Address(0x8048a1b), insn, lifted));
+        lifted.getFirstRTL()->print(strm);
+        expected = QString("0x08048a1b    0 BRANCH 0x08048a2a, condition unsigned less or equals\n"
                        "High level: %flags\n");
-    QCOMPARE(actual, expected);
-    actual.clear();
+        QCOMPARE(actual, expected);
+        actual.clear();
+    }
 }
 
 

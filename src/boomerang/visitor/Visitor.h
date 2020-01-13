@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+
 /**
  * \file visitor.h  Provides documentation about expression and statement
  *                  visitors and modifiers.

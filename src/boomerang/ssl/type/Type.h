@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Types.h"
 
@@ -172,10 +173,7 @@ public:
     /// \returns the actual type of the named type with name \p name
     static SharedType getNamedType(const QString &name);
 
-    /**
-     * Clear the named type map. This is necessary when testing; the
-     * type for the first parameter to 'main' is different for SPARC and x86
-     */
+    /// Clear the named type map. Required for testing.
     static void clearNamedTypes();
 
     /// Create a union of this Type and other. Set \p changed to true if any change

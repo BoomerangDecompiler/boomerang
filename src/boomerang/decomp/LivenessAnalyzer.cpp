@@ -11,7 +11,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/IRFragment.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
@@ -27,7 +27,7 @@
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of
  * locations in \p ls.
  * Also check for type conflicts when using DFA type analysis
- * This is a helper function that is not directly declared in the BasicBlock class
+ * This is a helper function.
  */
 void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc *proc)
 {
@@ -61,57 +61,58 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
 }
 
 
-bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserProc *myProc)
+bool LivenessAnalyzer::calcLiveness(IRFragment *frag, ConnectionGraph &ig, UserProc *myProc)
 {
-    // Start with the liveness at the bottom of the BB
+    // Start with the liveness at the bottom of the fragment
     LocationSet liveLocs, phiLocs;
-    getLiveOut(bb, liveLocs, phiLocs);
+    getLiveOut(frag, liveLocs, phiLocs);
 
     // Do the livenesses that result from phi statements at successors first.
     // FIXME: document why this is necessary
     checkForOverlap(liveLocs, phiLocs, ig, myProc);
 
     const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
+    const bool debugLiveness       = myProc->getProg()->getProject()->getSettings()->debugLiveness;
 
-    if (bb->getRTLs()) {
-        // For all statements in this BB in reverse order
-        for (auto rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
-            for (auto sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                SharedStmt s = *sit;
-                LocationSet defs;
-                s->getDefinitions(defs, assumeABICompliance);
+    if (frag->getRTLs()) {
+        // For all statements in this fragment in reverse order
+        IRFragment::RTLRIterator rit;
+        StatementList::reverse_iterator sit;
 
-                // The definitions don't have refs yet
-                defs.addSubscript(s);
+        for (SharedStmt s = frag->getLastStmt(rit, sit); s; s = frag->getPrevStmt(rit, sit)) {
+            LocationSet defs;
+            s->getDefinitions(defs, assumeABICompliance);
 
-                // Definitions kill uses. Now we are moving to the "top" of statement s
-                liveLocs.makeDiff(defs);
+            // The definitions don't have refs yet
+            defs.addSubscript(s);
 
-                // Phi functions are a special case. The operands of phi functions are uses, but
-                // they don't interfere with each other (since they come via different BBs).
-                // However, we don't want to put these uses into liveLocs, because then the
-                // livenesses will flow to all predecessors. Only the appropriate livenesses from
-                // the appropriate phi parameter should flow to the predecessor. This is done in
-                // getLiveOut()
-                if (s->isPhi()) {
-                    continue;
-                }
+            // Definitions kill uses. Now we are moving to the "top" of statement s
+            liveLocs.makeDiff(defs);
 
-                // Check for livenesses that overlap
-                LocationSet uses;
-                s->addUsedLocs(uses);
-                checkForOverlap(liveLocs, uses, ig, myProc);
+            // Phi functions are a special case. The operands of phi functions are uses,
+            // but they don't interfere with each other (since they come via different fragments).
+            // However, we don't want to put these uses into liveLocs, because then the
+            // livenesses will flow to all predecessors. Only the appropriate livenesses from
+            // the appropriate phi parameter should flow to the predecessor.
+            // This is done in getLiveOut()
+            if (s->isPhi()) {
+                continue;
+            }
 
-                if (myProc->getProg()->getProject()->getSettings()->debugLiveness) {
-                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.toString());
-                }
+            // Check for livenesses that overlap
+            LocationSet uses;
+            s->addUsedLocs(uses);
+            checkForOverlap(liveLocs, uses, ig, myProc);
+
+            if (debugLiveness) {
+                LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.toString());
             }
         }
     }
 
     // liveIn is what we calculated last time
-    if (!(liveLocs == m_liveIn[bb])) {
-        m_liveIn[bb] = liveLocs;
+    if (!(liveLocs == m_liveIn[frag])) {
+        m_liveIn[frag] = liveLocs;
         return true; // A change
     }
 
@@ -120,22 +121,23 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserPro
 }
 
 
-void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, LocationSet &phiLocs)
+void LivenessAnalyzer::getLiveOut(IRFragment *frag, LocationSet &liveout, LocationSet &phiLocs)
 {
-    ProcCFG *cfg = static_cast<UserProc *>(bb->getFunction())->getCFG();
+    ProcCFG *cfg         = frag->getProc()->getCFG();
+    const bool debugLive = cfg->getProc()->getProg()->getProject()->getSettings()->debugLiveness;
 
     liveout.clear();
 
-    for (BasicBlock *currBB : bb->getSuccessors()) {
+    for (IRFragment *currFrag : frag->getSuccessors()) {
         // First add the non-phi liveness
-        liveout.makeUnion(m_liveIn[currBB]); // add successor liveIn to this liveout set.
+        liveout.makeUnion(m_liveIn[currFrag]); // add successor liveIn to this liveout set.
 
         // The first RTL will have the phi functions, if any
-        if (!currBB->getRTLs() || currBB->getRTLs()->empty()) {
+        if (!currFrag->getRTLs() || currFrag->getRTLs()->empty()) {
             continue;
         }
 
-        RTL *phiRTL = currBB->getRTLs()->front().get();
+        RTL *phiRTL = currFrag->getRTLs()->front().get();
         assert(phiRTL);
 
         for (SharedStmt st : *phiRTL) {
@@ -149,44 +151,44 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
             std::shared_ptr<PhiAssign> pa = st->as<PhiAssign>();
 
             for (const auto &v : pa->getDefs()) {
-                if (!cfg->hasBB(v.first)) {
-                    LOG_WARN("Someone removed the BB that defined the PHI! Need to update "
-                             "PhiAssign defs");
+                if (!cfg->hasFragment(v.first)) {
+                    LOG_WARN("Someone removed the fragment that defined the Phi! "
+                             "Need to update PhiAssign defs");
                 }
             }
 
-            // Get the jth operand to the phi function; it has a use from BB *this
+            // Get the jth operand to the phi function; it has a use from fragment *this
             // assert(j>=0);
-            SharedStmt def = pa->getStmtAt(bb);
+            SharedStmt def = pa->getStmtAt(frag);
 
             if (!def) {
-                std::set<BasicBlock *> tried{ bb };
-                std::deque<BasicBlock *> to_visit(bb->getPredecessors().begin(),
-                                                  bb->getPredecessors().end());
+                std::set<IRFragment *> tried{ frag };
+                std::deque<IRFragment *> to_visit(frag->getPredecessors().begin(),
+                                                  frag->getPredecessors().end());
 
                 // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is
                 // defined in parent of 'this'
-                //  BB1 1  - defines r20
-                //  BB2 33 - transfers control to BB3
-                //  BB3 40 - r10 = phi { 1 }
+                //  frag1 1  - defines r20
+                //  frag2 33 - transfers control to frag3
+                //  frag3 40 - r10 = phi { 1 }
                 while (!to_visit.empty()) {
-                    BasicBlock *pbb = to_visit.back();
+                    IRFragment *theFrag = to_visit.back();
 
-                    if (tried.find(pbb) != tried.end()) {
+                    if (tried.find(theFrag) != tried.end()) {
                         to_visit.pop_back();
                         continue;
                     }
 
-                    def = pa->getStmtAt(pbb);
+                    def = pa->getStmtAt(theFrag);
 
                     if (def) {
                         break;
                     }
 
-                    tried.insert(pbb);
+                    tried.insert(theFrag);
                     to_visit.pop_back();
 
-                    for (BasicBlock *pred : pbb->getPredecessors()) {
+                    for (IRFragment *pred : theFrag->getPredecessors()) {
                         if (tried.find(pred) != tried.end()) { // already tried
                             continue;
                         }
@@ -206,9 +208,9 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, Location
             liveout.insert(ref);
             phiLocs.insert(ref);
 
-            if (bb->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
-                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3", ref, st,
-                        bb->getLowAddr());
+            if (debugLive) {
+                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in fragment at %3", ref,
+                        st, frag->getLowAddr());
             }
         }
     }

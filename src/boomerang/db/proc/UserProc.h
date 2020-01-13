@@ -36,7 +36,14 @@ enum class ProcStatus : uint8_t
 };
 
 
-typedef std::set<UserProc *> ProcSet;
+class BOOMERANG_API lessUserProc
+{
+public:
+    bool operator()(const UserProc *lhs, const UserProc *rhs) const;
+};
+
+
+typedef std::set<UserProc *, lessUserProc> ProcSet;
 typedef std::list<UserProc *> ProcList;
 
 
@@ -124,15 +131,13 @@ public:
         return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end();
     }
 
-    /**
-     * Get the BB with the entry point address for this procedure.
-     * \note (not always the first BB)
-     * \returns   Pointer to the entry point BB, or nullptr if not found
-     */
-    BasicBlock *getEntryBB();
+    /// Get the fragment with the entry point address for this procedure.
+    /// \note (not always the first fragment)
+    /// \returns   Pointer to the entry point fragment, or nullptr if not found
+    IRFragment *getEntryFragment() const;
 
-    /// Set the entry BB for this procedure (constructor has the entry address)
-    void setEntryBB();
+    /// Set the entry fragment for this procedure (constructor has the entry address)
+    void setEntryFragment();
 
     /// Decompile this procedure, and all callees.
     void decompileRecursive();
@@ -153,8 +158,7 @@ public:
     std::shared_ptr<Assign> insertAssignAfter(SharedStmt s, SharedExp left, SharedExp right);
 
     /// Insert statement \p stmt after statement \p afterThis.
-    /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
-    /// So this is an inefficient linear search!
+    /// \returns true if successfully inserted.
     bool insertStatementAfter(const SharedStmt &afterThis, const SharedStmt &stmt);
 
     /// Searches for the phi assignment \p orig and if found, replaces the RHS with \p newRhs
@@ -192,12 +196,9 @@ public:
     /// Find the implicit definition for \a e and lookup a symbol
     QString lookupParam(SharedConstExp e) const;
 
-    /**
-     * Filter out locations not possible as parameters or arguments.
-     * \returns true if \p e should be filtered out (i.e. removed)
-     * \sa UserProc::filterReturns
-     */
-    bool filterParams(SharedExp e);
+    /// \returns true if \p e can be a parameter of a function.
+    /// \sa UserProc::filterReturns
+    bool canBeParam(const SharedExp &e);
 
 public:
     // return related
@@ -213,12 +214,8 @@ public:
 
     void removeRetStmt() { m_retStatement = nullptr; }
 
-    /**
-     * Filter out locations not possible as return locations.
-     * \returns true if \p e  should be filtered out (i.e. removed)
-     * \sa UserProc::filterParams
-     */
-    bool filterReturns(SharedExp e);
+    /// \returns true if \p e can be a return of a function.
+    bool canBeReturn(const SharedExp &e);
 
 public:
     // local variable related
@@ -395,7 +392,7 @@ private:
     ProcStatus m_status = ProcStatus::Undecoded;
 
     /// Number of the next local. Can't use locals.size() because some get deleted
-    int m_nextLocal = 0;
+    uint32 m_nextLocal = 0;
 
     std::unique_ptr<ProcCFG> m_cfg; ///< The control flow graph.
 

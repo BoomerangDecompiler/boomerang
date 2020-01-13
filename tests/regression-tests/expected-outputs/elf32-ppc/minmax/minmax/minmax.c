@@ -5,7 +5,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g3; 		// r3
-    int local0; 		// argc{4}
+    int local0; 		// argc{6}
 
     local0 = argc;
     if (argc >= 3) {

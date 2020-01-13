@@ -24,14 +24,6 @@
 #include <stdlib.h>
 
 
-int fib2(int x);
-
-int fib1(int x)
-{
-    return fib2(x);
-}
-
-
 int fib2 (int x)
 {
     if (x > 1) {
@@ -40,6 +32,12 @@ int fib2 (int x)
     else {
         return x;
     }
+}
+
+
+int fib1(int x)
+{
+    return fib2(x);
 }
 
 

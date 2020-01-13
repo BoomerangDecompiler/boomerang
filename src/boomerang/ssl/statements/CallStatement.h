@@ -104,13 +104,11 @@ public:
     SharedExp localiseExp(SharedExp e);
 
     /// Localise only components of e, i.e. xxx if e is m[xxx]
-    void localiseComp(SharedExp e); // Localise only xxx of m[xxx]
+    void localiseComp(SharedExp e);
 
     // Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
     // Set ch if changed (bypassed)
     SharedExp bypassRef(const std::shared_ptr<RefExp> &r, bool &changed);
-
-    void clearUseCollector() { m_useCol.clear(); }
 
     /// Find the reaching definition for expression e.
     /// Find the definition for the given expression, using the embedded Collector object
@@ -140,16 +138,12 @@ public:
 
     /**
      * Sets a bit that says that this call is effectively followed by a return.
-     * This happens e.g. on SPARC when there is a restore in the delay slot of the call
+     * This happens e.g. on x86 for tail call jumps (i.e jmp instead of call/ret)
      * \param b true if this is to be set; false to clear the bit
      */
     void setReturnAfterCall(bool b);
 
-    /**
-     * Tests a bit that says that this call is effectively followed by a return.
-     * This happens e.g. on SPARC when there is a restore in the delay slot of the call
-     * \returns True if this call is effectively followed by a return
-     */
+    /// \returns True if this call is effectively followed by a return
     bool isReturnAfterCall() const;
 
     /// Set the function that is called by this call statement.
@@ -187,10 +181,10 @@ public:
     UseCollector *getUseCollector() { return &m_useCol; }
 
     /// Add x to the UseCollector for this call
-    void useBeforeDefine(SharedExp x) { m_useCol.insert(x); }
+    void useBeforeDefine(SharedExp x) { m_useCol.collectUse(x); }
 
     /// Remove e from the UseCollector
-    void removeLiveness(SharedExp e) { m_useCol.remove(e); }
+    void removeLiveness(SharedExp e) { m_useCol.removeUse(e); }
 
     /// Remove all livenesses
     void removeAllLive() { m_useCol.clear(); }

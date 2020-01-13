@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "TargetQueue.h"
 
-#include "boomerang/db/proc/ProcCFG.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -19,7 +19,7 @@ TargetQueue::TargetQueue(bool traceDecoder)
 }
 
 
-void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
+void TargetQueue::pushAddress(LowLevelCFG *cfg, Address newAddr, BasicBlock *&newBB)
 {
     if (cfg->isStartOfBB(newAddr)) {
         // BB is already complete or the start address is already in the queue.
@@ -45,10 +45,14 @@ void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
 void TargetQueue::initial(Address addr)
 {
     m_targets.push(addr);
+
+    if (m_traceDecoder) {
+        LOG_MSG(">%1", addr);
+    }
 }
 
 
-Address TargetQueue::getNextAddress(const ProcCFG &cfg)
+Address TargetQueue::popAddress(const LowLevelCFG &cfg)
 {
     while (!m_targets.empty()) {
         Address address = m_targets.front();
@@ -58,9 +62,8 @@ Address TargetQueue::getNextAddress(const ProcCFG &cfg)
             LOG_MSG("<%1", address);
         }
 
-        // If no label there at all, or if there is a BB, it's incomplete, then we can parse this
-        // address next
-        if (!cfg.isStartOfBB(address) || cfg.isStartOfIncompleteBB(address)) {
+        // Don't return start adresses of already decoded Basic Blocks
+        if (!cfg.isStartOfCompleteBB(address)) {
             return address;
         }
     }

@@ -13,45 +13,17 @@
 #include "TestUtils.h"
 
 
+/**
+ * Tests for low-level BasicBlocks
+ */
 class BasicBlockTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void testConstruct();
-    void testAssign();
+    void testType(); // get/setType
+    void testAddress(); // getLow/HiAddr
+    void testIsComplete();
 
-    void testGetType();
-    void testExtent();
-    void testIncomplete();
-
-    // predecessors / successors
-    void testGetPredecessor();
-    void testGetSuccessor();
-    void testSetPredecessor();
-    void testSetSuccessor();
-    void testAddPredecessor();
-    void testAddSuccessor();
-    void testRemovePredecessor();
-    void testRemoveSuccessor();
-    void testIsPredecessor();
-    void testIsSuccessor();
-
-    // adding phis/implict assigns
-    void testAddPhi();
-    void testAddImplicit();
-    void testAddPhiOverImplict();
-    void testAddImplicitOverPhi();
-
-    void testRemoveRTL();
-    void testGetStmt();
-    void testGetCallDestProc();
-    void testGetCond();
-    void testSetCond();
-    void testGetDest();
-    void testHasStatement();
-    void testSimplify();
-    void testUpdateBBAddresses();
-    void testIsEmpty();
-    void testIsEmptyJump();
+    void testCompleteBB();
 };

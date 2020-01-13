@@ -33,54 +33,100 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/db/LowLevelCFG.h"
 
 
 void UserProcTest::testIsNoReturn()
 {
-    UserProc testProc(Address(0x1000), "test", nullptr);
-    QCOMPARE(testProc.isNoReturn(), false);
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Ret,  createInsns(Address(0x1000), 1));
+    BasicBlock *bb2 = prog.getCFG()->createBB(BBType::Call, createInsns(Address(0x2000), 1));
+    BasicBlock *bb3 = prog.getCFG()->createBB(BBType::Ret,  createInsns(Address(0x2001), 1));
 
-    testProc.setStatus(ProcStatus::Decoded);
-    QCOMPARE(testProc.isNoReturn(), true);
+    {
+        UserProc testProc(Address(0x1000), "test", nullptr);
+        QVERIFY(!testProc.isNoReturn());
+    }
 
-    std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { retStmt })));
-    BasicBlock *retBB = testProc.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
-    testProc.setEntryBB();
-    QCOMPARE(testProc.isNoReturn(), false);
+    {
+        UserProc testProc(Address(0x1000), "test", nullptr);
+        testProc.setStatus(ProcStatus::Decoded);
+        QVERIFY(testProc.isNoReturn());
+    }
 
-    UserProc noReturnProc(Address(0x2000), "noReturn", nullptr);
-    noReturnProc.setStatus(ProcStatus::Decoded);
+    {
+        UserProc testProc(Address(0x1000), "test", nullptr);
+        testProc.setStatus(ProcStatus::Decoded);
 
-    std::shared_ptr<CallStatement> call(new CallStatement);
-    call->setDestProc(&noReturnProc);
+        std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { retStmt })));
 
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x0800), { call })));
-    BasicBlock *callBB = testProc.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
+        testProc.getCFG()->createFragment(FragType::Ret, std::move(bbRTLs), bb1);
+        testProc.setEntryFragment();
 
-    testProc.getCFG()->addEdge(callBB, retBB);
-    testProc.setEntryAddress(Address(0x0800));
-    testProc.setEntryBB();
+        QVERIFY(!testProc.isNoReturn());
+    }
 
-    QCOMPARE(testProc.isNoReturn(), true);
+    {
+        UserProc noReturnProc(Address(0x8000), "noReturn", nullptr);
+        UserProc testProc(Address(0x2000), "test", nullptr);
+        testProc.setStatus(ProcStatus::Decoded);
+        noReturnProc.setStatus(ProcStatus::Decoded);
+
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { call })));
+        call->setDestProc(&noReturnProc);
+
+        IRFragment *entryFrag = testProc.getCFG()->createFragment(FragType::Call, std::move(bbRTLs), bb2);
+        IRFragment *exitFrag  = testProc.getCFG()->createFragment(FragType::Ret, createRTLs(Address(0x2001), 1, 1), bb3);
+
+        testProc.setEntryAddress(Address(0x2000));
+        testProc.getCFG()->addEdge(entryFrag, exitFrag);
+        testProc.getCFG()->setEntryAndExitFragment(entryFrag);
+        testProc.setEntryFragment();
+
+        QVERIFY(testProc.isNoReturn());
+    }
 }
 
 
 void UserProcTest::testRemoveStatement()
 {
-    UserProc proc(Address::INVALID, "test", nullptr);
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
-    std::shared_ptr<Assign> asgn(new Assign(VoidType::get(), Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+    {
+        UserProc proc(Address::INVALID, "test", nullptr);
+        QVERIFY(!proc.removeStatement(nullptr));
+    }
 
-    QVERIFY(!proc.removeStatement(nullptr));
-    QVERIFY(!proc.removeStatement(asgn));
+    {
+        // statement cannot be removed since it does not belong to a fragment
+        UserProc proc(Address::INVALID, "test", nullptr);
+        std::shared_ptr<Assign> asgn(new Assign(VoidType::get(),
+                                                Location::regOf(REG_X86_EAX),
+                                                Location::regOf(REG_X86_ECX)));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { asgn })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    QVERIFY(proc.removeStatement(asgn));
+        QVERIFY(!proc.removeStatement(asgn));
+    }
+
+    {
+        UserProc proc(Address::INVALID, "test", nullptr);
+
+        std::shared_ptr<Assign> asgn(new Assign(VoidType::get(),
+                                                Location::regOf(REG_X86_EAX),
+                                                Location::regOf(REG_X86_ECX)));
+
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { asgn })));
+
+        IRFragment *frag = proc.getCFG()->createFragment(FragType::Fall, std::move(bbRTLs), bb1);
+        asgn->setFragment(frag);
+
+        QVERIFY(proc.removeStatement(asgn));
+    }
 
     // todo: test that proven true cache is updated
 }
@@ -88,48 +134,128 @@ void UserProcTest::testRemoveStatement()
 
 void UserProcTest::testInsertAssignAfter()
 {
-    UserProc proc(Address(0x1000), "test", nullptr);
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    BasicBlock *entryBB = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    {
+        UserProc proc(Address(0x1000), "test", nullptr);
 
-    std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX));
-    QVERIFY(as != nullptr);
-    QVERIFY(as->getProc() == &proc);
-    QVERIFY(as->getBB() == entryBB);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+        IRFragment *entryFrag = proc.getCFG()->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 0), bb1);
+        proc.setEntryFragment();
 
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 1);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
+        std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX));
 
-    std::shared_ptr<Assign> as2 = proc.insertAssignAfter(as, Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_EDX));
-    QVERIFY(as2 != nullptr);
-    QVERIFY(as->getProc() == &proc);
-    QVERIFY(as->getBB() == entryBB);
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 2);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
-    QVERIFY(*std::next(proc.getEntryBB()->getRTLs()->front()->begin()) == as2);
+        QVERIFY(as != nullptr);
+        QVERIFY(as->getProc() == &proc);
+        QVERIFY(as->getFragment() == entryFrag);
+
+        QVERIFY(proc.getEntryFragment()->getRTLs()->front()->size() == 1);
+        QVERIFY(*proc.getEntryFragment()->getRTLs()->front()->begin() == as);
+
+        std::shared_ptr<Assign> as2 = proc.insertAssignAfter(as, Location::regOf(REG_X86_EBX), Location::regOf(REG_X86_EDX));
+        QVERIFY(as2 != nullptr);
+        QVERIFY(as->getProc() == &proc);
+        QVERIFY(as->getFragment() == entryFrag);
+        QVERIFY(proc.getEntryFragment()->getRTLs()->front()->size() == 2);
+        QVERIFY(*proc.getEntryFragment()->getRTLs()->front()->begin() == as);
+        QVERIFY(*std::next(proc.getEntryFragment()->getRTLs()->front()->begin()) == as2);
+    }
 }
 
 
 void UserProcTest::testInsertStatementAfter()
 {
-    UserProc proc(Address(0x1000), "test", nullptr);
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    BasicBlock *entryBB = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    {
+        UserProc proc(Address(0x1000), "test", nullptr);
 
-    std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX));
-    std::shared_ptr<Assign> as2(new Assign(VoidType::get(), Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_EBX)));
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+        IRFragment *entryFrag = proc.getCFG()->createFragment(FragType::Oneway, std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
 
-    proc.insertStatementAfter(as, as2);
-    QVERIFY(as2->getBB() == entryBB);
-    QVERIFY(proc.getEntryBB()->getRTLs()->front()->size() == 2);
-    QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
-    QVERIFY(*std::next(proc.getEntryBB()->getRTLs()->front()->begin()) == as2);
+        std::shared_ptr<Assign> as = proc.insertAssignAfter(nullptr, Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX));
+        std::shared_ptr<Assign> as2(new Assign(VoidType::get(), Location::regOf(REG_X86_EDX), Location::regOf(REG_X86_EBX)));
+
+        proc.insertStatementAfter(as, as2);
+        QVERIFY(as2->getFragment() == entryFrag);
+        QVERIFY(proc.getEntryFragment()->getRTLs()->front()->size() == 2);
+        QVERIFY(*proc.getEntryFragment()->getRTLs()->front()->begin() == as);
+        QVERIFY(*std::next(proc.getEntryFragment()->getRTLs()->front()->begin()) == as2);
+    }
+}
+
+
+void UserProcTest::testReplacePhiByAssign()
+{
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+
+    {
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+        proc.getCFG()->createFragment(FragType::Oneway, std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+
+        std::shared_ptr<Assign> as = proc.replacePhiByAssign(nullptr, Location::regOf(REG_X86_EAX));
+        QVERIFY(as == nullptr);
+    }
+
+    {
+        // replace phi
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { phi })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+
+        IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+        phi->setFragment(frag);
+
+        auto as = proc.replacePhiByAssign(phi, Location::regOf(REG_X86_EAX));
+        QVERIFY(as != nullptr);
+        QVERIFY(as->isAssign());
+        QVERIFY(*as->getLeft() == *Location::regOf(REG_X86_EAX));
+        QVERIFY(*as->getLeft() == *as->getRight());
+    }
+
+    {
+        // replace first phi, make sure that the assign gets moved after phis
+        UserProc proc(Address(0x1000), "test", nullptr);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+
+        std::shared_ptr<PhiAssign> phi1(new PhiAssign(Location::regOf(REG_X86_EAX)));
+        std::shared_ptr<PhiAssign> phi2(new PhiAssign(Location::regOf(REG_X86_EDX)));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address::ZERO, { phi1, phi2 })));
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+
+        IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
+        phi1->setFragment(frag);
+        phi2->setFragment(frag);
+
+        auto as = proc.replacePhiByAssign(phi1, Location::regOf(REG_X86_EAX));
+        QVERIFY(as != nullptr);
+        QVERIFY(as->isAssign());
+        QVERIFY(*as->getLeft() == *Location::regOf(REG_X86_EAX));
+        QVERIFY(*as->getLeft() == *as->getRight());
+
+        QVERIFY(frag->getFirstStmt());
+        QVERIFY(frag->getFirstStmt()->isPhi());
+        QVERIFY(*frag->getFirstStmt()->as<Assignment>()->getLeft() == *Location::regOf(REG_X86_EDX));
+
+        QVERIFY(frag->getLastStmt());
+        QVERIFY(frag->getLastStmt() != frag->getFirstStmt());
+        QVERIFY(frag->getLastStmt()->isAssign());
+        QCOMPARE(frag->getLastStmt()->toString(), "   0 *v* r24 := r24");
+    }
 }
 
 
@@ -200,27 +326,35 @@ void UserProcTest::testParamType()
 
 void UserProcTest::testLookupParam()
 {
-    UserProc proc(Address(0x1000), "test", nullptr);
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    {
+        UserProc proc(Address(0x1000), "test", nullptr);
 
-    SharedExp paramExp = Location::memOf(Binary::get(opPlus,
-        Location::regOf(REG_X86_ESP), Const::get(4)), &proc);
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
 
-    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(paramExp->clone());
-    proc.insertParameter(RefExp::get(paramExp->clone(), ias), VoidType::get());
-    proc.mapSymbolTo(RefExp::get(paramExp->clone(), ias), Location::param("param1", &proc));
-    proc.addParameterToSignature(paramExp->clone(), VoidType::get());
+        proc.getCFG()->createFragment(FragType::Oneway, std::move(bbRTLs), bb1);
+        proc.setEntryFragment();
 
-    QCOMPARE(proc.lookupParam(paramExp), QString("param1"));
-    QCOMPARE(proc.lookupParam(Location::regOf(REG_X86_ECX)), QString(""));
+        SharedExp paramExp = Location::memOf(Binary::get(opPlus,
+                                                         Location::regOf(REG_X86_ESP),
+                                                         Const::get(4)),
+                                             &proc);
+
+        SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(paramExp->clone());
+        proc.insertParameter(RefExp::get(paramExp->clone(), ias), VoidType::get());
+        proc.mapSymbolTo(RefExp::get(paramExp->clone(), ias), Location::param("param1", &proc));
+        proc.addParameterToSignature(paramExp->clone(), VoidType::get());
+
+        QCOMPARE(proc.lookupParam(paramExp), QString("param1"));
+        QCOMPARE(proc.lookupParam(Location::regOf(REG_X86_ECX)), QString(""));
+    }
 }
 
 
-void UserProcTest::testFilterParams()
+void UserProcTest::testCanBeParam()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     Prog *prog = m_project.getProg();
@@ -228,17 +362,17 @@ void UserProcTest::testFilterParams()
     UserProc *mainProc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x08048328)));
     QVERIFY(mainProc != nullptr && !mainProc->isLib());
 
-    QVERIFY(mainProc->filterParams(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterParams(Location::tempOf(Terminal::get(opTrue))));
-    QVERIFY(mainProc->filterParams(Location::regOf(REG_X86_ESP)));
-    QVERIFY(!mainProc->filterParams(Location::regOf(REG_X86_EDX)));
-    QVERIFY(mainProc->filterParams(Location::memOf(Const::get(0x08048328))));
-    QVERIFY(mainProc->filterParams(Location::memOf(RefExp::get(Location::regOf(REG_X86_ESP), nullptr))));
-    QVERIFY(!mainProc->filterParams(Location::memOf(Binary::get(opPlus,
-                                                                Location::regOf(REG_X86_ESP),
-                                                                Const::get(4)))));
-    QVERIFY(mainProc->filterParams(Location::global("test", mainProc)));
-    QVERIFY(!mainProc->filterParams(Const::get(5)));
+    QVERIFY(!mainProc->canBeParam(Terminal::get(opPC)));
+    QVERIFY(!mainProc->canBeParam(Location::tempOf(Terminal::get(opTrue))));
+    QVERIFY(!mainProc->canBeParam(Location::regOf(REG_X86_ESP)));
+    QVERIFY(mainProc->canBeParam(Location::regOf(REG_X86_EDX)));
+    QVERIFY(!mainProc->canBeParam(Location::memOf(Const::get(0x08048328))));
+    QVERIFY(!mainProc->canBeParam(Location::memOf(RefExp::get(Location::regOf(REG_X86_ESP), nullptr))));
+    QVERIFY(mainProc->canBeParam(Location::memOf(Binary::get(opPlus,
+                                                             Location::regOf(REG_X86_ESP),
+                                                             Const::get(4)))));
+    QVERIFY(!mainProc->canBeParam(Location::global("test", mainProc)));
+    QVERIFY(mainProc->canBeParam(Const::get(5)));
 }
 
 
@@ -255,7 +389,7 @@ void UserProcTest::testRetStmt()
 }
 
 
-void UserProcTest::testFilterReturns()
+void UserProcTest::testCanBeReturn()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
     QVERIFY(m_project.decodeBinaryFile());
@@ -269,13 +403,13 @@ void UserProcTest::testFilterReturns()
     // test cached preservation TODO
     QVERIFY(mainProc->getRetStmt());
     QVERIFY(mainProc->preservesExp(Location::regOf(REG_X86_EBP)));
-    QVERIFY(mainProc->filterReturns(Location::regOf(REG_X86_EBP)));
+    QVERIFY(!mainProc->canBeReturn(Location::regOf(REG_X86_EBP)));
 
-    QVERIFY(mainProc->filterReturns(Terminal::get(opPC)));
-    QVERIFY(mainProc->filterReturns(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
-    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_X86_ESP)));
-    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_X86_EDX)));
-    QVERIFY(mainProc->filterReturns(Location::memOf(Const::get(0x08048328))));
+    QVERIFY(!mainProc->canBeReturn(Terminal::get(opPC)));
+    QVERIFY(!mainProc->canBeReturn(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(mainProc->canBeReturn(Location::regOf(REG_X86_ESP)));
+    QVERIFY(mainProc->canBeReturn(Location::regOf(REG_X86_EDX)));
+    QVERIFY(!mainProc->canBeReturn(Location::memOf(Const::get(0x08048328))));
 }
 
 
@@ -319,35 +453,42 @@ void UserProcTest::testEnsureExpIsMappedToLocal()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_X86));
 
+    BasicBlock *bb1 = m_project.getProg()->getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+
     UserProc proc(Address(0x1000), "test", m_project.getProg()->getRootModule());
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    proc.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 0), bb1);
+    proc.setEntryFragment();
 
-    // do not create local if nullptr def
-    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), nullptr));
-    QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString(""));
+    {
+        // do not create local if nullptr def
+        proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), nullptr));
+        QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString(""));
+    }
 
-    // local does not exist
-    SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
-    QVERIFY(ias1 != nullptr);
-    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), ias1));
-    QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString("eax"));
+    {
+        // local does not exist
+        SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
+        QVERIFY(ias1 != nullptr);
 
-    // local already exists
-    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), ias1));
-    QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString("eax"));
+        proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), ias1));
+        QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString("eax"));
 
+        // local already exists
+        proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_X86_EAX), ias1));
+        QCOMPARE(proc.findLocal(Location::regOf(REG_X86_EAX), VoidType::get()), QString("eax"));
+    }
 
-    SharedExp memOf = Location::memOf(Binary::get(opPlus,
-                                      Location::regOf(REG_X86_ESP),
-                                      Const::get(4)));
-    SharedStmt ias2 = proc.getCFG()->findOrCreateImplicitAssign(memOf);
-    QVERIFY(ias2 != nullptr);
-    proc.ensureExpIsMappedToLocal(RefExp::get(memOf->clone(), ias2));
-    QCOMPARE(proc.findLocal(memOf->clone(), VoidType::get()), QString("local0"));
+    {
+        SharedExp memOf = Location::memOf(Binary::get(opPlus,
+                                        Location::regOf(REG_X86_ESP),
+                                        Const::get(4)));
+
+        SharedStmt ias2 = proc.getCFG()->findOrCreateImplicitAssign(memOf);
+        QVERIFY(ias2 != nullptr);
+        proc.ensureExpIsMappedToLocal(RefExp::get(memOf->clone(), ias2));
+        QCOMPARE(proc.findLocal(memOf->clone(), VoidType::get()), QString("local0"));
+    }
 }
 
 
@@ -511,12 +652,12 @@ void UserProcTest::testLookupSym()
 
 void UserProcTest::testLookupSymFromRef()
 {
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
     UserProc proc(Address(0x1000), "test", nullptr);
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    proc.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 0), bb1);
+    proc.setEntryFragment();
 
     SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
     QVERIFY(ias1 != nullptr);
@@ -536,12 +677,12 @@ void UserProcTest::testLookupSymFromRef()
 
 void UserProcTest::testLookupSymFromRefAny()
 {
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
     UserProc proc(Address(0x1000), "test", nullptr);
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    proc.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 0), bb1);
+    proc.setEntryFragment();
 
     SharedStmt ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
     QVERIFY(ias1 != nullptr);
@@ -561,6 +702,14 @@ void UserProcTest::testLookupSymFromRefAny()
 
 void UserProcTest::testMarkAsNonChildless()
 {
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Call, createInsns(Address(0x1000), 1));
+    BasicBlock *bb2 = prog.getCFG()->createBB(BBType::Ret,  createInsns(Address(0x1800), 1));
+    BasicBlock *bb3 = prog.getCFG()->createBB(BBType::Call, createInsns(Address(0x2000), 1));
+    BasicBlock *bb4 = prog.getCFG()->createBB(BBType::Call, createInsns(Address(0x2400), 1));
+    BasicBlock *bb5 = prog.getCFG()->createBB(BBType::Ret,  createInsns(Address(0x2800), 1));
+    BasicBlock *bb6 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x3000), 1));
+
     // call graph:
     // proc1 <--> proc2 --> proc3
 
@@ -581,29 +730,36 @@ void UserProcTest::testMarkAsNonChildless()
     std::shared_ptr<ReturnStatement> ret2(new ReturnStatement);
     std::shared_ptr<ReturnStatement> ret3(new ReturnStatement);
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call1 })));
-    proc1.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1800), { ret1 })));
-    proc1.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
-    proc1.setEntryBB();
+    {
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call1 })));
+        proc1.getCFG()->createFragment(FragType::Call, std::move(bbRTLs), bb1);
 
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { call3 })));
-    proc2.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2400), { call2 })));
-    proc2.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2800), { ret2 })));
-    proc2.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
-    proc2.setEntryBB();
+        bbRTLs.reset(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1800), { ret1 })));
+        proc1.getCFG()->createFragment(FragType::Ret, std::move(bbRTLs), bb2);
+        proc1.setEntryFragment();
+    }
 
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x3000), { ret3 })));
-    proc3.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc3.setEntryBB();
+    {
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { call3 })));
+        proc2.getCFG()->createFragment(FragType::Call, std::move(bbRTLs), bb3);
+        bbRTLs.reset(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2400), { call2 })));
+        proc2.getCFG()->createFragment(FragType::Call, std::move(bbRTLs), bb4);
+        bbRTLs.reset(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2800), { ret2 })));
+        proc2.getCFG()->createFragment(FragType::Ret, std::move(bbRTLs), bb5);
+        proc2.setEntryFragment();
+    }
+
+    {
+        std::unique_ptr<RTLList> bbRTLs(new RTLList);
+        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x3000), { ret3 })));
+        proc3.getCFG()->createFragment(FragType::Ret, std::move(bbRTLs), bb6);
+        proc3.setEntryFragment();
+    }
 
     proc1.setRetStmt(ret1, Address(0x1800));
     proc2.setRetStmt(ret2, Address(0x2800));
@@ -696,6 +852,9 @@ void UserProcTest::testFindFirstSymbol()
 
 void UserProcTest::testSearchAndReplace()
 {
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+
     UserProc proc(Address(0x1000), "test", nullptr);
 
     SharedExp eax = Location::regOf(REG_X86_EAX);
@@ -705,7 +864,8 @@ void UserProcTest::testSearchAndReplace()
     std::shared_ptr<Assign> as(new Assign(VoidType::get(), eax, edx));
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { as })));
-    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    IRFragment *frag = proc.getCFG()->createFragment(FragType::Fall, std::move(bbRTLs), bb1);
+    as->setFragment(frag);
 
     QVERIFY(proc.searchAndReplace(*eax, eax) == true);
     QCOMPARE(as->getLeft()->toString(), eax->toString());
@@ -724,26 +884,27 @@ void UserProcTest::testSearchAndReplace()
 
 void UserProcTest::testAllPhisHaveDefs()
 {
+    Prog prog("test", nullptr);
+    BasicBlock *bb1 = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+
     UserProc proc(Address(0x1000), "test", nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
-    BasicBlock *bb = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
-    proc.setEntryBB();
+    IRFragment *frag = proc.getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 0), bb1);
+    proc.setEntryFragment();
 
-    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EAX));
+    SharedStmt ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_X86_EDX));
     QVERIFY(ias != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    std::shared_ptr<PhiAssign> phi1 = bb->addPhi(Location::regOf(REG_X86_EDX));
+    std::shared_ptr<PhiAssign> phi1 = frag->addPhi(Location::regOf(REG_X86_EAX));
     QVERIFY(phi1 != nullptr);
     QVERIFY(proc.allPhisHaveDefs());
 
-    phi1->putAt(bb, nullptr, Location::regOf(REG_X86_EAX));
+    phi1->putAt(frag, nullptr, Location::regOf(REG_X86_EAX));
     QVERIFY(!proc.allPhisHaveDefs());
 
-    phi1->putAt(bb, ias, Location::regOf(REG_X86_EAX));
+    phi1->putAt(frag, ias, Location::regOf(REG_X86_EAX));
     QVERIFY(proc.allPhisHaveDefs());
 }
 

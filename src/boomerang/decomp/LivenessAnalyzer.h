@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 
-class BasicBlock;
+class IRFragment;
 class ConnectionGraph;
 class UserProc;
 
@@ -26,14 +26,14 @@ public:
     LivenessAnalyzer() = default;
 
     // Liveness
-    bool calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserProc *proc);
+    bool calcLiveness(IRFragment *frag, ConnectionGraph &ig, UserProc *proc);
 
     /// Locations that are live at the end of this BB are the union of the locations that are live
     /// at the start of its successors. \p live gets all the livenesses,
     /// and phiLocs gets a subset of these, which are due to phi statements at the top of successors
-    void getLiveOut(BasicBlock *bb, LocationSet &live, LocationSet &phiLocs);
+    void getLiveOut(IRFragment *frag, LocationSet &live, LocationSet &phiLocs);
 
 private:
-    ///< Set of locations live at BB start
-    std::unordered_map<BasicBlock *, LocationSet> m_liveIn;
+    ///< Set of locations live at fragment start
+    std::unordered_map<IRFragment *, LocationSet> m_liveIn;
 };

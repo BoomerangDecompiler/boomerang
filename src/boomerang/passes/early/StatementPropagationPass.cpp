@@ -59,7 +59,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
         }
     }
 
-    PassManager::get()->executePass(PassID::BBSimplify, proc);
+    PassManager::get()->executePass(PassID::FragSimplify, proc);
     propagateToCollector(&proc->getUseCollector());
 
     return change;
@@ -101,10 +101,8 @@ void StatementPropagationPass::propagateToCollector(UseCollector *collector)
             auto memOfRes = Location::memOf(res)->simplify();
 
             // First check to see if memOfRes is already in the set
-            if (collector->exists(memOfRes)) {
-                // Take care not to use an iterator to the newly erased element.
-                /* it = */
-                collector->remove(it++); // Already exists; just remove the old one
+            if (collector->hasUse(memOfRes)) {
+                it = collector->removeUse(it); // Already exists; just remove the old one
                 continue;
             }
             else {

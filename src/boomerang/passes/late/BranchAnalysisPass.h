@@ -12,7 +12,7 @@
 
 #include "boomerang/passes/Pass.h"
 
-class BasicBlock;
+class IRFragment;
 
 
 /// Simplifies branch condions.
@@ -43,6 +43,6 @@ private:
     /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches(UserProc *proc);
 
-    /// \returns true if the BB only contains a branch statement
-    bool isOnlyBranch(BasicBlock *bb) const;
+    /// \returns true if the fragment only contains a branch statement
+    bool isOnlyBranch(IRFragment *frag) const;
 };

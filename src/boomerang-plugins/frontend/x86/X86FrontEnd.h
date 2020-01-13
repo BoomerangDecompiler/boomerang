@@ -16,6 +16,9 @@
 #include <unordered_set>
 
 
+class IRFragment;
+
+
 /**
  * Class X86FrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
@@ -37,17 +40,19 @@ public:
 public:
     bool initialize(Project *project) override;
 
-    /// \copydoc IFrontEnd::processProc
-    bool processProc(UserProc *proc, Address addr) override;
+    /// \copydoc IFrontEnd::disassembleProc
+    bool disassembleProc(UserProc *proc, Address addr) override;
 
-    /// \copydoc IFrontEnd::getMainEntryPoint
+    /// \copydoc IFrontEnd::findMainEntryPoint
     Address findMainEntryPoint(bool &gotMain) override;
 
 protected:
+    /// \copydoc DefaultFrontEnd::liftProcImpl
+    bool liftProcImpl(UserProc *proc) override;
+
     /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(const std::shared_ptr<CallStatement> &call,
-                                  const RTLList &BB_rtls) override;
+    virtual void extraProcessCall(IRFragment *callFrag) override;
 
 private:
     /**
@@ -67,23 +72,23 @@ private:
      *
      * \param dest the destination of this call
      * \param addr the address of this call instruction
-     * \param lrtl a list of RTL pointers for this BB
+     * \param lrtl a list of RTL pointers for this fragment
      *
      * \returns true if a helper function is converted; false otherwise
      */
     bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
-    bool isOverlappedRegsProcessed(const BasicBlock *bb) const
+    bool isOverlappedRegsProcessed(const IRFragment *frag) const
     {
-        return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
+        return m_overlappedRegsProcessed.find(frag) != m_overlappedRegsProcessed.end();
     }
 
-    bool isFloatProcessed(const BasicBlock *bb) const
+    bool isFloatProcessed(const IRFragment *frag) const
     {
-        return m_floatProcessed.find(bb) != m_floatProcessed.end();
+        return m_floatProcessed.find(frag) != m_floatProcessed.end();
     }
 
 private:
-    std::unordered_set<const BasicBlock *> m_overlappedRegsProcessed;
-    std::unordered_set<const BasicBlock *> m_floatProcessed;
+    std::unordered_set<const IRFragment *> m_overlappedRegsProcessed;
+    std::unordered_set<const IRFragment *> m_floatProcessed;
 };

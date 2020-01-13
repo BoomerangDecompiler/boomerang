@@ -23,17 +23,3 @@ BOOMERANG_ADD_TEST(
         boomerang-ElfLoader
         boomerang-X86FrontEnd
 )
-
-BOOMERANG_ADD_TEST(
-    NAME SPARCFrontEndTest
-    SOURCES SPARCFrontEndTest.h SPARCFrontEndTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        ${CMAKE_DL_LIBS}
-        ${CMAKE_THREAD_LIBS_INIT}
-        boomerang-SPARCFrontEnd
-    DEPENDENCIES
-        boomerang-ElfLoader
-        boomerang-SPARCFrontEnd
-)

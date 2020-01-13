@@ -19,7 +19,7 @@
 class UsedLocsVisitor : public StmtExpVisitor
 {
 public:
-    UsedLocsVisitor(ExpVisitor *v, bool countCol);
+    UsedLocsVisitor(ExpVisitor *v, bool countCols);
     virtual ~UsedLocsVisitor() = default;
 
 public:
@@ -49,5 +49,5 @@ public:
     bool visit(const std::shared_ptr<ReturnStatement> &stmt, bool &visitChildren) override;
 
 private:
-    bool m_countCol; ///< True to count uses in collectors
+    bool m_countCols; ///< True to count uses in collectors
 };

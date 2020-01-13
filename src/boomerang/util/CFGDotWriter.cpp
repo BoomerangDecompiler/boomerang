@@ -12,6 +12,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/ProcCFG.h"
@@ -29,7 +30,7 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
     }
 
     OStream of(&tgt);
-    of << "digraph ProcCFG {\n";
+    of << "digraph ProgCFG {\n";
 
     for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
@@ -38,16 +39,26 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
             }
 
             UserProc *p = static_cast<UserProc *>(func);
-
             if (!p->isDecoded()) {
                 continue;
             }
 
             // Subgraph for the proc name
-            of << "\nsubgraph cluster_" << p->getName() << " {\n"
-               << "       color=gray;\n    label=" << p->getName() << ";\n";
+            of << "  subgraph cluster_" << p->getName() << " {\n";
+            of << "    color=gray;\n";
+            of << "    label=" << p->getName() << ";\n";
+            of << "\n";
+
+            of << "    subgraph cluster_llcfg {\n";
+            writeCFG(p, of);
+            of << "    }\n";
+            of << "\n";
+
             // Generate dotty CFG for this proc
+            of << "    subgraph cluster_hlcfg {\n";
             writeCFG(p->getCFG(), of);
+            of << "    }\n";
+            of << "  }\n";
         }
     }
 
@@ -75,93 +86,94 @@ void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 }
 
 
+void CFGDotWriter::writeCFG(const UserProc *proc, OStream &of)
+{
+    const LowLevelCFG *cfg = proc->getProg()->getCFG();
+
+    for (const BasicBlock *bb : *cfg) {
+        if (bb && bb->getProc() == proc) {
+            of << "      bb" << bb->getLowAddr() << "[shape=rectangle, label=\"";
+
+            for (const MachineInstruction &insn : bb->getInsns()) {
+                of << insn.m_addr << "  " << insn.m_mnem.data() << " " << insn.m_opstr.data()
+                   << "\\l";
+            }
+
+            of << "\"];\n";
+        }
+    }
+
+    of << "\n";
+
+    // edges
+    for (const BasicBlock *srcBB : *cfg) {
+        if (srcBB && srcBB->getProc() == proc) {
+            for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
+                const BasicBlock *dstBB = srcBB->getSuccessor(j);
+
+                of << "      bb" << srcBB->getLowAddr() << " -> bb" << dstBB->getLowAddr();
+
+                if (srcBB->isType(BBType::Twoway)) {
+                    if (j == 0) {
+                        of << " [color=\"green\"];\n"; // cond == true
+                    }
+                    else {
+                        of << " [color=\"red\"];\n"; // cond == false
+                    }
+                }
+                else {
+                    of << " [color=\"black\"];\n"; // normal connection
+                }
+            }
+        }
+    }
+
+    of << "\n";
+}
+
+
 void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
-    Address returnAddress = Address::INVALID;
+    if (cfg->getNumFragments() > 0) {
+        cfg->getProc()->numberStatements();
+    }
 
     // The nodes
-    for (BasicBlock *bb : *cfg) {
-        of << "       "
-           << "bb" << bb->getLowAddr() << " ["
-           << "label=\"" << bb->getLowAddr() << " ";
+    for (IRFragment *frag : *cfg) {
+        of << "      frag" << frag->getLowAddr() << "[shape=rectangle, label=\"";
 
-        switch (bb->getType()) {
-        case BBType::Oneway: of << "oneway"; break;
+        IRFragment::RTLIterator rit;
+        StatementList::iterator sit;
 
-        case BBType::Twoway:
-            if (bb->getCond()) {
-                of << "\\n";
-                bb->getCond()->print(of);
-                of << "\" shape=diamond];\n";
-                continue;
-            }
-            else {
-                of << "twoway";
-            }
-            break;
-
-        case BBType::Nway: {
-            of << "nway";
-            SharedExp de = bb->getDest();
-
-            if (de) {
-                of << "\\n";
-                of << de;
-            }
-
-            of << "\" shape=trapezium];\n";
-            continue;
-        }
-
-        case BBType::Call: {
-            of << "call";
-            Function *dest = bb->getCallDestProc();
-
-            if (dest) {
-                of << "\\n" << dest->getName();
-            }
-
-            break;
-        }
-
-        case BBType::Ret:
-            of << "ret\" shape=triangle];\n";
-            // Remember the (unique) return BB's address
-            returnAddress = bb->getLowAddr();
-            continue;
-
-        case BBType::Fall: of << "fall"; break;
-        case BBType::CompJump: of << "compjump"; break;
-        case BBType::CompCall: of << "compcall"; break;
-        case BBType::Invalid: of << "invalid"; break;
+        for (SharedStmt stmt = frag->getFirstStmt(rit, sit); stmt;
+             stmt            = frag->getNextStmt(rit, sit)) {
+            QString str;
+            OStream temp(&str);
+            stmt->print(temp);
+            str.replace('\n', "\\l");
+            str.replace('%', "\\%");
+            str.replace('\"', "\\\"");
+            of << str << "\\l";
         }
 
         of << "\"];\n";
     }
 
-    // Force the one return node to be at the bottom (max rank).
-    // Otherwise, with all its in-edges, it will end up in the middle
-    if (!returnAddress.isZero()) {
-        of << "{rank=max; bb" << returnAddress << "}\n";
-    }
-
-    // Close the subgraph
-    of << "}\n";
+    of << "\n";
 
     // Now the edges
-    for (BasicBlock *srcBB : *cfg) {
-        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
-            BasicBlock *dstBB = srcBB->getSuccessor(j);
+    for (IRFragment *srcFrag : *cfg) {
+        for (int j = 0; j < srcFrag->getNumSuccessors(); j++) {
+            IRFragment *dstFrag = srcFrag->getSuccessor(j);
 
-            of << "       bb" << srcBB->getLowAddr() << " -> ";
-            of << "bb" << dstBB->getLowAddr();
+            of << "      frag" << srcFrag->getLowAddr() << " -> frag" << dstFrag->getLowAddr();
 
-            if (srcBB->getType() == BBType::Twoway) {
+            if (srcFrag->isType(FragType::Twoway)) {
                 if (j == 0) {
-                    of << " [color=\"green\"]"; // cond == true
+                    of << " [color=\"green\"];\n"; // cond == true
                 }
                 else {
-                    of << " [color=\"red\"]"; // cond == false
+                    of << " [color=\"red\"];\n"; // cond == false
                 }
             }
             else {

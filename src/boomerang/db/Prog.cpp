@@ -13,6 +13,7 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/DebugInfo.h"
 #include "boomerang/db/Global.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
@@ -54,6 +55,7 @@ Prog::Prog(const QString &name, Project *project)
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
+    , m_cfg(new LowLevelCFG)
 {
     m_rootModule = getOrInsertModule(getName());
     assert(m_rootModule != nullptr);
@@ -361,7 +363,6 @@ void Prog::readDefaultLibraryCatalogues()
     QString libCatalogName;
     switch (getMachine()) {
     case Machine::X86: libCatalogName = "signatures/x86.hs"; break;
-    case Machine::SPARC: libCatalogName = "signatures/sparc.hs"; break;
     case Machine::PPC: libCatalogName = "signatures/ppc.hs"; break;
     case Machine::ST20: libCatalogName = "signatures/st20.hs"; break;
     default: libCatalogName = ""; break;
@@ -600,7 +601,10 @@ bool Prog::decodeEntryPoint(Address entryAddr)
             return false;
         }
 
-        m_fe->decodeRecursive(entryAddr);
+        if (!m_fe->disassembleFunctionAtAddr(entryAddr)) {
+            LOG_WARN("Cannot disassemble function at entry address %1", entryAddr);
+            return false;
+        }
     }
 
     if (!func) {
@@ -632,7 +636,7 @@ bool Prog::decodeFragment(UserProc *proc, Address a)
 {
     if ((a >= m_binaryFile->getImage()->getLimitTextLow()) &&
         (a < m_binaryFile->getImage()->getLimitTextHigh())) {
-        return m_fe->decodeFragment(proc, a);
+        return m_fe->disassembleProc(proc, a);
     }
     else {
         LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
@@ -647,7 +651,7 @@ bool Prog::reDecode(UserProc *proc)
         return false;
     }
 
-    return m_fe->processProc(proc, proc->getEntryAddress());
+    return m_fe->disassembleProc(proc, proc->getEntryAddress());
 }
 
 

@@ -24,6 +24,8 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 
+#include <cstring>
+
 
 #define X86_MAX_INSTRUCTION_LENGTH (15)
 
@@ -132,6 +134,11 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 CapstoneX86Decoder::CapstoneX86Decoder(Project *project)
     : CapstoneDecoder(project, cs::CS_ARCH_X86, cs::CS_MODE_32, "ssl/x86.ssl")
 {
+    // check that all required registers are present
+    if (m_dict.getRegDB()->getRegNameByNum(REG_X86_ESP).isEmpty()) {
+        throw std::runtime_error("Required register #28 (%esp) not present");
+    }
+
     m_insn = cs::cs_malloc(m_handle);
 }
 
@@ -160,29 +167,74 @@ bool CapstoneX86Decoder::initialize(Project *project)
 }
 
 
-bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
+bool CapstoneX86Decoder::disassembleInstruction(Address pc, ptrdiff_t delta,
+                                                MachineInstruction &result)
 {
     const Byte *instructionData = reinterpret_cast<const Byte *>((HostAddress(delta) + pc).value());
     size_t size                 = X86_MAX_INSTRUCTION_LENGTH;
     uint64 addr                 = pc.value();
 
-    result.valid = cs_disasm_iter(m_handle, &instructionData, &size, &addr, m_insn);
+    const bool valid = cs_disasm_iter(m_handle, &instructionData, &size, &addr, m_insn);
 
-    if (!result.valid) {
+    if (!valid) {
         return false;
     }
-    else if (m_insn->id == cs::X86_INS_BSF || m_insn->id == cs::X86_INS_BSR) {
+
+    result.m_addr = Address(m_insn->address);
+    result.m_id   = m_insn->id;
+    result.m_size = m_insn->size;
+
+    std::strncpy(result.m_mnem.data(), m_insn->mnemonic, MNEM_SIZE);
+    std::strncpy(result.m_opstr.data(), m_insn->op_str, OPSTR_SIZE);
+    result.m_mnem[MNEM_SIZE - 1]   = '\0';
+    result.m_opstr[OPSTR_SIZE - 1] = '\0';
+
+    const std::size_t numOperands = m_insn->detail->x86.op_count;
+    result.m_operands.resize(numOperands);
+
+    for (std::size_t i = 0; i < numOperands; ++i) {
+        result.m_operands[i] = operandToExp(m_insn->detail->x86.operands[i]);
+    }
+
+    result.m_templateName = getTemplateName(m_insn);
+
+    result.setGroup(MIGroup::Jump, isInstructionInGroup(m_insn, cs::CS_GRP_JUMP));
+    result.setGroup(MIGroup::Call, isInstructionInGroup(m_insn, cs::CS_GRP_CALL));
+    result.setGroup(MIGroup::BoolAsgn, result.m_templateName.startsWith("SET"));
+    result.setGroup(MIGroup::Ret, isInstructionInGroup(m_insn, cs::CS_GRP_RET) ||
+                                      isInstructionInGroup(m_insn, cs::CS_GRP_IRET));
+
+    if (result.isInGroup(MIGroup::Jump) || result.isInGroup(MIGroup::Call)) {
+        assert(result.getNumOperands() > 0);
+        result.setGroup(MIGroup::Computed, !result.m_operands[0]->isConst());
+    }
+
+    return true;
+}
+
+
+bool CapstoneX86Decoder::liftInstruction(const MachineInstruction &insn, LiftedInstruction &lifted)
+{
+    if (insn.m_id == cs::X86_INS_BSF || insn.m_id == cs::X86_INS_BSR) {
         // special hack to give BSF/BSR the correct semantics since SSL does not support loops yet
-        const bool ok = genBSFR(pc, m_insn, result);
+        const bool ok = genBSFR(insn, lifted);
         return ok;
     }
 
-    result.iclass   = IClass::NOP; //< ICLASS is irrelevant for x86
-    result.numBytes = m_insn->size;
-    result.reDecode = false;
-    result.rtl      = createRTLForInstruction(pc, m_insn);
-    result.valid    = (result.rtl != nullptr);
-    return true;
+    // clang-format off
+    if (insn.m_id == cs::X86_INS_AND &&
+        *insn.m_operands[0] == *Location::regOf(REG_X86_ESP) &&
+        *insn.m_operands[1] == *Const::get(Address(0xFFFFFFF0U))) {
+
+        // special hack to ignore 'and esp, 0xfffffff0' in startup code
+        lifted.addPart(std::make_unique<RTL>(insn.m_addr));
+    }
+    // clang-format on
+    else {
+        lifted.addPart(createRTLForInstruction(insn));
+    }
+
+    return lifted.getFirstRTL() != nullptr;
 }
 
 
@@ -205,48 +257,16 @@ static const QString operandNames[] = {
     "rm",  // X86_OP_MEM
 };
 
-std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
-                                                                 const cs::cs_insn *instruction)
+std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineInstruction &insn)
 {
-    const int numOperands         = instruction->detail->x86.op_count;
-    const cs::cs_x86_op *operands = instruction->detail->x86.operands;
+    const QString insnID     = insn.m_templateName;
+    std::unique_ptr<RTL> rtl = instantiateRTL(insn);
 
-    QString insnID = cs::cs_insn_name(m_handle, instruction->id);
-
-    switch (instruction->detail->x86.prefix[0]) {
-    case cs::X86_PREFIX_REP: insnID = "REP" + insnID; break;
-    case cs::X86_PREFIX_REPNE: insnID = "REPNE" + insnID; break;
+    if (!rtl) {
+        return nullptr;
     }
 
-    insnID = insnID.toUpper();
-
-    for (int i = 0; i < numOperands; i++) {
-        // example: ".imm8"
-        QString operandName = "." + operandNames[operands[i].type] +
-                              QString::number(operands[i].size * 8);
-
-        insnID += operandName;
-    }
-
-    std::unique_ptr<RTL> rtl;
-
-    // special hack to ignore 'and esp, 0xfffffff0' in startup code
-    if (instruction->id == cs::X86_INS_AND && operands[0].type == cs::X86_OP_REG &&
-        operands[0].reg == cs::X86_REG_ESP && operands[1].type == cs::X86_OP_IMM &&
-        operands[1].imm == 0xFFFFFFF0) {
-        return instantiateRTL(pc, "NOP", 0, nullptr);
-    }
-    else {
-        rtl = instantiateRTL(pc, qPrintable(insnID), numOperands, operands);
-        if (!rtl) {
-            LOG_ERROR("Cannot find semantics for instruction '%1' at address %2, "
-                      "treating instruction as NOP",
-                      insnID, pc);
-            return instantiateRTL(pc, "NOP", 0, nullptr);
-        }
-    }
-
-    if (isInstructionInGroup(instruction, cs::CS_GRP_CALL)) {
+    if (insn.isInGroup(MIGroup::Call)) {
         auto it = std::find_if(rtl->rbegin(), rtl->rend(),
                                [](const SharedConstStmt &stmt) { return stmt->isCall(); });
 
@@ -257,7 +277,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
                 const SharedConstExp &callDest = call->getDest();
                 const Address destAddr         = callDest->access<Const>()->getAddr();
 
-                if (destAddr == pc + 5) {
+                if (destAddr == insn.m_addr + 5) {
                     // call to next instruction (just pushes instruction pointer to stack)
                     // delete the call statement
                     rtl->erase(std::next(it).base());
@@ -274,13 +294,13 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             }
         }
     }
-    else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
+    else if (insn.isInGroup(MIGroup::Jump)) {
         if (rtl->back()->isBranch()) {
             std::shared_ptr<BranchStatement> branch = rtl->back()->as<BranchStatement>();
             const bool isComputedJump               = !branch->getDest()->isIntConst();
 
             BranchType bt = BranchType::INVALID;
-            switch (instruction->id) {
+            switch (insn.m_id) {
             case cs::X86_INS_JE: bt = BranchType::JE; break;
             case cs::X86_INS_JNE: bt = BranchType::JNE; break;
             case cs::X86_INS_JL: bt = BranchType::JSL; break; // signed less
@@ -310,7 +330,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 
             // Need to fix up the conditional expression here...
             // setCondType() assigns the wrong expression for jumps that do not depend on flags
-            switch (instruction->id) {
+            switch (insn.m_id) {
             case cs::X86_INS_JCXZ: {
                 branch->setCondExpr(
                     Binary::get(opEquals, Location::regOf(REG_X86_CX), Const::get(0)));
@@ -357,13 +377,13 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             }
         }
     }
-    else if (insnID.startsWith("SET")) {
+    else if (insn.isInGroup(MIGroup::BoolAsgn)) {
         std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
         bas->setCondExpr(rtl->front()->as<Assign>()->getRight()->clone());
         bas->setLeft(rtl->front()->as<Assign>()->getLeft()->clone());
 
         BranchType bt = BranchType::INVALID;
-        switch (instruction->id) {
+        switch (insn.m_id) {
         case cs::X86_INS_SETE: bt = BranchType::JE; break;
         case cs::X86_INS_SETNE: bt = BranchType::JNE; break;
         case cs::X86_INS_SETL: bt = BranchType::JSL; break; // signed less
@@ -398,41 +418,34 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
 }
 
 
-std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(Address pc, const char *instructionID,
-                                                        int numOperands,
-                                                        const cs::cs_x86_op *operands)
+std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(const MachineInstruction &insn)
 {
     // Take the argument, convert it to upper case and remove any .'s
-    const QString sanitizedName = QString(instructionID).remove(".").toUpper();
-
-    std::vector<SharedExp> args(numOperands);
-    for (int i = 0; i < numOperands; i++) {
-        args[i] = operandToExp(operands[i]);
-    }
+    const QString sanitizedName   = QString(insn.m_templateName).remove(".").toUpper();
+    const std::size_t numOperands = insn.getNumOperands();
 
     if (m_debugMode) {
         QString argNames;
-        for (int i = 0; i < numOperands; i++) {
+        for (std::size_t i = 0; i < numOperands; i++) {
             if (i != 0) {
                 argNames += " ";
             }
-            argNames += args[i]->toString();
+            argNames += insn.m_operands[i]->toString();
         }
 
-        LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, argNames);
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
     }
 
-    return m_dict.instantiateRTL(sanitizedName, pc, args);
+    return m_dict.instantiateRTL(sanitizedName, insn.m_addr, insn.m_operands);
 }
 
 
-bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, DecodeResult &result)
+bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstruction &result)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the
     // %SKIP/%RPT won't work. We need to emit 6 statements, but these need to be in 3 RTLs, since
-    // the destination of a branch has to be to the start of an RTL.  So we use a state machine, and
-    // set numBytes to 0 for the first two times. That way, this instruction ends up emitting three
-    // RTLs, each with the semantics we need. Note: we don't use x86.ssl for these.
+    // the destination of a branch has to be to the start of an RTL.
+    // Note: we don't use x86.ssl for these.
     //
     // BSFR1:
     //    pc+0:    *1* zf := 1
@@ -446,77 +459,117 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
     // exit:
     //
 
-    std::shared_ptr<BranchStatement> b = nullptr;
-    result.rtl                         = std::unique_ptr<RTL>(new RTL(pc + m_bsfrState));
+    if (m_debugMode) {
+        const std::size_t numOperands = insn.getNumOperands();
+        QString argNames;
+        for (std::size_t i = 0; i < numOperands; i++) {
+            if (i != 0) {
+                argNames += " ";
+            }
+            argNames += insn.m_operands[i]->toString();
+        }
 
-    const cs::cs_x86_op &dstOp = instruction->detail->x86.operands[0];
-    const cs::cs_x86_op &srcOp = instruction->detail->x86.operands[1];
+        LOG_MSG("Instantiating RTL at %1: %2 %3", insn.m_addr, insn.m_templateName, argNames);
+    }
 
-    assert(dstOp.size == srcOp.size);
-    const SharedExp dest = operandToExp(dstOp);
-    const SharedExp src  = operandToExp(srcOp);
-    const int size       = dstOp.size * 8;
-    const int init       = instruction->id == cs::X86_INS_BSF ? 0 : size - 1;
-    const OPER incdec    = instruction->id == cs::X86_INS_BSF ? opPlus : opMinus;
+    const SharedExp dest   = insn.m_operands[0];
+    const SharedExp src    = insn.m_operands[1];
+    const std::size_t size = dest->isRegOfConst()
+                                 ? getRegSizeByNum(dest->access<Const, 1>()->getInt())
+                                 : getRegSizeByNum(src->access<Const, 1>()->getInt());
 
-    switch (m_bsfrState) {
-    case 0:
-        result.rtl->append(
+    assert(size > 0);
+
+    const int init    = insn.m_id == cs::X86_INS_BSF ? 0 : size - 1;
+    const OPER incdec = insn.m_id == cs::X86_INS_BSF ? opPlus : opMinus;
+
+    LiftedInstructionPart *rtls[4];
+
+    // first RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 0));
+
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
-        b.reset(new BranchStatement);
-        b->setDest(pc + instruction->size);
+        std::shared_ptr<BranchStatement> b(new BranchStatement);
+        b->setDest(insn.m_addr + insn.m_size);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
-        result.rtl->append(b);
-        break;
+        rtl->append(b);
 
-    case 1:
-        result.rtl->append(
+        rtls[0] = result.addPart(std::move(rtl));
+    }
+
+    // second RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 1));
+
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
-        result.rtl->append(
+        rtl->append(
             std::make_shared<Assign>(IntegerType::get(size), dest->clone(), Const::get(init)));
-        break;
 
-    case 2:
-        result.rtl->append(
-            std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
-                                     Binary::get(incdec, dest->clone(), Const::get(1))));
-        b.reset(new BranchStatement);
-        b->setDest(pc + 2);
+        rtls[1] = result.addPart(std::move(rtl));
+    }
+
+    // third RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 2));
+
+        rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
+                                             Binary::get(incdec, dest->clone(), Const::get(1))));
+        std::shared_ptr<BranchStatement> b(new BranchStatement);
+        b->setDest(insn.m_addr + 2);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,
                                    Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),
                                    Const::get(0)));
-        result.rtl->append(b);
-        break;
+        rtl->append(b);
 
-    default:
-        // Should never happen
-        LOG_FATAL("Unknown BSFR state %1", m_bsfrState);
+        rtls[2] = result.addPart(std::move(rtl));
     }
 
-    // Keep numBytes == 0 until the last state, so we re-decode this instruction 3 times
-    if (m_bsfrState != 3 - 1) {
-        // Let the number of bytes be 1. This is important at least for setting the fallthrough
-        // address for the branch (in the first RTL), which should point to the next RTL
-        result.numBytes = 1;
-        result.reDecode = true; // Decode this instuction again
-    }
-    else {
-        result.numBytes = instruction->size;
-        result.reDecode = false;
+    // fourth (empty) RTL
+    {
+        std::unique_ptr<RTL> rtl(new RTL(insn.m_addr + 3));
+        rtls[3] = result.addPart(std::move(rtl));
     }
 
-    if (m_debugMode) {
-        LOG_MSG("%1: BS%2%3%4", pc + m_bsfrState, (init == -1 ? "F" : "R"),
-                (size == 32 ? ".od" : ".ow"), m_bsfrState + 1);
-    }
+    result.addEdge(rtls[0], rtls[3]);
+    result.addEdge(rtls[0], rtls[1]);
 
-    if (++m_bsfrState == 3) {
-        m_bsfrState = 0; // Ready for next time
-    }
+    result.addEdge(rtls[1], rtls[2]);
+
+    result.addEdge(rtls[2], rtls[2]);
+    result.addEdge(rtls[2], rtls[3]);
 
     return true;
+}
+
+
+QString CapstoneX86Decoder::getTemplateName(const cs::cs_insn *instruction) const
+{
+    const int numOperands         = instruction->detail->x86.op_count;
+    const cs::cs_x86_op *operands = instruction->detail->x86.operands;
+
+    QString insnID = cs::cs_insn_name(m_handle, instruction->id);
+
+    switch (instruction->detail->x86.prefix[0]) {
+    case cs::X86_PREFIX_REP: insnID = "REP" + insnID; break;
+    case cs::X86_PREFIX_REPNE: insnID = "REPNE" + insnID; break;
+    }
+
+    insnID = insnID.toUpper();
+
+    for (int i = 0; i < numOperands; i++) {
+        // example: ".imm8"
+        QString operandName = "." + operandNames[operands[i].type] +
+                              QString::number(operands[i].size * 8);
+
+        insnID += operandName;
+    }
+
+    return insnID;
 }
 
 

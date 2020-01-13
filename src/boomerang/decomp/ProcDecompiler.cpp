@@ -40,7 +40,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
 
-    if (proc->getStatus() >= ProcStatus::Visited) {
+    if (proc->getStatus() < ProcStatus::Visited) {
         LOG_MSG("Visiting procedure '%1'", proc->getName());
     }
     else {
@@ -72,23 +72,33 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         printCallStack();
     }
 
+    PassManager::get()->executePass(PassID::StatementInit, proc);
+    project->alertDecompileDebugPoint(proc, "after lifting");
+
+    proc->numberStatements();
+
+    earlyDecompile(proc);
+
     if (project->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
-        for (BasicBlock *bb : *proc->getCFG()) {
-            if (bb->getType() != BBType::Call) {
+        for (IRFragment *frag : *proc->getCFG()) {
+            if (!frag->isType(FragType::Call)) {
                 continue;
             }
 
-            // The call Statement will be in the last RTL in this BB
-            SharedStmt hl = bb->getRTLs()->back()->getHlStmt();
+            // The call statement will be in the last RTL in this fragment
+            if (!frag->getRTLs()) {
+                continue; // not lifted yet
+            }
 
-            if (!hl->isCall()) {
-                LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2",
-                         bb->getLowAddr(), hl);
+            SharedStmt hl = frag->getRTLs()->back()->getHlStmt();
+
+            if (!hl || !hl->isCall()) {
+                LOG_WARN("Fragment at address %1 is a CALL but last stmt is not a call: %2",
+                         frag->getLowAddr(), hl);
                 continue;
             }
 
-            assert(hl->isCall());
             std::shared_ptr<CallStatement> call = hl->as<CallStatement>();
             UserProc *callee                    = dynamic_cast<UserProc *>(call->getDestProc());
 
@@ -109,12 +119,12 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         }
     }
 
+    project->alertDecompileDebugPoint(proc, "after decompiling callees for the first time");
+
     // if no callee is involved in recursion
     if (proc->getStatus() != ProcStatus::InCycle) {
         project->alertDecompiling(proc);
         LOG_MSG("Decompiling procedure '%1'", proc->getName());
-
-        earlyDecompile(proc);
         middleDecompile(proc);
 
         if (project->getSettings()->verboseOutput) {
@@ -239,41 +249,31 @@ void ProcDecompiler::addToRecursionGroup(UserProc *proc,
 void ProcDecompiler::earlyDecompile(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
-
     project->alertStartDecompile(proc);
-    project->alertDecompileDebugPoint(proc, "Before Initialize");
+    project->alertDecompileDebugPoint(proc, "before earlyDecompile");
 
-    PassManager::get()->executePass(PassID::StatementInit, proc);
-    PassManager::get()->executePass(PassID::BBSimplify, proc); // Remove branches with false guards
+    // Remove branches with false guards
+    PassManager::get()->executePass(PassID::FragSimplify, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
 
-    proc->debugPrintAll("After Initialize");
-    project->alertDecompileDebugPoint(proc, "After Initialize");
+    if (proc->getStatus() < ProcStatus::MiddleDone) {
+        // Update the defines in the calls. Will redo if involved in recursion
+        PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
+        PassManager::get()->executePass(PassID::GlobalConstReplace, proc);
 
-    if (proc->getStatus() >= ProcStatus::MiddleDone) {
-        return;
+        // First placement of phi functions, renaming, and initial propagation.
+        // This is mostly for the stack pointer.
+        // TODO: Check if this makes sense. It seems to me that we only want to do one pass of
+        // propagation here, since the status == check had been knobbled below. Hopefully,
+        // one call to placing phi functions etc will be equivalent to depth 0 in the old scheme
+        PassManager::get()->executePass(PassID::PhiPlacement, proc);
+
+        // Rename variables
+        PassManager::get()->executePass(PassID::BlockVarRename, proc);
+        PassManager::get()->executePass(PassID::StatementPropagation, proc);
     }
 
-    project->alertDecompileDebugPoint(proc, "Before Early");
-    LOG_VERBOSE("### Beginning early decompile for '%1' ###", proc->getName());
-
-    // Update the defines in the calls. Will redo if involved in recursion
-    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
-    PassManager::get()->executePass(PassID::GlobalConstReplace, proc);
-
-    // First placement of phi functions, renaming, and initial propagation. This is mostly for the
-    // stack pointer
-    // TODO: Check if this makes sense. It seems to me that we only want to do one pass of
-    // propagation here, since the status == check had been knobbled below. Hopefully, one call to
-    // placing phi functions etc will be equivalent to depth 0 in the old scheme
-    PassManager::get()->executePass(PassID::PhiPlacement, proc);
-
-
-    // Rename variables
-    PassManager::get()->executePass(PassID::BlockVarRename, proc);
-    PassManager::get()->executePass(PassID::StatementPropagation, proc);
-
-    project->alertDecompileDebugPoint(proc, "After Early");
+    project->alertDecompileDebugPoint(proc, "after earlyDecompile");
 }
 
 
@@ -282,32 +282,28 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     assert(m_callStack.back() == proc);
     Project *project = proc->getProg()->getProject();
 
-    project->alertDecompileDebugPoint(proc, "Before Middle");
-    LOG_VERBOSE("### Beginning middleDecompile for '%1' ###", proc->getName());
+    project->alertDecompileDebugPoint(proc, "before middleDecompile");
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11
     // is a call. The first stage bypass yields m[r1{2}]{11}, which needs another round of
     // propagation to yield m[r1{-}-32]{11} (which can safely be processed at depth 1). Except that
     // this is now inherent in the visitor nature of the latest algorithm.
-    // Bypass children that are finalised (if any)
+
     PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
-    proc->debugPrintAll("after call and phi bypass (1)");
 
     if (proc->getStatus() != ProcStatus::InCycle) { // FIXME: need this test?
         PassManager::get()->executePass(PassID::StatementPropagation, proc);
     }
 
-    // This part used to be calle middleDecompile():
-
-    PassManager::get()->executePass(PassID::SPPreservation, proc);
     // Oops - the idea of splitting the sp from the rest of the preservations was to allow correct
     // naming of locals so you are alias conservative. But of course some locals are ebp (etc)
     // based, and so these will never be correct until all the registers have preservation analysis
     // done. So I may as well do them all together here.
+    PassManager::get()->executePass(PassID::SPPreservation, proc);
     PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
-    PassManager::get()->executePass(PassID::CallAndPhiFix, proc); // Propagate and bypass sp
+    PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
 
-    proc->debugPrintAll("After preservation, bypass and propagation");
+    project->alertDecompileDebugPoint(proc, "after preservation, bypass and propagation");
 
     if (project->getSettings()->usePromotion) {
         // We want functions other than main to be promoted. Needed before mapExpressionsToLocals
@@ -316,8 +312,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
 
     // The problem with doing locals too early is that the symbol map ends up with some {-} and some
     // {0} Also, once named as a local, it is tempting to propagate the memory location, but that
-    // might be unsafe if the address is taken. But see mapLocalsAndParams just a page below.
-    // mapExpressionsToLocals();
+    // might be unsafe if the address is taken.
 
     // Update the arguments for calls (mainly for the non recursion affected calls)
     // We have only done limited propagation and collecting to this point. Need e.g. to put m[esp-K]
@@ -331,13 +326,14 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     // distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be
     // duplicates, and so the duplicates must be eliminated.
     PassManager::get()->executePass(PassID::PhiPlacement, proc);
-
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Otherwise sometimes sp is not fully propagated
     PassManager::get()->executePass(PassID::StatementPropagation, proc);
     PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     PassManager::get()->executePass(PassID::StrengthReductionReversal, proc);
+
+    project->alertDecompileDebugPoint(proc, "after updating call arguments");
 
     // Repeat until no change
     int pass = 3;
@@ -346,7 +342,6 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     do {
         // Redo the renaming process to take into account the arguments
         change = PassManager::get()->executePass(PassID::PhiPlacement, proc);
-        // E.g. for new arguments
         change |= PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
         // Seed the return statement with reaching definitions
@@ -357,23 +352,10 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
             proc->getRetStmt()->updateReturns();
         }
 
-        // Print if requested
-        if (project->getSettings()->verboseOutput) { // was if debugPrintSSA
-            QDir outputDir   = project->getSettings()->getOutputDirectory();
-            QString filePath = outputDir.absoluteFilePath(proc->getName());
-
-            LOG_SEPARATE(filePath, "--- Debug print SSA for %1 pass %2 (no propagations) ---",
-                         proc->getName(), pass);
-            LOG_SEPARATE(filePath, "%1", proc->toString());
-            LOG_SEPARATE(filePath, "=== End debug print SSA for %1 pass %2 (no propagations) ===",
-                         proc->getName(), pass);
-        }
-
         // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
         if (project->getSettings()->changeSignatures) {
-            // addNewReturns(depth);
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
 
@@ -390,26 +372,15 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
                 // Preserveds subtract from returns
                 PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
             }
-
-            if (project->getSettings()->verboseOutput) {
-                proc->debugPrintAll("SSA (after updating returns)");
-            }
         }
-
-        // Print if requested
-        if (project->getSettings()->verboseOutput) { // was if debugPrintSSA
-            proc->debugPrintAll("SSA (after trimming return set)");
-        }
-
-        project->alertDecompileDebugPoint(proc, "Before propagating statements");
 
         change |= PassManager::get()->executePass(PassID::StatementPropagation, proc);
         change |= PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
-        project->alertDecompileDebugPoint(proc, "after propagating statements");
-
         // this is just to make it readable, do NOT rely on these statements being removed
         PassManager::get()->executePass(PassID::AssignRemoval, proc);
+        project->alertDecompileDebugPoint(proc,
+                                          "after updating returns pass " + QString::number(pass));
     } while (change && ++pass < 12);
 
     // At this point, there will be some memofs that have still not been renamed. They have been
@@ -419,81 +390,59 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     // can still link uses to definitions, e.g. 50 r26 := phi(...) 51 m[r26{50}] := 99;
     //    ... := m[r26{50}]{should be 51}
 
-    LOG_VERBOSE("### allowing SSA renaming of all memof expressions ###");
-
+    project->alertDecompileDebugPoint(proc, "before renaming memofs");
     proc->getDataFlow()->setRenameLocalsParams(true);
 
-    // Now we need another pass to inert phis for the memofs, rename them and propagate them
     PassManager::get()->executePass(PassID::PhiPlacement, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
-
-    proc->debugPrintAll("after setting phis for memofs, renaming them");
     PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
     // Now that memofs are renamed, the bypassing for memofs can work
-    // Bypass children that are finalised (if any)
     PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
 
-    if (project->getSettings()->nameParameters) {
-        // ? Crazy time to do this... haven't even done "final" parameters as yet
-        // mapExpressionsToParameters();
-    }
+    project->alertDecompileDebugPoint(proc, "after renaming memofs");
 
     // Check for indirect jumps or calls not already removed by propagation of constants
     bool changed = false;
     IndirectJumpAnalyzer analyzer;
 
-    for (BasicBlock *bb : *proc->getCFG()) {
-        changed |= analyzer.decodeIndirectJmp(bb, proc);
+    for (IRFragment *frag : *proc->getCFG()) {
+        changed |= analyzer.decodeIndirectJmp(frag, proc);
     }
+
+    project->alertDecompileDebugPoint(proc, "after analyzing indirect jumps");
 
     if (changed) {
         // There was at least one indirect jump or call found and decoded. That means that most of
         // what has been done to this function so far is invalid. So redo everything. Very
-        // expensive!! Code pointed to by the switch table entries has merely had
-        // FrontEnd::processFragment() called on it
+        // expensive!!
         reDecompileRecursive(proc);
         return;
     }
 
-
     PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
-
-    // Used to be later...
-    if (project->getSettings()->nameParameters) {
-        // findPreserveds();    // FIXME: is this necessary here?
-        // fixCallBypass();     // FIXME: surely this is not necessary now?
-        // trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
-        proc->debugPrintAll("after replacing expressions, trimming params and returns");
-    }
-
     PassManager::get()->executePass(PassID::DuplicateArgsRemoval, proc);
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis
     // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
     // additional parameters to printf/scanf), and removing unused statements is unsafe without full
     // use information
-    if (proc->getStatus() < ProcStatus::FinalDone) {
+    if (!proc->isDecompiled()) {
         PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
 
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, proc);
         PassManager::get()->executePass(PassID::BlockVarRename, proc);
-
-        // Surely need propagation too
         PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
-        if (project->getSettings()->verboseOutput) {
-            proc->debugPrintAll("after propagating locals");
-        }
+        proc->debugPrintAll("after propagating locals");
     }
 
     tryConvertCallsToDirect(proc);
     tryConvertFunctionPointerAssignments(proc);
 
     proc->setStatus(ProcStatus::MiddleDone);
-
-    project->alertDecompileDebugPoint(proc, "after middle");
+    project->alertDecompileDebugPoint(proc, "after middleDecompile");
 }
 
 
@@ -525,6 +474,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet &visi
 
     proc->setStatus(ProcStatus::InCycle); // So the calls are treated as childless
     project->alertDecompiling(proc);
+    LOG_MSG("Decompiling proc '%1' in recursion group", proc->getName());
     earlyDecompile(proc);
 
     // The standard preservation analysis should automatically perform conditional preservation.
@@ -540,8 +490,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet &visi
     changed |= PassManager::get()->executePass(PassID::LocalAndParamMap, proc);
     changed |= PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     changed |= PassManager::get()->executePass(PassID::Dominators, proc);
-    changed |= PassManager::get()->executePass(PassID::StatementPropagation,
-                                               proc); // Need to propagate into arguments
+    changed |= PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
     assert(m_callStack.back() == proc);
     m_callStack.pop_back();
@@ -590,7 +539,7 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet> &grou
         }
     }
 
-    LOG_VERBOSE("=== End recursion group analysis ===");
+    LOG_MSG("=== End recursion group analysis ===");
     for (UserProc *proc : *group) {
         proc->getProg()->getProject()->alertEndDecompile(proc);
     }
@@ -601,18 +550,13 @@ void ProcDecompiler::lateDecompile(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
     project->alertDecompiling(proc);
-    project->alertDecompileDebugPoint(proc, "Before Final");
-
-    LOG_VERBOSE("### Removing unused statements for %1 ###", proc->getName());
+    project->alertDecompileDebugPoint(proc, "before lateDecompile");
 
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, proc);
     PassManager::get()->executePass(PassID::FinalParameterSearch, proc);
 
     if (project->getSettings()->nameParameters) {
-        // Replace the existing temporary parameters with the final ones:
-        // mapExpressionsToParameters();
         PassManager::get()->executePass(PassID::ParameterSymbolMap, proc);
-        proc->debugPrintAll("after adding new parameters");
     }
 
     // Or just CallArgumentUpdate?
@@ -620,8 +564,7 @@ void ProcDecompiler::lateDecompile(UserProc *proc)
     PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     PassManager::get()->executePass(PassID::BranchAnalysis, proc);
 
-    proc->debugPrintAll("after remove unused statements etc");
-    project->alertDecompileDebugPoint(proc, "after final");
+    project->alertDecompileDebugPoint(proc, "after lateDecompile");
 }
 
 
@@ -634,50 +577,16 @@ void ProcDecompiler::printCallStack()
 }
 
 
-void ProcDecompiler::saveDecodedICTs(UserProc *proc)
-{
-    for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator rrit;
-        StatementList::reverse_iterator srit;
-        SharedStmt last = bb->getLastStmt(rrit, srit);
-
-        if (last == nullptr) {
-            continue; // e.g. a BB with just a NOP in it
-        }
-
-        if (!last->isHL_ICT()) {
-            continue;
-        }
-
-        RTL *rtl = bb->getLastRTL();
-
-        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("Saving high level switch statement:\n%1", rtl);
-        }
-
-        proc->getProg()->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
-    }
-}
-
-
 ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 {
     Project *project = proc->getProg()->getProject();
 
     LOG_MSG("Restarting decompilation of '%1'", proc->getName());
-    project->alertDecompileDebugPoint(proc, "Before restarting decompilation");
+    project->alertDecompileDebugPoint(proc, "before restarting decompilation");
 
-    // First copy any new indirect jumps or calls that were decoded this time around. Just copy
-    // them all, the map will prevent duplicates
-    saveDecodedICTs(proc);
-
-    // Now, decode from scratch
+    // decode from scratch
     proc->removeRetStmt();
     proc->getCFG()->clear();
-
-    if (!proc->getProg()->reDecode(proc)) {
-        return ProcStatus::Undecoded;
-    }
 
     proc->getDataFlow()->setRenameLocalsParams(false); // Start again with memofs
     proc->setStatus(ProcStatus::Visited);              // Back to only visited progress
@@ -695,9 +604,9 @@ ProcStatus ProcDecompiler::reDecompileRecursive(UserProc *proc)
 bool ProcDecompiler::tryConvertCallsToDirect(UserProc *proc)
 {
     bool change = false;
-    for (BasicBlock *bb : *proc->getCFG()) {
-        if (bb->isType(BBType::CompCall)) {
-            std::shared_ptr<CallStatement> call = bb->getLastStmt()->as<CallStatement>();
+    for (IRFragment *frag : *proc->getCFG()) {
+        if (frag->isType(FragType::CompCall)) {
+            std::shared_ptr<CallStatement> call = frag->getLastStmt()->as<CallStatement>();
             const bool converted                = call->tryConvertToDirect();
             if (converted) {
                 Function *f = call->getDestProc();

@@ -15,7 +15,7 @@
 #include <QString>
 
 #include <memory>
-
+#include <type_traits>
 
 class Prog;
 class OStream;
@@ -34,6 +34,26 @@ namespace Util
 QString BOOMERANG_API escapeStr(const char *str);
 
 OStream &alignStream(OStream &str, int align);
+
+
+template<typename T>
+class ptrCompare
+{
+public:
+    bool operator()(const T *a, const T *b) const
+    {
+        if (a && b) {
+            return *a < *b;
+        }
+
+        return a < b;
+    }
+
+    bool operator()(const std::unique_ptr<T> &a, const std::unique_ptr<T> &b)
+    {
+        return operator()(a.get(), b.get());
+    }
+};
 
 
 /// Check if \p value is in [\p rangeStart, \p rangeEnd)

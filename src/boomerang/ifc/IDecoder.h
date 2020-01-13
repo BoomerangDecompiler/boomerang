@@ -10,7 +10,8 @@
 #pragma once
 
 
-#include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/frontend/LiftedInstruction.h"
+#include "boomerang/frontend/MachineInstruction.h"
 #include "boomerang/ssl/Register.h"
 
 
@@ -23,7 +24,8 @@ class RTLInstDict;
 
 /**
  * Base class for machine instruction decoders.
- * Decoders translate raw bytes to statement lists (RTLs).
+ * Decoders disassemble raw bytes to MachineInstructions
+ * and lift them to statement lists (RTLs).
  */
 class BOOMERANG_API IDecoder
 {
@@ -35,12 +37,22 @@ public:
     virtual bool initialize(Project *project) = 0;
 
     /**
-     * Decodes the machine instruction at \p pc.
-     * The decode result is stored into \p result, if the decode was successful.
-     * If the decode was not successful, the content of \p result is undefined.
-     * \returns true iff decoding the instruction was successful.
+     * Disassembles the machine instruction \p pc.
+     * The result is stored into \p result, if successful.
+     * If the disassembly was not successful, the content of \p result is undefined.
+     *
+     * \param pc Address of the instruction
+     * \param delta Host - native address difference
+     *
+     * \returns true iff disassembling the instruction was successful.
      */
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) = 0;
+    [[nodiscard]] virtual bool disassembleInstruction(Address pc, ptrdiff_t delta,
+                                                      MachineInstruction &result) = 0;
+
+    /// Lift a disassembled instruction to an RTL
+    /// \returns true if lifting the instruction was succesful.
+    [[nodiscard]] virtual bool liftInstruction(const MachineInstruction &insn,
+                                               LiftedInstruction &lifted) = 0;
 
     /// \returns machine-specific register name given its index
     virtual QString getRegNameByNum(RegNum regNum) const = 0;
@@ -49,8 +61,4 @@ public:
     virtual int getRegSizeByNum(RegNum regNum) const = 0;
 
     virtual const RTLInstDict *getDict() const = 0;
-
-    /// \return true if this is a SPARC restore instruction.
-    // For all other architectures, this must return false.
-    virtual bool isSPARCRestore(Address pc, ptrdiff_t delta) const = 0;
 };

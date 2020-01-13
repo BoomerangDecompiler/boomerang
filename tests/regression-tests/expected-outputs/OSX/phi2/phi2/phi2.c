@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
 void proc1(int param1, char *param2, int param3)
 {
     int g3; 		// r3
-    int g3_2; 		// r3{6}
-    int g3_5; 		// r3{8}
+    int g3_2; 		// r3{7}
+    int g3_5; 		// r3{9}
     int local0; 		// m[g1 + 24]
     int local1; 		// m[g1 - 32]
-    int local2; 		// param3{14}
+    int local2; 		// param3{13}
 
     local2 = param3;
     if (param1 <= 2) {

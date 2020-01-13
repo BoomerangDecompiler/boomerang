@@ -43,13 +43,10 @@ public:
 public:
     const RTLInstDict *getDict() const override { return &m_dict; }
 
-    /// \copydoc IDecoder::isSPARCRestore
-    bool isSPARCRestore(Address pc, ptrdiff_t delta) const override;
-
 protected:
     bool initialize(Project *project) override;
 
-    bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
+    bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group) const;
 
 protected:
     cs::csh m_handle;

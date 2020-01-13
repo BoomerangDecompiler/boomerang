@@ -170,7 +170,7 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(const std::shared_ptr<Assignme
     assert(stmt != nullptr);
     SharedConstExp lhs = stmt->getLeft();
     if (!lhs->isRegOfConst()) {
-        // lhs must be a consant value regof, otherwise we can't look up the ID
+        // lhs must be a constant value regof, otherwise we can't look up the ID
         return nullptr;
     }
 

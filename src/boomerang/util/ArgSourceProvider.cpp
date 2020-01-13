@@ -173,7 +173,7 @@ bool ArgSourceProvider::exists(SharedExp e)
 
         return false;
 
-    case ArgSource::Collector: return defCol->existsOnLeft(e);
+    case ArgSource::Collector: return defCol->hasDefOf(e);
 
     default: assert(false); break;
     }

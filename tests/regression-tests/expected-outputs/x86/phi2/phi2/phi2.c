@@ -18,12 +18,12 @@ int main(int argc, char *argv[])
 /** address: 0x0804835c */
 __size32 proc1(size_t param1, int param2, char *param3)
 {
-    int eax; 		// r24
+    size_t eax; 		// r24
     size_t eax_1; 		// r24{6}
     size_t eax_4; 		// r24{8}
     size_t local1; 		// m[esp + 4]
     size_t local2; 		// m[esp - 8]
-    size_t local5; 		// param1{15}
+    size_t local5; 		// param1{12}
 
     local5 = param1;
     if (param2 <= 2) {

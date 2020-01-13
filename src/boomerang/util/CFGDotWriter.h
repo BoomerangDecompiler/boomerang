@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/db/proc/UserProc.h"
 
 #include <set>
 
@@ -21,8 +22,6 @@ class ProcCFG;
 
 class QString;
 class OStream;
-
-typedef std::set<UserProc *> ProcSet;
 
 
 /**
@@ -39,4 +38,5 @@ public:
 
 private:
     void writeCFG(const ProcCFG *cfg, OStream &os);
+    void writeCFG(const UserProc *proc, OStream &os);
 };

@@ -13,6 +13,7 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 
 TestProject::TestProject()
@@ -61,6 +62,12 @@ char *toString(const SharedConstExp& exp)
 }
 
 
+char *toString(const SharedConstStmt &stmt)
+{
+    return QTest::toString(stmt->toString());
+}
+
+
 char *toString(const Exp& exp)
 {
     return QTest::toString(exp.toString());
@@ -80,23 +87,6 @@ char *toString(const LocationSet& locSet)
 #define HANDLE_ENUM_VAL(x) case x: return QTest::toString(#x)
 
 
-char *toString(IClass type)
-{
-    switch (type) {
-    HANDLE_ENUM_VAL(IClass::NCT);
-    HANDLE_ENUM_VAL(IClass::SD);
-    HANDLE_ENUM_VAL(IClass::DD);
-    HANDLE_ENUM_VAL(IClass::SCD);
-    HANDLE_ENUM_VAL(IClass::SCDAN);
-    HANDLE_ENUM_VAL(IClass::SCDAT);
-    HANDLE_ENUM_VAL(IClass::SU);
-    HANDLE_ENUM_VAL(IClass::SKIP);
-    HANDLE_ENUM_VAL(IClass::NOP);
-    }
-
-    return QTest::toString("<unknown>");
-}
-
 char *toString(BBType type)
 {
     switch (type) {
@@ -112,4 +102,42 @@ char *toString(BBType type)
     }
 
     return QTest::toString("<unknown>");
+}
+
+
+char *toString(Address addr)
+{
+    return QTest::toString(addr.toString());
+}
+
+
+std::vector<MachineInstruction> createInsns(Address baseAddr, std::size_t count)
+{
+    std::vector<MachineInstruction> result{ count };
+
+    for (std::size_t i=0; i<count; ++i) {
+        result[i].m_addr = baseAddr + i;
+        result[i].m_size = 1;
+    }
+
+    return result;
+}
+
+
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs, std::size_t numStmtsPerRTL)
+{
+    std::unique_ptr<RTLList> rtls(new RTLList);
+
+    for (std::size_t i = 0; i < numRTLs; i++) {
+        auto rtl = std::unique_ptr<RTL>(new RTL(baseAddr + i));
+
+        for (std::size_t j = 0; j < numStmtsPerRTL; ++j) {
+            auto stmt = std::make_shared<Assign>(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil));
+            rtl->append(stmt);
+        }
+
+        rtls->push_back(std::move(rtl));
+    }
+
+    return rtls;
 }

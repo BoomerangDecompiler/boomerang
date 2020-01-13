@@ -14,8 +14,8 @@
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/statements/Statement.h"
 
-#include <deque>
 #include <map>
+#include <stack>
 
 
 /// Rewrites Statements in BasicBlocks into SSA form.
@@ -29,9 +29,20 @@ public:
     bool execute(UserProc *proc) override;
 
 private:
-    bool renameBlockVars(UserProc *proc, int n,
-                         std::map<SharedExp, std::deque<SharedStmt>, lessExpStar> &stacks);
+    bool renameBlockVars(UserProc *proc, std::size_t n);
 
     /// For all expressions in \p stmt, replace \p var with var{varDef}
     void subscriptVar(const SharedStmt &stmt, SharedExp var, const SharedStmt &varDef);
+
+    bool subscriptUsedLocations(SharedStmt stmt);
+
+    /// push definitions in this statement onto the stacks
+    void pushDefinitions(SharedStmt stmt, bool assumeABI);
+
+    /// pop definitions in this statement from the stacks
+    void popDefinitions(SharedStmt stmt, bool assumeABI);
+
+private:
+    /// stores the last definition of a variable
+    std::map<SharedExp, std::stack<SharedStmt>, lessExpStar> stacks;
 };
