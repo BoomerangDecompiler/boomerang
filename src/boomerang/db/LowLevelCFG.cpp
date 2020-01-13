@@ -40,15 +40,10 @@ BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstru
     assert(!bbInsns.empty());
 
     // First find the native address of the first instruction
-    Address startAddr = bbInsns.front().m_addr;
-
+    const Address startAddr = bbInsns.front().m_addr;
     assert(startAddr != Address::INVALID);
 
-    // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here
-    // already If it is zero, this is a special BB for Phis and Implicit Assigns.
-    bool mustCreateBB     = true;
-    BasicBlock *currentBB = nullptr;
-
+    BasicBlock *currentBB   = nullptr;
     BBStartMap::iterator mi = m_bbStartMap.find(startAddr);
 
     if ((mi != m_bbStartMap.end()) && mi->second) {
@@ -69,11 +64,9 @@ BasicBlock *LowLevelCFG::createBB(BBType bbType, const std::vector<MachineInstru
             currentBB->completeBB(bbInsns);
             currentBB->setType(bbType);
         }
-
-        mustCreateBB = false;
     }
 
-    if (mustCreateBB) {
+    if (currentBB == nullptr) {
         currentBB = new BasicBlock(bbType, bbInsns);
 
         // Note that currentBB->getLowAddr() == startAddr
