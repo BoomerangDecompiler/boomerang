@@ -549,6 +549,10 @@ int CommandlineDriver::decompile(const QString &fname, const QString &pname)
 
 
     if (m_project->getSettings()->stopBeforeDecompile) {
+        if (!m_project->getSettings()->dotFile.isEmpty()) {
+            CFGDotWriter().writeCFG(m_project->getProg(), m_project->getSettings()->dotFile);
+        }
+
         return 0;
     }
 
