@@ -15,7 +15,8 @@ install:
 
 matrix:
   include:
-    - os: osx
+    - name: macOS 10.13 + Unit Tests
+      os: osx
       osx_image: xcode10
       install:
       before_script:
@@ -30,7 +31,8 @@ matrix:
       script:
         - make -j$(sysctl -n hw.ncpu) && make test
 
-    - env:
+    - name: Linux GCC 8 Unit Test Coverage
+      env:
         - TARGET="gcc8-debug-cov"   BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && (make test || ctest -V --rerun-failed) && make package"
@@ -40,7 +42,8 @@ matrix:
             lcov --list coverage.info"
         - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
 
-    - env:
+    - name: Linux GCC 8 Regression Test Coverage
+      env:
         - TARGET="gcc8-regress-cov" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"  COVERAGE="ON"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make check"
@@ -50,22 +53,26 @@ matrix:
             lcov --list coverage.info"
         - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F regresstests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
 
-    - env:
+    - name: Linux Clang 6 Debug + Unit Tests
+      env:
         - TARGET="clang6-debug"     BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && (make test || ctest -V --rerun-failed) && make package"
 
-    - env:
+    - name: Linux Clang 7 Release + Unit Tests
+      env:
         - TARGET="clang7-release"   BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && (make test || ctest -V --rerun-failed) && make package"
 
-    - env:
+    - name: Linux GCC 7 Release + Unit Tests
+      env:
         - TARGET="gcc7-release"     BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && (make test || ctest -V --rerun-failed) && make package"
 
-    - env:
+    - name: clang-format
+      env:
         - TARGET="source-check"
       before_script:
       script:
