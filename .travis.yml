@@ -40,7 +40,7 @@ matrix:
             lcov --directory . --capture --output-file coverage.info &&
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
             lcov --list coverage.info"
-        - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
+        - bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build"
 
     - name: Linux GCC 8 Regression Test Coverage
       env:
@@ -51,7 +51,7 @@ matrix:
             lcov --directory . --capture --output-file coverage.info &&
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
             lcov --list coverage.info"
-        - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F regresstests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
+        - bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F regresstests -s "$(pwd)/build"
 
     - name: Linux Clang 6 Debug + Unit Tests
       env:
