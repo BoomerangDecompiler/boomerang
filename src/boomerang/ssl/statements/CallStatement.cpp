@@ -743,6 +743,7 @@ void CallStatement::setDefines(const StatementList &defines)
 
         m_defines.clear();
     }
+
     m_defines = defines;
 }
 

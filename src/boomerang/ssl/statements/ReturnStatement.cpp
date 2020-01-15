@@ -392,9 +392,10 @@ void ReturnStatement::print(OStream &os) const
 
 void ReturnStatement::updateModifieds()
 {
-    auto sig = m_proc->getSignature();
-    StatementList oldMods(m_modifieds); // Copy the old modifieds
+    assert(m_proc != nullptr);
+    assert(m_fragment != nullptr);
 
+    StatementList oldMods(m_modifieds); // Copy the old modifieds
     m_modifieds.clear();
 
     if ((m_fragment->getNumPredecessors() == 1) &&
@@ -457,6 +458,8 @@ void ReturnStatement::updateModifieds()
 
         m_modifieds.append(asgn);
     }
+
+    auto sig = m_proc->getSignature();
 
     m_modifieds.sort([&sig](const SharedConstStmt &mod1, const SharedConstStmt &mod2) {
         return sig->returnCompare(*mod1->as<const Assignment>(), *mod2->as<const Assignment>());

@@ -301,6 +301,149 @@ void StatementTest::testFragment()
 }
 
 
+void StatementTest::testGetDefinitions()
+{
+    // GotoStatement
+    {
+        LocationSet defs;
+        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+
+        gs->getDefinitions(defs, false);
+
+        QVERIFY(defs.empty());
+    }
+
+    // BranchStatement
+    {
+        LocationSet defs;
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+
+        bs->getDefinitions(defs, false);
+
+        QVERIFY(defs.empty());
+    }
+
+    // CaseStatement
+    {
+        LocationSet defs;
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+
+        cs->getDefinitions(defs, false);
+
+        QVERIFY(defs.empty());
+    }
+
+    // CallStatement
+    {
+        LocationSet defs;
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        QVERIFY(call->isChildless());
+        QVERIFY(call->getDefines().empty());
+
+        call->getDefinitions(defs, true);
+        QCOMPARE(defs.toString(), "");
+
+        defs.clear();
+        call->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "<all>");
+    }
+
+    {
+        LocationSet defs;
+        StatementList callDefines;
+
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        callDefines.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
+        call->setDefines(callDefines);
+
+        call->getDefinitions(defs, true);
+        QCOMPARE(defs.toString(), "r24");
+    }
+
+    // PhiAssign
+    {
+        LocationSet defs;
+
+        // %eax := phi()
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
+        phi->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "r24");
+    }
+
+    // Assign
+    {
+        // foo@[m:n] really only defines foo
+        LocationSet defs;
+
+        // %eax@[0:7] := %ch
+        std::shared_ptr<Assign> asgn(new Assign(
+            Ternary::get(opAt,
+                         Location::regOf(REG_X86_EAX),
+                         Const::get(0),
+                         Const::get(7)),
+            Location::regOf(REG_X86_CH)));
+
+        asgn->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "r24");
+    }
+
+    {
+        LocationSet defs;
+
+        // %flags := %ah
+        std::shared_ptr<Assign> asgn(new Assign(Terminal::get(opFlags), Location::regOf(REG_X86_AH)));
+        asgn->getDefinitions(defs, false);
+
+        QCOMPARE(defs.toString(), "%flags, %ZF, %CF, %NF, %OF");
+    }
+
+    // BoolAssign
+    {
+        LocationSet defs;
+
+        // %flags := %ah
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(8));
+        asgn->setLeft(Location::regOf(REG_X86_ECX));
+        asgn->getDefinitions(defs, false);
+
+        QCOMPARE(defs.toString(), "r25");
+    }
+
+    // ImplicitAssign
+    {
+        LocationSet defs;
+
+        // %eax := -
+        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
+        imp->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "r24");
+    }
+
+    // ReturnStatement
+    {
+        Prog prog("testProg", &m_project);
+
+        UserProc *proc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+        proc->setSignature(std::make_shared<Signature>("test"));
+        IRFragment *frag = proc->getCFG()->createFragment(FragType::Ret, nullptr, nullptr);
+        LocationSet defs;
+        std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
+        ret->setFragment(frag);
+        ret->setProc(proc);
+
+        ret->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "");
+
+        ret->getCollector()->collectDef(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        ret->updateModifieds();
+        QVERIFY(ret->getModifieds().existsOnLeft(Location::regOf(REG_X86_EAX)));
+
+        ret->getDefinitions(defs, false);
+        QCOMPARE(defs.toString(), "r24");
+    }
+}
+
+
 void StatementTest::testEmpty()
 {
     QSKIP("TODO");

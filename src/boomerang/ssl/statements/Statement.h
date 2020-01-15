@@ -208,16 +208,16 @@ public:
     bool isCase() const { return m_kind == StmtType::Case; }
 
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
-    /// returns a set of locations defined by this statement in a LocationSet argument.
-    virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}
+    /// \returns a set of locations defined by this statement in a LocationSet argument.
+    virtual void getDefinitions(LocationSet &def, bool assumeABICompliance) const;
 
-    /// \returns true if this Statement defines loc
-    virtual bool definesLoc(SharedExp /*loc*/) const { return false; }
+    /// \returns true if this Statement defines \p loc
+    virtual bool definesLoc(SharedExp loc) const;
 
     /**
      * Display a text reprentation of this statement to the given stream
      * \note  Usually called from RTL::print, in which case the first 9
-     *        chars of the print have already been output to os
+     *        chars of the print have already been output to \p os
      * \param os - stream to write to
      */
     virtual void print(OStream &os) const = 0;
@@ -278,7 +278,7 @@ public:
 
     /// simplify internal address expressions (a[m[x]] -> x) etc
     /// Only Assignments override at present
-    virtual void simplifyAddr() {}
+    virtual void simplifyAddr();
 
     /// Meet the type associated with \p e with \p ty
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);

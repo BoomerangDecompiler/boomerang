@@ -97,10 +97,9 @@ void Assignment::setTypeForExp(SharedExp /*e*/, SharedType ty)
 
 bool Assignment::definesLoc(SharedExp loc) const
 {
-    if (m_lhs->getOper() == opAt) { // For foo@[x:y], match of foo==loc OR whole thing == loc
-        if (*m_lhs->getSubExp1() == *loc) {
-            return true;
-        }
+    // For foo@[x:y], match of foo==loc OR whole thing == loc
+    if (m_lhs->getOper() == opAt && *m_lhs->getSubExp1() == *loc) {
+        return true;
     }
 
     return *m_lhs == *loc;

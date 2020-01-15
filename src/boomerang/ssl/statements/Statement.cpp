@@ -98,6 +98,22 @@ void Statement::setProc(UserProc *proc)
 }
 
 
+void Statement::getDefinitions(LocationSet &, bool) const
+{
+}
+
+
+bool Statement::definesLoc(SharedExp) const
+{
+    return false;
+}
+
+
+void Statement::simplifyAddr()
+{
+}
+
+
 OStream &operator<<(OStream &os, const SharedStmt &s)
 {
     if (s == nullptr) {
