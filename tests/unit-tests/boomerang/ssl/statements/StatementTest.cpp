@@ -286,6 +286,21 @@ void StatementTest::testClone()
 }
 
 
+void StatementTest::testFragment()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, nullptr, nullptr);
+
+    std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
+
+    QVERIFY(ret->getFragment() == nullptr);
+    ret->setFragment(frag);
+    QVERIFY(ret->getFragment() == frag);
+    ret->setFragment(nullptr);
+    QVERIFY(ret->getFragment() == nullptr);
+}
+
+
 void StatementTest::testEmpty()
 {
     QSKIP("TODO");

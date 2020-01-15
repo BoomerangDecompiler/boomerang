@@ -23,6 +23,7 @@ class StatementTest : public BoomerangTestWithPlugins
 
 private slots:
     void testClone();
+    void testFragment();
 
 private slots:
     void testEmpty();
