@@ -67,13 +67,6 @@ public:
     Address getFixedDest() const;
 
     /**
-     * Adjust the destination of this CTI by a given amount (i.e. a constant offset).
-     * Causes an error if this destination is not a fixed destination.
-     * \param delta the amount to add to the destination (can be negative)
-     */
-    void adjustFixedDest(int delta);
-
-    /**
      * Sets the fact that this call is computed.
      * \todo This should really be removed, once CaseStatement
      * and HLNwayCall are implemented properly

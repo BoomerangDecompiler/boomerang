@@ -75,19 +75,6 @@ const SharedExp GotoStatement::getDest() const
 }
 
 
-void GotoStatement::adjustFixedDest(int delta)
-{
-    // Ensure that the destination is fixed.
-    if (!m_dest || !m_dest->isIntConst()) {
-        LOG_ERROR("Can't adjust destination of non-static CTI");
-        return;
-    }
-
-    auto theConst = m_dest->access<Const>();
-    theConst->setAddr(theConst->getAddr() + delta);
-}
-
-
 bool GotoStatement::search(const Exp &pattern, SharedExp &result) const
 {
     result = nullptr;
