@@ -24,13 +24,12 @@
 
 
 BoolAssign::BoolAssign(int size)
-    : Assignment(nullptr)
+    : Assignment(StmtType::BoolAssign, nullptr)
     , m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
     , m_size(size)
 {
-    m_kind = StmtType::BoolAssign;
 }
 
 

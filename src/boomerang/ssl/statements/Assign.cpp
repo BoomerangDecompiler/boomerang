@@ -28,27 +28,24 @@
 
 
 Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)
-    : Assignment(lhs)
+    : Assignment(StmtType::Assign, lhs)
     , m_rhs(rhs)
     , m_guard(guard)
 {
-    m_kind = StmtType::Assign;
 }
 
 
 Assign::Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard)
-    : Assignment(ty, lhs)
+    : Assignment(StmtType::Assign, ty, lhs)
     , m_rhs(rhs)
     , m_guard(guard)
 {
-    m_kind = StmtType::Assign;
 }
 
 
 Assign::Assign(const Assign &other)
-    : Assignment(m_lhs->clone())
+    : Assignment(StmtType::Assign, m_lhs->clone())
 {
-    m_kind  = StmtType::Assign;
     m_rhs   = other.m_rhs->clone();
     m_type  = nullptr;
     m_guard = nullptr;
@@ -255,7 +252,7 @@ bool Assign::accept(StmtPartModifier *v)
 
 
 Assign::Assign()
-    : Assignment(nullptr)
+    : Assignment(StmtType::Assign, nullptr)
     , m_rhs(nullptr)
     , m_guard(nullptr)
 {

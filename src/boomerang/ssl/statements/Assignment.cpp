@@ -24,8 +24,8 @@
 #include <QTextStreamManipulator>
 
 
-Assignment::Assignment(SharedExp lhs)
-    : TypingStatement(VoidType::get())
+Assignment::Assignment(StmtType kind, SharedExp lhs)
+    : TypingStatement(kind, VoidType::get())
     , m_lhs(lhs)
 {
     if (lhs && lhs->isRegOfConst()) {
@@ -40,8 +40,8 @@ Assignment::Assignment(SharedExp lhs)
 }
 
 
-Assignment::Assignment(SharedType ty, SharedExp lhs)
-    : TypingStatement(ty)
+Assignment::Assignment(StmtType kind, SharedType ty, SharedExp lhs)
+    : TypingStatement(kind, ty)
     , m_lhs(lhs)
 {
 }

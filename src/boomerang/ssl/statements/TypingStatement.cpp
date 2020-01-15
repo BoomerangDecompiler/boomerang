@@ -10,7 +10,8 @@
 #include "TypingStatement.h"
 
 
-TypingStatement::TypingStatement(SharedType ty)
-    : m_type(ty)
+TypingStatement::TypingStatement(StmtType kind, SharedType ty)
+    : Statement(kind)
+    , m_type(ty)
 {
 }

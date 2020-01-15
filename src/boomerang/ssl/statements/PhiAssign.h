@@ -42,17 +42,15 @@ public:
 
 public:
     PhiAssign(SharedExp _lhs)
-        : Assignment(_lhs)
+        : Assignment(StmtType::PhiAssign, _lhs)
         , m_defs()
     {
-        m_kind = StmtType::PhiAssign;
     }
 
     PhiAssign(SharedType ty, SharedExp _lhs)
-        : Assignment(ty, _lhs)
+        : Assignment(StmtType::PhiAssign, ty, _lhs)
         , m_defs()
     {
-        m_kind = StmtType::PhiAssign;
     }
 
     PhiAssign(const PhiAssign &other) = delete;

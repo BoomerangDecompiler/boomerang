@@ -21,17 +21,17 @@
 
 
 GotoStatement::GotoStatement()
-    : m_dest(nullptr)
+    : Statement(StmtType::Goto)
+    , m_dest(nullptr)
     , m_isComputed(false)
 {
-    m_kind = StmtType::Goto;
 }
 
 
 GotoStatement::GotoStatement(Address jumpDest)
-    : m_isComputed(false)
+    : Statement(StmtType::Goto)
+    , m_isComputed(false)
 {
-    m_kind = StmtType::Goto;
     m_dest = Const::get(jumpDest);
 }
 

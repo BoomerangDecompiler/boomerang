@@ -20,8 +20,8 @@
 class BOOMERANG_API Assignment : public TypingStatement
 {
 public:
-    Assignment(SharedExp lhs);
-    Assignment(SharedType ty, SharedExp lhs);
+    Assignment(StmtType kind, SharedExp lhs);
+    Assignment(StmtType kind, SharedType ty, SharedExp lhs);
     Assignment(const Assignment &other) = default;
     Assignment(Assignment &&other)      = default;
 

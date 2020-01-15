@@ -28,9 +28,9 @@
 
 
 ReturnStatement::ReturnStatement()
-    : m_retAddr(Address::INVALID)
+    : Statement(StmtType::Ret)
+    , m_retAddr(Address::INVALID)
 {
-    m_kind = StmtType::Ret;
 }
 
 

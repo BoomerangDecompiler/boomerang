@@ -30,10 +30,11 @@ SharedStmt Statement::wild = SharedStmt(new Assign(Terminal::get(opNil), Termina
 static uint32 m_nextStmtID = 0;
 
 
-Statement::Statement()
+Statement::Statement(StmtType kind)
     : m_fragment(nullptr)
     , m_proc(nullptr)
     , m_number(0)
+    , m_kind(kind)
 {
     m_id = m_nextStmtID++;
 }
@@ -44,6 +45,7 @@ Statement::Statement(const Statement &other)
     , m_fragment(other.m_fragment)
     , m_proc(other.m_proc)
     , m_number(other.m_number)
+    , m_kind(other.m_kind)
 {
     m_id = m_nextStmtID++;
 }
@@ -58,8 +60,7 @@ Statement &Statement::operator=(const Statement &other)
     m_fragment = other.m_fragment;
     m_proc     = other.m_proc;
     m_number   = other.m_number;
-
-    m_id = m_nextStmtID++;
+    m_id       = m_nextStmtID++;
 
     return *this;
 }

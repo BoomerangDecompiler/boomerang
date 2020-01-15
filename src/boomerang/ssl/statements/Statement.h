@@ -100,7 +100,7 @@ class BOOMERANG_API Statement : public std::enable_shared_from_this<Statement>
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 public:
-    Statement();
+    Statement(StmtType kind);
     Statement(const Statement &other);
     Statement(Statement &&other) = default;
 

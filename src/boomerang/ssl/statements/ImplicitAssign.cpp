@@ -21,23 +21,21 @@
 
 
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)
-    : Assignment(_lhs)
+    : Assignment(StmtType::ImpAssign, _lhs)
 {
-    m_kind = StmtType::ImpAssign;
 }
 
 
 ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs)
-    : Assignment(ty, _lhs)
+    : Assignment(StmtType::ImpAssign, ty, _lhs)
 {
-    m_kind = StmtType::ImpAssign;
 }
 
 
 ImplicitAssign::ImplicitAssign(const ImplicitAssign &other)
-    : Assignment(other.m_type ? other.m_type->clone() : nullptr, other.m_lhs->clone())
+    : Assignment(StmtType::ImpAssign, other.m_type ? other.m_type->clone() : nullptr,
+                 other.m_lhs->clone())
 {
-    m_kind = StmtType::ImpAssign;
 }
 
 
