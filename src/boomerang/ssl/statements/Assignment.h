@@ -22,12 +22,12 @@ class BOOMERANG_API Assignment : public TypingStatement
 public:
     Assignment(StmtType kind, SharedExp lhs);
     Assignment(StmtType kind, SharedType ty, SharedExp lhs);
-    Assignment(const Assignment &other) = default;
-    Assignment(Assignment &&other)      = default;
+    Assignment(const Assignment &other);
+    Assignment(Assignment &&other) = default;
 
     ~Assignment() override;
 
-    Assignment &operator=(const Assignment &other) = default;
+    Assignment &operator=(const Assignment &other);
     Assignment &operator=(Assignment &&other) = default;
 
 public:

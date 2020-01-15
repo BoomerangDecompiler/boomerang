@@ -28,8 +28,10 @@ CaseStatement::CaseStatement()
 
 CaseStatement::CaseStatement(const CaseStatement &other)
     : GotoStatement(other)
-    , m_switchInfo(new SwitchInfo(*other.m_switchInfo))
 {
+    if (other.m_switchInfo) {
+        m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    }
 }
 
 
@@ -42,7 +44,10 @@ CaseStatement &CaseStatement::operator=(const CaseStatement &other)
 {
     GotoStatement::operator=(other);
 
-    m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    if (other.m_switchInfo) {
+        m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    }
+
     return *this;
 }
 
@@ -109,7 +114,7 @@ void CaseStatement::print(OStream &os) const
 
 SharedStmt CaseStatement::clone() const
 {
-    std::shared_ptr<CaseStatement> ret(new CaseStatement());
+    std::shared_ptr<CaseStatement> ret(new CaseStatement(*this));
 
     ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
@@ -119,11 +124,6 @@ SharedStmt CaseStatement::clone() const
         *ret->m_switchInfo           = *m_switchInfo;
         ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
     }
-
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
 
     return ret;
 }

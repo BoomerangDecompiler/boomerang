@@ -23,12 +23,14 @@
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)
     : Assignment(StmtType::ImpAssign, _lhs)
 {
+    assert(_lhs != nullptr);
 }
 
 
 ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs)
     : Assignment(StmtType::ImpAssign, ty, _lhs)
 {
+    assert(_lhs != nullptr);
 }
 
 
@@ -41,7 +43,7 @@ ImplicitAssign::ImplicitAssign(const ImplicitAssign &other)
 
 SharedStmt ImplicitAssign::clone() const
 {
-    return std::make_shared<ImplicitAssign>(m_type, m_lhs);
+    return std::make_shared<ImplicitAssign>(*this);
 }
 
 

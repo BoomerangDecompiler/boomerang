@@ -33,8 +33,31 @@ BoolAssign::BoolAssign(int size)
 }
 
 
+BoolAssign::BoolAssign(const BoolAssign &other)
+    : Assignment(other)
+    , m_jumpType(other.m_jumpType)
+    , m_cond(other.m_cond ? other.m_cond->clone() : nullptr)
+    , m_isFloat(other.m_isFloat)
+    , m_size(other.m_size)
+{
+}
+
+
 BoolAssign::~BoolAssign()
 {
+}
+
+
+BoolAssign &BoolAssign::operator=(const BoolAssign &other)
+{
+    Assignment::operator=(other);
+
+    m_jumpType = other.m_jumpType;
+    m_cond     = other.m_cond ? other.m_cond->clone() : nullptr;
+    m_isFloat  = other.m_isFloat;
+    m_size     = other.m_size;
+
+    return *this;
 }
 
 
@@ -119,16 +142,9 @@ void BoolAssign::printCompact(OStream &os) const
 
 SharedStmt BoolAssign::clone() const
 {
-    std::shared_ptr<BoolAssign> ret(new BoolAssign(m_size));
+    std::shared_ptr<BoolAssign> ret(new BoolAssign(*this));
 
-    ret->m_jumpType = m_jumpType;
-    ret->m_cond     = (m_cond) ? m_cond->clone() : nullptr;
-    ret->m_isFloat  = m_isFloat;
-    ret->m_size     = m_size;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+    ret->m_cond = m_cond ? m_cond->clone() : nullptr;
 
     return ret;
 }

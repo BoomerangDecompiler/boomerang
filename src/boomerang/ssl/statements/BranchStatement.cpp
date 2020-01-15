@@ -202,17 +202,10 @@ void BranchStatement::print(OStream &os) const
 
 SharedStmt BranchStatement::clone() const
 {
-    std::shared_ptr<BranchStatement> ret(new BranchStatement);
+    std::shared_ptr<BranchStatement> ret(new BranchStatement(*this));
 
-    ret->m_dest       = m_dest->clone();
-    ret->m_isComputed = m_isComputed;
-    ret->m_jumpType   = m_jumpType;
-    ret->m_cond       = m_cond ? m_cond->clone() : nullptr;
-    ret->m_isFloat    = m_isFloat;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+    ret->m_dest = m_dest ? m_dest->clone() : nullptr;
+    ret->m_cond = m_cond ? m_cond->clone() : nullptr;
 
     return ret;
 }

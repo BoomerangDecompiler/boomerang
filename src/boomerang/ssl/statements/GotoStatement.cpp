@@ -140,14 +140,9 @@ bool GotoStatement::isComputed() const
 
 SharedStmt GotoStatement::clone() const
 {
-    std::shared_ptr<GotoStatement> ret(new GotoStatement);
+    std::shared_ptr<GotoStatement> ret(new GotoStatement(*this));
 
-    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
-    ret->m_isComputed = m_isComputed;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+    ret->m_dest = m_dest ? m_dest->clone() : nullptr;
 
     return ret;
 }

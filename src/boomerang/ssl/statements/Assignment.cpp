@@ -47,8 +47,25 @@ Assignment::Assignment(StmtType kind, SharedType ty, SharedExp lhs)
 }
 
 
+Assignment::Assignment(const Assignment &other)
+    : TypingStatement(other)
+    , m_lhs(other.m_lhs ? other.m_lhs->clone() : nullptr)
+{
+}
+
+
 Assignment::~Assignment()
 {
+}
+
+
+Assignment &Assignment::operator=(const Assignment &other)
+{
+    TypingStatement::operator=(other);
+
+    m_lhs = other.m_lhs ? other.m_lhs->clone() : nullptr;
+
+    return *this;
 }
 
 

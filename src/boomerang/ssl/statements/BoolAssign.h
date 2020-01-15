@@ -23,12 +23,12 @@ class BOOMERANG_API BoolAssign : public Assignment
 public:
     /// \param size the size of the assignment
     BoolAssign(int size);
-    BoolAssign(const BoolAssign &other) = default;
-    BoolAssign(BoolAssign &&other)      = default;
+    BoolAssign(const BoolAssign &other);
+    BoolAssign(BoolAssign &&other) = default;
 
     ~BoolAssign() override;
 
-    BoolAssign &operator=(const BoolAssign &other) = default;
+    BoolAssign &operator=(const BoolAssign &other);
     BoolAssign &operator=(BoolAssign &&other) = default;
 
 public:

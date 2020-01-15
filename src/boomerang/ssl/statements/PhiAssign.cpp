@@ -27,7 +27,7 @@
 
 SharedStmt PhiAssign::clone() const
 {
-    std::shared_ptr<PhiAssign> pa(new PhiAssign(m_type, m_lhs));
+    std::shared_ptr<PhiAssign> pa(new PhiAssign(m_type->clone(), m_lhs->clone()));
 
     for (const auto &[frag, ref] : m_defs) {
         assert(ref->getSubExp1());
