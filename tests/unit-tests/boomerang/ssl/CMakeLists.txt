@@ -30,17 +30,17 @@ BOOMERANG_ADD_TEST(
 )
 
 
-# BOOMERANG_ADD_TEST(
-#     NAME StatementTest
-#     SOURCES statements/StatementTest.h statements/StatementTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#     DEPENDENCIES
-#         boomerang-ElfLoader
-#         boomerang-X86FrontEnd
-# )
+BOOMERANG_ADD_TEST(
+    NAME StatementTest
+    SOURCES statements/StatementTest.h statements/StatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)
 
 
 BOOMERANG_ADD_TEST(
