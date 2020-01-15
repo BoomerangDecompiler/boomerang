@@ -22,6 +22,9 @@ class StatementTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
+    void testClone();
+
+private slots:
     void testEmpty();
     void testFlow();
     void testKill();
@@ -37,8 +40,6 @@ private slots:
     /// Test push of argument (X86 style), then call self
     void testRecursion();
 
-    /// Test cloning of Assigns (and exps)
-    void testClone();
 
     /// Test assignment test
     void testIsAssign();

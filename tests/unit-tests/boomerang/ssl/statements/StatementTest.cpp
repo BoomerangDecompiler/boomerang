@@ -46,6 +46,246 @@
 #define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
+void StatementTest::testClone()
+{
+    // GotoStatement
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+        SharedStmt clone = gs->clone();
+
+        QVERIFY(&(*clone) != &(*gs));
+        QVERIFY(clone->isGoto());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != gs->getID());
+
+        std::shared_ptr<GotoStatement> gsClone = clone->as<GotoStatement>();
+        QVERIFY(gsClone->getDest() == nullptr);
+        QVERIFY(!gsClone->isComputed());
+    }
+
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x1000)));
+        SharedStmt clone = gs->clone();
+
+        QVERIFY(&(*clone) != &(*gs));
+        QVERIFY(clone->isGoto());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != gs->getID());
+
+        std::shared_ptr<GotoStatement> gsClone = clone->as<GotoStatement>();
+        QVERIFY(gsClone->getDest() != nullptr);
+        QVERIFY(gsClone->getDest() != gs->getDest()); // ptr compare
+        QVERIFY(*gsClone->getDest() == *Const::get(Address(0x1000)));
+        QVERIFY(!gsClone->isComputed());
+    }
+
+    // BranchStatement
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        SharedStmt clone = bs->clone();
+
+        QVERIFY(&(*clone) != &(*bs));
+        QVERIFY(clone->isBranch());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != bs->getID());
+
+        std::shared_ptr<BranchStatement> bsClone = clone->as<BranchStatement>();
+        QCOMPARE(bsClone->getDest(), nullptr);
+        QCOMPARE(bsClone->getCondExpr(), nullptr);
+        QCOMPARE(bsClone->isComputed(), bs->isComputed());
+
+        QCOMPARE(bsClone->getCondType(), bs->getCondType());
+        QCOMPARE(bsClone->isFloatBranch(), bs->isFloatBranch());
+    }
+
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setCondType(BranchType::JE, true);
+        bs->setDest(Address(0x1000));
+        SharedStmt clone = bs->clone();
+
+        QVERIFY(&(*clone) != &(*bs));
+        QVERIFY(clone->isBranch());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != bs->getID());
+
+        std::shared_ptr<BranchStatement> bsClone = clone->as<BranchStatement>();
+        QVERIFY(bsClone->getDest() != nullptr);
+        QVERIFY(bsClone->getCondExpr() != nullptr);
+
+        QVERIFY(&(*bsClone->getDest())     != &(*bs->getDest()));
+        QVERIFY(&(*bsClone->getCondExpr()) != &(*bs->getCondExpr()));
+
+        QCOMPARE(*bsClone->getDest(),     *bs->getDest());
+        QCOMPARE(*bsClone->getCondExpr(), *bs->getCondExpr());
+
+        QCOMPARE(bsClone->isComputed(), bs->isComputed());
+        QCOMPARE(bsClone->getCondType(), bs->getCondType());
+        QCOMPARE(bsClone->isFloatBranch(), bs->isFloatBranch());
+    }
+
+    // CaseStatement
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        SharedStmt clone = cs->clone();
+
+        QVERIFY(&(*clone) != &(*cs));
+        QVERIFY(clone->isCase());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != cs->getID());
+
+        std::shared_ptr<CaseStatement> csClone = clone->as<CaseStatement>();
+        QVERIFY(csClone->getDest() == nullptr);
+        QVERIFY(!csClone->isComputed());
+        QVERIFY(csClone->getSwitchInfo() == nullptr);
+    }
+
+    // CallStatement
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        SharedStmt clone = call->clone();
+
+        QVERIFY(&(*clone) != &(*call));
+        QVERIFY(clone->isCall());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != call->getID());
+
+        std::shared_ptr<CallStatement> callClone = clone->as<CallStatement>();
+        QVERIFY(callClone->getDest() == nullptr);
+        QVERIFY(!callClone->isComputed());
+
+        QCOMPARE(callClone->getDestProc(), nullptr);
+        QCOMPARE(callClone->isReturnAfterCall(), false);
+        QCOMPARE(callClone->getSignature(), nullptr);
+    }
+
+    // PhiAssign
+    {
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
+        SharedStmt clone = phi->clone();
+
+        QVERIFY(&(*clone) != &(*phi));
+        QVERIFY(clone->isPhi());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != phi->getID());
+
+        std::shared_ptr<PhiAssign> phiClone = clone->as<PhiAssign>();
+        QCOMPARE(phiClone->getNumDefs(), 0);
+
+        QVERIFY(phiClone->getLeft() != nullptr);
+        QVERIFY(phiClone->getLeft() != phi->getLeft());
+        QVERIFY(*phiClone->getLeft() == *phi->getLeft());
+
+        QVERIFY(phiClone->getType() != nullptr);
+        QVERIFY(phiClone->getType() != phi->getType());
+        QVERIFY(*phiClone->getType() == *phi->getType());
+    }
+
+    // Assign
+    {
+        // %eax := %ebx
+        std::shared_ptr<Assign> asgn(new Assign(IntegerType::get(32, Sign::Signed),
+                                                Location::regOf(REG_X86_EAX),
+                                                Location::regOf(REG_X86_EBX)));
+
+        SharedStmt clone = asgn->clone();
+
+        QVERIFY(&(*clone) != &(*asgn));
+        QVERIFY(clone->isAssign());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != asgn->getID());
+
+        std::shared_ptr<Assign> asgnClone = clone->as<Assign>();
+
+        QVERIFY(asgnClone->getLeft() != nullptr);
+        QVERIFY(asgnClone->getLeft() != asgn->getLeft());
+        QVERIFY(*asgnClone->getLeft() == *asgn->getLeft());
+
+        QVERIFY(asgnClone->getRight() != nullptr);
+        QVERIFY(asgnClone->getRight() != asgn->getRight());
+        QVERIFY(*asgnClone->getRight() == *asgn->getRight());
+
+        QVERIFY(asgnClone->getGuard() == nullptr);
+    }
+
+    {
+        // %ecx = 0 => %eax := %ebx
+        std::shared_ptr<Assign> asgn(new Assign(IntegerType::get(32, Sign::Signed),
+            Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_EBX),
+            Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0))));
+
+        SharedStmt clone = asgn->clone();
+
+        QVERIFY(&(*clone) != &(*asgn));
+        QVERIFY(clone->isAssign());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != asgn->getID());
+
+        std::shared_ptr<Assign> asgnClone = clone->as<Assign>();
+
+        QVERIFY(asgnClone->getLeft() != nullptr);
+        QVERIFY(asgnClone->getLeft() != asgn->getLeft());
+        QVERIFY(*asgnClone->getLeft() == *asgn->getLeft());
+
+        QVERIFY(asgnClone->getRight() != nullptr);
+        QVERIFY(asgnClone->getRight() != asgn->getRight());
+        QVERIFY(*asgnClone->getRight() == *asgn->getRight());
+
+        QVERIFY(asgnClone->getGuard() != nullptr);
+        QVERIFY(asgnClone->getGuard() != asgn->getGuard());
+        QVERIFY(*asgnClone->getGuard() == *asgn->getGuard());
+    }
+
+    // BoolAssign
+    {
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
+        bas->setLeft(Location::regOf(REG_X86_EAX));
+        SharedStmt clone = bas->clone();
+
+        QVERIFY(&(*clone) != &(*bas));
+        QVERIFY(clone->isBool());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != bas->getID());
+
+        std::shared_ptr<BoolAssign> basClone = clone->as<BoolAssign>();
+        QVERIFY(basClone->getLeft() != nullptr);
+        QVERIFY(basClone->getLeft() != bas->getLeft());
+        QVERIFY(*basClone->getLeft() == *bas->getLeft());
+    }
+
+    // ImplicitAssign
+    {
+        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+        SharedStmt clone = ias->clone();
+
+        QVERIFY(&(*clone) != &(*ias));
+        QVERIFY(clone->isImplicit());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != ias->getID());
+
+        std::shared_ptr<ImplicitAssign> iasClone = clone->as<ImplicitAssign>();
+        QVERIFY(iasClone->getLeft() != nullptr);
+        QVERIFY(iasClone->getLeft() != ias->getLeft());
+        QVERIFY(*iasClone->getLeft() == *ias->getLeft());
+    }
+
+    // ReturnStatement
+    {
+        std::shared_ptr<ReturnStatement> ret(new ReturnStatement());
+        SharedStmt clone = ret->clone();
+
+        QVERIFY(&(*clone) != &(*ret));
+        QVERIFY(clone->isReturn());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != ret->getID());
+
+        std::shared_ptr<ReturnStatement> retClone = clone->as<ReturnStatement>();
+        QVERIFY(retClone->getNumReturns() == 0);
+        QVERIFY(retClone->getRetAddr() == ret->getRetAddr());
+    }
+}
+
+
 void StatementTest::testEmpty()
 {
     QSKIP("TODO");
@@ -839,37 +1079,6 @@ void StatementTest::testRecursion()
 //         "\n";
 //
 //     compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testClone()
-{
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_AL), Binary::get(opPlus, Location::regOf(REG_X86_CL), Const::get(99))));
-    std::shared_ptr<Assign> a2(new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"), Location::param("y")));
-    std::shared_ptr<Assign> a3(new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"), Location::param("q")));
-
-    SharedStmt c1 = a1->clone();
-    SharedStmt c2 = a2->clone();
-    SharedStmt c3 = a3->clone();
-
-    QString original, clone;
-    OStream original_st(&original);
-    OStream clone_st(&clone);
-
-    a1->print(original_st);
-    a1.reset(); // And c1 should still stand!
-    c1->print(clone_st);
-    a2->print(original_st);
-    c2->print(clone_st);
-    a3->print(original_st);
-    c3->print(clone_st);
-
-    QString expected("   0 *v* r8 := r9 + 99"
-                     "   0 *i16* x := y"
-                     "   0 *u16* z := q");
-
-    QCOMPARE(original, expected);
-    QCOMPARE(clone, expected);
 }
 
 
