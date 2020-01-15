@@ -142,7 +142,7 @@ SharedStmt GotoStatement::clone() const
 {
     std::shared_ptr<GotoStatement> ret(new GotoStatement);
 
-    ret->m_dest       = m_dest->clone();
+    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
     // Statement members
     ret->m_fragment = m_fragment;
