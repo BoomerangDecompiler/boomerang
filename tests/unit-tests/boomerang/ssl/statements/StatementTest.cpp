@@ -15,6 +15,7 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProcDecompiler.h"
@@ -36,7 +37,6 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/log/Log.h"
-
 
 #include <sstream>
 #include <map>
@@ -288,8 +288,11 @@ void StatementTest::testClone()
 
 void StatementTest::testFragment()
 {
+    Prog prog("testProg", &m_project);
+    BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+
     UserProc proc(Address(0x1000), "test", nullptr);
-    IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, nullptr, nullptr);
+    IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb);
 
     std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
 
@@ -422,10 +425,11 @@ void StatementTest::testGetDefinitions()
     // ReturnStatement
     {
         Prog prog("testProg", &m_project);
+        BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
         UserProc *proc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
         proc->setSignature(std::make_shared<Signature>("test"));
-        IRFragment *frag = proc->getCFG()->createFragment(FragType::Ret, nullptr, nullptr);
+        IRFragment *frag = proc->getCFG()->createFragment(FragType::Ret, createRTLs(Address(0x1000), 1, 1), bb);
         LocationSet defs;
         std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
         ret->setFragment(frag);
@@ -442,6 +446,188 @@ void StatementTest::testGetDefinitions()
         QCOMPARE(defs.toString(), "r24");
     }
 }
+
+
+void StatementTest::testDefinesLoc()
+{
+    // GotoStatement
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x1000)));
+
+        QVERIFY(!gs->definesLoc(Const::get(Address(0x1000))));
+        QVERIFY(!gs->definesLoc(nullptr));
+        QVERIFY(!gs->definesLoc(Location::regOf(REG_X86_ESP)));
+    }
+
+    // BranchStatement
+    {
+        const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0));
+
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Address(0x1000));
+        bs->setCondExpr(condExp);
+
+        QVERIFY(!bs->definesLoc(Const::get(Address(0x1000))));
+        QVERIFY(!bs->definesLoc(nullptr));
+        QVERIFY(!bs->definesLoc(Location::regOf(REG_X86_ESP)));
+        QVERIFY(!bs->definesLoc(condExp));
+        QVERIFY(!bs->definesLoc(Location::regOf(REG_X86_EAX)));
+    }
+
+    // CaseStatement
+    {
+        const SharedExp destExp = Location::regOf(REG_X86_ECX);
+
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        cs->setDest(destExp);
+
+        QVERIFY(!cs->definesLoc(Const::get(Address(0x1000))));
+        QVERIFY(!cs->definesLoc(nullptr));
+        QVERIFY(!cs->definesLoc(Location::regOf(REG_X86_ESP)));
+        QVERIFY(!cs->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    // CallStatement
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->getDefines().append(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        call->setDest(Address(0x1000));
+
+        QVERIFY(!call->definesLoc(Location::regOf(REG_X86_ECX)));
+        QVERIFY( call->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!call->definesLoc(Const::get(0x1000)));
+    }
+
+    // PhiAssign
+    {
+        // %eax := phi()
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
+
+        QVERIFY(phi->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!phi->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    {
+        const SharedExp def = Ternary::get(opAt,
+                                           Location::regOf(REG_X86_EAX),
+                                           Const::get(0),
+                                           Const::get(7));
+
+        // %eax@[0:7] := phi()
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(def));
+
+        QVERIFY(phi->definesLoc(def));
+        QVERIFY(phi->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!phi->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    // Assign
+    {
+        // %eax := %ecx
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+
+        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    {
+        const SharedExp def = Ternary::get(opAt,
+                                           Location::regOf(REG_X86_EAX),
+                                           Const::get(0),
+                                           Const::get(7));
+
+        // %eax@[0:7] := %ch
+        std::shared_ptr<Assign> asgn(new Assign(def, Location::regOf(REG_X86_CX)));
+
+        QVERIFY(asgn->definesLoc(def));
+        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_CH)));
+    }
+
+    // BoolAssign
+    {
+        // %eax := (%ecx != 0)
+        const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(32));
+        asgn->setLeft(Location::regOf(REG_X86_EAX));
+        asgn->setCondExpr(condExp);
+
+        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
+        QVERIFY(!asgn->definesLoc(condExp));
+    }
+
+    {
+        const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
+        const SharedExp def = Ternary::get(opAt,
+                                           Location::regOf(REG_X86_EAX),
+                                           Const::get(0),
+                                           Const::get(7));
+
+        // %eax@[0:7] := (%ecx != 0)
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(8));
+        asgn->setLeft(def);
+        asgn->setCondExpr(condExp);
+
+        QVERIFY(asgn->definesLoc(def));
+        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
+        QVERIFY(!asgn->definesLoc(condExp));
+    }
+
+    // ImplicitAssign
+    {
+        // %eax := -
+        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+
+        QVERIFY(imp->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!imp->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    {
+        const SharedExp def = Ternary::get(opAt,
+                                           Location::regOf(REG_X86_EAX),
+                                           Const::get(0),
+                                           Const::get(7));
+
+        // %eax@[0:7] := -
+        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(def));
+
+        QVERIFY(imp->definesLoc(def));
+        QVERIFY(imp->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!imp->definesLoc(Location::regOf(REG_X86_ECX)));
+    }
+
+    // ReturnStatement
+    {
+        Prog prog("testProg", &m_project);
+        BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
+
+        UserProc *proc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+        proc->setSignature(std::make_shared<Signature>("test"));
+        IRFragment *frag = proc->getCFG()->createFragment(FragType::Ret, createRTLs(Address(0x1000), 1, 1), bb);
+        LocationSet defs;
+        std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
+        ret->setFragment(frag);
+        ret->setProc(proc);
+
+        QVERIFY(!ret->definesLoc(nullptr));
+
+        const SharedExp def = Ternary::get(opAt,
+                                           Location::regOf(REG_X86_EAX),
+                                           Const::get(0),
+                                           Const::get(7));
+
+        ret->getCollector()->collectDef(std::make_shared<Assign>(def, Location::regOf(REG_X86_CH)));
+        ret->updateModifieds();
+        QVERIFY(ret->getModifieds().existsOnLeft(Location::regOf(REG_X86_EAX)));
+
+        QVERIFY(!ret->definesLoc(Location::regOf(REG_X86_CH)));
+        QVERIFY(ret->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(ret->definesLoc(def));
+    }
+}
+
 
 
 void StatementTest::testEmpty()

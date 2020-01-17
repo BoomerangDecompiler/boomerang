@@ -25,6 +25,7 @@ private slots:
     void testClone();
     void testFragment();
     void testGetDefinitions();
+    void testDefinesLoc();
 
 private slots:
     void testEmpty();
