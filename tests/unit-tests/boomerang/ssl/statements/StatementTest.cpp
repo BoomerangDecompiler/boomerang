@@ -1058,22 +1058,110 @@ void StatementTest::testSearchAll()
 void StatementTest::testSearchAndReplace()
 {
     // GotoStatement
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+        gs->setDest(Location::regOf(REG_X86_ECX));
+
+        auto gsClone = gs->clone()->as<GotoStatement>();
+        QVERIFY(!gs->searchAndReplace(*Const::get(Address(0x1000)), Const::get(0x800)));
+        QCOMPARE(gs->toString(), gsClone->toString());
+
+        gsClone->setDest(Address(0x1000));
+
+        QVERIFY(gs->searchAndReplace(*Location::regOf(REG_X86_ECX), Const::get(Address(0x1000))));
+        QCOMPARE(gs->toString(), gsClone->toString());
+    }
 
     // BranchStatement
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Location::regOf(REG_X86_ECX));
+
+        auto bsClone = bs->clone()->as<GotoStatement>();
+        QVERIFY(!bs->searchAndReplace(*Const::get(Address(0x1000)), Const::get(0x800)));
+        QCOMPARE(bs->toString(), bsClone->toString());
+
+        bsClone->setDest(Address(0x1000));
+
+        QVERIFY(bs->searchAndReplace(*Location::regOf(REG_X86_ECX), Const::get(Address(0x1000))));
+        QCOMPARE(bs->toString(), bsClone->toString());
+    }
+
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Location::regOf(REG_X86_EAX));
+        bs->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0)));
+
+        auto bsClone = bs->clone()->as<BranchStatement>();
+        bsClone->setDest(Location::regOf(REG_X86_ECX));
+        bsClone->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0)));
+
+        QVERIFY(bs->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(bs->toString(), bsClone->toString());
+    }
 
     // CaseStatement
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        cs->setDest(Location::regOf(REG_X86_EAX));
+
+        std::shared_ptr<CaseStatement> csClone = cs->clone()->as<CaseStatement>();
+        csClone->setDest(Location::regOf(REG_X86_ECX));
+
+        QVERIFY(cs->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(cs->toString(), csClone->toString());
+    }
 
     // CallStatement
+    // TODO
 
     // PhiAssign
+    {
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
+        std::shared_ptr<PhiAssign> phiClone = phi->clone()->as<PhiAssign>();
+        phiClone->setLeft(Location::regOf(REG_X86_ECX));
+
+        QVERIFY(phi->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(phi->toString(), phiClone->toString());
+    }
+
+    // TODO Phi with arguments
 
     // Assign
+    {
+        std::shared_ptr<Assign> asgn1(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_EAX)));
+        std::shared_ptr<Assign> asgn2(new Assign(Location::regOf(REG_X86_ECX), Location::regOf(REG_X86_ECX)));
+
+        QVERIFY(asgn1->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(asgn1->toString(), asgn2->toString());
+    }
 
     // BoolAssign
+    {
+        std::shared_ptr<BoolAssign> bas1(new BoolAssign(32));
+        bas1->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0)));
+        bas1->setLeft(Location::regOf(REG_X86_EAX));
+
+
+        std::shared_ptr<BoolAssign> bas2(new BoolAssign(32));
+        bas2->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0)));
+        bas2->setLeft(Location::regOf(REG_X86_ECX));
+
+        QVERIFY(bas1->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(bas1->toString(), bas2->toString());
+    }
 
     // ImplicitAssign
+    {
+        std::shared_ptr<ImplicitAssign> ias1(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+        std::shared_ptr<ImplicitAssign> ias2(new ImplicitAssign(Location::regOf(REG_X86_ECX)));
+
+        QVERIFY(ias1->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QCOMPARE(ias1->toString(), ias2->toString());
+    }
 
     // ReturnStatement
+    // TODO
 }
 
 

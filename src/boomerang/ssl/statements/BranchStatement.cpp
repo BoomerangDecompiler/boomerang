@@ -131,11 +131,12 @@ bool BranchStatement::search(const Exp &pattern, SharedExp &result) const
 
 bool BranchStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
-    GotoStatement::searchAndReplace(pattern, replace, cc);
-    bool change = false;
+    bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
     if (m_cond) {
-        m_cond = m_cond->searchReplaceAll(pattern, replace, change);
+        bool thisChange = false;
+        m_cond          = m_cond->searchReplaceAll(pattern, replace, thisChange);
+        change |= thisChange;
     }
 
     return change;
