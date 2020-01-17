@@ -24,6 +24,7 @@ class StatementTest : public BoomerangTestWithPlugins
 private slots:
     void testClone();
     void testFragment();
+    void testIsNull();
     void testGetDefinitions();
     void testDefinesLoc();
 

@@ -453,7 +453,7 @@ bool Statement::replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def)
 
 bool Statement::isNullStatement() const
 {
-    if (m_kind != StmtType::Assign) {
+    if (!this->isAssign()) {
         return false;
     }
 
@@ -464,8 +464,6 @@ bool Statement::isNullStatement() const
         return right->access<RefExp>()->getDef().get() == this;
     }
     else {
-        assert(this->isAssign());
-
         // Null if left == right
         return *shared_from_this()->as<const Assign>()->getLeft() == *right;
     }

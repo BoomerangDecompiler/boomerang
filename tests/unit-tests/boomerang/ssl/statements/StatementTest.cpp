@@ -304,6 +304,44 @@ void StatementTest::testFragment()
 }
 
 
+void StatementTest::testIsNull()
+{
+    {
+        // %eax := -
+        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!imp->isNullStatement());
+    }
+
+    {
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QVERIFY(!asgn->isNullStatement());
+    }
+
+    {
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_EAX)));
+        QVERIFY(asgn->isNullStatement());
+    }
+
+    {
+        // 5 %eax := %eax{5}
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        std::shared_ptr<RefExp> ref = RefExp::get(Location::regOf(REG_X86_EAX), asgn);
+        asgn->setRight(ref);
+
+        QVERIFY(asgn->isNullStatement());
+    }
+
+    {
+        // 5 %eax := %ecx{5}
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        std::shared_ptr<RefExp> ref = RefExp::get(Location::regOf(REG_X86_ECX), asgn);
+        asgn->setRight(ref);
+
+        QVERIFY(asgn->isNullStatement());
+    }
+}
+
+
 void StatementTest::testGetDefinitions()
 {
     // GotoStatement
@@ -620,14 +658,13 @@ void StatementTest::testDefinesLoc()
 
         ret->getCollector()->collectDef(std::make_shared<Assign>(def, Location::regOf(REG_X86_CH)));
         ret->updateModifieds();
-        QVERIFY(ret->getModifieds().existsOnLeft(Location::regOf(REG_X86_EAX)));
+        QVERIFY(ret->getModifieds().existsOnLeft(def));
 
         QVERIFY(!ret->definesLoc(Location::regOf(REG_X86_CH)));
         QVERIFY(ret->definesLoc(Location::regOf(REG_X86_EAX)));
         QVERIFY(ret->definesLoc(def));
     }
 }
-
 
 
 void StatementTest::testEmpty()
