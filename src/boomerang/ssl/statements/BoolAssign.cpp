@@ -66,22 +66,6 @@ void BoolAssign::setCondType(BranchType cond, bool usesFloat /*= false*/)
 }
 
 
-void BoolAssign::makeSigned()
-{
-    // Make this into a signed branch
-    switch (m_jumpType) {
-    case BranchType::JUL: m_jumpType = BranchType::JSL; break;
-    case BranchType::JULE: m_jumpType = BranchType::JSLE; break;
-    case BranchType::JUGE: m_jumpType = BranchType::JSGE; break;
-    case BranchType::JUG: m_jumpType = BranchType::JSG; break;
-
-    default:
-        // Do nothing for other cases
-        break;
-    }
-}
-
-
 SharedExp BoolAssign::getCondExpr() const
 {
     return m_cond;

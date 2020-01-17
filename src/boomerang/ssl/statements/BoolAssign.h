@@ -70,12 +70,6 @@ public:
      */
     void setCondExpr(SharedExp pss);
 
-    /**
-     * Change this from an unsigned to a signed branch.
-     * \note Not sure if this is ever going to be used
-     */
-    void makeSigned();
-
     /// \copydoc Assignment::printCompact
     void printCompact(OStream &os) const override;
 
