@@ -84,6 +84,19 @@ char *toString(const LocationSet& locSet)
 }
 
 
+char *toString(const std::list<SharedExp> &list)
+{
+    QString result = "{ ";
+
+    for (const SharedExp &elem : list) {
+        result += elem->toString() + " ";
+    }
+
+    result += "}";
+    return QTest::toString(result);
+}
+
+
 #define HANDLE_ENUM_VAL(x) case x: return QTest::toString(#x)
 
 

@@ -125,7 +125,6 @@ bool BranchStatement::search(const Exp &pattern, SharedExp &result) const
         return m_cond->search(pattern, result);
     }
 
-    result = nullptr;
     return false;
 }
 
@@ -145,11 +144,13 @@ bool BranchStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bo
 
 bool BranchStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
+    bool found = GotoStatement::searchAll(pattern, result);
+
     if (m_cond) {
-        return m_cond->searchAll(pattern, result);
+        found |= m_cond->searchAll(pattern, result);
     }
 
-    return false;
+    return found;
 }
 
 

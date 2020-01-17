@@ -181,16 +181,15 @@ bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 
 bool BoolAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
+    assert(m_lhs);
+    assert(m_cond);
+
     bool ch = false;
 
-    assert(m_lhs);
+    ch |= m_lhs->searchAll(pattern, result);
+    ch |= m_cond->searchAll(pattern, result);
 
-    if (m_lhs->searchAll(pattern, result)) {
-        ch = true;
-    }
-
-    assert(m_cond);
-    return m_cond->searchAll(pattern, result) || ch;
+    return ch;
 }
 
 

@@ -849,22 +849,209 @@ void StatementTest::testSearch()
 void StatementTest::testSearchAll()
 {
     // GotoStatement
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+
+        std::list<SharedExp> result;
+        QVERIFY(!gs->searchAll(*Const::get(0x1000), result));
+        QVERIFY(result.empty());
+    }
+
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x1000)));
+
+        std::list<SharedExp> result;
+        QVERIFY(!gs->searchAll(*Const::get(0), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(gs->searchAll(*Const::get(0x1000), result));
+        QCOMPARE(result, { gs->getDest() });
+    }
 
     // BranchStatement
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+
+        std::list<SharedExp> result;
+        QVERIFY(!bs->searchAll(*Const::get(0x1000), result));
+        QVERIFY(result.empty());
+    }
+
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Address(0x1000));
+        bs->setCondExpr(nullptr);
+
+        std::list<SharedExp> result;
+        QVERIFY(!bs->searchAll(*Const::get(0), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(bs->searchAll(*Const::get(0x1000), result));
+        QCOMPARE(result, { bs->getDest() });
+    }
+
+    {
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Address(0x1000));
+        bs->setCondExpr(Binary::get(opEquals, ecx, Const::get(0)));
+
+        std::list<SharedExp> result;
+        QVERIFY(bs->searchAll(*Terminal::get(opWildRegOf), result));
+        QCOMPARE(result, { ecx });
+    }
 
     // CaseStatement
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement());
+
+        std::list<SharedExp> result;
+        QVERIFY(!cs->searchAll(*Const::get(0x1000), result));
+        QVERIFY(result.empty());
+    }
+
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        cs->setDest(Location::regOf(REG_X86_ECX));
+
+        std::list<SharedExp> result;
+        QVERIFY(!cs->searchAll(*Const::get(0), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(cs->searchAll(*Terminal::get(opWildRegOf), result));
+        QCOMPARE(result, { cs->getDest() });
+    }
 
     // CallStatement
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+
+        std::list<SharedExp> result;
+        QVERIFY(!call->searchAll(*Const::get(0), result));
+        QVERIFY(result.empty());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+
+        std::list<SharedExp> result;
+        QVERIFY(call->searchAll(*Const::get(0x1000), result));
+        QCOMPARE(result, { call->getDest() });
+    }
+
+    {
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+        call->getDefines().append(std::make_shared<Assign>(ecx, Const::get(0)));
+
+        std::list<SharedExp> result;
+        QVERIFY(call->searchAll(*Location::regOf(REG_X86_ECX), result));
+        QCOMPARE(result, { ecx });
+    }
+
+    {
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+        call->getArguments().append(std::make_shared<Assign>(ecx, Const::get(0)));
+
+        std::list<SharedExp> result;
+        QVERIFY(call->searchAll(*Location::regOf(REG_X86_ECX), result));
+        QCOMPARE(result, { ecx });
+    }
 
     // PhiAssign
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(eax));
+
+        std::list<SharedExp> result;
+        QVERIFY(!phi->searchAll(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(phi->searchAll(*eax, result));
+        QCOMPARE(result, { eax });
+    }
+
+    // TODO: phi with arguments
 
     // Assign
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+        std::shared_ptr<Assign> asgn(new Assign(eax, ecx));
+
+        std::list<SharedExp> result;
+        QVERIFY(!asgn->searchAll(*Location::regOf(REG_X86_EDX), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(asgn->searchAll(*eax, result));
+        QCOMPARE(result, { eax });
+
+        result.clear();
+        QVERIFY(asgn->searchAll(*ecx, result));
+        QCOMPARE(result, { ecx });
+
+        // %eax := %eax
+        asgn->setRight(eax);
+        result.clear();
+        QVERIFY(asgn->searchAll(*eax, result));
+        QCOMPARE(result, std::list<SharedExp>({ eax, eax }));
+    }
 
     // BoolAssign
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(32));
+        bas->setLeft(eax);
+        bas->setCondExpr(cond);
+
+        std::list<SharedExp> result;
+        QVERIFY(!bas->searchAll(*Const::get(32), result));
+        QVERIFY(result.empty());
+
+        QVERIFY(bas->searchAll(*eax, result));
+        QCOMPARE(result, { eax });
+
+        result.clear();
+        QVERIFY(bas->searchAll(*ecx, result));
+        QCOMPARE(result, { ecx });
+    }
 
     // ImplicitAssign
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(eax));
+
+        std::list<SharedExp> result;
+        QVERIFY(!ias->searchAll(*Const::get(0), result));
+
+        QVERIFY(ias->searchAll(*Terminal::get(opWildRegOf), result));
+        QCOMPARE(result, { eax });
+    }
 
     // ReturnStatement
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        // TODO verify it only searches the returns and not the modifieds etc.
+        std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
+
+        std::list<SharedExp> result;
+        QVERIFY(!ret->searchAll(*Terminal::get(opWild), result));
+        QVERIFY(result.empty());
+
+        ret->addReturn(std::make_shared<Assign>(eax, ecx));
+
+        QVERIFY(ret->searchAll(*Terminal::get(opWildRegOf), result));
+        QCOMPARE(result, std::list<SharedExp>({ ecx, eax }));
+    }
 }
 
 
