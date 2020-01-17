@@ -61,6 +61,8 @@ public:
     /// \returns the expression defining the left hand side of the assignment
     SharedExp getLeft() const;
 
+    SharedExp &getLeftRef() { return m_lhs; }
+
     /// Update the left hand side of the assignment
     void setLeft(SharedExp e);
 

@@ -568,9 +568,9 @@ void CallStatement::setArgumentExp(int i, SharedExp e)
 {
     assert(Util::inRange(i, 0, getNumArguments()));
 
-    Statement *stmt = std::next(m_arguments.begin(), i)->get();
-    SharedExp &a    = dynamic_cast<Assign *>(stmt)->getRightRef();
-    a               = e->clone();
+    SharedStmt &stmt = *std::next(m_arguments.begin(), i);
+    assert(stmt->isAssign());
+    stmt->as<Assign>()->setRight(e->clone());
 }
 
 
