@@ -86,7 +86,7 @@ public:
     void getDefinitions(LocationSet &def, bool assumeABICompliance) const override;
 
     /// \copydoc Assignment::getRight
-    SharedExp getRight() const override { return getCondExpr(); }
+    SharedExp getRight() const override;
 
     /// \copydoc Statement::search
     bool search(const Exp &search, SharedExp &result) const override;

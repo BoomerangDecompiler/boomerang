@@ -205,6 +205,12 @@ bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc
 }
 
 
+SharedExp BoolAssign::getRight() const
+{
+    return m_cond;
+}
+
+
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;

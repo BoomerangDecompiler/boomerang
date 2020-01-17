@@ -37,7 +37,15 @@ BOOMERANG_ADD_TEST(
         ${DEBUG_LIB}
         boomerang
         ${CMAKE_THREAD_LIBS_INIT}
-    DEPENDENCIES
+)
+
+BOOMERANG_ADD_TEST(
+    NAME BoolAssignTest
+    SOURCES statements/BoolAssignTest.h statements/BoolAssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
 )
 
 

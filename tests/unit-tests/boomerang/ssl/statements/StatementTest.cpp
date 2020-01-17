@@ -181,22 +181,6 @@ void StatementTest::testClone()
         QVERIFY(*phiClone->getType() == *phi->getType());
     }
 
-    // BoolAssign
-    {
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(Location::regOf(REG_X86_EAX), BranchType::JE, Location::regOf(REG_X86_ECX)));
-        SharedStmt clone = bas->clone();
-
-        QVERIFY(&(*clone) != &(*bas));
-        QVERIFY(clone->isBool());
-        QVERIFY(clone->getID() != (uint32)-1);
-        QVERIFY(clone->getID() != bas->getID());
-
-        std::shared_ptr<BoolAssign> basClone = clone->as<BoolAssign>();
-        QVERIFY(basClone->getLeft() != nullptr);
-        QVERIFY(basClone->getLeft() != bas->getLeft());
-        QVERIFY(*basClone->getLeft() == *bas->getLeft());
-    }
-
     // ImplicitAssign
     {
         std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
@@ -353,19 +337,6 @@ void StatementTest::testGetDefinitions()
         std::shared_ptr<PhiAssign> phi(new PhiAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
         phi->getDefinitions(defs, false);
         QCOMPARE(defs.toString(), "r24");
-    }
-
-    // BoolAssign
-    {
-        LocationSet defs;
-
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
-
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(ecx, BranchType::JE, cond));
-        asgn->getDefinitions(defs, false);
-
-        QCOMPARE(defs.toString(), "r25");
     }
 
     // ImplicitAssign
@@ -682,26 +653,6 @@ void StatementTest::testSearch()
     // TODO: phi with arguments
 
 
-    // BoolAssign
-    {
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-
-        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(eax, BranchType::JE, cond));
-
-        SharedExp result;
-        QVERIFY(!bas->search(*Const::get(32), result));
-
-        QVERIFY(bas->search(*eax, result));
-        QVERIFY(result != nullptr);
-        QCOMPARE(*result, *eax);
-
-        QVERIFY(bas->search(*ecx, result));
-        QVERIFY(result != nullptr);
-        QCOMPARE(*result, *ecx);
-    }
-
     // ImplicitAssign
     {
         std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
@@ -863,26 +814,6 @@ void StatementTest::testSearchAll()
 
     // TODO: phi with arguments
 
-    // BoolAssign
-    {
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
-
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(eax, BranchType::JE, cond));
-
-        std::list<SharedExp> result;
-        QVERIFY(!bas->searchAll(*Const::get(32), result));
-        QVERIFY(result.empty());
-
-        QVERIFY(bas->searchAll(*eax, result));
-        QCOMPARE(result, { eax });
-
-        result.clear();
-        QVERIFY(bas->searchAll(*ecx, result));
-        QCOMPARE(result, { ecx });
-    }
-
     // ImplicitAssign
     {
         SharedExp eax = Location::regOf(REG_X86_EAX);
@@ -987,21 +918,6 @@ void StatementTest::testSearchAndReplace()
 
     // TODO Phi with arguments
 
-
-    // BoolAssign
-    {
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-
-        SharedExp cond1 = Binary::get(opEquals, eax, Const::get(0));
-        std::shared_ptr<BoolAssign> bas1(new BoolAssign(eax, BranchType::JE, cond1));
-
-        SharedExp cond2 = Binary::get(opEquals, ecx, Const::get(0));
-        std::shared_ptr<BoolAssign> bas2(new BoolAssign(ecx, BranchType::JE, cond2));
-
-        QVERIFY(bas1->searchAndReplace(*eax, ecx));
-        QCOMPARE(bas1->toString(), bas2->toString());
-    }
 
     // ImplicitAssign
     {
