@@ -23,10 +23,10 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-BoolAssign::BoolAssign(int)
-    : Assignment(StmtType::BoolAssign, nullptr)
-    , m_jumpType(BranchType::JE)
-    , m_cond(nullptr)
+BoolAssign::BoolAssign(SharedExp lhs, BranchType bt, SharedExp cond)
+    : Assignment(StmtType::BoolAssign, lhs)
+    , m_jumpType(bt)
+    , m_cond(cond)
     , m_isFloat(false)
 {
 }

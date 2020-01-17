@@ -21,8 +21,7 @@
 class BOOMERANG_API BoolAssign : public Assignment
 {
 public:
-    /// \param size unused
-    BoolAssign(int size);
+    BoolAssign(SharedExp lhs, BranchType bt, SharedExp cond);
     BoolAssign(const BoolAssign &other);
     BoolAssign(BoolAssign &&other) = default;
 

@@ -183,8 +183,7 @@ void StatementTest::testClone()
 
     // BoolAssign
     {
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
-        bas->setLeft(Location::regOf(REG_X86_EAX));
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(Location::regOf(REG_X86_EAX), BranchType::JE, Location::regOf(REG_X86_ECX)));
         SharedStmt clone = bas->clone();
 
         QVERIFY(&(*clone) != &(*bas));
@@ -360,9 +359,10 @@ void StatementTest::testGetDefinitions()
     {
         LocationSet defs;
 
-        // %flags := %ah
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(8));
-        asgn->setLeft(Location::regOf(REG_X86_ECX));
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
+
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(ecx, BranchType::JE, cond));
         asgn->getDefinitions(defs, false);
 
         QCOMPARE(defs.toString(), "r25");
@@ -481,10 +481,12 @@ void StatementTest::testDefinesLoc()
     // BoolAssign
     {
         // %eax := (%ecx != 0)
-        const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(32));
-        asgn->setLeft(Location::regOf(REG_X86_EAX));
-        asgn->setCondExpr(condExp);
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
+
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(eax, BranchType::JE, condExp));
 
         QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
         QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
@@ -492,20 +494,21 @@ void StatementTest::testDefinesLoc()
     }
 
     {
-        const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
         const SharedExp def = Ternary::get(opAt,
-                                           Location::regOf(REG_X86_EAX),
+                                           eax,
                                            Const::get(0),
                                            Const::get(7));
 
         // %eax@[0:7] := (%ecx != 0)
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(8));
-        asgn->setLeft(def);
-        asgn->setCondExpr(condExp);
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(def, BranchType::JE, condExp));
 
         QVERIFY(asgn->definesLoc(def));
-        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
-        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
+        QVERIFY(asgn->definesLoc(eax));
+        QVERIFY(!asgn->definesLoc(ecx));
         QVERIFY(!asgn->definesLoc(condExp));
     }
 
@@ -681,21 +684,22 @@ void StatementTest::testSearch()
 
     // BoolAssign
     {
-        SharedExp cond = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(32));
-        bas->setLeft(Location::regOf(REG_X86_EAX));
-        bas->setCondExpr(cond);
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(eax, BranchType::JE, cond));
 
         SharedExp result;
         QVERIFY(!bas->search(*Const::get(32), result));
 
-        QVERIFY(bas->search(*Location::regOf(REG_X86_EAX), result));
+        QVERIFY(bas->search(*eax, result));
         QVERIFY(result != nullptr);
-        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+        QCOMPARE(*result, *eax);
 
-        QVERIFY(bas->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(bas->search(*ecx, result));
         QVERIFY(result != nullptr);
-        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+        QCOMPARE(*result, *ecx);
     }
 
     // ImplicitAssign
@@ -864,9 +868,8 @@ void StatementTest::testSearchAll()
         SharedExp eax = Location::regOf(REG_X86_EAX);
         SharedExp ecx = Location::regOf(REG_X86_ECX);
         SharedExp cond = Binary::get(opEquals, ecx, Const::get(0));
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(32));
-        bas->setLeft(eax);
-        bas->setCondExpr(cond);
+
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(eax, BranchType::JE, cond));
 
         std::list<SharedExp> result;
         QVERIFY(!bas->searchAll(*Const::get(32), result));
@@ -987,16 +990,16 @@ void StatementTest::testSearchAndReplace()
 
     // BoolAssign
     {
-        std::shared_ptr<BoolAssign> bas1(new BoolAssign(32));
-        bas1->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0)));
-        bas1->setLeft(Location::regOf(REG_X86_EAX));
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
 
+        SharedExp cond1 = Binary::get(opEquals, eax, Const::get(0));
+        std::shared_ptr<BoolAssign> bas1(new BoolAssign(eax, BranchType::JE, cond1));
 
-        std::shared_ptr<BoolAssign> bas2(new BoolAssign(32));
-        bas2->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0)));
-        bas2->setLeft(Location::regOf(REG_X86_ECX));
+        SharedExp cond2 = Binary::get(opEquals, ecx, Const::get(0));
+        std::shared_ptr<BoolAssign> bas2(new BoolAssign(ecx, BranchType::JE, cond2));
 
-        QVERIFY(bas1->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QVERIFY(bas1->searchAndReplace(*eax, ecx));
         QCOMPARE(bas1->toString(), bas2->toString());
     }
 
@@ -1985,10 +1988,10 @@ void StatementTest::testAddUsedLocsBool()
 {
     // Boolstatement with condition m[r24] = r25, dest m[r26]
     LocationSet l;
-    std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
+    SharedExp lhs = Location::memOf(Location::regOf(REG_X86_EDX));
+    SharedExp cond = Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX));
 
-    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX)));
-    bs->setLeft(Location::memOf(Location::regOf(REG_X86_EDX)));
+    std::shared_ptr<BoolAssign> bs(new BoolAssign(lhs, BranchType::JE, cond));
     bs->addUsedLocs(l);
 
     QString     actual;

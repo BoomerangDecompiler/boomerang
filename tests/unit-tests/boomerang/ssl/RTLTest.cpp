@@ -137,7 +137,7 @@ void RTLTest::testVisitor()
     delete ret;
 
     /* "bool" assgn */
-    BoolAssign *scond = new BoolAssign(0);
+    BoolAssign *scond = new BoolAssign(Location::regOf(REG_X86_EAX), BranchType::JE, Location::regOf(REG_X86_ECX));
     scond->accept(visitor);
     QVERIFY(visitor->g);
     delete scond;

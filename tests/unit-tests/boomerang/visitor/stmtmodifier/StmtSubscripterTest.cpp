@@ -197,17 +197,17 @@ void StmtSubscripterTest::testSubscriptVars()
     QCOMPARE(actual, expected);
 
     // BoolAssign with condition m[r28] = r28, dest m[r28]
-    std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
-    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_ESP)), Location::regOf(REG_X86_ESP)));
-    bs->setLeft(Location::memOf(Location::regOf(REG_X86_ESP)));
+    SharedExp m28 = Location::memOf(Location::regOf(REG_X86_ESP));
+    SharedExp cond = Binary::get(opEquals, m28, Location::regOf(REG_X86_ESP));
+
+    std::shared_ptr<BoolAssign> bs(new BoolAssign(m28, BranchType::JE, cond));
 
     subscriptVarForStmt(bs, srch, s9);
 
-    actual   = "";
     expected = "   0 BOOL m[r28{9}] := CC(equals)\n"
                "High level: m[r28{9}] = r28{9}\n";
-    ost << bs;
-    QCOMPARE(actual, expected);
+
+    QCOMPARE(bs->toString(), QString(""));
 
     delete prog;
 }

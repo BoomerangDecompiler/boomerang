@@ -378,9 +378,8 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
         }
     }
     else if (insn.isInGroup(MIGroup::BoolAsgn)) {
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
-        bas->setCondExpr(rtl->front()->as<Assign>()->getRight()->clone());
-        bas->setLeft(rtl->front()->as<Assign>()->getLeft()->clone());
+        SharedExp lhs  = rtl->front()->as<Assign>()->getLeft()->clone();
+        SharedExp cond = rtl->front()->as<Assign>()->getRight()->clone();
 
         BranchType bt = BranchType::INVALID;
         switch (insn.m_id) {
@@ -403,7 +402,9 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
         default: assert(false); break;
         }
 
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(lhs, bt, cond));
         bas->setCondType(bt);
+
         if (rtl->size() > 1) {
             LOG_WARN(
                 "%1 additional statements in RTL for instruction '%2'; results may be inaccurate",
