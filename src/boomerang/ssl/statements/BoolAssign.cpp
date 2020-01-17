@@ -23,12 +23,11 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-BoolAssign::BoolAssign(int size)
+BoolAssign::BoolAssign(int)
     : Assignment(StmtType::BoolAssign, nullptr)
     , m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
-    , m_size(size)
 {
 }
 
@@ -38,7 +37,6 @@ BoolAssign::BoolAssign(const BoolAssign &other)
     , m_jumpType(other.m_jumpType)
     , m_cond(other.m_cond ? other.m_cond->clone() : nullptr)
     , m_isFloat(other.m_isFloat)
-    , m_size(other.m_size)
 {
 }
 
@@ -55,7 +53,6 @@ BoolAssign &BoolAssign::operator=(const BoolAssign &other)
     m_jumpType = other.m_jumpType;
     m_cond     = other.m_cond ? other.m_cond->clone() : nullptr;
     m_isFloat  = other.m_isFloat;
-    m_size     = other.m_size;
 
     return *this;
 }

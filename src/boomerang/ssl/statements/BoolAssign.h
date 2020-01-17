@@ -21,7 +21,7 @@
 class BOOMERANG_API BoolAssign : public Assignment
 {
 public:
-    /// \param size the size of the assignment
+    /// \param size unused
     BoolAssign(int size);
     BoolAssign(const BoolAssign &other);
     BoolAssign(BoolAssign &&other) = default;
@@ -71,10 +71,6 @@ public:
      */
     void setCondExpr(SharedExp pss);
 
-    // As above, no delete (for subscripting)
-    void setCondExprND(SharedExp e) { m_cond = e; }
-    int getSize() const { return m_size; } // Return the size of the assignment
-
     /**
      * Change this from an unsigned to a signed branch.
      * \note Not sure if this is ever going to be used
@@ -106,5 +102,4 @@ private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true
     SharedExp m_cond; ///< Exp representation of the high level condition: e.g. r[8] == 5
     bool m_isFloat;   ///< True if condition uses floating point CC
-    int m_size;       ///< The size of the dest
 };
