@@ -117,6 +117,10 @@ void BranchStatement::setTakenFragment(IRFragment *destFrag)
 
 bool BranchStatement::search(const Exp &pattern, SharedExp &result) const
 {
+    if (GotoStatement::search(pattern, result)) {
+        return true;
+    }
+
     if (m_cond) {
         return m_cond->search(pattern, result);
     }

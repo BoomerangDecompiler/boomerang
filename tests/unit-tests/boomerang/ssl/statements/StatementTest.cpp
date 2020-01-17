@@ -667,6 +667,229 @@ void StatementTest::testDefinesLoc()
 }
 
 
+void StatementTest::testSearch()
+{
+    // GotoStatement
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement());
+
+        SharedExp result;
+        QVERIFY(!gs->search(*Const::get(0x1000), result));
+    }
+
+    {
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x1000)));
+
+        SharedExp result;
+        QVERIFY(!gs->search(*Const::get(0), result));
+        QVERIFY(gs->search(*Const::get(0x1000), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Const::get(Address(0x1000)));
+    }
+
+    // BranchStatement
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+
+        SharedExp result;
+        QVERIFY(!bs->search(*Const::get(0x1000), result));
+    }
+
+    {
+        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        bs->setDest(Address(0x1000));
+
+        SharedExp result;
+        QVERIFY(!bs->search(*Const::get(0), result));
+        QVERIFY(bs->search(*Const::get(0x1000), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Const::get(Address(0x1000)));
+
+        bs->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0)));
+        QVERIFY(bs->search(*Terminal::get(opWildRegOf), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    // CaseStatement
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement());
+
+        SharedExp result;
+        QVERIFY(!cs->search(*Const::get(0x1000), result));
+    }
+
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        cs->setDest(Location::regOf(REG_X86_ECX));
+
+        SharedExp result;
+        QVERIFY(!cs->search(*Const::get(0), result));
+        QVERIFY(cs->search(*Terminal::get(opWildRegOf), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    // CallStatement
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+
+        SharedExp result;
+        QVERIFY(!call->search(*Const::get(0), result));
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+        SharedExp result;
+        QVERIFY(call->search(*Const::get(0x1000), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Const::get(0x1000));
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+        call->getDefines().append(std::make_shared<Assign>(Location::regOf(REG_X86_ECX), Const::get(0)));
+
+        SharedExp result;
+        QVERIFY(call->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement);
+        call->setDest(Address(0x1000));
+        call->getArguments().append(std::make_shared<Assign>(Location::regOf(REG_X86_ECX), Const::get(0)));
+
+        SharedExp result;
+        QVERIFY(call->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    // PhiAssign
+    {
+        std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
+
+        SharedExp result;
+        QVERIFY(!phi->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(phi->search(*Location::regOf(REG_X86_EAX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+    }
+
+    // TODO: phi with arguments
+
+    // Assign
+    {
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+
+        SharedExp result;
+        QVERIFY(!asgn->search(*Location::regOf(REG_X86_EDX), result));
+
+        QVERIFY(asgn->search(*Location::regOf(REG_X86_EAX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+
+        QVERIFY( asgn->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    // BoolAssign
+    {
+        SharedExp cond = Binary::get(opEquals, Location::regOf(REG_X86_ECX), Const::get(0));
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(32));
+        bas->setLeft(Location::regOf(REG_X86_EAX));
+        bas->setCondExpr(cond);
+
+        SharedExp result;
+        QVERIFY(!bas->search(*Const::get(32), result));
+
+        QVERIFY(bas->search(*Location::regOf(REG_X86_EAX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+
+        QVERIFY(bas->search(*Location::regOf(REG_X86_ECX), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
+    }
+
+    // ImplicitAssign
+    {
+        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+
+        SharedExp result;
+        QVERIFY(!ias->search(*Const::get(0), result));
+
+        QVERIFY(ias->search(*Terminal::get(opWildRegOf), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+    }
+
+    // ReturnStatement
+    {
+        // TODO verify it only searches the returns and not the modifieds etc.
+        std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
+
+        SharedExp result;
+        QVERIFY(!ret->search(*Terminal::get(opWild), result));
+
+        ret->addReturn(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+
+        QVERIFY(ret->search(*Terminal::get(opWildRegOf), result));
+        QVERIFY(result != nullptr);
+        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
+    }
+}
+
+
+void StatementTest::testSearchAll()
+{
+    // GotoStatement
+
+    // BranchStatement
+
+    // CaseStatement
+
+    // CallStatement
+
+    // PhiAssign
+
+    // Assign
+
+    // BoolAssign
+
+    // ImplicitAssign
+
+    // ReturnStatement
+}
+
+
+void StatementTest::testSearchAndReplace()
+{
+    // GotoStatement
+
+    // BranchStatement
+
+    // CaseStatement
+
+    // CallStatement
+
+    // PhiAssign
+
+    // Assign
+
+    // BoolAssign
+
+    // ImplicitAssign
+
+    // ReturnStatement
+}
+
+
 void StatementTest::testEmpty()
 {
     QSKIP("TODO");

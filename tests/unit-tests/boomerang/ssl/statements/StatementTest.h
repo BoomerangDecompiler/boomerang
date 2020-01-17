@@ -27,6 +27,9 @@ private slots:
     void testIsNull();
     void testGetDefinitions();
     void testDefinesLoc();
+    void testSearch();
+    void testSearchAll();
+    void testSearchAndReplace();
 
 private slots:
     void testEmpty();

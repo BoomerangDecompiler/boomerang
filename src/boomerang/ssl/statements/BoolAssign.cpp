@@ -173,13 +173,9 @@ void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 {
     assert(m_lhs);
-
-    if (m_lhs->search(pattern, result)) {
-        return true;
-    }
-
     assert(m_cond);
-    return m_cond->search(pattern, result);
+
+    return m_lhs->search(pattern, result) || m_cond->search(pattern, result);
 }
 
 

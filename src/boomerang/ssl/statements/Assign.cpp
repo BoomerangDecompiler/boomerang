@@ -125,11 +125,7 @@ void Assign::printCompact(OStream &os) const
 
 bool Assign::search(const Exp &pattern, SharedExp &result) const
 {
-    if (m_lhs->search(pattern, result)) {
-        return true;
-    }
-
-    return m_rhs->search(pattern, result);
+    return m_lhs->search(pattern, result) || m_rhs->search(pattern, result);
 }
 
 
