@@ -231,11 +231,3 @@ bool Assign::accept(StmtPartModifier *v)
 
     return true;
 }
-
-
-Assign::Assign()
-    : Assignment(StmtType::Assign, nullptr)
-    , m_rhs(nullptr)
-    , m_guard(nullptr)
-{
-}

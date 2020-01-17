@@ -20,7 +20,6 @@
 class BOOMERANG_API Assign : public Assignment
 {
 public:
-    Assign();
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 

@@ -1766,19 +1766,20 @@ void StatementTest::testLocationSet()
 
 void StatementTest::testWildLocationSet()
 {
-    Location rof12(opRegOf, Const::get(REG_X86_AH), nullptr);
-    Location rof13(opRegOf, Const::get(REG_X86_CH), nullptr);
-    std::shared_ptr<Assign> a10(new Assign);
-    std::shared_ptr<Assign> a20(new Assign);
+    SharedExp rof12 = Location::regOf(REG_X86_AH);
+    SharedExp rof13 = Location::regOf(REG_X86_CH);
 
+    std::shared_ptr<Assign> a10(new Assign(rof12, Const::get(0)));
+    std::shared_ptr<Assign> a20(new Assign(rof13, Const::get(0)));
     a10->setNumber(10);
     a20->setNumber(20);
-    std::shared_ptr<RefExp> r12_10(new RefExp(rof12.clone(), a10));
-    std::shared_ptr<RefExp> r12_20(new RefExp(rof12.clone(), a20));
-    std::shared_ptr<RefExp> r12_0(new RefExp(rof12.clone(), nullptr));
-    std::shared_ptr<RefExp> r13_10(new RefExp(rof13.clone(), a10));
-    std::shared_ptr<RefExp> r13_20(new RefExp(rof13.clone(), a20));
-    std::shared_ptr<RefExp> r13_0(new RefExp(rof13.clone(), nullptr));
+
+    std::shared_ptr<RefExp> r12_10(new RefExp(rof12->clone(), a10));
+    std::shared_ptr<RefExp> r12_20(new RefExp(rof12->clone(), a20));
+    std::shared_ptr<RefExp> r12_0(new RefExp(rof12->clone(), nullptr));
+    std::shared_ptr<RefExp> r13_10(new RefExp(rof13->clone(), a10));
+    std::shared_ptr<RefExp> r13_20(new RefExp(rof13->clone(), a20));
+    std::shared_ptr<RefExp> r13_0(new RefExp(rof13->clone(), nullptr));
     std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_X86_BL), a10));
     std::shared_ptr<RefExp> r24_10(new RefExp(Location::regOf(REG_X86_EAX), a10));
 
@@ -1790,9 +1791,9 @@ void StatementTest::testWildLocationSet()
     ls.insert(r13_20);
     ls.insert(r13_0);
 
-    std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), STMT_WILD));
+    std::shared_ptr<RefExp> wildr12(new RefExp(rof12->clone(), STMT_WILD));
     QVERIFY(ls.contains(wildr12));
-    std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), STMT_WILD));
+    std::shared_ptr<RefExp> wildr13(new RefExp(rof13->clone(), STMT_WILD));
     QVERIFY(ls.contains(wildr13));
     std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(REG_X86_DL), STMT_WILD));
     QVERIFY(!ls.contains(wildr10));

@@ -143,7 +143,7 @@ void RTLTest::testVisitor()
     delete scond;
 
     /* assignment stmt */
-    Assign *as = new Assign;
+    Assign *as = new Assign(Location::regOf(REG_X86_EAX), Const::get(0));
     as->accept(visitor);
     QVERIFY(visitor->h);
     delete as;
