@@ -70,22 +70,6 @@ void StatementTest::testClone()
         QVERIFY(*phiClone->getType() == *phi->getType());
     }
 
-    // ImplicitAssign
-    {
-        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
-        SharedStmt clone = ias->clone();
-
-        QVERIFY(&(*clone) != &(*ias));
-        QVERIFY(clone->isImplicit());
-        QVERIFY(clone->getID() != (uint32)-1);
-        QVERIFY(clone->getID() != ias->getID());
-
-        std::shared_ptr<ImplicitAssign> iasClone = clone->as<ImplicitAssign>();
-        QVERIFY(iasClone->getLeft() != nullptr);
-        QVERIFY(iasClone->getLeft() != ias->getLeft());
-        QVERIFY(*iasClone->getLeft() == *ias->getLeft());
-    }
-
     // ReturnStatement
     {
         std::shared_ptr<ReturnStatement> ret(new ReturnStatement());
@@ -171,16 +155,6 @@ void StatementTest::testGetDefinitions()
         QCOMPARE(defs.toString(), "r24");
     }
 
-    // ImplicitAssign
-    {
-        LocationSet defs;
-
-        // %eax := -
-        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
-        imp->getDefinitions(defs, false);
-        QCOMPARE(defs.toString(), "r24");
-    }
-
     // ReturnStatement
     {
         Prog prog("testProg", &m_project);
@@ -232,7 +206,6 @@ void StatementTest::testDefinesLoc()
         QVERIFY(!phi->definesLoc(Location::regOf(REG_X86_ECX)));
     }
 
-
     // BoolAssign
     {
         // %eax := (%ecx != 0)
@@ -265,29 +238,6 @@ void StatementTest::testDefinesLoc()
         QVERIFY(asgn->definesLoc(eax));
         QVERIFY(!asgn->definesLoc(ecx));
         QVERIFY(!asgn->definesLoc(condExp));
-    }
-
-    // ImplicitAssign
-    {
-        // %eax := -
-        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
-
-        QVERIFY(imp->definesLoc(Location::regOf(REG_X86_EAX)));
-        QVERIFY(!imp->definesLoc(Location::regOf(REG_X86_ECX)));
-    }
-
-    {
-        const SharedExp def = Ternary::get(opAt,
-                                           Location::regOf(REG_X86_EAX),
-                                           Const::get(0),
-                                           Const::get(7));
-
-        // %eax@[0:7] := -
-        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(def));
-
-        QVERIFY(imp->definesLoc(def));
-        QVERIFY(imp->definesLoc(Location::regOf(REG_X86_EAX)));
-        QVERIFY(!imp->definesLoc(Location::regOf(REG_X86_ECX)));
     }
 
     // ReturnStatement
@@ -337,18 +287,6 @@ void StatementTest::testSearch()
     // TODO: phi with arguments
 
 
-    // ImplicitAssign
-    {
-        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
-
-        SharedExp result;
-        QVERIFY(!ias->search(*Const::get(0), result));
-
-        QVERIFY(ias->search(*Terminal::get(opWildRegOf), result));
-        QVERIFY(result != nullptr);
-        QCOMPARE(*result, *Location::regOf(REG_X86_EAX));
-    }
-
     // ReturnStatement
     {
         // TODO verify it only searches the returns and not the modifieds etc.
@@ -383,17 +321,6 @@ void StatementTest::testSearchAll()
 
     // TODO: phi with arguments
 
-    // ImplicitAssign
-    {
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(eax));
-
-        std::list<SharedExp> result;
-        QVERIFY(!ias->searchAll(*Const::get(0), result));
-
-        QVERIFY(ias->searchAll(*Terminal::get(opWildRegOf), result));
-        QCOMPARE(result, { eax });
-    }
 
     // ReturnStatement
     {
@@ -429,15 +356,6 @@ void StatementTest::testSearchAndReplace()
 
     // TODO Phi with arguments
 
-
-    // ImplicitAssign
-    {
-        std::shared_ptr<ImplicitAssign> ias1(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
-        std::shared_ptr<ImplicitAssign> ias2(new ImplicitAssign(Location::regOf(REG_X86_ECX)));
-
-        QVERIFY(ias1->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
-        QCOMPARE(ias1->toString(), ias2->toString());
-    }
 
     // ReturnStatement
     // TODO
