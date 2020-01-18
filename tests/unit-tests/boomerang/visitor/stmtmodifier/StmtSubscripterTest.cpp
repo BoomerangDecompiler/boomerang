@@ -207,7 +207,7 @@ void StmtSubscripterTest::testSubscriptVars()
     expected = "   0 BOOL m[r28{9}] := CC(equals)\n"
                "High level: m[r28{9}] = r28{9}\n";
 
-    QCOMPARE(bs->toString(), QString(""));
+    QCOMPARE(bs->toString(), expected);
 
     delete prog;
 }
