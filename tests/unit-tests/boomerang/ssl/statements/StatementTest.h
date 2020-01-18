@@ -22,14 +22,8 @@ class StatementTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
-    void testClone();
     void testFragment();
     void testIsNull();
-    void testGetDefinitions();
-    void testDefinesLoc();
-    void testSearch();
-    void testSearchAll();
-    void testSearchAndReplace();
 
 private slots:
     void testEmpty();

@@ -46,11 +46,6 @@
 #define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
-void StatementTest::testClone()
-{
-}
-
-
 void StatementTest::testFragment()
 {
     Prog prog("testProg", &m_project);
@@ -104,36 +99,6 @@ void StatementTest::testIsNull()
 
         QVERIFY(asgn->isNullStatement());
     }
-}
-
-
-void StatementTest::testGetDefinitions()
-{
-
-}
-
-
-void StatementTest::testDefinesLoc()
-{
-
-}
-
-
-void StatementTest::testSearch()
-{
-
-}
-
-
-void StatementTest::testSearchAll()
-{
-
-}
-
-
-void StatementTest::testSearchAndReplace()
-{
-
 }
 
 
