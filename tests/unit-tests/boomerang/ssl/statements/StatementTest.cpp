@@ -80,25 +80,6 @@ void StatementTest::testClone()
         QVERIFY(!gsClone->isComputed());
     }
 
-    // CaseStatement
-    {
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(ecx));
-        SharedStmt clone = cs->clone();
-
-        QVERIFY(&(*clone) != &(*cs));
-        QVERIFY(clone->isCase());
-        QVERIFY(clone->getID() != (uint32)-1);
-        QVERIFY(clone->getID() != cs->getID());
-
-        std::shared_ptr<CaseStatement> csClone = clone->as<CaseStatement>();
-        QVERIFY(csClone->getDest() != nullptr);
-        QCOMPARE(*csClone->getDest(), *cs->getDest());
-        QVERIFY(csClone->isComputed());
-        QVERIFY(csClone->getSwitchInfo() == nullptr);
-    }
-
     // PhiAssign
     {
         std::shared_ptr<PhiAssign> phi(new PhiAssign(IntegerType::get(32, Sign::Signed), Location::regOf(REG_X86_EAX)));
@@ -222,17 +203,6 @@ void StatementTest::testGetDefinitions()
         QVERIFY(defs.empty());
     }
 
-    // CaseStatement
-    {
-        LocationSet defs;
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
-
-        cs->getDefinitions(defs, false);
-
-        QVERIFY(defs.empty());
-    }
-
-
     // PhiAssign
     {
         LocationSet defs;
@@ -289,19 +259,6 @@ void StatementTest::testDefinesLoc()
         QVERIFY(!gs->definesLoc(nullptr));
         QVERIFY(!gs->definesLoc(Location::regOf(REG_X86_ESP)));
     }
-
-    // CaseStatement
-    {
-        const SharedExp destExp = Location::regOf(REG_X86_ECX);
-
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(destExp));
-
-        QVERIFY(!cs->definesLoc(Const::get(Address(0x1000))));
-        QVERIFY(!cs->definesLoc(nullptr));
-        QVERIFY(!cs->definesLoc(Location::regOf(REG_X86_ESP)));
-        QVERIFY(!cs->definesLoc(Location::regOf(REG_X86_ECX)));
-    }
-
 
     // PhiAssign
     {
@@ -435,25 +392,6 @@ void StatementTest::testSearch()
         QCOMPARE(*result, *Const::get(Address(0x1000)));
     }
 
-    // CaseStatement
-    {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
-
-        SharedExp result;
-        QVERIFY(!cs->search(*Const::get(0x1000), result));
-    }
-
-    {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
-
-        SharedExp result;
-        QVERIFY(!cs->search(*Const::get(0), result));
-        QVERIFY(cs->search(*Terminal::get(opWildRegOf), result));
-        QVERIFY(result != nullptr);
-        QCOMPARE(*result, *Location::regOf(REG_X86_ECX));
-    }
-
-
     // PhiAssign
     {
         std::shared_ptr<PhiAssign> phi(new PhiAssign(Location::regOf(REG_X86_EAX)));
@@ -519,27 +457,6 @@ void StatementTest::testSearchAll()
         QCOMPARE(result, { gs->getDest() });
     }
 
-
-    // CaseStatement
-    {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
-
-        std::list<SharedExp> result;
-        QVERIFY(!cs->searchAll(*Const::get(0x1000), result));
-        QVERIFY(result.empty());
-    }
-
-    {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
-
-        std::list<SharedExp> result;
-        QVERIFY(!cs->searchAll(*Const::get(0), result));
-        QVERIFY(result.empty());
-
-        QVERIFY(cs->searchAll(*Terminal::get(opWildRegOf), result));
-        QCOMPARE(result, { cs->getDest() });
-    }
-
     // PhiAssign
     {
         SharedExp eax = Location::regOf(REG_X86_EAX);
@@ -601,18 +518,6 @@ void StatementTest::testSearchAndReplace()
 
         QVERIFY(gs->searchAndReplace(*Location::regOf(REG_X86_ECX), Const::get(Address(0x1000))));
         QCOMPARE(gs->toString(), gsClone->toString());
-    }
-
-
-    // CaseStatement
-    {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_EAX)));
-
-        std::shared_ptr<CaseStatement> csClone = cs->clone()->as<CaseStatement>();
-        csClone->setDest(Location::regOf(REG_X86_ECX));
-
-        QVERIFY(cs->searchAndReplace(*Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
-        QCOMPARE(cs->toString(), csClone->toString());
     }
 
     // PhiAssign
