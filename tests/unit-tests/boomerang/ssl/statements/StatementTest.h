@@ -33,8 +33,6 @@ private slots:
     void testUseOverKill();
     void testUseOverBB();
     void testUseKill();
-    void testLocationSet();
-    void testWildLocationSet();
 
     void testEndlessLoop();
 
