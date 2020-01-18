@@ -96,16 +96,7 @@ void CaseStatement::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     if (m_switchInfo == nullptr) {
-        os << "CASE [";
-
-        if (m_dest == nullptr) {
-            os << "*no dest*";
-        }
-        else {
-            os << m_dest;
-        }
-
-        os << "]";
+        os << "CASE [" << m_dest << "]";
     }
     else {
         os << "SWITCH(" << m_switchInfo->switchExp << ")\n";
@@ -117,7 +108,7 @@ SharedStmt CaseStatement::clone() const
 {
     std::shared_ptr<CaseStatement> ret(new CaseStatement(*this));
 
-    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
+    ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
 
     if (m_switchInfo) {
@@ -138,10 +129,9 @@ bool CaseStatement::accept(StmtVisitor *visitor) const
 
 void CaseStatement::simplify()
 {
-    if (m_dest) {
-        m_dest = m_dest->simplify();
-    }
-    else if (m_switchInfo && m_switchInfo->switchExp) {
+    setDest(m_dest->simplify());
+
+    if (m_switchInfo && m_switchInfo->switchExp) {
         m_switchInfo->switchExp = m_switchInfo->switchExp->simplify();
     }
 }
@@ -156,7 +146,7 @@ bool CaseStatement::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -174,8 +164,8 @@ bool CaseStatement::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_dest && visitChildren) {
-            m_dest = m_dest->acceptModifier(v->m_mod);
+        if (visitChildren) {
+            setDest(m_dest->acceptModifier(v->m_mod));
         }
 
         if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
@@ -192,8 +182,8 @@ bool CaseStatement::accept(StmtPartModifier *v)
     bool visitChildren;
     v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->acceptModifier(v->mod);
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
     }
 
     if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {

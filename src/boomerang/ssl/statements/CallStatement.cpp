@@ -290,16 +290,11 @@ void CallStatement::print(OStream &os) const
     if (m_procDest) {
         os << m_procDest->getName();
     }
-    else if (m_dest == nullptr) {
-        os << "*no dest*";
+    else if (m_dest->isIntConst()) {
+        os << getFixedDest();
     }
     else {
-        if (m_dest->isIntConst()) {
-            os << "0x" << QString::number(m_dest->access<Const>()->getInt(), 16);
-        }
-        else {
-            m_dest->print(os); // Could still be an expression
-        }
+        m_dest->print(os); // Could still be an expression
     }
 
     // Print the actual arguments of the call
@@ -1301,8 +1296,8 @@ bool CallStatement::accept(StmtModifier *v)
         return true;
     }
 
-    if (m_dest && v->m_mod) {
-        m_dest = m_dest->acceptModifier(v->m_mod);
+    if (v->m_mod) {
+        setDest(m_dest->acceptModifier(v->m_mod));
     }
 
     if (visitChildren) {
@@ -1341,7 +1336,7 @@ bool CallStatement::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -1359,8 +1354,8 @@ bool CallStatement::accept(StmtPartModifier *v)
     bool visitChildren = true;
     v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->acceptModifier(v->mod);
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
     }
 
     if (visitChildren) {

@@ -36,6 +36,7 @@ BranchStatement::BranchStatement(Address dest)
     m_kind = StmtType::Branch;
 }
 
+
 BranchStatement::BranchStatement(SharedExp dest)
     : GotoStatement(dest)
     , m_jumpType(BranchType::JE)
@@ -171,10 +172,7 @@ void BranchStatement::print(OStream &os) const
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     os << "BRANCH ";
 
-    if (m_dest == nullptr) {
-        os << "*no dest*";
-    }
-    else if (!m_dest->isIntConst()) {
+    if (!m_dest->isIntConst()) {
         os << m_dest;
     }
     else {
@@ -221,7 +219,7 @@ SharedStmt BranchStatement::clone() const
 {
     std::shared_ptr<BranchStatement> ret(new BranchStatement(*this));
 
-    ret->m_dest = m_dest ? m_dest->clone() : nullptr;
+    ret->m_dest = m_dest->clone();
     ret->m_cond = m_cond ? m_cond->clone() : nullptr;
 
     return ret;
@@ -254,7 +252,7 @@ bool BranchStatement::accept(StmtExpVisitor *v)
     }
 
     // Destination will always be a const for X86, so the below will never be used in practice
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -271,8 +269,8 @@ bool BranchStatement::accept(StmtPartModifier *v)
     bool visitChildren = true;
     v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->acceptModifier(v->mod);
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
     }
 
     if (m_cond && visitChildren) {
@@ -290,8 +288,8 @@ bool BranchStatement::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_dest && visitChildren) {
-            m_dest = m_dest->acceptModifier(v->m_mod);
+        if (visitChildren) {
+            setDest(m_dest->acceptModifier(v->m_mod));
         }
 
         if (m_cond && visitChildren) {
