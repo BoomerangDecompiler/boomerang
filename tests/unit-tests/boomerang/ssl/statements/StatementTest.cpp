@@ -50,7 +50,7 @@ void StatementTest::testClone()
 {
     // GotoStatement
     {
-        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x0800)));
         SharedStmt clone = gs->clone();
 
         QVERIFY(&(*clone) != &(*gs));
@@ -59,7 +59,8 @@ void StatementTest::testClone()
         QVERIFY(clone->getID() != gs->getID());
 
         std::shared_ptr<GotoStatement> gsClone = clone->as<GotoStatement>();
-        QVERIFY(gsClone->getDest() == nullptr);
+        QVERIFY(gsClone->getDest() != nullptr);
+        QCOMPARE(*gsClone->getDest(), *gs->getDest());
         QVERIFY(!gsClone->isComputed());
     }
 
@@ -81,7 +82,9 @@ void StatementTest::testClone()
 
     // CaseStatement
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(ecx));
         SharedStmt clone = cs->clone();
 
         QVERIFY(&(*clone) != &(*cs));
@@ -90,14 +93,17 @@ void StatementTest::testClone()
         QVERIFY(clone->getID() != cs->getID());
 
         std::shared_ptr<CaseStatement> csClone = clone->as<CaseStatement>();
-        QVERIFY(csClone->getDest() == nullptr);
-        QVERIFY(!csClone->isComputed());
+        QVERIFY(csClone->getDest() != nullptr);
+        QCOMPARE(*csClone->getDest(), *cs->getDest());
+        QVERIFY(csClone->isComputed());
         QVERIFY(csClone->getSwitchInfo() == nullptr);
     }
 
     // CallStatement
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        std::shared_ptr<CallStatement> call(new CallStatement(ecx));
         SharedStmt clone = call->clone();
 
         QVERIFY(&(*clone) != &(*call));
@@ -106,8 +112,10 @@ void StatementTest::testClone()
         QVERIFY(clone->getID() != call->getID());
 
         std::shared_ptr<CallStatement> callClone = clone->as<CallStatement>();
-        QVERIFY(callClone->getDest() == nullptr);
-        QVERIFY(!callClone->isComputed());
+
+        QVERIFY(callClone->getDest() != nullptr);
+        QCOMPARE(*callClone->getDest(), *call->getDest());
+        QVERIFY(callClone->isComputed());
 
         QCOMPARE(callClone->getDestProc(), nullptr);
         QCOMPARE(callClone->isReturnAfterCall(), false);
@@ -230,7 +238,7 @@ void StatementTest::testGetDefinitions()
     // GotoStatement
     {
         LocationSet defs;
-        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x1000)));
 
         gs->getDefinitions(defs, false);
 
@@ -240,7 +248,7 @@ void StatementTest::testGetDefinitions()
     // CaseStatement
     {
         LocationSet defs;
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
 
         cs->getDefinitions(defs, false);
 
@@ -250,7 +258,7 @@ void StatementTest::testGetDefinitions()
     // CallStatement
     {
         LocationSet defs;
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(Location::regOf(REG_X86_ECX)));
         QVERIFY(call->isChildless());
         QVERIFY(call->getDefines().empty());
 
@@ -266,7 +274,7 @@ void StatementTest::testGetDefinitions()
         LocationSet defs;
         StatementList callDefines;
 
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(Location::regOf(REG_X86_ECX)));
         callDefines.append(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
         call->setDefines(callDefines);
 
@@ -335,8 +343,7 @@ void StatementTest::testDefinesLoc()
     {
         const SharedExp destExp = Location::regOf(REG_X86_ECX);
 
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
-        cs->setDest(destExp);
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(destExp));
 
         QVERIFY(!cs->definesLoc(Const::get(Address(0x1000))));
         QVERIFY(!cs->definesLoc(nullptr));
@@ -346,9 +353,8 @@ void StatementTest::testDefinesLoc()
 
     // CallStatement
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->getDefines().append(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
-        call->setDest(Address(0x1000));
 
         QVERIFY(!call->definesLoc(Location::regOf(REG_X86_ECX)));
         QVERIFY( call->definesLoc(Location::regOf(REG_X86_EAX)));
@@ -471,7 +477,7 @@ void StatementTest::testSearch()
 {
     // GotoStatement
     {
-        std::shared_ptr<GotoStatement> gs(new GotoStatement());
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x0800)));
 
         SharedExp result;
         QVERIFY(!gs->search(*Const::get(0x1000), result));
@@ -489,15 +495,14 @@ void StatementTest::testSearch()
 
     // CaseStatement
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement());
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
 
         SharedExp result;
         QVERIFY(!cs->search(*Const::get(0x1000), result));
     }
 
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
-        cs->setDest(Location::regOf(REG_X86_ECX));
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
 
         SharedExp result;
         QVERIFY(!cs->search(*Const::get(0), result));
@@ -508,15 +513,14 @@ void StatementTest::testSearch()
 
     // CallStatement
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
 
         SharedExp result;
         QVERIFY(!call->search(*Const::get(0), result));
     }
 
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         SharedExp result;
         QVERIFY(call->search(*Const::get(0x1000), result));
         QVERIFY(result != nullptr);
@@ -524,8 +528,7 @@ void StatementTest::testSearch()
     }
 
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->getDefines().append(std::make_shared<Assign>(Location::regOf(REG_X86_ECX), Const::get(0)));
 
         SharedExp result;
@@ -535,8 +538,7 @@ void StatementTest::testSearch()
     }
 
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->getArguments().append(std::make_shared<Assign>(Location::regOf(REG_X86_ECX), Const::get(0)));
 
         SharedExp result;
@@ -592,7 +594,7 @@ void StatementTest::testSearchAll()
 {
     // GotoStatement
     {
-        std::shared_ptr<GotoStatement> gs(new GotoStatement);
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Address(0x0800)));
 
         std::list<SharedExp> result;
         QVERIFY(!gs->searchAll(*Const::get(0x1000), result));
@@ -613,7 +615,7 @@ void StatementTest::testSearchAll()
 
     // CaseStatement
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement());
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
 
         std::list<SharedExp> result;
         QVERIFY(!cs->searchAll(*Const::get(0x1000), result));
@@ -621,8 +623,7 @@ void StatementTest::testSearchAll()
     }
 
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
-        cs->setDest(Location::regOf(REG_X86_ECX));
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_ECX)));
 
         std::list<SharedExp> result;
         QVERIFY(!cs->searchAll(*Const::get(0), result));
@@ -634,7 +635,7 @@ void StatementTest::testSearchAll()
 
     // CallStatement
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
 
         std::list<SharedExp> result;
         QVERIFY(!call->searchAll(*Const::get(0), result));
@@ -642,8 +643,7 @@ void StatementTest::testSearchAll()
     }
 
     {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
 
         std::list<SharedExp> result;
         QVERIFY(call->searchAll(*Const::get(0x1000), result));
@@ -652,8 +652,7 @@ void StatementTest::testSearchAll()
 
     {
         SharedExp ecx = Location::regOf(REG_X86_ECX);
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->getDefines().append(std::make_shared<Assign>(ecx, Const::get(0)));
 
         std::list<SharedExp> result;
@@ -663,8 +662,7 @@ void StatementTest::testSearchAll()
 
     {
         SharedExp ecx = Location::regOf(REG_X86_ECX);
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Address(0x1000));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->getArguments().append(std::make_shared<Assign>(ecx, Const::get(0)));
 
         std::list<SharedExp> result;
@@ -723,8 +721,7 @@ void StatementTest::testSearchAndReplace()
 {
     // GotoStatement
     {
-        std::shared_ptr<GotoStatement> gs(new GotoStatement);
-        gs->setDest(Location::regOf(REG_X86_ECX));
+        std::shared_ptr<GotoStatement> gs(new GotoStatement(Location::regOf(REG_X86_ECX)));
 
         auto gsClone = gs->clone()->as<GotoStatement>();
         QVERIFY(!gs->searchAndReplace(*Const::get(Address(0x1000)), Const::get(0x800)));
@@ -739,8 +736,7 @@ void StatementTest::testSearchAndReplace()
 
     // CaseStatement
     {
-        std::shared_ptr<CaseStatement> cs(new CaseStatement);
-        cs->setDest(Location::regOf(REG_X86_EAX));
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(Location::regOf(REG_X86_EAX)));
 
         std::shared_ptr<CaseStatement> csClone = cs->clone()->as<CaseStatement>();
         csClone->setDest(Location::regOf(REG_X86_ECX));
@@ -1589,7 +1585,7 @@ void StatementTest::testIsAssign()
     QCOMPARE(expected, actual);
     QVERIFY(a->isAssign());
 
-    CallStatement c;
+    CallStatement c(Address(0x1000));
     QVERIFY(!c.isAssign());
 }
 
@@ -1600,8 +1596,8 @@ void StatementTest::testIsFlagAssgn()
     Assign fc(Terminal::get(opFlags),
               Binary::get(opFlagCall, Const::get("addFlags"),
                           Binary::get(opList, Location::regOf(REG_X86_DX), Const::get(99))));
-    CallStatement   call;
-    BranchStatement br;
+    CallStatement   call(Address(0x1000));
+    BranchStatement br(Address(0x1000));
     Assign          as(Location::regOf(REG_X86_CL), Binary::get(opPlus, Location::regOf(REG_X86_DL), Const::get(4)));
 
     QString     actual;
@@ -1641,9 +1637,8 @@ void StatementTest::testAddUsedLocsAssign()
     QCOMPARE(expected, actual);
 
     l.clear();
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
     g->setNumber(55);
-    g->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     g->addUsedLocs(l);
 
     actual   = "";
@@ -1657,11 +1652,11 @@ void StatementTest::testAddUsedLocsAssign()
 void StatementTest::testAddUsedLocsBranch()
 {
     // BranchStatement with dest m[r26{99}]{55}, condition %flags
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
 
     LocationSet     l;
-    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    std::shared_ptr<BranchStatement> b(new BranchStatement(Address(0x1000)));
     b->setNumber(99);
     b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b)), g));
     b->setCondExpr(Terminal::get(opFlags));
@@ -1680,9 +1675,8 @@ void StatementTest::testAddUsedLocsCase()
 {
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
     LocationSet   l;
-    std::shared_ptr<CaseStatement> c(new CaseStatement);
+    std::shared_ptr<CaseStatement> c(new CaseStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
 
-    c->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
     si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c->setSwitchInfo(std::move(si));
@@ -1701,15 +1695,16 @@ void StatementTest::testAddUsedLocsCall()
 {
     // CallStatement with dest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
     LocationSet   l;
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
-
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
-    std::shared_ptr<CallStatement> ca(new CallStatement);
-    ca->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
+
+    std::shared_ptr<CallStatement> ca(new CallStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
     StatementList argl;
+
     argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_AL), Location::memOf(Location::regOf(REG_X86_EBX))));
     argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_CL), RefExp::get(Location::regOf(REG_X86_ESP), g)));
     ca->setArguments(argl);
+
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
     ca->addUsedLocs(l);
@@ -1725,10 +1720,10 @@ void StatementTest::testAddUsedLocsReturn()
 {
     // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
     LocationSet   l;
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x0800)));
     g->setNumber(55);
 
-    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    std::shared_ptr<BranchStatement> b(new BranchStatement(Address(0x0800)));
     b->setNumber(99);
 
     std::shared_ptr<ReturnStatement> r(new ReturnStatement);

@@ -492,8 +492,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
 
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
-        std::shared_ptr<BranchStatement> b(new BranchStatement);
-        b->setDest(insn.m_addr + insn.m_size);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(insn.m_addr + insn.m_size));
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
         rtl->append(b);
@@ -519,8 +518,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
 
         rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
                                              Binary::get(incdec, dest->clone(), Const::get(1))));
-        std::shared_ptr<BranchStatement> b(new BranchStatement);
-        b->setDest(insn.m_addr + 2);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(insn.m_addr + 2));
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,
                                    Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),

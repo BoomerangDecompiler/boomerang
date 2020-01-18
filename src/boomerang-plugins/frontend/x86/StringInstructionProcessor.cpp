@@ -69,7 +69,7 @@ bool StringInstructionProcessor::processStringInstructions()
         RTL *skipRTL     = p.first;
         IRFragment *frag = p.second;
 
-        std::shared_ptr<BranchStatement> skipBranch(new BranchStatement);
+        std::shared_ptr<BranchStatement> skipBranch(new BranchStatement(skipRTL->getAddress() + 2));
 
         assert(skipRTL->size() >= 4); // They vary; at least 5 or 6
 
@@ -81,16 +81,15 @@ bool StringInstructionProcessor::processStringInstructions()
         else {
             skipBranch->setCondExpr(nullptr);
         }
-        skipBranch->setDest(skipRTL->getAddress() + 2);
 
-        std::shared_ptr<BranchStatement> rptBranch(new BranchStatement);
+        std::shared_ptr<BranchStatement> rptBranch(new BranchStatement(skipRTL->getAddress()));
+
         if (s6->isAssign()) {
             rptBranch->setCondExpr(s6->as<Assign>()->getRight());
         }
         else {
             rptBranch->setCondExpr(nullptr);
         }
-        rptBranch->setDest(skipRTL->getAddress());
 
         splitForBranch(frag, skipRTL, skipBranch, rptBranch);
     }

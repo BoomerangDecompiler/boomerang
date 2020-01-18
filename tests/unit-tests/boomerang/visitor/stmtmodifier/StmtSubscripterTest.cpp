@@ -66,9 +66,8 @@ void StmtSubscripterTest::testSubscriptVars()
     QCOMPARE(actual, expected);
 
     // GotoStatement
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Location::regOf(REG_X86_ESP)));
     g->setNumber(55);
-    g->setDest(Location::regOf(REG_X86_ESP));
     subscriptVarForStmt(g, srch, s9);
 
     actual   = "";
@@ -77,14 +76,18 @@ void StmtSubscripterTest::testSubscriptVars()
     expected = "  55 GOTO r28{9}";
     QCOMPARE(actual, expected);
 
+    // FIXME
     // BranchStatement with dest m[r26{99}]{55}, condition %flags
-    std::shared_ptr<BranchStatement> b(new BranchStatement);
+
+    std::shared_ptr<BranchStatement> b(new BranchStatement(Address::INVALID));
+    SharedExp dest = Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b));
+    dest = RefExp::get(dest, g);
+
+    b->setDest(dest);
     b->setNumber(99);
-    SharedExp srchb = Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b));
-    b->setDest(RefExp::get(srchb, g));
     b->setCondExpr(Terminal::get(opFlags));
 
-    subscriptVarForStmt(b, srchb, s9); // Should be ignored now: new behaviour
+    subscriptVarForStmt(b, dest, s9); // Should be ignored now: new behaviour
     subscriptVarForStmt(b, Terminal::get(opFlags), g);
 
     actual   = "";
@@ -94,8 +97,7 @@ void StmtSubscripterTest::testSubscriptVars()
     QCOMPARE(actual, expected);
 
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
-    std::shared_ptr<CaseStatement> c1(new CaseStatement);
-    c1->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
+    std::shared_ptr<CaseStatement> c1(new CaseStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
     si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c1->setSwitchInfo(std::move(si));
@@ -108,8 +110,7 @@ void StmtSubscripterTest::testSubscriptVars()
     QCOMPARE(actual, expected);
 
     // CaseStatement (before recog) with dest = r28, switchVar is nullptr
-    std::shared_ptr<CaseStatement> c2(new CaseStatement);
-    c2->setDest(Location::regOf(REG_X86_ESP));
+    std::shared_ptr<CaseStatement> c2(new CaseStatement(Location::regOf(REG_X86_ESP)));
     c2->setSwitchInfo(nullptr);
 
     subscriptVarForStmt(c2, srch, s9);
@@ -119,8 +120,7 @@ void StmtSubscripterTest::testSubscriptVars()
     QCOMPARE(expected, actual);
 
     // CallStatement with dest = m[r26], params = m[r27], r28, defines r28, m[r28]
-    std::shared_ptr<CallStatement> ca(new CallStatement);
-    ca->setDest(Location::memOf(Location::regOf(REG_X86_ESP)));
+    std::shared_ptr<CallStatement> ca(new CallStatement(Location::memOf(Location::regOf(REG_X86_ESP))));
     StatementList argl;
 
     Prog   *prog = new Prog("testSubscriptVars", nullptr);
@@ -151,8 +151,7 @@ void StmtSubscripterTest::testSubscriptVars()
     argl.clear();
 
     // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
-    std::shared_ptr<CallStatement> ca2(new CallStatement);
-    ca2->setDest(Location::regOf(REG_X86_ESP));
+    std::shared_ptr<CallStatement> ca2(new CallStatement(Location::regOf(REG_X86_ESP)));
     argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EBX)), Const::get(1)));
     argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_EBP), Const::get(2)));
     ca2->setArguments(argl);

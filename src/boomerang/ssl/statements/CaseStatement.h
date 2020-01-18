@@ -56,7 +56,7 @@ public:
 class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
-    CaseStatement();
+    CaseStatement(SharedExp dest);
     CaseStatement(const CaseStatement &other);
     CaseStatement(CaseStatement &&other) = default;
 

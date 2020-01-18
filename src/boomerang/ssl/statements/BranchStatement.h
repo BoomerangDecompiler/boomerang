@@ -26,7 +26,8 @@
 class BOOMERANG_API BranchStatement : public GotoStatement
 {
 public:
-    BranchStatement();
+    BranchStatement(Address dest);
+    BranchStatement(SharedExp dest);
     BranchStatement(const BranchStatement &other) = default;
     BranchStatement(BranchStatement &&other)      = default;
 

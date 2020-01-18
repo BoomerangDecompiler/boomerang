@@ -27,11 +27,22 @@
 #include <QTextStreamManipulator>
 
 
-BranchStatement::BranchStatement()
-    : m_jumpType(BranchType::JE)
+BranchStatement::BranchStatement(Address dest)
+    : GotoStatement(dest)
+    , m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
 {
+    m_kind = StmtType::Branch;
+}
+
+BranchStatement::BranchStatement(SharedExp dest)
+    : GotoStatement(dest)
+    , m_jumpType(BranchType::JE)
+    , m_cond(nullptr)
+    , m_isFloat(false)
+{
+    assert(dest != nullptr);
     m_kind = StmtType::Branch;
 }
 

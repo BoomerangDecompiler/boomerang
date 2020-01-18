@@ -19,8 +19,9 @@
 #include <QTextStreamManipulator>
 
 
-CaseStatement::CaseStatement()
-    : m_switchInfo(nullptr)
+CaseStatement::CaseStatement(SharedExp dest)
+    : GotoStatement(dest)
+    , m_switchInfo(nullptr)
 {
     m_kind = StmtType::Case;
 }

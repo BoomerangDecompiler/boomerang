@@ -75,7 +75,7 @@ void UserProcTest::testIsNoReturn()
         noReturnProc.setStatus(ProcStatus::Decoded);
 
         std::unique_ptr<RTLList> bbRTLs(new RTLList);
-        std::shared_ptr<CallStatement> call(new CallStatement);
+        std::shared_ptr<CallStatement> call(new CallStatement(noReturnProc.getEntryAddress()));
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { call })));
         call->setDestProc(&noReturnProc);
 
@@ -717,13 +717,13 @@ void UserProcTest::testMarkAsNonChildless()
     UserProc proc2(Address(0x2000), "test2", nullptr);
     UserProc proc3(Address(0x3000), "test3", nullptr);
 
-    std::shared_ptr<CallStatement> call1(new CallStatement);
+    std::shared_ptr<CallStatement> call1(new CallStatement(proc2.getEntryAddress()));
     call1->setDestProc(&proc2);
 
-    std::shared_ptr<CallStatement> call2(new CallStatement);
+    std::shared_ptr<CallStatement> call2(new CallStatement(proc1.getEntryAddress()));
     call2->setDestProc(&proc1);
 
-    std::shared_ptr<CallStatement> call3(new CallStatement);
+    std::shared_ptr<CallStatement> call3(new CallStatement(proc3.getEntryAddress()));
     call3->setDestProc(&proc3);
 
     std::shared_ptr<ReturnStatement> ret1(new ReturnStatement);

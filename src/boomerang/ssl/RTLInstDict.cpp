@@ -171,8 +171,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address
             else {
                 SharedExp dest = jump->getDest();
                 s.reset();
-                std::shared_ptr<CaseStatement> caseStmt(new CaseStatement);
-                caseStmt->setDest(dest);
+                std::shared_ptr<CaseStatement> caseStmt(new CaseStatement(dest));
                 caseStmt->setIsComputed(true);
                 s = caseStmt;
             }

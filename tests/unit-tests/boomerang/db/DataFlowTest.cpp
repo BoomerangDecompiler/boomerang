@@ -323,10 +323,9 @@ void DataFlowTest::testRenameVarsSelfLoop()
 
         proc->setEntryFragment();
 
-        auto branch = std::make_shared<BranchStatement>();
+        auto branch = std::make_shared<BranchStatement>(Address(0x1001));
         branch->setCondType(BranchType::JNE);
         branch->setCondExpr(Binary::get(opNotEqual, Location::regOf(REG_X86_EAX), Const::get(0)));
-        branch->setDest(Address(0x1001));
 
         entry->getRTLs()->front()->clear();
         entry->getRTLs()->front()->append(std::make_shared<Assign>(Location::regOf(REG_X86_EAX), Const::get(42)));

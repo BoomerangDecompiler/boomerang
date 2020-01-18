@@ -106,26 +106,26 @@ void RTLTest::testVisitor()
     StmtVisitorStub *visitor = new StmtVisitorStub();
 
     /* jump stmt */
-    GotoStatement *jump = new GotoStatement;
+    GotoStatement *jump = new GotoStatement(Address(0x0800));
 
     jump->accept(visitor);
     QVERIFY(visitor->b);
     delete jump;
 
     /* branch stmt */
-    BranchStatement *jcond = new BranchStatement;
+    BranchStatement *jcond = new BranchStatement(Address(0x0800));
     jcond->accept(visitor);
     QVERIFY(visitor->c);
     delete jcond;
 
     /* nway jump stmt */
-    CaseStatement *nwayjump = new CaseStatement;
+    CaseStatement *nwayjump = new CaseStatement(Location::regOf(REG_X86_ECX));
     nwayjump->accept(visitor);
     QVERIFY(visitor->d);
     delete nwayjump;
 
     /* call stmt */
-    CallStatement *call = new CallStatement;
+    CallStatement *call = new CallStatement(Address(0x1000));
     call->accept(visitor);
     QVERIFY(visitor->e);
     delete call;
@@ -149,7 +149,7 @@ void RTLTest::testVisitor()
     delete as;
 
     /* polymorphic */
-    Statement *s = new CallStatement;
+    Statement *s = new CallStatement(Address(0x1000));
     s->accept(visitor);
     QVERIFY(visitor->e);
     delete s;

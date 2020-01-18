@@ -24,10 +24,9 @@
 class BOOMERANG_API GotoStatement : public Statement
 {
 public:
-    GotoStatement();
-
     /// Construct a jump to a fixed address \p jumpDest
     GotoStatement(Address jumpDest);
+    GotoStatement(SharedExp dest);
     GotoStatement(const GotoStatement &other) = default;
     GotoStatement(GotoStatement &&other)      = default;
 

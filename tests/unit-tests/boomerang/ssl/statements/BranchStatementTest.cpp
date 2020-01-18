@@ -20,7 +20,7 @@
 void BranchStatementTest::testClone()
 {
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
         SharedStmt clone = bs->clone();
 
         QVERIFY(&(*clone) != &(*bs));
@@ -29,7 +29,8 @@ void BranchStatementTest::testClone()
         QVERIFY(clone->getID() != bs->getID());
 
         std::shared_ptr<BranchStatement> bsClone = clone->as<BranchStatement>();
-        QCOMPARE(bsClone->getDest(), nullptr);
+        QVERIFY(bsClone->getDest() != nullptr);
+        QCOMPARE(*bsClone->getDest(), *bs->getDest());
         QCOMPARE(bsClone->getCondExpr(), nullptr);
         QCOMPARE(bsClone->isComputed(), bs->isComputed());
 
@@ -38,9 +39,8 @@ void BranchStatementTest::testClone()
     }
 
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
         bs->setCondType(BranchType::JE, true);
-        bs->setDest(Address(0x1000));
         SharedStmt clone = bs->clone();
 
         QVERIFY(&(*clone) != &(*bs));
@@ -69,7 +69,7 @@ void BranchStatementTest::testGetDefinitions()
 {
     {
         LocationSet defs;
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
 
         bs->getDefinitions(defs, false);
 
@@ -83,8 +83,7 @@ void BranchStatementTest::testDefinesLoc()
     {
         const SharedExp condExp = Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0));
 
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Address(0x1000));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
         bs->setCondExpr(condExp);
 
         QVERIFY(!bs->definesLoc(Const::get(Address(0x1000))));
@@ -99,15 +98,14 @@ void BranchStatementTest::testDefinesLoc()
 void BranchStatementTest::testSearch()
 {
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x0800)));
 
         SharedExp result;
         QVERIFY(!bs->search(*Const::get(0x1000), result));
     }
 
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Address(0x1000));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
 
         SharedExp result;
         QVERIFY(!bs->search(*Const::get(0), result));
@@ -126,7 +124,7 @@ void BranchStatementTest::testSearch()
 void BranchStatementTest::testSearchAll()
 {
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x0800)));
 
         std::list<SharedExp> result;
         QVERIFY(!bs->searchAll(*Const::get(0x1000), result));
@@ -134,8 +132,7 @@ void BranchStatementTest::testSearchAll()
     }
 
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Address(0x1000));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
         bs->setCondExpr(nullptr);
 
         std::list<SharedExp> result;
@@ -149,8 +146,7 @@ void BranchStatementTest::testSearchAll()
     {
         SharedExp ecx = Location::regOf(REG_X86_ECX);
 
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Address(0x1000));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Address(0x1000)));
         bs->setCondExpr(Binary::get(opEquals, ecx, Const::get(0)));
 
         std::list<SharedExp> result;
@@ -163,8 +159,7 @@ void BranchStatementTest::testSearchAll()
 void BranchStatementTest::testSearchAndReplace()
 {
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Location::regOf(REG_X86_ECX));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Location::regOf(REG_X86_ECX)));
 
         auto bsClone = bs->clone()->as<GotoStatement>();
         QVERIFY(!bs->searchAndReplace(*Const::get(Address(0x1000)), Const::get(0x800)));
@@ -177,8 +172,7 @@ void BranchStatementTest::testSearchAndReplace()
     }
 
     {
-        std::shared_ptr<BranchStatement> bs(new BranchStatement);
-        bs->setDest(Location::regOf(REG_X86_EAX));
+        std::shared_ptr<BranchStatement> bs(new BranchStatement(Location::regOf(REG_X86_EAX)));
         bs->setCondExpr(Binary::get(opEquals, Location::regOf(REG_X86_EAX), Const::get(0)));
 
         auto bsClone = bs->clone()->as<BranchStatement>();

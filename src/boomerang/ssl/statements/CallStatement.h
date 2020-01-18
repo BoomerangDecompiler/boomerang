@@ -30,7 +30,8 @@ class Prog;
 class BOOMERANG_API CallStatement : public GotoStatement
 {
 public:
-    CallStatement();
+    CallStatement(Address dest);
+    CallStatement(SharedExp dest);
     CallStatement(const CallStatement &other) = delete;
     CallStatement(CallStatement &&other)      = default;
 

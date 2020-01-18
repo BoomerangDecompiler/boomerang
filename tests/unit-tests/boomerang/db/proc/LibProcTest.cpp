@@ -92,7 +92,7 @@ void LibProcTest::testRemoveParameterFromSignature()
     QCOMPARE(proc.getSignature()->getNumParams(), 0);
 
     sig->addParameter("bar", exp);
-    std::shared_ptr<CallStatement> call(new CallStatement);
+    std::shared_ptr<CallStatement> call(new CallStatement(proc.getEntryAddress()));
     call->setDestProc(&proc);
     proc.addCaller(call);
     call->setNumArguments(1);

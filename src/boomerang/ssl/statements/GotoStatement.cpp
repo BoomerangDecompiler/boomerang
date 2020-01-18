@@ -20,19 +20,20 @@
 #include <QTextStreamManipulator>
 
 
-GotoStatement::GotoStatement()
-    : Statement(StmtType::Goto)
-    , m_dest(nullptr)
-    , m_isComputed(false)
-{
-}
-
-
 GotoStatement::GotoStatement(Address jumpDest)
     : Statement(StmtType::Goto)
     , m_isComputed(false)
 {
     m_dest = Const::get(jumpDest);
+}
+
+
+GotoStatement::GotoStatement(SharedExp dest)
+    : Statement(StmtType::Goto)
+    , m_dest(dest)
+    , m_isComputed(!dest->isConst())
+{
+    assert(m_dest != nullptr);
 }
 
 
@@ -54,6 +55,7 @@ Address GotoStatement::getFixedDest() const
 void GotoStatement::setDest(SharedExp pd)
 {
     m_dest = pd;
+    assert(m_dest != nullptr);
 }
 
 

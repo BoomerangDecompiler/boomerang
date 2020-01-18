@@ -190,7 +190,7 @@ void IRFragmentTest::testAddPhi()
 void IRFragmentTest::testAddImplicitOverPhi()
 {
     std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>(Address(0x0800)) })));
     IRFragment bb1(1, nullptr, std::move(rtls));
 
     QVERIFY(nullptr != bb1.addPhi(Terminal::get(opCF)));
@@ -201,7 +201,7 @@ void IRFragmentTest::testAddImplicitOverPhi()
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := phi{}\n"
-        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "0x00001000    0 BRANCH 0x00000800, condition equals\n"
         "\n"
     );
 
@@ -212,7 +212,7 @@ void IRFragmentTest::testAddImplicitOverPhi()
 void IRFragmentTest::testAddPhiOverImplict()
 {
     std::unique_ptr<RTLList> rtls(new RTLList);
-    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>() })));
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { std::make_shared<BranchStatement>(Address(0x0800)) })));
     IRFragment bb1(1, nullptr, std::move(rtls));
 
     QVERIFY(nullptr != bb1.addImplicitAssign(Terminal::get(opCF)));
@@ -223,7 +223,7 @@ void IRFragmentTest::testAddPhiOverImplict()
         "  in edges: \n"
         "  out edges: \n"
         "0x00000000    0 *v* %CF := -\n"
-        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "0x00001000    0 BRANCH 0x00000800, condition equals\n"
         "\n"
     );
 
@@ -263,7 +263,7 @@ void IRFragmentTest::testGetCond()
 
     {
         std::unique_ptr<RTLList> rtls(new RTLList);
-        std::shared_ptr<BranchStatement> branch(new BranchStatement);
+        std::shared_ptr<BranchStatement> branch(new BranchStatement(Address(0x0800)));
         branch->setCondExpr(Terminal::get(opZF));
 
         rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
@@ -278,7 +278,7 @@ void IRFragmentTest::testGetCond()
 void IRFragmentTest::testSetCond()
 {
     std::unique_ptr<RTLList> rtls(new RTLList);
-    std::shared_ptr<BranchStatement> branch(new BranchStatement);
+    std::shared_ptr<BranchStatement> branch(new BranchStatement(Address(0x0800)));
     branch->setCondExpr(Terminal::get(opZF));
 
     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
@@ -425,7 +425,7 @@ void IRFragmentTest::testIsEmptyJump()
     {
         auto bbRTLs = std::unique_ptr<RTLList>(new RTLList);
         bbRTLs->push_back(std::make_unique<RTL>(Address(0x1000)));
-        std::shared_ptr<BranchStatement> jump(new BranchStatement());
+        std::shared_ptr<BranchStatement> jump(new BranchStatement(Address(0x0800)));
         bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1001), { jump })));
 
         IRFragment bb1(1, nullptr, std::move(bbRTLs));

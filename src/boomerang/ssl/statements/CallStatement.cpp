@@ -43,7 +43,15 @@
 #include <QTextStreamManipulator>
 
 
-CallStatement::CallStatement()
+CallStatement::CallStatement(Address dest)
+    : GotoStatement(dest)
+{
+    m_kind = StmtType::Call;
+}
+
+
+CallStatement::CallStatement(SharedExp dest)
+    : GotoStatement(dest)
 {
     m_kind = StmtType::Call;
 }
@@ -337,11 +345,8 @@ bool CallStatement::isReturnAfterCall() const
 
 SharedStmt CallStatement::clone() const
 {
-    std::shared_ptr<CallStatement> ret(new CallStatement);
-
-    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
+    std::shared_ptr<CallStatement> ret(new CallStatement(m_dest->clone()));
     ret->m_isComputed = m_isComputed;
-
 
     for (SharedStmt stmt : m_arguments) {
         ret->m_arguments.append(stmt->clone());

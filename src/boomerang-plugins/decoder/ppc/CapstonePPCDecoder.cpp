@@ -178,8 +178,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
 
     if (insnID == "BL" || insnID == "BLA") {
         Address callDest = Address(insn.m_operands[0]->access<Const>()->getLong());
-        std::shared_ptr<CallStatement> callStmt(new CallStatement);
-        callStmt->setDest(callDest);
+        std::shared_ptr<CallStatement> callStmt(new CallStatement(callDest));
         callStmt->setIsComputed(false);
 
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
@@ -194,8 +193,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
         }
     }
     else if (insnID == "BCTR") {
-        std::shared_ptr<CaseStatement> jump(new CaseStatement);
-        jump->setDest(Location::regOf(REG_PPC_CTR));
+        std::shared_ptr<CaseStatement> jump(new CaseStatement(Location::regOf(REG_PPC_CTR)));
         jump->setIsComputed(true);
         rtl->append(jump);
     }
@@ -203,8 +201,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
         rtl->append(std::make_shared<Assign>(SizeType::get(32), Location::regOf(REG_PPC_LR),
                                              Const::get(Address(insn.m_addr + PPC_INSN_LENGTH))));
 
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(Location::regOf(REG_PPC_CTR));
+        std::shared_ptr<CallStatement> call(new CallStatement(Location::regOf(REG_PPC_CTR)));
         call->setIsComputed(true);
         rtl->append(call);
     }
@@ -271,8 +268,7 @@ std::unique_ptr<RTL> CapstonePPCDecoder::createRTLForInstruction(const MachineIn
     else if (insnID == "BDNZ" || insnID == "BDNZL") {
         const Address dest = insn.m_operands[numOperands - 1]->access<Const>()->getAddr();
         if (dest != insn.m_addr + PPC_INSN_LENGTH) {
-            std::shared_ptr<BranchStatement> jump(new BranchStatement);
-            jump->setDest(dest);
+            std::shared_ptr<BranchStatement> jump(new BranchStatement(dest));
             jump->setCondType(BranchType::JNE);
             rtl->append(jump);
         }
