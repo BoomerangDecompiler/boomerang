@@ -61,6 +61,16 @@ BOOMERANG_ADD_TEST(
 
 
 BOOMERANG_ADD_TEST(
+    NAME CallStatementTest
+    SOURCES statements/CallStatementTest.h statements/CallStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
     NAME StatementTest
     SOURCES statements/StatementTest.h statements/StatementTest.cpp
     LIBRARIES
