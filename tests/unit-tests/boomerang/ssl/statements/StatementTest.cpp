@@ -768,78 +768,68 @@ void StatementTest::testRecursion()
 
 void StatementTest::testIsAssign()
 {
-    QString     actual;
-    OStream st(&actual);
-    // r2 := 99
     std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_DX), Const::get(99)));
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
 
-    a->print(st);
-    QString expected("   0 *v* r2 := 99");
-
-    QCOMPARE(expected, actual);
     QVERIFY(a->isAssign());
-
-    CallStatement c(Address(0x1000));
-    QVERIFY(!c.isAssign());
+    QVERIFY(!call->isAssign());
 }
 
 
 void StatementTest::testIsFlagAssgn()
 {
     // FLAG addFlags(r2 , 99)
-    Assign fc(Terminal::get(opFlags),
-              Binary::get(opFlagCall, Const::get("addFlags"),
-                          Binary::get(opList, Location::regOf(REG_X86_DX), Const::get(99))));
-    CallStatement   call(Address(0x1000));
-    BranchStatement br(Address(0x1000));
-    Assign          as(Location::regOf(REG_X86_CL), Binary::get(opPlus, Location::regOf(REG_X86_DL), Const::get(4)));
+    std::shared_ptr<Assign> fc(new Assign(Terminal::get(opFlags),
+                                          Binary::get(opFlagCall,
+                                                      Const::get("addFlags"),
+                                                      Binary::get(opList,
+                                                                  Location::regOf(REG_X86_DX),
+                                                                  Const::get(99)))));
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    std::shared_ptr<BranchStatement> br(new BranchStatement(Address(0x1000)));
+    std::shared_ptr<Assign> as(new Assign(Location::regOf(REG_X86_CL),
+                                          Binary::get(opPlus,
+                                                      Location::regOf(REG_X86_DL),
+                                                      Const::get(4))));
 
-    QString     actual;
-    QString     expected("   0 *v* %flags := addFlags( r2, 99 )");
-    OStream ost(&actual);
-
-    fc.print(ost);
-    QCOMPARE(expected, actual);
-
-    QVERIFY(fc.isFlagAssign());
-    QVERIFY(!call.isFlagAssign());
-    QVERIFY(!br.isFlagAssign());
-    QVERIFY(!as.isFlagAssign());
+    QVERIFY(fc->isFlagAssign());
+    QVERIFY(!call->isFlagAssign());
+    QVERIFY(!br->isFlagAssign());
+    QVERIFY(!as->isFlagAssign());
 }
 
 
 void StatementTest::testAddUsedLocsAssign()
 {
-    // m[r28-4] := m[r28-8] * r26
-    std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_X86_ESP),
-                                         Const::get(4))),
-             Binary::get(opMult,
-                         Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_X86_ESP),
-                                                     Const::get(8))),
-                         Location::regOf(REG_X86_EDX))));
-    a->setNumber(1);
+    {
+        // m[r28-4] := m[r28-8] * r26
+        std::shared_ptr<Assign> a(new Assign(
+            Location::memOf(Binary::get(opMinus,
+                                        Location::regOf(REG_X86_ESP),
+                                        Const::get(4))),
+            Binary::get(opMult,
+                        Location::memOf(Binary::get(opMinus,
+                                                    Location::regOf(REG_X86_ESP),
+                                                    Const::get(8))),
+                        Location::regOf(REG_X86_EDX))));
+        a->setNumber(1);
 
-    LocationSet l;
-    a->addUsedLocs(l);
+        LocationSet l;
+        a->addUsedLocs(l);
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QString expected = "r26,\tr28,\tm[r28 - 8]";
-    QCOMPARE(expected, actual);
+        QCOMPARE(l.toString(), "r26,\tr28,\tm[r28 - 8]");
+    }
 
-    l.clear();
-    std::shared_ptr<GotoStatement> g(new GotoStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
-    g->setNumber(55);
-    g->addUsedLocs(l);
+    {
 
-    actual   = "";
-    expected = "r26,\tm[r26]";
-    l.print(ost);
+        std::shared_ptr<GotoStatement> g(new GotoStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
+        g->setNumber(55);
 
-    QCOMPARE(expected, actual);
+        LocationSet l;
+        g->addUsedLocs(l);
+
+        QCOMPARE(l.toString(), "r26,\tm[r26]");
+    }
 }
 
 
@@ -849,46 +839,37 @@ void StatementTest::testAddUsedLocsBranch()
     std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
 
-    LocationSet     l;
     std::shared_ptr<BranchStatement> b(new BranchStatement(Address(0x1000)));
     b->setNumber(99);
     b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b)), g));
     b->setCondExpr(Terminal::get(opFlags));
+
+    LocationSet l;
     b->addUsedLocs(l);
 
-    QString     actual;
-    QString     expected("r26{99},\tm[r26{99}]{55},\t%flags");
-    OStream ost(&actual);
-    l.print(ost);
-
-    QCOMPARE(actual, expected);
+    QCOMPARE(l.toString(), "r26{99},\tm[r26{99}]{55},\t%flags");
 }
 
 
 void StatementTest::testAddUsedLocsCase()
 {
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
-    LocationSet   l;
     std::shared_ptr<CaseStatement> c(new CaseStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
 
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
     si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c->setSwitchInfo(std::move(si));
+
+    LocationSet l;
     c->addUsedLocs(l);
 
-    QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
-    QString actual;
-    OStream ost(&actual);
-    l.print(ost);
-
-    QCOMPARE(actual, expected);
+    QCOMPARE(l.toString(), "r26,\tr28,\tm[r28 - 12],\tm[r26]");
 }
 
 
 void StatementTest::testAddUsedLocsCall()
 {
     // CallStatement with dest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
-    LocationSet   l;
     std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
 
@@ -901,19 +882,17 @@ void StatementTest::testAddUsedLocsCall()
 
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
+
+    LocationSet l;
     ca->addUsedLocs(l);
 
-    QString actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r26,\tr27,\tm[r26],\tm[r27],\tr28{55}"));
+    QCOMPARE(l.toString(), "r26,\tr27,\tm[r26],\tm[r27],\tr28{55}");
 }
 
 
 void StatementTest::testAddUsedLocsReturn()
 {
     // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
-    LocationSet   l;
     std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x0800)));
     g->setNumber(55);
 
@@ -926,58 +905,57 @@ void StatementTest::testAddUsedLocsReturn()
     r->addReturn(std::make_shared<Assign>(
                      Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_X86_ECX), g), RefExp::get(Location::regOf(REG_X86_EDX), b))),
                      Const::get(5)));
+
+    LocationSet   l;
     r->addUsedLocs(l);
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25{55},\tr26{99}"));
+    QCOMPARE(l.toString(), "r24,\tr25{55},\tr26{99}");
 }
 
 
 void StatementTest::testAddUsedLocsBool()
 {
-    // Boolstatement with condition m[r24] = r25, dest m[r26]
-    LocationSet l;
-    SharedExp lhs = Location::memOf(Location::regOf(REG_X86_EDX));
-    SharedExp cond = Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX));
+    {
+        // Boolstatement with condition m[r24] = r25, dest m[r26]
+        SharedExp lhs = Location::memOf(Location::regOf(REG_X86_EDX));
+        SharedExp cond = Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX));
 
-    std::shared_ptr<BoolAssign> bs(new BoolAssign(lhs, BranchType::JE, cond));
-    bs->addUsedLocs(l);
+        std::shared_ptr<BoolAssign> bs(new BoolAssign(lhs, BranchType::JE, cond));
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25,\tr26,\tm[r24]"));
+        LocationSet l;
+        bs->addUsedLocs(l);
 
-    l.clear();
+        QCOMPARE(l.toString(), "r24,\tr25,\tr26,\tm[r24]");
+    }
 
-    // m[local21 + 16] := phi{0, 372}
-    SharedExp base = Location::memOf(Binary::get(opPlus, Location::local("local21", nullptr), Const::get(16)));
-    std::shared_ptr<Assign> s372(new Assign(base, Const::get(0)));
-    s372->setNumber(372);
+    {
+        // m[local21 + 16] := phi{0, 372}
+        SharedExp base = Location::memOf(Binary::get(opPlus, Location::local("local21", nullptr), Const::get(16)));
+        std::shared_ptr<Assign> s372(new Assign(base, Const::get(0)));
+        s372->setNumber(372);
 
-    std::shared_ptr<PhiAssign> pa(new PhiAssign(base));
-    pa->putAt(nullptr, nullptr, base); // 0
-    pa->putAt(nullptr, s372, base);    // 1
-    pa->addUsedLocs(l);
-    // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
+        std::shared_ptr<PhiAssign> pa(new PhiAssign(base));
+        pa->putAt(nullptr, nullptr, base); // 0
+        pa->putAt(nullptr, s372, base);    // 1
 
-    actual   = "";
-    l.print(ost);
-    QCOMPARE(actual, QString("local21,\tm[local21 + 16]{372}"));
+        LocationSet l;
+        pa->addUsedLocs(l);
+
+        // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
+        QCOMPARE(l.toString(), "local21,\tm[local21 + 16]{372}");
+    }
 
     // m[r28{-} - 4] := -
-    l.clear();
-    auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
+    {
+        auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
                                                RefExp::get(Location::regOf(REG_X86_ESP), nullptr),
                                                Const::get(4))));
 
-    ia->addUsedLocs(l);
+        LocationSet l;
+        ia->addUsedLocs(l);
 
-    actual   = "";
-    l.print(ost);
-    QCOMPARE(actual, QString("r28{-}"));
+        QCOMPARE(l.toString(), "r28{-}");
+    }
 }
 
 
