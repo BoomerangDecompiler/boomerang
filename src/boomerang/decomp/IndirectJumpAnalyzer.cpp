@@ -497,7 +497,7 @@ bool IndirectJumpAnalyzer::analyzeCompJump(IRFragment *frag, UserProc *proc)
             }
 
             swi->switchExp = expr;
-            lastStmt->setDest(nullptr);
+            lastStmt->setDest(expr);
 
             lastStmt->setSwitchInfo(std::move(swi));
             foundNewFragments |= processSwitch(frag, proc);
