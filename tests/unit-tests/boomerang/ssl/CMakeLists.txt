@@ -39,9 +39,20 @@ BOOMERANG_ADD_TEST(
         ${CMAKE_THREAD_LIBS_INIT}
 )
 
+
 BOOMERANG_ADD_TEST(
     NAME BoolAssignTest
     SOURCES statements/BoolAssignTest.h statements/BoolAssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME BranchStatementTest
+    SOURCES statements/BranchStatementTest.h statements/BranchStatementTest.cpp
     LIBRARIES
         ${DEBUG_LIB}
         boomerang

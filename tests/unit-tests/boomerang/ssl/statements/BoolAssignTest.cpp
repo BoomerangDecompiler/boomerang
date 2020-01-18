@@ -243,5 +243,4 @@ void BoolAssignTest::testPrint_data()
 }
 
 
-
 QTEST_GUILESS_MAIN(BoolAssignTest)
