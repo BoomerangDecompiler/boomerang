@@ -153,40 +153,6 @@ void StatementTest::testGetDefinitions()
 
 void StatementTest::testDefinesLoc()
 {
-    // BoolAssign
-    {
-        // %eax := (%ecx != 0)
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-
-        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
-
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(eax, BranchType::JE, condExp));
-
-        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
-        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
-        QVERIFY(!asgn->definesLoc(condExp));
-    }
-
-    {
-        SharedExp eax = Location::regOf(REG_X86_EAX);
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
-
-        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
-        const SharedExp def = Ternary::get(opAt,
-                                           eax,
-                                           Const::get(0),
-                                           Const::get(7));
-
-        // %eax@[0:7] := (%ecx != 0)
-        std::shared_ptr<BoolAssign> asgn(new BoolAssign(def, BranchType::JE, condExp));
-
-        QVERIFY(asgn->definesLoc(def));
-        QVERIFY(asgn->definesLoc(eax));
-        QVERIFY(!asgn->definesLoc(ecx));
-        QVERIFY(!asgn->definesLoc(condExp));
-    }
-
     // ReturnStatement
     {
         Prog prog("testProg", &m_project);

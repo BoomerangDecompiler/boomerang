@@ -10,9 +10,9 @@
 #include "BoolAssignTest.h"
 
 
-#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/util/LocationSet.h"
 
@@ -70,6 +70,42 @@ void BoolAssignTest::testGetDefinitions()
     }
 }
 
+
+void BoolAssignTest::testDefinesLoc()
+{
+    {
+        // %eax := (%ecx != 0)
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
+
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(eax, BranchType::JE, condExp));
+
+        QVERIFY(asgn->definesLoc(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!asgn->definesLoc(Location::regOf(REG_X86_ECX)));
+        QVERIFY(!asgn->definesLoc(condExp));
+    }
+
+    {
+        SharedExp eax = Location::regOf(REG_X86_EAX);
+        SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+        const SharedExp condExp = Binary::get(opEquals, ecx, Const::get(0));
+        const SharedExp def = Ternary::get(opAt,
+                                           eax,
+                                           Const::get(0),
+                                           Const::get(7));
+
+        // %eax@[0:7] := (%ecx != 0)
+        std::shared_ptr<BoolAssign> asgn(new BoolAssign(def, BranchType::JE, condExp));
+
+        QVERIFY(asgn->definesLoc(def));
+        QVERIFY(asgn->definesLoc(eax));
+        QVERIFY(!asgn->definesLoc(ecx));
+        QVERIFY(!asgn->definesLoc(condExp));
+    }
+}
 
 void BoolAssignTest::testSearch()
 {
@@ -178,7 +214,7 @@ void BoolAssignTest::testPrint()
 {
     SharedExp eax = Location::regOf(REG_X86_EAX);
     SharedExp ecx = Location::regOf(REG_X86_ECX);
-;
+
     QFETCH(BranchType, bt);
     QFETCH(bool, isFloat);
     QFETCH(QString, expectedResult);
