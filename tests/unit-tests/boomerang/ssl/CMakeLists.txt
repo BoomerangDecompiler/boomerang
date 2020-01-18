@@ -124,6 +124,19 @@ BOOMERANG_ADD_TEST(
 
 
 BOOMERANG_ADD_TEST(
+    NAME ReturnStatementTest
+    SOURCES statements/ReturnStatementTest.h statements/ReturnStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)
+
+
+BOOMERANG_ADD_TEST(
     NAME ArrayTypeTest
     SOURCES type/ArrayTypeTest.h type/ArrayTypeTest.cpp
     LIBRARIES
