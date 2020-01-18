@@ -29,13 +29,14 @@ BoolAssign::BoolAssign(SharedExp lhs, BranchType bt, SharedExp cond)
     , m_cond(cond)
     , m_isFloat(false)
 {
+    assert(m_cond != nullptr);
 }
 
 
 BoolAssign::BoolAssign(const BoolAssign &other)
     : Assignment(other)
     , m_jumpType(other.m_jumpType)
-    , m_cond(other.m_cond ? other.m_cond->clone() : nullptr)
+    , m_cond(other.m_cond->clone())
     , m_isFloat(other.m_isFloat)
 {
 }
@@ -51,7 +52,7 @@ BoolAssign &BoolAssign::operator=(const BoolAssign &other)
     Assignment::operator=(other);
 
     m_jumpType = other.m_jumpType;
-    m_cond     = other.m_cond ? other.m_cond->clone() : nullptr;
+    m_cond     = other.m_cond->clone();
     m_isFloat  = other.m_isFloat;
 
     return *this;
@@ -75,6 +76,7 @@ SharedExp BoolAssign::getCondExpr() const
 void BoolAssign::setCondExpr(SharedExp pss)
 {
     m_cond = pss;
+    assert(m_cond != nullptr);
 }
 
 
@@ -104,30 +106,21 @@ void BoolAssign::printCompact(OStream &os) const
     case BranchType::INVALID: assert(false); break;
     }
 
-    os << ")";
+    os << ')';
 
     if (m_isFloat) {
         os << ", float";
     }
 
-    os << '\n';
-
-    if (m_cond) {
-        os << "High level: ";
-        m_cond->print(os);
-
-        os << "\n";
-    }
+    os << "\nHigh level: ";
+    m_cond->print(os);
+    os << "\n";
 }
 
 
 SharedStmt BoolAssign::clone() const
 {
-    std::shared_ptr<BoolAssign> ret(new BoolAssign(*this));
-
-    ret->m_cond = m_cond ? m_cond->clone() : nullptr;
-
-    return ret;
+    return std::make_shared<BoolAssign>(*this);
 }
 
 
@@ -139,9 +132,7 @@ bool BoolAssign::accept(StmtVisitor *visitor) const
 
 void BoolAssign::simplify()
 {
-    if (m_cond) {
-        condToRelational(m_cond, m_jumpType);
-    }
+    condToRelational(m_cond, m_jumpType);
 }
 
 
@@ -153,8 +144,8 @@ void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 
 bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 {
-    assert(m_lhs);
-    assert(m_cond);
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     return m_lhs->search(pattern, result) || m_cond->search(pattern, result);
 }
@@ -162,8 +153,8 @@ bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 
 bool BoolAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
-    assert(m_lhs);
-    assert(m_cond);
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     bool ch = false;
 
@@ -174,16 +165,17 @@ bool BoolAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) con
 }
 
 
-bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
+bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool)
 {
-    Q_UNUSED(cc);
-
-    assert(m_cond);
-    assert(m_lhs);
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     bool chl = false, chr = false;
-    m_cond = m_cond->searchReplaceAll(pattern, replace, chl);
-    m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chr);
+    m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chl);
+    m_cond = m_cond->searchReplaceAll(pattern, replace, chr);
+
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     return chl || chr;
 }
@@ -204,7 +196,7 @@ bool BoolAssign::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_cond) {
+    if (ret) {
         ret = m_cond->acceptVisitor(v->ev);
     }
 
@@ -218,8 +210,9 @@ bool BoolAssign::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_cond && visitChildren) {
+        if (visitChildren) {
             m_cond = m_cond->acceptModifier(v->m_mod);
+            assert(m_cond != nullptr);
         }
 
         if (visitChildren && m_lhs->isMemOf()) {
@@ -237,8 +230,9 @@ bool BoolAssign::accept(StmtPartModifier *v)
 
     v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
-    if (m_cond && visitChildren) {
+    if (visitChildren) {
         m_cond = m_cond->acceptModifier(v->mod);
+        assert(m_cond != nullptr);
     }
 
     if (m_lhs && visitChildren) {
