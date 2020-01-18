@@ -21,7 +21,6 @@ private slots:
     void testAssign(); //< operator=
     void testClone();
     void testGetDefinitions();
-    void testDefinesLoc();
     void testSearch();
     void testSearchAll();
     void testSearchAndReplace();
