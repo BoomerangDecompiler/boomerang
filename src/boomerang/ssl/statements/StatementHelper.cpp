@@ -14,6 +14,8 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/util/log/Log.h"
 
+#include <cassert>
+
 
 // Common to BranchStatement and BoolAssign
 // Return true if this is now a floating point Branch
@@ -73,9 +75,8 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
         }
 
         if (op != opWild) {
-            condExp = Binary::get(op,
-                                  condExp->getSubExp2()->getSubExp1()->clone(),                // P1
-                                  condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
+            condExp = Binary::get(op, condExp->access<Exp, 2, 1>()->clone(), // P1
+                                  condExp->access<Exp, 2, 2, 1>()->clone()); // P2
         }
     }
     else if (condOp == opFlagCall &&
@@ -129,77 +130,77 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
              *          Const      opList
              * "LOGICALFLAGS8"     /    \
              *               opBitAnd    opNil
+             *             (flagsParam)
              *               /      \
              *        opFlagCall    opIntConst
-             *        /        \         mask
+             *        /        \         (mask)
              *    Const        opList
              * "SETFFLAGS"     /    \
              *                P1    opList
              *                      /    \
              *                     P2    opNil
              */
-            SharedExp flagsParam = condExp->getSubExp2()->getSubExp1();
-            SharedExp test       = flagsParam;
+            const SharedExp flagsParam = condExp->access<Exp, 2, 1>();
 
-            if (test->isSubscript()) {
-                test = test->getSubExp1();
+            if (flagsParam->isTemp() ||
+                (flagsParam->isSubscript() && flagsParam->access<Exp, 1>()->isTemp())) {
+                return false;
             }
-
-            if (test->isTemp()) {
-                return false; // Just not propagated yet
+            else if (flagsParam->getOper() != opBitAnd || !flagsParam->getSubExp2()->isIntConst()) {
+                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
+                return false;
             }
-
-            int mask = 0;
-
-            if (flagsParam->getOper() == opBitAnd) {
-                SharedExp setFlagsParam = flagsParam->getSubExp2();
-
-                if (setFlagsParam->isIntConst()) {
-                    mask = setFlagsParam->access<Const>()->getInt();
-                }
-            }
-
-            if (!flagsParam->getSubExp1() || !flagsParam->getSubExp2() || (mask & ~0x41) != 0) {
+            else if (!flagsParam->getSubExp1()->isFlagCall() ||
+                     flagsParam->access<Const, 1, 1>()->getStr() != "SETFFLAGS") {
                 LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
                 return false;
             }
 
-            const SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
-            if (!at_opFlagsCall_List || !at_opFlagsCall_List->getSubExp1() ||
-                !at_opFlagsCall_List->getSubExp2() ||
-                !at_opFlagsCall_List->getSubExp2()->getSubExp1()) {
+            const int mask = flagsParam->access<Const, 2>()->getInt();
+            if (mask == 0 || (mask & ~0x41) != 0) {
                 LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
                 return false;
             }
+            else if ((flagsParam->access<Exp, 1, 2>()->getOper() != opList) ||
+                     (flagsParam->access<Exp, 1, 2, 2>()->getOper() != opList) ||
+                     (flagsParam->access<Exp, 1, 2, 2, 2>()->getOper() != opNil)) {
+                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
+            const SharedExp P1 = flagsParam->access<Exp, 1, 2, 1>();
+            const SharedExp P2 = flagsParam->access<Exp, 1, 2, 2, 1>();
 
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time.
             // So effectively the branch is for any one of the (one or two) bits being on. For
-            // example, if the mask is 0x41, we are branching of less (0x1) or equal (0x41).
-            mask &= 0x41;
-            OPER _op;
+            // example, if the mask is 0x41, we are branching of less (0x1) or equal (0x40).
 
             switch (mask) {
-            case 0:
-                LOG_WARN("Unhandled x86 branch if parity with condExp = %1", condExp);
-                return false;
-
-            case 1: _op = jtCond == BranchType::JPAR ? opLess : opGtrEq; break;
-
-            case 0x40: _op = opEquals; break;
-
-            case 0x41: _op = jtCond == BranchType::JPAR ? opLessEq : opGtr; break;
-
-            default:
-                _op = opWild; // Not possible, but avoid a compiler warning
-                break;
+            case 1: {
+                condExp = Binary::get(jtCond == BranchType::JPAR ? opLess : opGtrEq, P1->clone(),
+                                      P2->clone());
+                return true;
             }
 
-            condExp = Binary::get(_op, at_opFlagsCall_List->getSubExp1()->clone(),
-                                  at_opFlagsCall_List->getSubExp2()->getSubExp1()->clone());
-            return true; // This is a floating point comparison
+            case 0x40: {
+                condExp = Binary::get(opEquals, P1->clone(), P2->clone());
+                return true;
+            }
+
+            case 0x41: {
+                condExp = Binary::get(jtCond == BranchType::JPAR ? opLessEq : opGtr, P1->clone(),
+                                      P2->clone());
+                return true;
+            }
+
+            default: assert(false); break;
+            }
         }
 
-        default: break;
+        case BranchType::JOF:
+        case BranchType::JNOF: break;
+
+        case BranchType::INVALID: assert(false);
         }
 
         if (op != opWild) {
@@ -210,155 +211,117 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
              condExp->access<Const, 1>()->getStr().startsWith("SETFFLAGS")) {
         OPER op = opWild;
 
+        // clang-format off
         switch (jtCond) {
-        case BranchType::JE: op = opEquals; break;
-
-        case BranchType::JNE: op = opNotEqual; break;
-
-        case BranchType::JMI: op = opLess; break;
-
-        case BranchType::JPOS: op = opGtrEq; break;
-
-        case BranchType::JSL: op = opLess; break;
-
-        case BranchType::JSLE: op = opLessEq; break;
-
-        case BranchType::JSGE: op = opGtrEq; break;
-
-        case BranchType::JSG: op = opGtr; break;
-
+        case BranchType::JE:   op = opEquals;   break;
+        case BranchType::JNE:  op = opNotEqual; break;
+        case BranchType::JMI:  op = opLess;     break;
+        case BranchType::JPOS: op = opGtrEq;    break;
+        case BranchType::JSL:  op = opLess;     break;
+        case BranchType::JSLE: op = opLessEq;   break;
+        case BranchType::JSGE: op = opGtrEq;    break;
+        case BranchType::JSG:  op = opGtr;      break;
         default: break;
         }
 
         if (op != opWild) {
-            condExp = Binary::get(op, condExp->getSubExp2()->getSubExp1()->clone(),
-                                  condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone());
+            condExp = Binary::get(op, condExp->access<Exp, 2, 1>()->clone(),
+                                  condExp->access<Exp, 2, 2, 1>()->clone());
         }
     }
     // ICK! This is all X86 SPECIFIC... needs to go somewhere else.
     // Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST where MASK could be a combination
-    // of 1, 4, and 40, and relop could be == or ~=.  There could also be an XOR 40h after the AND
-    // From MSVC 6, we can also see MASK = 0x44, 0x41, 0x5 followed by jump if (even) parity (see
-    // above) %fflags = 0..0.0 00 > %fflags = 0..0.1 01 < %fflags = 1..0.0 40 = %fflags = 1..1.1 45
-    // not comparable Example: (SETTFLAGS(...) & 1) ~= 0 left = SETFFLAGS(...) & 1 left1 =
-    // SETFFLAGS(...) left2 = int 1, k = 0, mask = 1
+    // of 1, 4, and 40, and relop could be == or ~=.
+    // There could also be an XOR 40h after the AND from MSVC 6, we can also see
+    // MASK = 0x44, 0x41, 0x5 followed by jump if (even) parity (see above)
+    // %fflags = 0..0.0 00 > %fflags = 0..0.1 01 < %fflags = 1..0.0 40 = %fflags = 1..1.1 45
+    // not comparable
+    // Example: (SETTFLAGS(...) & 1) ~= 0
+    //  left = SETFFLAGS(...) & 1
+    //  left1 = SETFFLAGS(...)
+    //  left2 = int 1, k = 0, mask = 1
     else if ((condOp == opEquals) || (condOp == opNotEqual)) {
-        SharedExp left  = condExp->getSubExp1();
-        SharedExp right = condExp->getSubExp2();
-        bool hasXor40   = false;
+        SharedExp cmpLhs = condExp->getSubExp1();
+        SharedExp cmpRhs = condExp->getSubExp2();
+        bool hasXor40    = false;
 
-        if ((left->getOper() == opBitXor) && right->isIntConst()) {
-            SharedExp r2 = left->getSubExp2();
-
-            if (r2->isIntConst()) {
-                int k2 = r2->access<Const>()->getInt();
-
-                if (k2 == 0x40) {
+        if ((cmpLhs->getOper() == opBitXor) && cmpRhs->isIntConst()) {
+            if (cmpLhs->getSubExp2()->isIntConst()) {
+                if (cmpLhs->access<Const, 2>()->getInt() == 0x40) {
                     hasXor40 = true;
-                    left     = left->getSubExp1();
+                    cmpLhs     = cmpLhs->getSubExp1();
                 }
             }
         }
 
-        if ((left->getOper() == opBitAnd) && right->isIntConst()) {
-            SharedExp left1 = left->getSubExp1();
-            SharedExp left2 = left->getSubExp2();
-            int k           = right->access<Const>()->getInt();
-            // Only interested in 40, 1
-            k &= 0x41;
+        if (cmpLhs->getOper() != opBitAnd || !cmpRhs->isIntConst()) {
+            return false;
+        }
 
-            if ((left1->getOper() == opFlagCall) && left2->isIntConst()) {
-                int mask = left2->access<Const>()->getInt();
-                // Only interested in 1, 40
-                mask &= 0x41;
-                OPER op = opWild;
+        SharedExp andLhs = cmpLhs->getSubExp1();
+        SharedExp andRhs = cmpLhs->getSubExp2();
+        const int k      = cmpRhs->access<Const>()->getInt() & 0x41; // Only interested in 40, 1
 
-                if (hasXor40) {
-                    assert(k == 0);
-                    op = condOp;
-                }
-                else {
-                    switch (mask) {
-                    case 1:
+        if ((andLhs->getOper() != opFlagCall) || !andRhs->isIntConst()) {
+            return false;
+        }
+        else if (hasXor40) {
+            assert(k == 0);
+            condExp = Binary::get(condOp, andLhs->access<Exp, 2, 1>(),
+                                  andLhs->access<Exp, 2, 2, 1>());
+            return true;
+        }
 
-                        if (((condOp == opEquals) && (k == 0)) ||
-                            ((condOp == opNotEqual) && (k == 1))) {
-                            op = opGtrEq;
-                        }
-                        else {
-                            op = opLess;
-                        }
+        // Only interested in 1, 40
+        const int mask = andRhs->access<Const>()->getInt() & 0x41;
+        OPER op = opWild;
 
-                        break;
-
-                    case 0x40:
-
-                        if (((condOp == opEquals) && (k == 0)) ||
-                            ((condOp == opNotEqual) && (k == 0x40))) {
-                            op = opNotEqual;
-                        }
-                        else {
-                            op = opEquals;
-                        }
-
-                        break;
-
-                    case 0x41:
-
-                        switch (k) {
-                        case 0:
-
-                            if (condOp == opEquals) {
-                                op = opGtr;
-                            }
-                            else {
-                                op = opLessEq;
-                            }
-
-                            break;
-
-                        case 1:
-
-                            if (condOp == opEquals) {
-                                op = opLess;
-                            }
-                            else {
-                                op = opGtrEq;
-                            }
-
-                            break;
-
-                        case 0x40:
-
-                            if (condOp == opEquals) {
-                                op = opEquals;
-                            }
-                            else {
-                                op = opNotEqual;
-                            }
-
-                            break;
-
-                        default: LOG_FATAL("k is %1", QString::number(k, 16));
-                        }
-
-                        break;
-
-                    case 0: condExp = Terminal::get(opFalse); return false;
-
-                    default: LOG_FATAL("Mask is %1", QString::number(mask, 16));
-                    }
-                }
-
-                if (op != opWild) {
-                    condExp = Binary::get(op, left1->getSubExp2()->getSubExp1(),
-                                          left1->getSubExp2()->getSubExp2()->getSubExp1());
-                    return true; // This is now a float comparison
-                }
+        switch (mask) {
+        case 1:
+            if ((condOp == opEquals && k == 0) || (condOp == opNotEqual && k == 1)) {
+                op = opGtrEq;
             }
+            else {
+                op = opLess;
+            }
+            break;
+
+        case 0x40:
+            if ((condOp == opEquals && k == 0) ||(condOp == opNotEqual && k == 0x40)) {
+                op = opNotEqual;
+            }
+            else {
+                op = opEquals;
+            }
+            break;
+
+        case 0x41:
+            switch (k) {
+            case 0: op = (condOp == opEquals) ? opGtr : opLessEq; break;
+            case 1: op = (condOp == opEquals) ? opLess : opGtrEq; break;
+            case 0x40: op = (condOp == opEquals) ? opEquals : opNotEqual; break;
+            default: LOG_FATAL("k is %1", QString::number(k, 16));
+            }
+
+            break;
+
+        case 0: condExp = Terminal::get(opFalse); return false;
+
+        default: LOG_FATAL("Mask is %1", QString::number(mask, 16));
+        }
+
+        if (op != opWild) {
+            condExp = Binary::get(op, andLhs->access<Exp, 2, 1>(),
+                                    andLhs->access<Exp, 2, 2, 1>());
+            return true; // This is now a float comparison
         }
     }
     else if (condExp->isFlagCall() && condExp->access<Const, 1>()->getStr() == "SAHFFLAGS") {
+        if (condExp->getSubExp2()->getOper() == opNil || condExp->access<Exp, 2, 2>()->getOper() != opNil) {
+            LOG_WARN("Unhandled x86 branch with condExp = %1", condExp);
+            return false;
+        }
+
         const SharedExp param = condExp->access<Exp, 2, 1>();
         if (param->isFlagCall() && param->access<Const, 1>()->getStr() == "SETFFLAGS") {
             // Can happen e.g. with the following assembly:
@@ -366,6 +329,13 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             //  fnstsw ax
             //  sahf
             //  jne <foo>
+
+            if (param->getSubExp2()->getOper() == opNil || param->access<Exp, 2, 2>()->getOper() == opNil ||
+                param->access<Const, 2, 2, 2>()->getOper() != opNil) {
+                LOG_WARN("Unhandled x86 branch with condExp = %1", condExp);
+                return false;
+            }
+
             const SharedExp floatParam1 = param->access<Const, 2, 1>();
             const SharedExp floatParam2 = param->access<Const, 2, 2, 1>();
 

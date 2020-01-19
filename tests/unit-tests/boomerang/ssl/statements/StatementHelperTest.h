@@ -10,8 +10,14 @@
 #pragma once
 
 
-#include "boomerang/ssl/statements/Statement.h"
+#include "TestUtils.h"
 
-// Common to BranchStatement and BoolAssign
-// Return true if this is now a floating point branch
-bool BOOMERANG_API condToRelational(SharedExp &condExp, BranchType jtCond);
+
+class StatementHelperTest : public BoomerangTestWithProject
+{
+    Q_OBJECT
+
+private slots:
+    void testCondToRelational();
+    void testCondToRelational_data();
+};
