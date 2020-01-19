@@ -46,6 +46,7 @@
 #define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
+
 void StatementTest::testFragment()
 {
     Prog prog("testProg", &m_project);
@@ -817,7 +818,7 @@ void StatementTest::testAddUsedLocsAssign()
         LocationSet l;
         a->addUsedLocs(l);
 
-        QCOMPARE(l.toString(), "r26,\tr28,\tm[r28 - 8]");
+        QCOMPARE(l.toString(), "r26, r28, m[r28 - 8]");
     }
 
     {
@@ -828,7 +829,7 @@ void StatementTest::testAddUsedLocsAssign()
         LocationSet l;
         g->addUsedLocs(l);
 
-        QCOMPARE(l.toString(), "r26,\tm[r26]");
+        QCOMPARE(l.toString(), "r26, m[r26]");
     }
 }
 
@@ -847,7 +848,7 @@ void StatementTest::testAddUsedLocsBranch()
     LocationSet l;
     b->addUsedLocs(l);
 
-    QCOMPARE(l.toString(), "r26{99},\tm[r26{99}]{55},\t%flags");
+    QCOMPARE(l.toString(), "r26{99}, m[r26{99}]{55}, %flags");
 }
 
 
@@ -863,7 +864,7 @@ void StatementTest::testAddUsedLocsCase()
     LocationSet l;
     c->addUsedLocs(l);
 
-    QCOMPARE(l.toString(), "r26,\tr28,\tm[r28 - 12],\tm[r26]");
+    QCOMPARE(l.toString(), "r26, r28, m[r28 - 12], m[r26]");
 }
 
 
@@ -886,7 +887,7 @@ void StatementTest::testAddUsedLocsCall()
     LocationSet l;
     ca->addUsedLocs(l);
 
-    QCOMPARE(l.toString(), "r26,\tr27,\tm[r26],\tm[r27],\tr28{55}");
+    QCOMPARE(l.toString(), "r26, r27, m[r26], m[r27], r28{55}");
 }
 
 
@@ -909,7 +910,7 @@ void StatementTest::testAddUsedLocsReturn()
     LocationSet   l;
     r->addUsedLocs(l);
 
-    QCOMPARE(l.toString(), "r24,\tr25{55},\tr26{99}");
+    QCOMPARE(l.toString(), "r24, r25{55}, r26{99}");
 }
 
 
@@ -925,7 +926,7 @@ void StatementTest::testAddUsedLocsBool()
         LocationSet l;
         bs->addUsedLocs(l);
 
-        QCOMPARE(l.toString(), "r24,\tr25,\tr26,\tm[r24]");
+        QCOMPARE(l.toString(), "r24, r25, r26, m[r24]");
     }
 
     {
@@ -942,7 +943,7 @@ void StatementTest::testAddUsedLocsBool()
         pa->addUsedLocs(l);
 
         // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
-        QCOMPARE(l.toString(), "local21,\tm[local21 + 16]{372}");
+        QCOMPARE(l.toString(), "local21, m[local21 + 16]{372}");
     }
 
     // m[r28{-} - 4] := -

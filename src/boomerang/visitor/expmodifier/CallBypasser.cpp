@@ -22,17 +22,10 @@ CallBypasser::CallBypasser(const SharedStmt &enclosing)
 
 SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)
 {
-    // If child was modified, simplify now
-    SharedExp ret = exp;
-
-    if (!(m_unchanged & m_mask)) {
-        ret = exp->simplify();
-    }
-
-    m_mask >>= 1;
-    // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and
-    // avoids a cast
+    // Note: r (the pointer) will always == ret (also the pointer) here,
+    // so the below is safe and avoids a cast
     SharedStmt def = exp->getDef();
+    SharedExp ret  = exp;
 
     if (def && def->isCall()) {
         std::shared_ptr<CallStatement> call = def->as<CallStatement>();
@@ -58,19 +51,5 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)
 
 SharedExp CallBypasser::postModify(const std::shared_ptr<Location> &exp)
 {
-    // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
-    bool isAddrOfMem = exp->isAddrOf() && exp->getSubExp1()->isMemOf();
-
-    if (isAddrOfMem) {
-        return exp;
-    }
-
-    SharedExp ret = exp;
-
-    if (!(m_unchanged & m_mask)) {
-        ret = exp->simplify();
-    }
-
-    m_mask >>= 1;
-    return ret;
+    return exp->simplify();
 }
