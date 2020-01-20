@@ -24,6 +24,8 @@ class StatementTest : public BoomerangTestWithPlugins
 private slots:
     void testFragment();
     void testIsNull();
+    void testCanPropagateToExp();
+    void testCanPropagateToExp_data();
 
 private slots:
     void testEmpty();

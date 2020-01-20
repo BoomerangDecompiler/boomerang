@@ -34,6 +34,7 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/log/Log.h"
@@ -44,6 +45,12 @@
 
 #define HELLO_X86      getFullSamplePath("x86/hello")
 #define GLOBAL1_X86    getFullSamplePath("x86/global1")
+
+
+#define TEST_PROP(name, exp, canProp) \
+    do { \
+        QTest::newRow(name) << SharedExpWrapper(exp) << canProp; \
+    } while (false)
 
 
 
@@ -101,6 +108,45 @@ void StatementTest::testIsNull()
         QVERIFY(asgn->isNullStatement());
     }
 }
+
+
+void StatementTest::testCanPropagateToExp()
+{
+    QFETCH(SharedExpWrapper, exp);
+    QFETCH(bool, canPropagate);
+
+    QCOMPARE(Statement::canPropagateToExp(**exp), canPropagate);
+}
+
+
+
+void StatementTest::testCanPropagateToExp_data()
+{
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    const std::shared_ptr<Assign> asgn(new Assign(eax, ecx));
+    const std::shared_ptr<Assign> arrayAsgn(new Assign(ArrayType::get(IntegerType::get(32)), eax, ecx));
+    const std::shared_ptr<Assign> selfAsgn(new Assign(eax, eax));
+    const std::shared_ptr<Assign> selfRef(new Assign(eax, eax));
+    const std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(eax));
+    const std::shared_ptr<PhiAssign> phi(new PhiAssign(eax));
+
+    selfRef->setRight(RefExp::get(eax, selfRef));
+
+    QTest::addColumn<SharedExpWrapper>("exp");
+    QTest::addColumn<bool>("canPropagate");
+
+    TEST_PROP("%ecx",           ecx,                         false);
+    TEST_PROP("%ecx{-}",        RefExp::get(ecx, nullptr),   false);
+    TEST_PROP("%eax{ias}",      RefExp::get(eax, ias),       false);
+    TEST_PROP("%eax{selfAsgn}", RefExp::get(eax, selfAsgn),  false);
+    TEST_PROP("%eax{selfRef}",  RefExp::get(eax, selfRef),   false);
+    TEST_PROP("%eax{phi}",      RefExp::get(eax, phi),       false);
+    TEST_PROP("%eax{asgn}",     RefExp::get(eax, asgn),      true);
+    TEST_PROP("%eax{array}",    RefExp::get(eax, arrayAsgn), false);
+}
+
 
 
 void StatementTest::testEmpty()
