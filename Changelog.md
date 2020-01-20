@@ -21,6 +21,7 @@ v0.6.0 (in development)
 - Improved: CMake configuration speed.
 - Changed: Renamed pentium -> x86.
 - Removed: SPARC support.
+- Removed: Deprecated '-p N' switch.
 
 v0.5.2 (2020-1-11)
 ------------------

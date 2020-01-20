@@ -212,19 +212,19 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= doPropagateTo(e, def, settings);
+                change |= doPropagateTo(e, def);
             }
             else {
                 ExpIntMap::const_iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
-                    change |= doPropagateTo(e, def, settings);
+                    change |= doPropagateTo(e, def);
                 }
                 else if (ff->second <= 1) {
-                    change |= doPropagateTo(e, def, settings);
+                    change |= doPropagateTo(e, def);
                 }
                 else if (rhs->getComplexityDepth(m_proc) < settings->propMaxDepth) {
-                    change |= doPropagateTo(e, def, settings);
+                    change |= doPropagateTo(e, def);
                 }
             }
         }
@@ -240,7 +240,7 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
 }
 
 
-bool Statement::propagateFlagsTo(Settings *settings)
+bool Statement::propagateFlagsTo()
 {
     bool change = false;
     int changes = 0;
@@ -263,7 +263,7 @@ bool Statement::propagateFlagsTo(Settings *settings)
             SharedExp base = e->access<Exp, 1>(); // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
-                change |= doPropagateTo(e, def, settings);
+                change |= doPropagateTo(e, def);
             }
         }
     } while (change && ++changes < 10);
@@ -279,18 +279,8 @@ void Statement::setTypeForExp(SharedExp, SharedType)
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def,
-                              Settings *settings)
+bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def)
 {
-    // Respect the -p N switch
-    if (settings->numToPropagate >= 0) {
-        if (settings->numToPropagate == 0) {
-            return false;
-        }
-
-        settings->numToPropagate--;
-    }
-
     LOG_VERBOSE2("Propagating %1 into %2", def, shared_from_this());
     const bool change = replaceRef(e, def);
     LOG_VERBOSE2("    result %1", shared_from_this());

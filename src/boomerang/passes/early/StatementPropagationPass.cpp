@@ -45,14 +45,14 @@ bool StatementPropagationPass::execute(UserProc *proc)
     // extra locals)
     bool change = false;
 
-    Settings *settings = proc->getProg()->getProject()->getSettings();
     for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateFlagsTo(settings);
+            change |= s->propagateFlagsTo();
         }
     }
 
     // Finally the actual propagation
+    Settings *settings = proc->getProg()->getProject()->getSettings();
     for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
             change |= s->propagateTo(settings, &destCounts);

@@ -249,22 +249,6 @@ void CommandLineDriverTest::testApplyCommandline()
 
     {
         CommandlineDriver drv;
-        QCOMPARE(drv.getProject()->getSettings()->numToPropagate, -1);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p", "08", "test.exe" }), 1);
-        QCOMPARE(drv.getProject()->getSettings()->numToPropagate, 0);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p", "-1", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->numToPropagate, -1);
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p", "100", "test.exe" }), 0);
-        QCOMPARE(drv.getProject()->getSettings()->numToPropagate, 100);
-    }
-
-    {
-        CommandlineDriver drv;
-        QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-p" }), 1);
-    }
-
-    {
-        CommandlineDriver drv;
         QCOMPARE(drv.getProject()->getSettings()->m_symbolFiles.size(), 0);
         QCOMPARE(drv.applyCommandline({ "boomerang-cli", "-sf", "symbolfile.txt", "test.exe" }), 0);
         QCOMPARE(drv.getProject()->getSettings()->m_symbolFiles.size(), 1);

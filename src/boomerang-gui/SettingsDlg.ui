@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>588</height>
+    <height>554</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -283,20 +283,6 @@
               <string>Name signature parameters</string>
              </property>
             </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="hLayout_numToPropagate">
-             <item>
-              <widget class="QLabel" name="lbNumToPropagate">
-               <property name="text">
-                <string>numToPropagate</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spbNumToPropagate"/>
-             </item>
-            </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="hLayout_propMaxDepth">
