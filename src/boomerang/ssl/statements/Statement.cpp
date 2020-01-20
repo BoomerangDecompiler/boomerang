@@ -177,9 +177,8 @@ bool Statement::canPropagateToExp(const Exp &exp)
 
 bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, bool force)
 {
-    bool change            = false;
-    int changes            = 0;
-    const int propMaxDepth = settings->propMaxDepth;
+    bool change = false;
+    int changes = 0;
 
     do {
         LocationSet exps;
@@ -200,11 +199,11 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
             std::shared_ptr<Assignment> def = e->access<RefExp>()->getDef()->as<Assignment>();
             SharedExp rhs                   = def->getRight();
 
-            // If force is true, ignore the fact that a memof should not be propagated (for switch
-            // analysis)
+            // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols.
+            // You could be propagating past a definition, thereby invalidating the IR.
+            // If force is true, ignore the fact that a memof should not be propagated
+            // (for switch analysis)
             if (rhs->containsBadMemof() && !(force && rhs->isMemOf())) {
-                // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols.
-                // You could be propagating past a definition, thereby invalidating the IR
                 continue;
             }
 
@@ -224,7 +223,7 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
                 else if (ff->second <= 1) {
                     change |= doPropagateTo(e, def, settings);
                 }
-                else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
+                else if (rhs->getComplexityDepth(m_proc) < settings->propMaxDepth) {
                     change |= doPropagateTo(e, def, settings);
                 }
             }

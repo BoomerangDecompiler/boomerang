@@ -469,10 +469,10 @@ public:
 
     /// Check if this expression contains a bare memof (no subscripts) or one that has no symbol
     /// (i.e. is not a local variable or a parameter)
-    bool containsBadMemof(); ///< Check if this Exp contains a bare (non subscripted) memof
+    bool containsBadMemof();
 
-    // Data flow based type analysis (implemented in type/dfa.cpp)
-    // Pull type information up the expression tree
+    /// Data flow based type analysis (implemented in type/dfa.cpp)
+    /// Pull type information up the expression tree
     virtual SharedType ascendType();
 
     /// Push type information down the expression tree.
