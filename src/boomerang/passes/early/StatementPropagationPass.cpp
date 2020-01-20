@@ -10,6 +10,7 @@
 #include "StatementPropagationPass.h"
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
@@ -47,15 +48,15 @@ bool StatementPropagationPass::execute(UserProc *proc)
 
     for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateFlagsTo();
+            change |= s->propagateFlagsToThis();
         }
     }
 
     // Finally the actual propagation
-    Settings *settings = proc->getProg()->getProject()->getSettings();
+    const int propMaxDepth = proc->getProg()->getProject()->getSettings()->propMaxDepth;
     for (SharedStmt s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateTo(settings, &destCounts);
+            change |= s->propagateToThis(propMaxDepth, &destCounts);
         }
     }
 

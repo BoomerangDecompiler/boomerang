@@ -266,11 +266,12 @@ public:
      * \param force set to true to propagate even memofs (for switch analysis)
      * \returns true if a change
      */
-    bool propagateTo(Settings *settings, const ExpIntMap *destCounts = nullptr, bool force = false);
+    bool propagateToThis(int propMaxDepth, const ExpIntMap *destCounts = nullptr,
+                         bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
-    bool propagateFlagsTo();
+    bool propagateFlagsToThis();
 
     /// simpify internal expressions
     /// \sa ExpSimplifier
@@ -307,11 +308,6 @@ public:
 
     /// Set the type for the definition of \p e in this Statement to \p ty
     virtual void setTypeForExp(SharedExp exp, SharedType ty);
-
-    /// Propagate to e from definition statement def.
-    /// \returns true if a change made
-    /// \note this procedure does not control what part of this statement is propagated to
-    bool doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def);
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement

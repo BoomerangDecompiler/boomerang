@@ -175,7 +175,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 }
 
 
-bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, bool force)
+bool Statement::propagateToThis(int propMaxDepth, const ExpIntMap *destCounts, bool force)
 {
     bool change = false;
     int changes = 0;
@@ -191,7 +191,7 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
         // Example: m[r24{10}] := r25{20} + m[r26{30}]
         // exps has r24{10}, r25{20}, m[r26{30}], r26{30}
         for (SharedExp e : exps) {
-            if (!canPropagateToExp(*e)) {
+            if (!Statement::canPropagateToExp(*e)) {
                 continue;
             }
 
@@ -207,24 +207,24 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
                 continue;
             }
 
-            SharedExp lhs = def->getLeft();
+            const SharedExp lhs = def->getLeft();
 
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= doPropagateTo(e, def);
+                change |= replaceRef(e, def);
             }
             else {
                 ExpIntMap::const_iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
-                    change |= doPropagateTo(e, def);
+                    change |= replaceRef(e, def);
                 }
                 else if (ff->second <= 1) {
-                    change |= doPropagateTo(e, def);
+                    change |= replaceRef(e, def);
                 }
-                else if (rhs->getComplexityDepth(m_proc) < settings->propMaxDepth) {
-                    change |= doPropagateTo(e, def);
+                else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
+                    change |= replaceRef(e, def);
                 }
             }
         }
@@ -240,7 +240,7 @@ bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, boo
 }
 
 
-bool Statement::propagateFlagsTo()
+bool Statement::propagateFlagsToThis()
 {
     bool change = false;
     int changes = 0;
@@ -263,7 +263,7 @@ bool Statement::propagateFlagsTo()
             SharedExp base = e->access<Exp, 1>(); // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
-                change |= doPropagateTo(e, def);
+                change |= replaceRef(e, def);
             }
         }
     } while (change && ++changes < 10);
@@ -276,15 +276,6 @@ bool Statement::propagateFlagsTo()
 void Statement::setTypeForExp(SharedExp, SharedType)
 {
     assert(false);
-}
-
-
-bool Statement::doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def)
-{
-    LOG_VERBOSE2("Propagating %1 into %2", def, shared_from_this());
-    const bool change = replaceRef(e, def);
-    LOG_VERBOSE2("    result %1", shared_from_this());
-    return change;
 }
 
 
