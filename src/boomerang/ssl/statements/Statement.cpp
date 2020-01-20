@@ -308,8 +308,9 @@ bool Statement::replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def)
         if (!rhs) {
             return false;
         }
-        else if (rhs->isIntConst() && *def->getLeft() != *def->getRight()) {
-            searchAndReplace(*RefExp::get(def->getLeft(), def), def->getRight(), true);
+        else if (rhs->isIntConst() && *lhs != *rhs) {
+            // e.g. %flags := 0
+            searchAndReplace(*e, rhs, true);
             return true;
         }
         else if (!rhs->isFlagCall()) {

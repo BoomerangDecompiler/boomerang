@@ -25,24 +25,14 @@ Q_DECLARE_METATYPE(BranchType)
     } while (false)
 
 
-SharedExp makeFlagCallArgs()
-{
-    return Terminal::get(opNil);
-}
-
+SharedExp makeFlagCallArgs() { return Terminal::get(opNil); }
 
 template<typename Arg, typename... Args>
-SharedExp makeFlagCallArgs(Arg arg, Args... args)
-{
-    return Binary::get(opList, arg, makeFlagCallArgs(args...));
-}
-
+SharedExp makeFlagCallArgs(Arg arg, Args... args) { return Binary::get(opList, arg, makeFlagCallArgs(args...)); }
 
 template<typename... Args>
-SharedExp makeFlagCall(const QString &name, Args... args)
-{
-    return Binary::get(opFlagCall, Const::get(name), makeFlagCallArgs(args...));
-}
+SharedExp makeFlagCall(const QString &name, Args... args) { return Binary::get(opFlagCall, Const::get(name), makeFlagCallArgs(args...)); }
+
 
 
 void StatementHelperTest::testCondToRelational()

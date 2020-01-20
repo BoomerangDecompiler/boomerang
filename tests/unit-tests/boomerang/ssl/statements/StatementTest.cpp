@@ -53,6 +53,15 @@
     } while (false)
 
 
+SharedExp makeFlagCallArgs() { return Terminal::get(opNil); }
+
+template<typename Arg, typename... Args>
+SharedExp makeFlagCallArgs(Arg arg, Args... args) { return Binary::get(opList, arg, makeFlagCallArgs(args...)); }
+
+template<typename... Args>
+SharedExp makeFlagCall(const QString &name, Args... args) { return Binary::get(opFlagCall, Const::get(name), makeFlagCallArgs(args...)); }
+
+
 
 void StatementTest::testFragment()
 {
@@ -238,11 +247,16 @@ void StatementTest::testPropagateToThis()
 
 void StatementTest::testPropagateFlagsToThis()
 {
-    SharedExp eax = Location::regOf(REG_X86_EAX);
-    SharedExp ecx = Location::regOf(REG_X86_ECX);
+    SharedExp eax   = Location::regOf(REG_X86_EAX);
+    SharedExp ecx   = Location::regOf(REG_X86_ECX);
+    SharedExp edx   = Location::regOf(REG_X86_ECX);
+    SharedExp flags = Terminal::get(opFlags);
+    SharedExp st0   = Location::regOf(REG_X86_ST0);
+    SharedExp st1   = Location::regOf(REG_X86_ST1);
 
     {
         SharedStmt asgn(new Assign(eax, ecx));
+        asgn->setNumber(1);
         SharedStmt clone = asgn->clone();
 
         QVERIFY(!asgn->propagateFlagsToThis());
@@ -250,24 +264,288 @@ void StatementTest::testPropagateFlagsToThis()
     }
 
     {
-        SharedExp flags = Terminal::get(opFlags);
         SharedStmt def(new Assign(flags, Const::get(0)));
-        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opFlags), def)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
         SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
 
         QVERIFY(asgn->propagateFlagsToThis());
         QCOMPARE(asgn->toString(), expected->toString());
     }
 
     {
-        SharedExp flags = Terminal::get(opFlags);
         SharedStmt def(new PhiAssign(flags));
-        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opFlags), def)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
         SharedStmt expected = asgn->clone();
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
 
         QVERIFY(!asgn->propagateFlagsToThis());
         QCOMPARE(asgn->toString(), expected->toString());
     }
+
+    {
+        SharedStmt def(new Assign(flags, ecx));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
+        SharedStmt expected = asgn->clone();
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, makeFlagCall("SUBFLAGSFL", st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLessUns, eax, ecx)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, edx, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, edx, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax,
+            Binary::get(opOr,
+                        Binary::get(opAnd,
+                                    Binary::get(opAnd, Binary::get(opLess, eax, Const::get(0)),
+                                                Binary::get(opGtrEq, ecx, Const::get(0))),
+                                    Binary::get(opGtrEq, edx, Const::get(0))),
+                        Binary::get(opAnd,
+                                    Binary::get(opAnd, Binary::get(opGtrEq, eax, Const::get(0)),
+                                                Binary::get(opLess, ecx, Const::get(0))),
+                                    Binary::get(opLess, edx, Const::get(0))))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax,Binary::get(opLess, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    // TODO: Test replaceRef
 }
 
 
