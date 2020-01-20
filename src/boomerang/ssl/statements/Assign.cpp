@@ -48,7 +48,7 @@ Assign::Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard)
 
 
 Assign::Assign(const Assign &other)
-    : Assignment(StmtType::Assign, other.m_lhs->clone())
+    : Assignment(other)
 {
     m_rhs   = other.m_rhs->clone();
     m_type  = other.m_type ? other.m_type->clone() : nullptr;

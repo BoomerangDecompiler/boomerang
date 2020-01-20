@@ -22,8 +22,8 @@ class BOOMERANG_API TypingStatement : public Statement
 {
 public:
     TypingStatement(StmtType kind, SharedType ty);
-    TypingStatement(const TypingStatement &other) = default;
-    TypingStatement(TypingStatement &&other)      = default;
+    TypingStatement(const TypingStatement &other);
+    TypingStatement(TypingStatement &&other) = default;
 
     ~TypingStatement() override = default;
 
