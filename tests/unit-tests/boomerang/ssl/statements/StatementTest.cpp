@@ -119,7 +119,6 @@ void StatementTest::testCanPropagateToExp()
 }
 
 
-
 void StatementTest::testCanPropagateToExp_data()
 {
     const SharedExp eax = Location::regOf(REG_X86_EAX);
@@ -147,6 +146,129 @@ void StatementTest::testCanPropagateToExp_data()
     TEST_PROP("%eax{array}",    RefExp::get(eax, arrayAsgn), false);
 }
 
+
+void StatementTest::testPropagateToThis()
+{
+    SharedExp eax = Location::regOf(REG_X86_EAX);
+    SharedExp ecx = Location::regOf(REG_X86_ECX);
+    SharedExp edx = Location::regOf(REG_X86_EDX);
+
+    {
+        SharedStmt asgn(new Assign(eax, ecx));
+        SharedStmt clone = asgn->clone();
+
+        QVERIFY(!asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), clone->toString());
+    }
+
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(edx, Const::get(0x2000)));
+
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(RefExp::get(eax, s10)),
+            Binary::get(opPlus,
+                        RefExp::get(ecx, s20),
+                        Location::memOf(RefExp::get(edx, s30)))));
+
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Location::memOf(Const::get(0x2000))));
+
+        QVERIFY(asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(edx, Location::memOf(Const::get(2000))));
+
+        std::map<SharedExp, int, lessExpStar> destCounts;
+
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(RefExp::get(eax, s10)),
+            Binary::get(opPlus,
+                        RefExp::get(ecx, s20),
+                        Location::memOf(RefExp::get(edx, s30)))));
+
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Location::memOf(RefExp::get(edx, s30))));
+
+        QVERIFY(asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(eax, Const::get(0x2000)));
+
+        SharedExp ref10 = RefExp::get(eax, s10);
+        SharedExp ref20 = RefExp::get(ecx, s20);
+        SharedExp ref30 = RefExp::get(edx, s30);
+
+        std::map<SharedExp, int, lessExpStar> destCounts;
+        destCounts[ref10] = 2;
+        destCounts[ref20] = 1;
+
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(ref10),
+            Binary::get(opPlus,
+                        Binary::get(opPlus,
+                                    ref20,
+                                    Location::memOf(ref10)),
+                        ref30)));
+
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Binary::get(opPlus,
+                        Location::memOf(Const::get(0x1000)),
+                        Const::get(0x2000))));
+
+        QVERIFY(asgn->propagateToThis(2, &destCounts));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    // TODO: Check if multi-propagation respects the -l switch
+}
+
+
+void StatementTest::testPropagateFlagsToThis()
+{
+    SharedExp eax = Location::regOf(REG_X86_EAX);
+    SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    {
+        SharedStmt asgn(new Assign(eax, ecx));
+        SharedStmt clone = asgn->clone();
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), clone->toString());
+    }
+
+    {
+        SharedExp flags = Terminal::get(opFlags);
+        SharedStmt def(new Assign(flags, Const::get(0)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opFlags), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedExp flags = Terminal::get(opFlags);
+        SharedStmt def(new PhiAssign(flags));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opFlags), def)));
+        SharedStmt expected = asgn->clone();
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+}
 
 
 void StatementTest::testEmpty()

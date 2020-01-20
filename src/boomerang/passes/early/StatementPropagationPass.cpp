@@ -42,8 +42,8 @@ bool StatementPropagationPass::execute(UserProc *proc)
         s->accept(&sdc);
     }
 
-    // A fourth pass to propagate only the flags (these must be propagated even if it results in
-    // extra locals)
+    // A fourth pass to propagate only the flags
+    // (these must be propagated even if it results in extra locals)
     bool change = false;
 
     for (SharedStmt s : stmts) {

@@ -155,11 +155,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
         return false;
     }
 
-    SharedConstStmt def = ref.getDef();
-
-    //    if (def == this)
-    // Don't propagate to self! Can happen with %pc's (?!)
-    //        return false;
+    const SharedConstStmt def = ref.getDef();
     if (def->isNullStatement()) {
         // Don't propagate a null statement! Can happen with %pc's (would have no effect, and would
         // infinitely loop)
@@ -177,27 +173,28 @@ bool Statement::canPropagateToExp(const Exp &exp)
 
 bool Statement::propagateToThis(int propMaxDepth, const ExpIntMap *destCounts, bool force)
 {
-    bool change = false;
-    int changes = 0;
+    bool thisChange = false;
+    int changes     = 0;
 
     do {
-        LocationSet exps;
         // addUsedLocs(..,true) -> true to also add uses from collectors. For example, want to
-        // propagate into the reaching definitions of calls. Third parameter defaults to false, to
-        // find all locations, not just those inside m[...]
-        addUsedLocs(exps, true);
-        change = false; // True if changed this iteration of the do/while loop
+        // propagate into the reaching definitions of calls. Third parameter is false to find
+        // all locations, not just those inside m[...]
+        LocationSet usedExps;
+        addUsedLocs(usedExps, true, false);
+        thisChange = false; // True if changed this iteration of the do/while loop
 
         // Example: m[r24{10}] := r25{20} + m[r26{30}]
         // exps has r24{10}, r25{20}, m[r26{30}], r26{30}
-        for (SharedExp e : exps) {
-            if (!Statement::canPropagateToExp(*e)) {
+        for (SharedExp usedHere : usedExps) {
+            if (!Statement::canPropagateToExp(*usedHere)) {
                 continue;
             }
 
-            assert(e->access<RefExp>()->getDef()->isAssignment());
-            std::shared_ptr<Assignment> def = e->access<RefExp>()->getDef()->as<Assignment>();
-            SharedExp rhs                   = def->getRight();
+            assert(usedHere->access<RefExp>()->getDef()->isAssignment());
+            std::shared_ptr<Assignment>
+                def       = usedHere->access<RefExp>()->getDef()->as<Assignment>();
+            SharedExp rhs = def->getRight();
 
             // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols.
             // You could be propagating past a definition, thereby invalidating the IR.
@@ -212,64 +209,64 @@ bool Statement::propagateToThis(int propMaxDepth, const ExpIntMap *destCounts, b
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= replaceRef(e, def);
+                thisChange |= replaceRef(usedHere, def);
             }
             else {
-                ExpIntMap::const_iterator ff = destCounts->find(e);
+                ExpIntMap::const_iterator ff = destCounts->find(usedHere);
 
                 if (ff == destCounts->end()) {
-                    change |= replaceRef(e, def);
+                    thisChange |= replaceRef(usedHere, def);
                 }
                 else if (ff->second <= 1) {
-                    change |= replaceRef(e, def);
+                    thisChange |= replaceRef(usedHere, def);
                 }
                 else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
-                    change |= replaceRef(e, def);
+                    thisChange |= replaceRef(usedHere, def);
                 }
             }
         }
-    } while (change && ++changes < 10);
+    } while (thisChange && ++changes < 10);
 
     // Simplify is very costly, especially for calls.
-    // I hope that doing one simplify at the end will not affect any
-    // result...
+    // I hope that doing one simplify at the end will not affect any result...
     simplify();
 
-    // Note: change is only for the last time around the do/while loop
     return changes > 0;
 }
 
 
 bool Statement::propagateFlagsToThis()
 {
-    bool change = false;
-    int changes = 0;
+    bool thisChange = false;
+    int changes     = 0;
 
     do {
-        LocationSet exps;
-        addUsedLocs(exps, true);
+        LocationSet usedExps;
+        addUsedLocs(usedExps, true);
 
-        for (SharedExp e : exps) {
-            if (!e->isSubscript()) {
+        for (SharedExp usedHere : usedExps) {
+            if (!usedHere->isSubscript()) {
                 continue; // e.g. %pc
             }
 
-            std::shared_ptr<Assignment> def = std::dynamic_pointer_cast<Assignment>(
-                e->access<RefExp>()->getDef());
-            if (!def || !def->getRight()) { // process only if it has definition with rhs
+            const std::shared_ptr<Assignment> def = std::dynamic_pointer_cast<Assignment>(
+                usedHere->access<RefExp>()->getDef());
+
+            // process only if it has definition with rhs
+            if (!def || !def->getRight()) {
                 continue;
             }
 
-            SharedExp base = e->access<Exp, 1>(); // Either RefExp or Location ?
-
+            const SharedExp base = usedHere->access<Exp, 1>(); // Either RefExp or Location ?
             if (base->isFlags() || base->isMainFlag()) {
-                change |= replaceRef(e, def);
+                thisChange |= replaceRef(usedHere, def);
             }
         }
-    } while (change && ++changes < 10);
+    } while (thisChange && ++changes < 10);
 
     simplify();
-    return change;
+
+    return changes > 0;
 }
 
 
@@ -308,7 +305,14 @@ bool Statement::replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def)
      *                     P3   opNil
      */
     if (lhs && lhs->isFlags()) {
-        if (!rhs || !rhs->isFlagCall()) {
+        if (!rhs) {
+            return false;
+        }
+        else if (rhs->isIntConst() && *def->getLeft() != *def->getRight()) {
+            searchAndReplace(*RefExp::get(def->getLeft(), def), def->getRight(), true);
+            return true;
+        }
+        else if (!rhs->isFlagCall()) {
             return false;
         }
 
@@ -424,9 +428,8 @@ bool Statement::replaceRef(SharedExp e, const std::shared_ptr<Assignment> &def)
         }
     }
 
-    // do the replacement
-    // bool convert = doReplaceRef(re, rhs);
-    return searchAndReplace(*e, rhs, true); // Last parameter true to change collectors
+    // do the replacement; last parameter true to also change collectors
+    return searchAndReplace(*e, rhs, true);
 }
 
 

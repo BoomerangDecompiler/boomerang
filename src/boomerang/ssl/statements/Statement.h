@@ -271,6 +271,7 @@ public:
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
+    /// \returns true if a change
     bool propagateFlagsToThis();
 
     /// simpify internal expressions

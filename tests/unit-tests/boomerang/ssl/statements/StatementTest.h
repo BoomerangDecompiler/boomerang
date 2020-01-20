@@ -26,6 +26,8 @@ private slots:
     void testIsNull();
     void testCanPropagateToExp();
     void testCanPropagateToExp_data();
+    void testPropagateToThis();
+    void testPropagateFlagsToThis();
 
 private slots:
     void testEmpty();
