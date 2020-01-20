@@ -175,8 +175,7 @@ bool Statement::canPropagateToExp(const Exp &exp)
 }
 
 
-bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
-                            bool force)
+bool Statement::propagateTo(Settings *settings, const ExpIntMap *destCounts, bool force)
 {
     bool change            = false;
     int changes            = 0;
@@ -217,7 +216,7 @@ bool Statement::propagateTo(Settings *settings, std::map<SharedExp, int, lessExp
                 change |= doPropagateTo(e, def, settings);
             }
             else {
-                std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
+                ExpIntMap::const_iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
                     change |= doPropagateTo(e, def, settings);

@@ -266,7 +266,7 @@ public:
      * \param force set to true to propagate even memofs (for switch analysis)
      * \returns true if a change
      */
-    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr, bool force = false);
+    bool propagateTo(Settings *settings, const ExpIntMap *destCounts = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
