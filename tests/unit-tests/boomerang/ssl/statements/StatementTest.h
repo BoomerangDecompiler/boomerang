@@ -29,21 +29,6 @@ private slots:
     void testPropagateToThis();
     void testPropagateFlagsToThis();
 
-private slots:
-    void testEmpty();
-    void testFlow();
-    void testKill();
-    void testUse();
-    void testUseOverKill();
-    void testUseOverBB();
-    void testUseKill();
-
-    void testEndlessLoop();
-
-    /// Test push of argument (X86 style), then call self
-    void testRecursion();
-
-
     /// Test assignment test
     void testIsAssign();
 
