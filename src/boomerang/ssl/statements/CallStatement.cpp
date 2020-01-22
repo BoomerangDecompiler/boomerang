@@ -57,29 +57,56 @@ CallStatement::CallStatement(SharedExp dest)
 }
 
 
+CallStatement::CallStatement(const CallStatement &other)
+    : GotoStatement(other)
+    , m_returnAfterCall(other.m_returnAfterCall)
+    , m_procDest(other.m_procDest)
+    , m_useCol()
+    , m_defCol()
+    , m_calleeReturn(other.m_calleeReturn)
+{
+    for (SharedStmt stmt : other.m_arguments) {
+        m_arguments.append(stmt->clone());
+    }
+
+    for (SharedStmt stmt : other.m_defines) {
+        m_defines.append(stmt->clone());
+    }
+}
+
+
 CallStatement::~CallStatement()
 {
 }
 
 
+CallStatement &CallStatement::operator=(const CallStatement &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    GotoStatement::operator=(other);
+
+    m_returnAfterCall = other.m_returnAfterCall;
+    m_procDest = other.m_procDest;
+    m_calleeReturn = other.m_calleeReturn;
+
+    for (SharedStmt stmt : other.m_arguments) {
+        m_arguments.append(stmt->clone());
+    }
+
+    for (SharedStmt stmt : other.m_defines) {
+        m_defines.append(stmt->clone());
+    }
+
+    return *this;
+}
+
+
 SharedStmt CallStatement::clone() const
 {
-    std::shared_ptr<CallStatement> ret(new CallStatement(m_dest->clone()));
-    ret->m_isComputed = m_isComputed;
-
-    for (SharedStmt stmt : m_arguments) {
-        ret->m_arguments.append(stmt->clone());
-    }
-
-    for (SharedStmt stmt : m_defines) {
-        ret->m_defines.append(stmt->clone());
-    }
-
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
-    return ret;
+    return std::make_shared<CallStatement>(*this);
 }
 
 

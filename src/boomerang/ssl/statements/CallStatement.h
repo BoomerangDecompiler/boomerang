@@ -32,12 +32,12 @@ class BOOMERANG_API CallStatement : public GotoStatement
 public:
     CallStatement(Address dest);
     CallStatement(SharedExp dest);
-    CallStatement(const CallStatement &other) = delete;
+    CallStatement(const CallStatement &other);
     CallStatement(CallStatement &&other)      = default;
 
     ~CallStatement() override;
 
-    CallStatement &operator=(const CallStatement &other) = delete;
+    CallStatement &operator=(const CallStatement &other);
     CallStatement &operator=(CallStatement &&other) = default;
 
 public:

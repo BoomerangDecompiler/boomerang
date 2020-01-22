@@ -27,9 +27,29 @@
 
 void CallStatementTest::testClone()
 {
-    {
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
+    SharedExp ecx = Location::regOf(REG_X86_ECX);
 
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        SharedStmt clone = call->clone();
+
+        QVERIFY(&(*clone) != &(*call));
+        QVERIFY(clone->isCall());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != call->getID());
+
+        std::shared_ptr<CallStatement> callClone = clone->as<CallStatement>();
+
+        QVERIFY(callClone->getDest() != nullptr);
+        QCOMPARE(*callClone->getDest(), *call->getDest());
+        QVERIFY(!callClone->isComputed());
+
+        QCOMPARE(callClone->getDestProc(), nullptr);
+        QCOMPARE(callClone->isReturnAfterCall(), false);
+        QCOMPARE(callClone->getSignature(), nullptr);
+    }
+
+    {
         std::shared_ptr<CallStatement> call(new CallStatement(ecx));
         SharedStmt clone = call->clone();
 
