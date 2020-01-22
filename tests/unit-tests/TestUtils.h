@@ -110,3 +110,5 @@ char *toString(Address addr);
 
 std::vector<MachineInstruction> createInsns(Address baseAddr, std::size_t count);
 std::unique_ptr<RTLList> createRTLs(Address baseAddr, std::size_t numRTLs, std::size_t numStmtsPerRTL);
+
+#define SAMPLE(path) (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))

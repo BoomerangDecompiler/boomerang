@@ -46,12 +46,11 @@ SharedExp Localiser::postModify(const std::shared_ptr<Location> &exp)
     }
 
     m_mask >>= 1;
-    SharedExp r = m_call->findDefFor(ret);
+    const SharedExp r = m_call->findDefFor(ret);
 
     if (r) {
-        ret = r->clone();
+        ret = r->clone()->bypass();
 
-        ret = ret->bypass();
         m_unchanged &= ~m_mask;
         m_modified = true;
     }

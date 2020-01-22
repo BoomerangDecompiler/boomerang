@@ -62,54 +62,389 @@ CallStatement::~CallStatement()
 }
 
 
-SharedExp CallStatement::getProven(SharedExp e)
+SharedStmt CallStatement::clone() const
 {
+    std::shared_ptr<CallStatement> ret(new CallStatement(m_dest->clone()));
+    ret->m_isComputed = m_isComputed;
+
+    for (SharedStmt stmt : m_arguments) {
+        ret->m_arguments.append(stmt->clone());
+    }
+
+    for (SharedStmt stmt : m_defines) {
+        ret->m_defines.append(stmt->clone());
+    }
+
+    // Statement members
+    ret->m_fragment = m_fragment;
+    ret->m_proc     = m_proc;
+    ret->m_number   = m_number;
+    return ret;
+}
+
+
+bool CallStatement::accept(StmtVisitor *visitor) const
+{
+    return visitor->visit(this);
+}
+
+
+bool CallStatement::accept(StmtExpVisitor *v)
+{
+    bool visitChildren = true;
+    bool ret           = v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
+
+    if (!visitChildren) {
+        return ret;
+    }
+
+    if (ret) {
+        ret = m_dest->acceptVisitor(v->ev);
+    }
+
+    for (SharedStmt s : m_arguments) {
+        ret &= s->accept(v);
+    }
+
+    // FIXME: surely collectors should be counted?
+    return ret;
+}
+
+
+bool CallStatement::accept(StmtModifier *v)
+{
+    bool visitChildren = true;
+    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
+
+    if (!visitChildren) {
+        return true;
+    }
+
+    if (v->m_mod) {
+        setDest(m_dest->acceptModifier(v->m_mod));
+    }
+
+    if (visitChildren) {
+        for (SharedStmt s : m_arguments) {
+            s->accept(v);
+        }
+    }
+
+    // For example: needed for CallBypasser so that a collected definition that happens to be
+    // another call gets adjusted I'm thinking no at present... let the bypass and propagate while
+    // possible logic take care of it, and leave the collectors as the rename logic set it Well,
+    // sort it out with ignoreCollector()
+    if (!v->ignoreCollector()) {
+        DefCollector::iterator cc;
+
+        for (SharedStmt s : m_defCol) {
+            s->accept(v);
+        }
+    }
+
+    if (visitChildren) {
+        for (SharedStmt s : m_defines) {
+            s->accept(v);
+        }
+    }
+    return true;
+}
+
+
+bool CallStatement::accept(StmtPartModifier *v)
+{
+    bool visitChildren = true;
+    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
+
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
+    }
+
+    if (visitChildren) {
+        for (SharedStmt s : m_arguments) {
+            s->accept(v);
+        }
+    }
+
+    // For example: needed for CallBypasser so that a collected definition that happens to be
+    // another call gets adjusted But now I'm thinking no, the bypass and propagate while possible
+    // logic should take care of it. Then again, what about the use collectors in calls?
+    // Best to do it.
+    if (!v->ignoreCollector()) {
+        for (SharedStmt s : m_defCol) {
+            s->accept(v);
+        }
+
+        for (SharedExp exp : m_useCol) {
+            // I believe that these should never change at the top level,
+            // e.g. m[esp{30} + 4] -> m[esp{-} - 20]
+            exp->acceptModifier(v->mod);
+        }
+    }
+
+    StatementList::iterator dd;
+
+    if (visitChildren) {
+        for (SharedStmt s : m_defines) {
+            s->accept(v);
+        }
+    }
+
+    return true;
+}
+
+
+void CallStatement::setNumber(int num)
+{
+    m_number = num;
+    // Also number any existing arguments. Important for library procedures, since these have
+    // arguments set by the front end based in their signature
+
+    for (SharedStmt stmt : m_arguments) {
+        stmt->setNumber(num);
+    }
+}
+
+
+void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
+{
+    for (SharedStmt def : m_defines) {
+        defs.insert(def->as<Assignment>()->getLeft());
+    }
+
+    // Childless calls are supposed to define everything.
+    // In practice they don't really define things like %pc,
+    // so we need some extra logic in getTypeFor()
+    if (isChildless() && !assumeABICompliance) {
+        defs.insert(Terminal::get(opDefineAll));
+    }
+}
+
+
+bool CallStatement::definesLoc(SharedExp loc) const
+{
+    for (SharedConstStmt def : m_defines) {
+        if (*def->as<const Assign>()->getLeft() == *loc) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool CallStatement::search(const Exp &pattern, SharedExp &result) const
+{
+    if (GotoStatement::search(pattern, result)) {
+        return true;
+    }
+
+    for (const SharedStmt stmt : m_defines) {
+        if (stmt->search(pattern, result)) {
+            return true;
+        }
+    }
+
+    for (const SharedStmt stmt : m_arguments) {
+        if (stmt->search(pattern, result)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool CallStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
+{
+    bool found = GotoStatement::searchAll(pattern, result);
+
+    for (const SharedStmt def : m_defines) {
+        if (def->searchAll(pattern, result)) {
+            found = true;
+        }
+    }
+
+    for (const SharedStmt arg : m_arguments) {
+        if (arg->searchAll(pattern, result)) {
+            found = true;
+        }
+    }
+
+    return found;
+}
+
+
+bool CallStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
+{
+    bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
+
+    // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
+    for (SharedStmt ss : m_defines) {
+        change |= ss->searchAndReplace(pattern, replace, cc);
+    }
+
+    for (SharedStmt ss : m_arguments) {
+        change |= ss->searchAndReplace(pattern, replace, cc);
+    }
+
+    if (cc) {
+        DefCollector::iterator dd;
+
+        for (dd = m_defCol.begin(); dd != m_defCol.end(); ++dd) {
+            change |= (*dd)->searchAndReplace(pattern, replace, cc);
+        }
+    }
+
+    return change;
+}
+
+
+void CallStatement::simplify()
+{
+    GotoStatement::simplify();
+
+    for (SharedStmt ss : m_arguments) {
+        ss->simplify();
+    }
+
+    for (SharedStmt ss : m_defines) {
+        ss->simplify();
+    }
+}
+
+
+SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
+{
+    // The defines "cache" what the destination proc is defining
+    std::shared_ptr<const Assignment> asgn = m_defines.findOnLeft(e);
+
+    if (asgn != nullptr) {
+        return asgn->getType();
+    }
+
+    if (e->isPC()) {
+        // Special case: just return void*
+        return PointerType::get(VoidType::get());
+    }
+
+    return VoidType::get();
+}
+
+
+SharedType CallStatement::getTypeForExp(SharedExp e)
+{
+    // The defines "cache" what the destination proc is defining
+    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
+
+    if (asgn != nullptr) {
+        return asgn->getType();
+    }
+
+    if (e->isPC()) {
+        // Special case: just return void*
+        return PointerType::get(VoidType::get());
+    }
+
+    return VoidType::get();
+}
+
+
+void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
+{
+    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
+
+    if (asgn != nullptr) {
+        return asgn->setType(ty);
+    }
+
+    // See if it is in our reaching definitions
+    SharedExp ref = m_defCol.findDefFor(e);
+
+    if ((ref == nullptr) || !ref->isSubscript()) {
+        return;
+    }
+
+    SharedStmt def = ref->access<RefExp>()->getDef();
+
+    if (def == nullptr) {
+        return;
+    }
+
+    def->setTypeForExp(e, ty);
+}
+
+
+void CallStatement::print(OStream &os) const
+{
+    os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
+
+    // Define(s), if any
+    if (!m_defines.empty()) {
+        os << "{ ";
+
+        bool first = true;
+
+        for (const SharedStmt def : m_defines) {
+            assert(def->isAssignment());
+            std::shared_ptr<const Assignment> asgn = def->as<const Assignment>();
+
+            if (first) {
+                first = false;
+            }
+            else {
+                os << ", ";
+            }
+
+            os << "*" << asgn->getType() << "* " << asgn->getLeft();
+
+            if (asgn->isAssign()) {
+                os << " := " << asgn->as<const Assign>()->getRight();
+            }
+        }
+
+        os << " } := ";
+    }
+    else if (isChildless()) {
+        os << "<all> := ";
+    }
+
+    os << "CALL ";
+
     if (m_procDest) {
-        return m_procDest->getProven(e);
+        os << m_procDest->getName();
+    }
+    else if (m_dest->isIntConst()) {
+        os << getFixedDest();
+    }
+    else {
+        m_dest->print(os); // Could still be an expression
     }
 
-    return nullptr;
-}
-
-
-void CallStatement::localiseComp(SharedExp e)
-{
-    if (e->isMemOf()) {
-        e->setSubExp1(localiseExp(e->getSubExp1()));
+    // Print the actual arguments of the call
+    if (isChildless()) {
+        os << "(<all>)";
     }
-}
+    else {
+        os << "(\n";
 
+        for (const SharedStmt arg : m_arguments) {
+            os << "                ";
+            std::shared_ptr<const Assignment> a = std::dynamic_pointer_cast<const Assignment>(arg);
+            if (a) {
+                a->printCompact(os);
+            }
+            os << "\n";
+        }
 
-SharedExp CallStatement::localiseExp(SharedExp e)
-{
-    Localiser l(this);
-    e = e->clone()->acceptModifier(&l);
+        os << "              )";
+    }
 
-    return e;
-}
-
-
-SharedExp CallStatement::findDefFor(SharedExp e) const
-{
-    return m_defCol.findDefFor(e);
-}
-
-
-SharedType CallStatement::getArgumentType(int i) const
-{
-    assert(Util::inRange(i, 0, getNumArguments()));
-    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    assert((*aa)->isAssign());
-    return (*aa)->as<Assign>()->getType();
-}
-
-
-void CallStatement::setArgumentType(int i, SharedType ty)
-{
-    assert(Util::inRange(i, 0, getNumArguments()));
-    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    assert((*aa)->isAssign());
-    (*aa)->as<Assign>()->setType(ty);
+    // Collected reaching definitions
+    os << "\n              Reaching definitions: ";
+    m_defCol.print(os);
+    os << "\n              Live variables: ";
+    m_useCol.print(os);
 }
 
 
@@ -119,11 +454,9 @@ void CallStatement::setArguments(const StatementList &args)
     m_arguments.append(args);
 
     for (SharedStmt arg : m_arguments) {
-        if (arg->isAssign()) {
-            std::shared_ptr<Assign> asgn = arg->as<Assign>();
-            asgn->setProc(m_proc);
-            asgn->setFragment(m_fragment);
-        }
+        arg->setProc(m_proc);
+        arg->setFragment(m_fragment);
+        arg->setNumber(m_number);
     }
 }
 
@@ -178,190 +511,192 @@ void CallStatement::setSigArguments()
 }
 
 
-bool CallStatement::search(const Exp &pattern, SharedExp &result) const
+void CallStatement::updateArguments()
 {
-    if (GotoStatement::search(pattern, result)) {
-        return true;
-    }
+    /*
+     * If this is a library call, source = signature
+     *          else if there is a callee return, source = callee parameters
+     *          else
+     *            if a forced callee signature, source = signature
+     *            else source is def collector in this call.
+     *          oldArguments = arguments
+     *          clear arguments
+     *          for each arg lhs in source
+     *                  if exists in oldArguments, leave alone
+     *                  else if not filtered append assignment lhs=lhs to oldarguments
+     *          for each argument as in oldArguments in reverse order
+     *                  lhs = as->getLeft
+     *                  if (lhs does not exist in source) continue
+     *                  if filterParams(lhs) continue
+     *                  insert as into arguments, considering sig->argumentCompare
+     */
 
-    for (const SharedStmt stmt : m_defines) {
-        if (stmt->search(pattern, result)) {
-            return true;
-        }
-    }
+    // Do not delete statements in m_arguments since they are preserved by oldArguments
+    StatementList oldArguments(m_arguments);
+    m_arguments.clear();
 
-    for (const SharedStmt stmt : m_arguments) {
-        if (stmt->search(pattern, result)) {
-            return true;
-        }
-    }
+    auto sig = m_proc->getSignature();
+    // Ensure everything
+    //  - in the callee's signature (if this is a library call),
+    //  - or the callee parameters (if available),
+    //  - or the def collector if not,
+    // exists in oldArguments
+    ArgSourceProvider asp(this);
+    SharedExp loc;
 
-    return false;
-}
-
-
-bool CallStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
-{
-    bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
-
-    // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
-    for (SharedStmt ss : m_defines) {
-        change |= ss->searchAndReplace(pattern, replace, cc);
-    }
-
-    for (SharedStmt ss : m_arguments) {
-        change |= ss->searchAndReplace(pattern, replace, cc);
-    }
-
-    if (cc) {
-        DefCollector::iterator dd;
-
-        for (dd = m_defCol.begin(); dd != m_defCol.end(); ++dd) {
-            change |= (*dd)->searchAndReplace(pattern, replace, cc);
-        }
-    }
-
-    return change;
-}
-
-
-bool CallStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
-{
-    bool found = GotoStatement::searchAll(pattern, result);
-
-    for (const SharedStmt def : m_defines) {
-        if (def->searchAll(pattern, result)) {
-            found = true;
-        }
-    }
-
-    for (const SharedStmt arg : m_arguments) {
-        if (arg->searchAll(pattern, result)) {
-            found = true;
-        }
-    }
-
-    return found;
-}
-
-
-void CallStatement::print(OStream &os) const
-{
-    os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    // Define(s), if any
-    if (m_defines.size() > 0) {
-        if (m_defines.size() > 1) {
-            os << "{";
+    while ((loc = asp.nextArgLoc()) != nullptr) {
+        if (!m_proc->canBeParam(loc)) {
+            continue;
         }
 
-        bool first = true;
+        if (!oldArguments.existsOnLeft(loc)) {
+            // Check if the location is renamable. If not, localising won't work, since it relies on
+            // definitions collected in the call, and you just get m[...]{-} even if there are
+            // definitions.
+            SharedExp rhs;
 
-        for (const SharedStmt def : m_defines) {
-            assert(def->isAssignment());
-            std::shared_ptr<const Assignment> asgn = def->as<const Assignment>();
-
-            if (first) {
-                first = false;
+            if (m_proc->canRename(loc)) {
+                rhs = asp.localise(loc->clone());
             }
             else {
-                os << ", ";
+                rhs = loc->clone();
             }
 
-            os << "*" << asgn->getType() << "* " << asgn->getLeft();
+            SharedType ty = asp.curType(loc);
+            std::shared_ptr<Assign> asgn(new Assign(ty, loc->clone(), rhs));
 
-            if (asgn->isAssign()) {
-                os << " := " << asgn->as<const Assign>()->getRight();
-            }
+            // Give the assign the same statement number as the call (for now)
+            asgn->setNumber(m_number);
+            // as->setParent(this);
+            asgn->setProc(m_proc);
+            asgn->setFragment(m_fragment);
+
+            oldArguments.append(asgn);
+        }
+    }
+
+    for (SharedStmt oldArg : oldArguments) {
+        // Make sure the LHS is still in the callee signature / callee parameters / use collector
+        std::shared_ptr<Assign> asgn = oldArg->as<Assign>();
+        SharedExp lhs                = asgn->getLeft();
+
+        if (!asp.exists(lhs)) {
+            continue;
         }
 
-        if (m_defines.size() > 1) {
-            os << "}";
+        if (!m_proc->canBeParam(lhs)) {
+            // Filtered out: delete it
+            continue;
         }
 
-        os << " := ";
+        m_arguments.append(asgn);
     }
-    else if (isChildless()) {
-        os << "<all> := ";
+}
+
+
+SharedExp CallStatement::getArgumentExp(int i) const
+{
+    assert(Util::inRange(i, 0, getNumArguments()));
+
+    // stmt = m_arguments[i]
+    const Assign *asgn = dynamic_cast<const Assign *>(std::next(m_arguments.begin(), i)->get());
+    return asgn ? asgn->getRight() : nullptr;
+}
+
+
+void CallStatement::setArgumentExp(int i, SharedExp e)
+{
+    assert(Util::inRange(i, 0, getNumArguments()));
+
+    SharedStmt &stmt = *std::next(m_arguments.begin(), i);
+    assert(stmt->isAssign());
+    stmt->as<Assign>()->setRight(e->clone());
+}
+
+
+int CallStatement::getNumArguments() const
+{
+    return m_arguments.size();
+}
+
+
+void CallStatement::setNumArguments(int n)
+{
+    const int oldSize = getNumArguments();
+
+    if (oldSize > n) {
+        m_arguments.resize(n);
     }
 
-    os << "CALL ";
+    // MVE: check if these need extra propagation
+    for (int i = oldSize; i < n; i++) {
+        SharedExp a   = m_procDest->getSignature()->getArgumentExp(i);
+        SharedType ty = m_procDest->getSignature()->getParamType(i);
 
-    if (m_procDest) {
-        os << m_procDest->getName();
-    }
-    else if (m_dest->isIntConst()) {
-        os << getFixedDest();
-    }
-    else {
-        m_dest->print(os); // Could still be an expression
-    }
-
-    // Print the actual arguments of the call
-    if (isChildless()) {
-        os << "(<all>)";
-    }
-    else {
-        os << "(\n";
-
-        for (const SharedStmt arg : m_arguments) {
-            os << "                ";
-            std::shared_ptr<const Assignment> a = std::dynamic_pointer_cast<const Assignment>(arg);
-            if (a) {
-                a->printCompact(os);
-            }
-            os << "\n";
+        if ((ty == nullptr) && oldSize) {
+            ty = m_procDest->getSignature()->getParamType(oldSize - 1);
         }
 
-        os << "              )";
+        if (ty == nullptr) {
+            ty = VoidType::get();
+        }
+
+        std::shared_ptr<Assign> asgn(new Assign(ty, a->clone(), a->clone()));
+        asgn->setProc(m_proc);
+        asgn->setFragment(m_fragment);
+        m_arguments.append(asgn);
     }
-
-    // Collected reaching definitions
-    os << "\n              ";
-    os << "Reaching definitions: ";
-    m_defCol.print(os);
-    os << "\n              ";
-    os << "Live variables: ";
-    m_useCol.print(os);
 }
 
 
-void CallStatement::setReturnAfterCall(bool b)
+void CallStatement::removeArgument(int i)
 {
-    m_returnAfterCall = b;
+    assert(Util::inRange(i, 0, getNumArguments()));
+    m_arguments.erase(std::next(m_arguments.begin(), i));
 }
 
 
-bool CallStatement::isReturnAfterCall() const
+SharedType CallStatement::getArgumentType(int i) const
 {
-    return m_returnAfterCall;
+    assert(Util::inRange(i, 0, getNumArguments()));
+    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
+    assert((*aa)->isAssign());
+    return (*aa)->as<Assign>()->getType();
 }
 
 
-SharedStmt CallStatement::clone() const
+void CallStatement::setArgumentType(int i, SharedType ty)
 {
-    std::shared_ptr<CallStatement> ret(new CallStatement(m_dest->clone()));
-    ret->m_isComputed = m_isComputed;
+    assert(Util::inRange(i, 0, getNumArguments()));
+    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
+    assert((*aa)->isAssign());
+    (*aa)->as<Assign>()->setType(ty);
+}
 
-    for (SharedStmt stmt : m_arguments) {
-        ret->m_arguments.append(stmt->clone());
+
+void CallStatement::eliminateDuplicateArgs()
+{
+    LocationSet ls;
+
+    for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
+        SharedExp lhs = (*it)->as<const Assignment>()->getLeft();
+
+        if (ls.contains(lhs)) {
+            // This is a duplicate
+            it = m_arguments.erase(it);
+            continue;
+        }
+
+        ls.insert(lhs);
+        ++it;
     }
-
-    for (SharedStmt stmt : m_defines) {
-        ret->m_defines.append(stmt->clone());
-    }
-
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
-    return ret;
 }
 
 
-bool CallStatement::accept(StmtVisitor *visitor) const
+void CallStatement::setDestProc(Function *dest)
 {
-    return visitor->visit(this);
+    assert(dest != nullptr);
+    m_procDest = dest;
 }
 
 
@@ -377,40 +712,445 @@ const Function *CallStatement::getDestProc() const
 }
 
 
-void CallStatement::setDestProc(Function *dest)
+void CallStatement::setReturnAfterCall(bool b)
 {
-    assert(dest);
-    // assert(procDest == nullptr);        // No: not convenient for unit testing
-    m_procDest = dest;
+    m_returnAfterCall = b;
 }
 
 
-void CallStatement::simplify()
+bool CallStatement::isReturnAfterCall() const
 {
-    GotoStatement::simplify();
+    return m_returnAfterCall;
+}
 
-    for (SharedStmt ss : m_arguments) {
-        ss->simplify();
+
+bool CallStatement::isChildless() const
+{
+    if (m_procDest == nullptr) {
+        return true;
+    }
+    else if (m_procDest->isLib()) {
+        return false;
     }
 
-    for (SharedStmt ss : m_defines) {
-        ss->simplify();
+    // Early in the decompile process, recursive calls are treated as childless, so they use and
+    // define all
+    if (static_cast<UserProc *>(m_procDest)->isEarlyRecursive()) {
+        return true;
+    }
+
+    return m_calleeReturn == nullptr;
+}
+
+
+bool CallStatement::isCallToMemOffset() const
+{
+    return m_dest && m_dest->isMemOf() && m_dest->getSubExp1()->isIntConst();
+}
+
+
+void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &asgn)
+{
+    m_defines.append(asgn);
+}
+
+
+void CallStatement::removeDefine(SharedExp e)
+{
+    for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
+        SharedStmt s = *ss;
+
+        assert(s->isAssignment());
+        if (*s->as<Assignment>()->getLeft() == *e) {
+            m_defines.erase(ss);
+            return;
+        }
+    }
+
+    LOG_WARN("Could not remove define %1 from call %2", e, shared_from_this());
+}
+
+
+void CallStatement::setDefines(const StatementList &defines)
+{
+    if (!m_defines.empty()) {
+        for (SharedConstStmt stmt : defines) {
+            Q_UNUSED(stmt);
+            assert(std::find(m_defines.begin(), m_defines.end(), stmt) == m_defines.end());
+        }
+
+        m_defines.clear();
+    }
+
+    m_defines = defines;
+}
+
+
+SharedExp CallStatement::findDefFor(SharedExp e) const
+{
+    return m_defCol.findDefFor(e);
+}
+
+
+std::unique_ptr<StatementList> CallStatement::calcResults() const
+{
+    std::unique_ptr<StatementList> result(new StatementList);
+
+    if (m_procDest) {
+        auto sig = m_procDest->getSignature();
+
+        SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
+
+        for (SharedStmt dd : m_defines) {
+            SharedExp lhs = dd->as<Assignment>()->getLeft();
+
+            // The stack pointer is allowed as a define, so remove it here as a special case non
+            // result
+            if (*lhs == *rsp) {
+                continue;
+            }
+
+            if (m_useCol.hasUse(lhs)) {
+                result->append(dd);
+            }
+        }
+    }
+    else {
+        // For a call with no destination at this late stage, use everything live at the call except
+        // for the stack pointer register. Needs to be sorted
+        auto sig        = m_proc->getSignature();
+        const RegNum sp = sig->getStackRegister();
+
+        for (SharedExp loc : m_useCol) {
+            if (!m_proc->canBeReturn(loc)) {
+                continue; // Ignore filtered locations
+            }
+            else if (loc->isRegN(sp)) {
+                continue; // Ignore the stack pointer
+            }
+
+            result->append(std::make_shared<ImplicitAssign>(loc));
+        }
+
+        result->sort([sig](const SharedConstStmt &left, const SharedConstStmt &right) {
+            return sig->returnCompare(*left->as<const Assignment>(),
+                                      *right->as<const Assignment>());
+        });
+    }
+
+    return result;
+}
+
+
+SharedExp CallStatement::getProven(SharedExp e)
+{
+    assert(e != nullptr);
+
+    if (!m_procDest) {
+        return nullptr;
+    }
+
+    return m_procDest->getProven(e);
+}
+
+
+SharedExp CallStatement::localiseExp(SharedExp e)
+{
+    Localiser l(this);
+    e = e->clone()->acceptModifier(&l);
+
+    return e;
+}
+
+
+void CallStatement::localiseComp(SharedExp e)
+{
+    if (e->isMemOf()) {
+        e->setSubExp1(localiseExp(e->getSubExp1()));
     }
 }
 
 
-void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
+SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &changed)
 {
-    for (SharedStmt def : m_defines) {
-        defs.insert(def->as<Assignment>()->getLeft());
+    SharedExp base = r->getSubExp1();
+    SharedExp proven;
+
+    changed = false;
+
+    if (m_procDest && m_procDest->isLib()) {
+        auto sig = m_procDest->getSignature();
+        proven   = sig->getProven(base);
+
+        if (proven == nullptr) { // Not (known to be) preserved
+            if (sig->findReturn(base) != -1) {
+                return r->shared_from_this(); // Definately defined, it's the return
+            }
+
+            // Otherwise, not all that sure. Assume that library calls pass things like local
+            // variables
+        }
+    }
+    else {
+        // Was using the defines to decide if something is preserved, but consider sp+4 for stack
+        // based machines Have to use the proven information for the callee (if any)
+        if (m_procDest == nullptr) {
+            return r->shared_from_this(); // Childless callees transmit nothing
+        }
+
+        // FIXME: temporary HACK! Ignores alias issues.
+        if (!m_procDest->isLib() &&
+            static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
+            SharedExp ret = localiseExp(base->clone()); // Assume that it is proved as preserved
+            changed       = true;
+
+        LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
+                     base, m_number, ret);
+        return ret;
+            }
+
+            proven = m_procDest->getProven(base); // e.g. r28+4
     }
 
-    // Childless calls are supposed to define everything.
-    // In practice they don't really define things like %pc,
-    // so we need some extra logic in getTypeFor()
-    if (isChildless() && !assumeABICompliance) {
-        defs.insert(Terminal::get(opDefineAll));
+    if (proven == nullptr) {
+        return r->shared_from_this(); // Can't bypass, since nothing proven
     }
+
+    SharedExp to = localiseExp(base); // e.g. r28{17}
+    assert(to);
+    proven = proven->clone(); // Don't modify the expressions in destProc->proven!
+    proven = proven->searchReplaceAll(*base, to, changed); // e.g. r28{17} + 4
+
+    if (changed) {
+        LOG_VERBOSE2("Replacing %1 with %2", r, proven);
+    }
+
+    return proven;
+}
+
+
+bool CallStatement::doEllipsisProcessing(Prog *)
+{
+    // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
+    if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {
+        return doObjCEllipsisProcessing(nullptr);
+    }
+
+    // functions like printf almost always have too many args
+    QString name(getDestProc()->getName());
+    int formatstrIdx = -1;
+
+    if (((name == "printf") || (name == "scanf"))) {
+        formatstrIdx = 0;
+    }
+    else if ((name == "sprintf") || (name == "fprintf") || (name == "sscanf")) {
+        formatstrIdx = 1;
+    }
+    else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
+        formatstrIdx = getNumArguments() - 1;
+    }
+    else {
+        return false;
+    }
+
+    LOG_VERBOSE("Ellipsis processing for %1", name);
+
+    QString formatStr;
+    SharedExp formatExp = getArgumentExp(formatstrIdx);
+
+    // We sometimes see a[m[blah{...}]]
+    if (formatExp->isAddrOf()) {
+        formatExp = formatExp->getSubExp1();
+
+        if (formatExp->isSubscript()) {
+            formatExp = formatExp->getSubExp1();
+        }
+
+        if (formatExp->isMemOf()) {
+            formatExp = formatExp->getSubExp1();
+        }
+    }
+
+    if (formatExp->isSubscript()) {
+        // Maybe it's defined to be a Const string
+        SharedStmt def = formatExp->access<RefExp>()->getDef();
+
+        if (def == nullptr) {
+            return false; // Not all nullptr refs get converted to implicits
+        }
+
+        if (def->isAssign()) {
+            // This would be unusual; propagation would normally take care of this
+            SharedExp rhs = def->as<Assign>()->getRight();
+
+            if ((rhs == nullptr) || !rhs->isStrConst()) {
+                return false;
+            }
+
+            formatStr = rhs->access<Const>()->getStr();
+        }
+        else if (def->isPhi()) {
+            // More likely. Example: switch_gcc. Only need ONE candidate format string
+            std::shared_ptr<PhiAssign> pa = def->as<PhiAssign>();
+
+            for (const std::shared_ptr<RefExp> &v : *pa) {
+                def = v->getDef();
+
+                if (!def || !def->isAssign()) {
+                    continue;
+                }
+
+                SharedExp rhs = def->as<Assign>()->getRight();
+
+                if (!rhs || !rhs->isStrConst()) {
+                    continue;
+                }
+
+                formatStr = rhs->access<Const>()->getStr();
+                break;
+            }
+
+            if (formatStr.isEmpty()) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    else if (formatExp->isStrConst()) {
+        formatStr = formatExp->access<Const>()->getStr();
+    }
+    else {
+        return false;
+    }
+
+    if (doObjCEllipsisProcessing(formatStr)) {
+        return true;
+    }
+
+    // actually have to parse it
+    // Format string is: % [flags] [width] [.precision] [size] type
+    int n = 1; // Count the format string itself (may also be "format" more arguments)
+    char ch;
+    // Set a flag if the name of the function is scanf/sscanf/fscanf
+    const bool isScanf = name.contains("scanf");
+    int p_idx          = 0;
+
+    // TODO: use qregularexpression to match scanf arguments
+    while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
+        p_idx++;               // Point past the %
+        bool veryLong = false; // %lld or %L
+
+        do {
+            ch = formatStr[p_idx++].toLatin1(); // Skip size and precisionA
+
+            switch (ch) {
+            case '*':
+                // Example: printf("Val: %*.*f\n", width, precision, val);
+                n++; // There is an extra parameter for the width or precision
+                // This extra parameter is of type integer, never int* (so pass false as last
+                // argument)
+                addSigParam(IntegerType::get(STD_SIZE), false);
+                continue;
+
+            case '-':
+            case '+':
+            case '#':
+            case ' ':
+                // Flag. Ignore
+                continue;
+
+            case '.':
+                // Separates width and precision. Ignore.
+                continue;
+
+            case 'h':
+            case 'l':
+
+                // size of half or long. Argument is usually still one word. Ignore.
+                // Exception: %llx
+                // TODO: handle architectures where l implies two words
+                // TODO: at least h has implications for scanf
+                if (formatStr[p_idx] == 'l') {
+                    // %llx
+                    p_idx++; // Skip second l
+                    veryLong = true;
+                }
+
+                continue;
+
+            case 'L':
+                // long. TODO: handle L for long doubles.
+                // n++;        // At least chew up one more parameter so later types are correct
+                veryLong = true;
+                continue;
+
+            default:
+
+                if (('0' <= ch) && (ch <= '9')) {
+                    continue; // width or precision
+                }
+
+                break; // Else must be format type, handled below
+            }
+
+            break;
+        } while (1);
+
+        if (ch != '%') { // Don't count %%
+            n++;
+        }
+
+        switch (ch) {
+        case 'd':
+        case 'i': // Signed integer
+            addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
+            break;
+
+        case 'u':
+        case 'x':
+        case 'X':
+        case 'o': // Unsigned integer
+            addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
+            break;
+
+        case 'f':
+        case 'g':
+        case 'G':
+        case 'e':
+        case 'E': // Various floating point formats
+            // Note that for scanf, %f means float, and %lf means double, whereas for printf, both
+            // of these mean double
+            // Note: may not be 64 bits for some archs
+            addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);
+            break;
+
+        case 's': // String
+            addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
+            break;
+
+        case 'c': // Char
+            addSigParam(CharType::get(), isScanf);
+            break;
+
+        case 'p': // Pointer
+            addSigParam(PointerType::get(VoidType::get()), isScanf);
+            break;
+
+        case '%': break; // Ignore %% (emits 1 percent char)
+
+        default:
+            LOG_WARN("Unhandled format character %1 in format string for call %2", ch,
+                     shared_from_this());
+        }
+    }
+
+    setNumArguments(formatstrIdx + n);
+    m_signature->setHasEllipsis(false); // So we don't do this again
+
+
+    return true;
 }
 
 
@@ -547,137 +1287,7 @@ bool CallStatement::tryConvertToDirect()
 }
 
 
-bool CallStatement::isCallToMemOffset() const
-{
-    return getKind() == StmtType::Call && getDest() && getDest()->isMemOf() &&
-           getDest()->getSubExp1()->isIntConst();
-}
-
-
-SharedExp CallStatement::getArgumentExp(int i) const
-{
-    assert(Util::inRange(i, 0, getNumArguments()));
-
-    // stmt = m_arguments[i]
-    const Assign *asgn = dynamic_cast<const Assign *>(std::next(m_arguments.begin(), i)->get());
-    return asgn ? asgn->getRight() : nullptr;
-}
-
-
-void CallStatement::setArgumentExp(int i, SharedExp e)
-{
-    assert(Util::inRange(i, 0, getNumArguments()));
-
-    SharedStmt &stmt = *std::next(m_arguments.begin(), i);
-    assert(stmt->isAssign());
-    stmt->as<Assign>()->setRight(e->clone());
-}
-
-
-int CallStatement::getNumArguments() const
-{
-    return m_arguments.size();
-}
-
-
-void CallStatement::setNumArguments(int n)
-{
-    const int oldSize = getNumArguments();
-
-    if (oldSize > n) {
-        m_arguments.resize(n);
-    }
-
-    // MVE: check if these need extra propagation
-    for (int i = oldSize; i < n; i++) {
-        SharedExp a   = m_procDest->getSignature()->getArgumentExp(i);
-        SharedType ty = m_procDest->getSignature()->getParamType(i);
-
-        if ((ty == nullptr) && oldSize) {
-            ty = m_procDest->getSignature()->getParamType(oldSize - 1);
-        }
-
-        if (ty == nullptr) {
-            ty = VoidType::get();
-        }
-
-        std::shared_ptr<Assign> asgn(new Assign(ty, a->clone(), a->clone()));
-        asgn->setProc(m_proc);
-        asgn->setFragment(m_fragment);
-        m_arguments.append(asgn);
-    }
-}
-
-
-void CallStatement::removeArgument(int i)
-{
-    assert(Util::inRange(i, 0, getNumArguments()));
-    m_arguments.erase(std::next(m_arguments.begin(), i));
-}
-
-
-SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
-{
-    // The defines "cache" what the destination proc is defining
-    std::shared_ptr<const Assignment> asgn = m_defines.findOnLeft(e);
-
-    if (asgn != nullptr) {
-        return asgn->getType();
-    }
-
-    if (e->isPC()) {
-        // Special case: just return void*
-        return PointerType::get(VoidType::get());
-    }
-
-    return VoidType::get();
-}
-
-
-SharedType CallStatement::getTypeForExp(SharedExp e)
-{
-    // The defines "cache" what the destination proc is defining
-    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
-
-    if (asgn != nullptr) {
-        return asgn->getType();
-    }
-
-    if (e->isPC()) {
-        // Special case: just return void*
-        return PointerType::get(VoidType::get());
-    }
-
-    return VoidType::get();
-}
-
-
-void CallStatement::setTypeForExp(SharedExp e, SharedType ty)
-{
-    std::shared_ptr<Assignment> asgn = m_defines.findOnLeft(e);
-
-    if (asgn != nullptr) {
-        return asgn->setType(ty);
-    }
-
-    // See if it is in our reaching definitions
-    SharedExp ref = m_defCol.findDefFor(e);
-
-    if ((ref == nullptr) || !ref->isSubscript()) {
-        return;
-    }
-
-    SharedStmt def = ref->access<RefExp>()->getDef();
-
-    if (def == nullptr) {
-        return;
-    }
-
-    def->setTypeForExp(e, ty);
-}
-
-
-bool CallStatement::objcSpecificProcessing(const QString &formatStr)
+bool CallStatement::doObjCEllipsisProcessing(const QString &formatStr)
 {
     Function *_proc = getDestProc();
 
@@ -733,243 +1343,21 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr)
 }
 
 
-void CallStatement::setDefines(const StatementList &defines)
+
+void CallStatement::addSigParam(SharedType ty, bool isScanf)
 {
-    if (!m_defines.empty()) {
-        for (SharedConstStmt stmt : defines) {
-            Q_UNUSED(stmt);
-            assert(std::find(m_defines.begin(), m_defines.end(), stmt) == m_defines.end());
-        }
-
-        m_defines.clear();
+    if (isScanf) {
+        ty = PointerType::get(ty);
     }
 
-    m_defines = defines;
-}
+    m_signature->addParameter(nullptr, ty);
+    SharedExp paramExp = m_signature->getParamExp(m_signature->getNumParams() - 1);
 
+    LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
 
-bool CallStatement::ellipsisProcessing(Prog *)
-{
-    // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
-    if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {
-        return objcSpecificProcessing(nullptr);
+    if (static_cast<int>(m_arguments.size()) < m_signature->getNumParams()) {
+        m_arguments.append(std::shared_ptr<Assign>(makeArgAssign(ty, paramExp)));
     }
-
-    // functions like printf almost always have too many args
-    QString name(getDestProc()->getName());
-    int formatstrIdx = -1;
-
-    if (((name == "printf") || (name == "scanf"))) {
-        formatstrIdx = 0;
-    }
-    else if ((name == "sprintf") || (name == "fprintf") || (name == "sscanf")) {
-        formatstrIdx = 1;
-    }
-    else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
-        formatstrIdx = getNumArguments() - 1;
-    }
-    else {
-        return false;
-    }
-
-    LOG_VERBOSE("Ellipsis processing for %1", name);
-
-    QString formatStr;
-    SharedExp formatExp = getArgumentExp(formatstrIdx);
-
-    // We sometimes see a[m[blah{...}]]
-    if (formatExp->isAddrOf()) {
-        formatExp = formatExp->getSubExp1();
-
-        if (formatExp->isSubscript()) {
-            formatExp = formatExp->getSubExp1();
-        }
-
-        if (formatExp->isMemOf()) {
-            formatExp = formatExp->getSubExp1();
-        }
-    }
-
-    if (formatExp->isSubscript()) {
-        // Maybe it's defined to be a Const string
-        SharedStmt def = formatExp->access<RefExp>()->getDef();
-
-        if (def == nullptr) {
-            return false; // Not all nullptr refs get converted to implicits
-        }
-
-        if (def->isAssign()) {
-            // This would be unusual; propagation would normally take care of this
-            SharedExp rhs = def->as<Assign>()->getRight();
-
-            if ((rhs == nullptr) || !rhs->isStrConst()) {
-                return false;
-            }
-
-            formatStr = rhs->access<Const>()->getStr();
-        }
-        else if (def->isPhi()) {
-            // More likely. Example: switch_gcc. Only need ONE candidate format string
-            std::shared_ptr<PhiAssign> pa = def->as<PhiAssign>();
-
-            for (const std::shared_ptr<RefExp> &v : *pa) {
-                def = v->getDef();
-
-                if (!def || !def->isAssign()) {
-                    continue;
-                }
-
-                SharedExp rhs = def->as<Assign>()->getRight();
-
-                if (!rhs || !rhs->isStrConst()) {
-                    continue;
-                }
-
-                formatStr = rhs->access<Const>()->getStr();
-                break;
-            }
-
-            if (formatStr.isEmpty()) {
-                return false;
-            }
-        }
-        else {
-            return false;
-        }
-    }
-    else if (formatExp->isStrConst()) {
-        formatStr = formatExp->access<Const>()->getStr();
-    }
-    else {
-        return false;
-    }
-
-    if (objcSpecificProcessing(formatStr)) {
-        return true;
-    }
-
-    // actually have to parse it
-    // Format string is: % [flags] [width] [.precision] [size] type
-    int n = 1; // Count the format string itself (may also be "format" more arguments)
-    char ch;
-    // Set a flag if the name of the function is scanf/sscanf/fscanf
-    const bool isScanf = name.contains("scanf");
-    int p_idx          = 0;
-
-    // TODO: use qregularexpression to match scanf arguments
-    while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
-        p_idx++;               // Point past the %
-        bool veryLong = false; // %lld or %L
-
-        do {
-            ch = formatStr[p_idx++].toLatin1(); // Skip size and precisionA
-
-            switch (ch) {
-            case '*':
-                // Example: printf("Val: %*.*f\n", width, precision, val);
-                n++; // There is an extra parameter for the width or precision
-                // This extra parameter is of type integer, never int* (so pass false as last
-                // argument)
-                addSigParam(IntegerType::get(STD_SIZE), false);
-                continue;
-
-            case '-':
-            case '+':
-            case '#':
-            case ' ':
-                // Flag. Ignore
-                continue;
-
-            case '.':
-                // Separates width and precision. Ignore.
-                continue;
-
-            case 'h':
-            case 'l':
-
-                // size of half or long. Argument is usually still one word. Ignore.
-                // Exception: %llx
-                // TODO: handle architectures where l implies two words
-                // TODO: at least h has implications for scanf
-                if (formatStr[p_idx] == 'l') {
-                    // %llx
-                    p_idx++; // Skip second l
-                    veryLong = true;
-                }
-
-                continue;
-
-            case 'L':
-                // long. TODO: handle L for long doubles.
-                // n++;        // At least chew up one more parameter so later types are correct
-                veryLong = true;
-                continue;
-
-            default:
-
-                if (('0' <= ch) && (ch <= '9')) {
-                    continue; // width or precision
-                }
-
-                break; // Else must be format type, handled below
-            }
-
-            break;
-        } while (1);
-
-        if (ch != '%') { // Don't count %%
-            n++;
-        }
-
-        switch (ch) {
-        case 'd':
-        case 'i': // Signed integer
-            addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
-            break;
-
-        case 'u':
-        case 'x':
-        case 'X':
-        case 'o': // Unsigned integer
-            addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
-            break;
-
-        case 'f':
-        case 'g':
-        case 'G':
-        case 'e':
-        case 'E': // Various floating point formats
-            // Note that for scanf, %f means float, and %lf means double, whereas for printf, both
-            // of these mean double
-            // Note: may not be 64 bits for some archs
-            addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);
-            break;
-
-        case 's': // String
-            addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
-            break;
-
-        case 'c': // Char
-            addSigParam(CharType::get(), isScanf);
-            break;
-
-        case 'p': // Pointer
-            addSigParam(PointerType::get(VoidType::get()), isScanf);
-            break;
-
-        case '%': break; // Ignore %% (emits 1 percent char)
-
-        default:
-            LOG_WARN("Unhandled format character %1 in format string for call %2", ch,
-                     shared_from_this());
-        }
-    }
-
-    setNumArguments(formatstrIdx + n);
-    m_signature->setHasEllipsis(false); // So we don't do this again
-
-
-    return true;
 }
 
 
@@ -992,401 +1380,4 @@ std::shared_ptr<Assign> CallStatement::makeArgAssign(SharedType ty, SharedExp e)
     }
 
     return asgn;
-}
-
-
-void CallStatement::addSigParam(SharedType ty, bool isScanf)
-{
-    if (isScanf) {
-        ty = PointerType::get(ty);
-    }
-
-    m_signature->addParameter(nullptr, ty);
-    SharedExp paramExp = m_signature->getParamExp(m_signature->getNumParams() - 1);
-
-    LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
-
-    if (static_cast<int>(m_arguments.size()) < m_signature->getNumParams()) {
-        m_arguments.append(std::shared_ptr<Assign>(makeArgAssign(ty, paramExp)));
-    }
-}
-
-
-bool CallStatement::definesLoc(SharedExp loc) const
-{
-    for (SharedConstStmt def : m_defines) {
-        if (*def->as<const Assign>()->getLeft() == *loc) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-void CallStatement::updateArguments()
-{
-    /*
-     * If this is a library call, source = signature
-     *          else if there is a callee return, source = callee parameters
-     *          else
-     *            if a forced callee signature, source = signature
-     *            else source is def collector in this call.
-     *          oldArguments = arguments
-     *          clear arguments
-     *          for each arg lhs in source
-     *                  if exists in oldArguments, leave alone
-     *                  else if not filtered append assignment lhs=lhs to oldarguments
-     *          for each argument as in oldArguments in reverse order
-     *                  lhs = as->getLeft
-     *                  if (lhs does not exist in source) continue
-     *                  if filterParams(lhs) continue
-     *                  insert as into arguments, considering sig->argumentCompare
-     */
-
-    // Do not delete statements in m_arguments since they are preserved by oldArguments
-    StatementList oldArguments(m_arguments);
-    m_arguments.clear();
-
-    auto sig = m_proc->getSignature();
-    // Ensure everything
-    //  - in the callee's signature (if this is a library call),
-    //  - or the callee parameters (if available),
-    //  - or the def collector if not,
-    // exists in oldArguments
-    ArgSourceProvider asp(this);
-    SharedExp loc;
-
-    while ((loc = asp.nextArgLoc()) != nullptr) {
-        if (!m_proc->canBeParam(loc)) {
-            continue;
-        }
-
-        if (!oldArguments.existsOnLeft(loc)) {
-            // Check if the location is renamable. If not, localising won't work, since it relies on
-            // definitions collected in the call, and you just get m[...]{-} even if there are
-            // definitions.
-            SharedExp rhs;
-
-            if (m_proc->canRename(loc)) {
-                rhs = asp.localise(loc->clone());
-            }
-            else {
-                rhs = loc->clone();
-            }
-
-            SharedType ty = asp.curType(loc);
-            std::shared_ptr<Assign> asgn(new Assign(ty, loc->clone(), rhs));
-
-            // Give the assign the same statement number as the call (for now)
-            asgn->setNumber(m_number);
-            // as->setParent(this);
-            asgn->setProc(m_proc);
-            asgn->setFragment(m_fragment);
-
-            oldArguments.append(asgn);
-        }
-    }
-
-    for (SharedStmt oldArg : oldArguments) {
-        // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        std::shared_ptr<Assign> asgn = oldArg->as<Assign>();
-        SharedExp lhs                = asgn->getLeft();
-
-        if (!asp.exists(lhs)) {
-            continue;
-        }
-
-        if (!m_proc->canBeParam(lhs)) {
-            // Filtered out: delete it
-            continue;
-        }
-
-        m_arguments.append(asgn);
-    }
-}
-
-
-std::unique_ptr<StatementList> CallStatement::calcResults() const
-{
-    std::unique_ptr<StatementList> result(new StatementList);
-
-    if (m_procDest) {
-        auto sig = m_procDest->getSignature();
-
-        SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
-
-        for (SharedStmt dd : m_defines) {
-            SharedExp lhs = dd->as<Assignment>()->getLeft();
-
-            // The stack pointer is allowed as a define, so remove it here as a special case non
-            // result
-            if (*lhs == *rsp) {
-                continue;
-            }
-
-            if (m_useCol.hasUse(lhs)) {
-                result->append(dd);
-            }
-        }
-    }
-    else {
-        // For a call with no destination at this late stage, use everything live at the call except
-        // for the stack pointer register. Needs to be sorted
-        auto sig        = m_proc->getSignature();
-        const RegNum sp = sig->getStackRegister();
-
-        for (SharedExp loc : m_useCol) {
-            if (!m_proc->canBeReturn(loc)) {
-                continue; // Ignore filtered locations
-            }
-            else if (loc->isRegN(sp)) {
-                continue; // Ignore the stack pointer
-            }
-
-            result->append(std::make_shared<ImplicitAssign>(loc));
-        }
-
-        result->sort([sig](const SharedConstStmt &left, const SharedConstStmt &right) {
-            return sig->returnCompare(*left->as<const Assignment>(),
-                                      *right->as<const Assignment>());
-        });
-    }
-
-    return result;
-}
-
-
-void CallStatement::removeDefine(SharedExp e)
-{
-    for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        SharedStmt s = *ss;
-
-        assert(s->isAssignment());
-        if (*s->as<Assignment>()->getLeft() == *e) {
-            m_defines.erase(ss);
-            return;
-        }
-    }
-
-    LOG_WARN("Could not remove define %1 from call %2", e, shared_from_this());
-}
-
-
-bool CallStatement::isChildless() const
-{
-    if (m_procDest == nullptr) {
-        return true;
-    }
-    else if (m_procDest->isLib()) {
-        return false;
-    }
-
-    // Early in the decompile process, recursive calls are treated as childless, so they use and
-    // define all
-    if (static_cast<UserProc *>(m_procDest)->isEarlyRecursive()) {
-        return true;
-    }
-
-    return m_calleeReturn == nullptr;
-}
-
-
-SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &changed)
-{
-    SharedExp base = r->getSubExp1();
-    SharedExp proven;
-
-    changed = false;
-
-    if (m_procDest && m_procDest->isLib()) {
-        auto sig = m_procDest->getSignature();
-        proven   = sig->getProven(base);
-
-        if (proven == nullptr) { // Not (known to be) preserved
-            if (sig->findReturn(base) != -1) {
-                return r->shared_from_this(); // Definately defined, it's the return
-            }
-
-            // Otherwise, not all that sure. Assume that library calls pass things like local
-            // variables
-        }
-    }
-    else {
-        // Was using the defines to decide if something is preserved, but consider sp+4 for stack
-        // based machines Have to use the proven information for the callee (if any)
-        if (m_procDest == nullptr) {
-            return r->shared_from_this(); // Childless callees transmit nothing
-        }
-
-        // FIXME: temporary HACK! Ignores alias issues.
-        if (!m_procDest->isLib() &&
-            static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
-            SharedExp ret = localiseExp(base->clone()); // Assume that it is proved as preserved
-            changed       = true;
-
-            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
-                         base, m_number, ret);
-            return ret;
-        }
-
-        proven = m_procDest->getProven(base); // e.g. r28+4
-    }
-
-    if (proven == nullptr) {
-        return r->shared_from_this(); // Can't bypass, since nothing proven
-    }
-
-    SharedExp to = localiseExp(base); // e.g. r28{17}
-    assert(to);
-    proven = proven->clone(); // Don't modify the expressions in destProc->proven!
-    proven = proven->searchReplaceAll(*base, to, changed); // e.g. r28{17} + 4
-
-    if (changed) {
-        LOG_VERBOSE2("Replacing %1 with %2", r, proven);
-    }
-
-    return proven;
-}
-
-
-void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &asgn)
-{
-    m_defines.append(asgn);
-}
-
-
-void CallStatement::eliminateDuplicateArgs()
-{
-    LocationSet ls;
-
-    for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
-        SharedExp lhs = (*it)->as<const Assignment>()->getLeft();
-
-        if (ls.contains(lhs)) {
-            // This is a duplicate
-            it = m_arguments.erase(it);
-            continue;
-        }
-
-        ls.insert(lhs);
-        ++it;
-    }
-}
-
-
-void CallStatement::setNumber(int num)
-{
-    m_number = num;
-    // Also number any existing arguments. Important for library procedures, since these have
-    // arguments set by the front end based in their signature
-
-    for (SharedStmt stmt : m_arguments) {
-        stmt->setNumber(num);
-    }
-}
-
-
-bool CallStatement::accept(StmtModifier *v)
-{
-    bool visitChildren = true;
-    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
-
-    if (!visitChildren) {
-        return true;
-    }
-
-    if (v->m_mod) {
-        setDest(m_dest->acceptModifier(v->m_mod));
-    }
-
-    if (visitChildren) {
-        for (SharedStmt s : m_arguments) {
-            s->accept(v);
-        }
-    }
-
-    // For example: needed for CallBypasser so that a collected definition that happens to be
-    // another call gets adjusted I'm thinking no at present... let the bypass and propagate while
-    // possible logic take care of it, and leave the collectors as the rename logic set it Well,
-    // sort it out with ignoreCollector()
-    if (!v->ignoreCollector()) {
-        DefCollector::iterator cc;
-
-        for (SharedStmt s : m_defCol) {
-            s->accept(v);
-        }
-    }
-
-    if (visitChildren) {
-        for (SharedStmt s : m_defines) {
-            s->accept(v);
-        }
-    }
-    return true;
-}
-
-
-bool CallStatement::accept(StmtExpVisitor *v)
-{
-    bool visitChildren = true;
-    bool ret           = v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
-    }
-
-    if (ret) {
-        ret = m_dest->acceptVisitor(v->ev);
-    }
-
-    for (SharedStmt s : m_arguments) {
-        ret &= s->accept(v);
-    }
-
-    // FIXME: surely collectors should be counted?
-    return ret;
-}
-
-
-bool CallStatement::accept(StmtPartModifier *v)
-{
-    bool visitChildren = true;
-    v->visit(shared_from_this()->as<CallStatement>(), visitChildren);
-
-    if (visitChildren) {
-        setDest(m_dest->acceptModifier(v->mod));
-    }
-
-    if (visitChildren) {
-        for (SharedStmt s : m_arguments) {
-            s->accept(v);
-        }
-    }
-
-    // For example: needed for CallBypasser so that a collected definition that happens to be
-    // another call gets adjusted But now I'm thinking no, the bypass and propagate while possible
-    // logic should take care of it. Then again, what about the use collectors in calls?
-    // Best to do it.
-    if (!v->ignoreCollector()) {
-        for (SharedStmt s : m_defCol) {
-            s->accept(v);
-        }
-
-        for (SharedExp exp : m_useCol) {
-            // I believe that these should never change at the top level,
-            // e.g. m[esp{30} + 4] -> m[esp{-} - 20]
-            exp->acceptModifier(v->mod);
-        }
-    }
-
-    StatementList::iterator dd;
-
-    if (visitChildren) {
-        for (SharedStmt s : m_defines) {
-            s->accept(v);
-        }
-    }
-
-    return true;
 }

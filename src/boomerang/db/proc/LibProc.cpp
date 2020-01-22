@@ -25,6 +25,8 @@ LibProc::LibProc(Address addr, const QString &name, Module *module)
     if (!m_signature) {
         m_signature = Signature::instantiate(Machine::UNKNOWN, CallConv::INVALID, name);
     }
+
+    assert(m_signature != nullptr);
 }
 
 
@@ -36,7 +38,7 @@ bool LibProc::isLib() const
 
 bool LibProc::isNoReturn() const
 {
-    if (!m_prog->getFrontEnd()) {
+    if (!m_prog || !m_prog->getFrontEnd()) {
         return false;
     }
 

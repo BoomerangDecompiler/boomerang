@@ -13,15 +13,47 @@
 #include "TestUtils.h"
 
 
-class CallStatementTest : public BoomerangTest
+class CallStatementTest : public BoomerangTestWithProject
 {
     Q_OBJECT
 
 private slots:
     void testClone();
+    void testNumber(); // get/setNumber
     void testGetDefinitions();
     void testDefinesLoc();
     void testSearch();
     void testSearchAll();
     void testSearchAndReplace();
+    void testSimplify();
+    void testTypeForExp(); // get/setTypeForExp
+    void testToString();
+
+    void testArguments(); // get/setArguments
+    void testSetSigArguments();
+    void testUpdateArguments();
+    void testArgumentExp(); // get/setArgumentExp
+    void testNumArguments(); // get/setNumArguments
+    void testRemoveArguments();
+    void testArgumentType(); // get/setArgumentType
+    void testEliminateDuplicateArgs();
+
+    void testDestProc(); // get/setDestProc
+    void testReturnAfterCall(); // get/setReturnAfterCall
+    void testIsChildless();
+    void testIsCallToMemOffset();
+
+    void testAddDefine();
+    void testRemoveDefine();
+    void testSetDefines();
+    void testFindDefFor();
+
+    void testCalcResults();
+    void testGetProven();
+    void testLocaliseExp();
+    void testLocaliseComp();
+    void testBypassRef();
+    void testDoEllipsisProcessing();
+    void testTryConvertToDirect();
+
 };
