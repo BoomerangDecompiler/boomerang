@@ -25,7 +25,7 @@ class Prog;
 
 /**
  * Represents a high level call.
- * Information about parameters and the like are stored here.
+ * Information about parameters and the like is stored here.
  */
 class BOOMERANG_API CallStatement : public GotoStatement
 {
