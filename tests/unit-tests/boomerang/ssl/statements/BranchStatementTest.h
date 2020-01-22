@@ -13,7 +13,7 @@
 #include "TestUtils.h"
 
 
-class BranchStatementTest : public BoomerangTest
+class BranchStatementTest : public BoomerangTestWithProject
 {
     Q_OBJECT
 
@@ -24,4 +24,7 @@ private slots:
     void testSearch();
     void testSearchAll();
     void testSearchAndReplace();
+    void testFallTakenFragment();
+    void testToString();
+    void testToString_data();
 };
