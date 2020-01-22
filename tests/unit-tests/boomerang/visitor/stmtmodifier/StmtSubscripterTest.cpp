@@ -41,210 +41,216 @@ void StmtSubscripterTest::subscriptVarForStmt(const SharedStmt& stmt, SharedExp 
 
 void StmtSubscripterTest::testSubscriptVars()
 {
-    SharedExp srch = Location::regOf(REG_X86_ESP);
-    std::shared_ptr<Assign> s9(new Assign(Const::get(0), Const::get(0)));
+    const SharedExp esp = Location::regOf(REG_X86_ESP);
+    const SharedExp edx = Location::regOf(REG_X86_EDX);
+    const SharedExp ebx = Location::regOf(REG_X86_EBX);
+    const SharedExp ebp = Location::regOf(REG_X86_EBP);
+    const SharedExp edi = Location::regOf(REG_X86_EDI);
 
+    Prog prog("testSubscriptVars", nullptr);
+    Module *mod = prog.getOrInsertModuleForSymbol("test");
+
+    std::shared_ptr<Assign> s9(new Assign(Const::get(0), Const::get(0)));
     s9->setNumber(9);
 
-    // m[r28-4] := m[r28-8] * r26
-    std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_X86_ESP),
-                                         Const::get(4))),
-             Binary::get(opMult,
-                        Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_X86_ESP),
-                                                     Const::get(8))),
-                         Location::regOf(REG_X86_EDX))));
-    a->setNumber(1);
-    QString     actual;
-    OStream ost(&actual);
+    {
+        // m[r28-4] := m[r28-8] * r26
+        std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus, esp, Const::get(4))),
+            Binary::get(opMult, Location::memOf(Binary::get(opMinus, esp, Const::get(8))), edx)));
 
-    subscriptVarForStmt(a, srch, s9);
+        a->setNumber(1);
 
-    ost << a;
-    QString expected = "   1 *v* m[r28{9} - 4] := m[r28{9} - 8] * r26";
-    QCOMPARE(actual, expected);
+        subscriptVarForStmt(a, esp, s9);
 
-    // GotoStatement
-    std::shared_ptr<GotoStatement> g(new GotoStatement(Location::regOf(REG_X86_ESP)));
-    g->setNumber(55);
-    subscriptVarForStmt(g, srch, s9);
+        QCOMPARE(a->toString(), "   1 *v* m[r28{9} - 4] := m[r28{9} - 8] * r26");
+    }
 
-    actual   = "";
-    ost << g;
+    {
+        // GotoStatement
+        std::shared_ptr<GotoStatement> g(new GotoStatement(esp));
+        g->setNumber(55);
+        subscriptVarForStmt(g, esp, s9);
 
-    expected = "  55 GOTO r28{9}";
-    QCOMPARE(actual, expected);
+        QCOMPARE(g->toString(), "  55 GOTO r28{9}");
+    }
 
-    // FIXME
-    // BranchStatement with dest m[r26{99}]{55}, condition %flags
+    {
+        // FIXME
+        // BranchStatement with dest m[r26{99}]{55}, condition %flags
+        std::shared_ptr<GotoStatement> g(new GotoStatement(esp));
+        g->setNumber(55);
 
-    std::shared_ptr<BranchStatement> b(new BranchStatement(Address::INVALID));
-    SharedExp dest = Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b));
-    dest = RefExp::get(dest, g);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(Address::INVALID));
+        SharedExp dest = RefExp::get(Location::memOf(RefExp::get(edx, b)), g);
 
-    b->setDest(dest);
-    b->setNumber(99);
-    b->setCondExpr(Terminal::get(opFlags));
+        b->setDest(dest);
+        b->setNumber(99);
+        b->setCondExpr(Terminal::get(opFlags));
 
-    subscriptVarForStmt(b, dest, s9); // Should be ignored now: new behaviour
-    subscriptVarForStmt(b, Terminal::get(opFlags), g);
+        subscriptVarForStmt(b, dest, s9); // Should be ignored now: new behaviour
+        subscriptVarForStmt(b, Terminal::get(opFlags), g);
 
-    actual   = "";
-    expected = "  99 BRANCH m[r26{99}]{55}, condition equals\n"
-               "High level: %flags{55}";
-    ost << b;
-    QCOMPARE(actual, expected);
+        QCOMPARE(b->toString(),
+                "  99 BRANCH m[r26{99}]{55}, condition equals\n"
+                "High level: %flags{55}");
+    }
 
-    // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
-    std::shared_ptr<CaseStatement> c1(new CaseStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
-    std::unique_ptr<SwitchInfo> si(new SwitchInfo);
-    si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
-    c1->setSwitchInfo(std::move(si));
+    {
+        // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
+        std::shared_ptr<CaseStatement> c1(new CaseStatement(Location::memOf(edx)));
+        std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+        si->switchExp = Location::memOf(Binary::get(opMinus, esp, Const::get(12)));
+        c1->setSwitchInfo(std::move(si));
 
-    subscriptVarForStmt(c1, srch, s9);
+        subscriptVarForStmt(c1, esp, s9);
 
-    actual   = "";
-    expected = "   0 SWITCH(m[r28{9} - 12])\n";
-    ost << c1;
-    QCOMPARE(actual, expected);
+        QCOMPARE(c1->toString(), "   0 SWITCH(m[r28{9} - 12])\n");
+    }
 
-    // CaseStatement (before recog) with dest = r28, switchVar is nullptr
-    std::shared_ptr<CaseStatement> c2(new CaseStatement(Location::regOf(REG_X86_ESP)));
-    c2->setSwitchInfo(nullptr);
+    {
+        // CaseStatement (before recog) with dest = r28, switchVar is nullptr
+        std::shared_ptr<CaseStatement> c2(new CaseStatement(esp));
+        c2->setSwitchInfo(nullptr);
 
-    subscriptVarForStmt(c2, srch, s9);
-    actual   = "";
-    expected = "   0 CASE [r28{9}]";
-    ost << c2;
-    QCOMPARE(expected, actual);
+        subscriptVarForStmt(c2, esp, s9);
 
-    // CallStatement with dest = m[r26], params = m[r27], r28, defines r28, m[r28]
-    std::shared_ptr<CallStatement> ca(new CallStatement(Location::memOf(Location::regOf(REG_X86_ESP))));
-    StatementList argl;
+        QCOMPARE(c2->toString(), "   0 CASE [r28{9}]");
+    }
 
-    Prog   *prog = new Prog("testSubscriptVars", nullptr);
-    Module *mod  = prog->getOrInsertModuleForSymbol("test");
+    {
+        // CallStatement with dest = m[r26], params = m[r27], r28, defines r28, m[r28]
+        std::shared_ptr<CallStatement> ca(new CallStatement(Location::memOf(esp)));
 
-    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EBX)), Const::get(1)));
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_ESP), Const::get(2)));
-    ca->setArguments(argl);
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_ESP)));
-    ca->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_X86_ESP))));
+        StatementList argl;
+        argl.append(std::make_shared<Assign>(Location::memOf(ebx), Const::get(1)));
+        argl.append(std::make_shared<Assign>(esp, Const::get(2)));
+        ca->setArguments(argl);
+        ca->addDefine(std::make_shared<ImplicitAssign>(esp));
+        ca->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(esp)));
 
-    std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
-    UserProc destProc(Address(0x2000), "dest", mod);
-    ca->setDestProc(&destProc);    // Must have a dest to be non-childless
-    ca->setCalleeReturn(retStmt); // So it's not a childless call, and we can see the defs and params
-    subscriptVarForStmt(ca, srch, s9);
+        std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
+        UserProc destProc(Address(0x2000), "dest", mod);
+        ca->setDestProc(&destProc);   // Must have a dest to be non-childless
+        ca->setCalleeReturn(retStmt); // So it's not a childless call, and we can see the defs and params
 
-    actual   = "";
-    expected = "   0 {*v* r28, *v* m[r28]} := CALL dest(\n"
-               "                *v* m[r27] := 1\n"
-               "                *v* r28 := 2\n"
-               "              )\n"
-               "              Reaching definitions: <None>\n"
-               "              Live variables: <None>";
-    ost << ca;
-    QCOMPARE(expected, actual);
+        subscriptVarForStmt(ca, esp, s9);
 
-    argl.clear();
+        QCOMPARE(ca->toString(),
+                "   0 { *v* r28, *v* m[r28] } := CALL dest(\n"
+                "                *v* m[r27] := 1\n"
+                "                *v* r28 := 2\n"
+                "              )\n"
+                "              Reaching definitions: <None>\n"
+                "              Live variables: <None>");
+    }
 
-    // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
-    std::shared_ptr<CallStatement> ca2(new CallStatement(Location::regOf(REG_X86_ESP)));
-    argl.append(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_EBX)), Const::get(1)));
-    argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_EBP), Const::get(2)));
-    ca2->setArguments(argl);
-    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
-    ca2->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(Location::regOf(REG_X86_EDI))));
+    {
+        // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
+        std::shared_ptr<CallStatement> ca2(new CallStatement(esp));
 
-    std::shared_ptr<ReturnStatement> retStmt2(new ReturnStatement);
-    UserProc dest2(Address(0x2000), "dest", mod);
-    ca2->setDestProc(&dest2);       // Must have a dest to be non-childless
-    ca2->setCalleeReturn(retStmt2); // So it's not a childless call, and we can see the defs and params
-    subscriptVarForStmt(ca2, srch, s9);
+        StatementList argl;
+        argl.append(std::make_shared<Assign>(Location::memOf(ebx), Const::get(1)));
+        argl.append(std::make_shared<Assign>(ebp, Const::get(2)));
+        ca2->setArguments(argl);
+        ca2->addDefine(std::make_shared<ImplicitAssign>(edi));
+        ca2->addDefine(std::make_shared<ImplicitAssign>(Location::memOf(edi)));
 
-    actual   = "";
-    expected = "   0 {*v* r31, *v* m[r31]} := CALL dest(\n"
-               "                *v* m[r27] := 1\n"
-               "                *v* r29 := 2\n"
-               "              )\n"
-               "              Reaching definitions: <None>\n"
-               "              Live variables: <None>";
-    ost << ca2;
+        std::shared_ptr<ReturnStatement> retStmt2(new ReturnStatement);
+        UserProc dest2(Address(0x2000), "dest", mod);
+        ca2->setDestProc(&dest2);       // Must have a dest to be non-childless
+        ca2->setCalleeReturn(retStmt2); // So it's not a childless call, and we can see the defs and params
 
-    QCOMPARE(actual, expected);
-    argl.clear();
+        subscriptVarForStmt(ca2, esp, s9);
 
-    // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
-    // FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
-    std::shared_ptr<ReturnStatement> r(new ReturnStatement);
-    r->addReturn(std::make_shared<Assign>(Location::regOf(REG_X86_ESP), Const::get(1000)));
-    r->addReturn(std::make_shared<Assign>(Location::memOf(Location::regOf(REG_X86_ESP)), Const::get(2000)));
-    r->addReturn(std::make_shared<Assign>(
-                     Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_X86_ESP), g),
-                                                 RefExp::get(Location::regOf(REG_X86_EDX), b))),
-                     Const::get(100)));
+        QCOMPARE(ca2->toString(),
+                 "   0 { *v* r31, *v* m[r31] } := CALL dest(\n"
+                 "                *v* m[r27] := 1\n"
+                 "                *v* r29 := 2\n"
+                 "              )\n"
+                 "              Reaching definitions: <None>\n"
+                 "              Live variables: <None>");
+    }
 
-    subscriptVarForStmt(r, srch, s9); // New behaviour: gets ignored now
+    {
+        // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
+        // FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
+        std::shared_ptr<GotoStatement> g(new GotoStatement(esp));
+        g->setNumber(55);
 
-    actual   = "";
-    expected = "   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{55} + r26{99}] := 100\n"
-               "              Modifieds: <None>\n"
-               "              Reaching definitions: <None>";
-    ost << r;
-    QCOMPARE(actual, expected);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(Address::INVALID));
+        b->setNumber(99);
 
-    // BoolAssign with condition m[r28] = r28, dest m[r28]
-    SharedExp m28 = Location::memOf(Location::regOf(REG_X86_ESP));
-    SharedExp cond = Binary::get(opEquals, m28, Location::regOf(REG_X86_ESP));
+        std::shared_ptr<ReturnStatement> r(new ReturnStatement);
+        r->addReturn(std::make_shared<Assign>(esp, Const::get(1000)));
+        r->addReturn(std::make_shared<Assign>(Location::memOf(esp), Const::get(2000)));
+        r->addReturn(std::make_shared<Assign>(Location::memOf(Binary::get(opPlus,
+                                                                        RefExp::get(esp, g),
+                                                                        RefExp::get(edx, b))),
+                                            Const::get(100)));
 
-    std::shared_ptr<BoolAssign> bs(new BoolAssign(m28, BranchType::JE, cond));
+        subscriptVarForStmt(r, esp, s9); // New behaviour: gets ignored now
 
-    subscriptVarForStmt(bs, srch, s9);
+        QCOMPARE(r->toString(),
+                "   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{55} + r26{99}] := 100\n"
+                "              Modifieds: <None>\n"
+                "              Reaching definitions: <None>");
+    }
 
-    expected = "   0 BOOL m[r28{9}] := CC(equals)\n"
-               "High level: m[r28{9}] = r28{9}\n";
+    {
+        // BoolAssign with condition m[r28] = r28, dest m[r28]
+        SharedExp m28 = Location::memOf(Location::regOf(REG_X86_ESP));
+        SharedExp cond = Binary::get(opEquals, m28, Location::regOf(REG_X86_ESP));
 
-    QCOMPARE(bs->toString(), expected);
+        std::shared_ptr<BoolAssign> bs(new BoolAssign(m28, BranchType::JE, cond));
 
-    delete prog;
+        subscriptVarForStmt(bs, esp, s9);
+
+        QCOMPARE(bs->toString(), "   0 BOOL m[r28{9}] := CC(equals)\nHigh level: m[r28{9}] = r28{9}\n");
+    }
 }
 
 
 void StmtSubscripterTest::testSubscriptVar()
 {
+    const SharedExp esp = Location::regOf(REG_X86_ESP);
+    const SharedExp ebp = Location::regOf(REG_X86_EBP);
+    const SharedExp lhs = Location::memOf(Binary::get(opMinus, esp, Const::get(4)));
+
     // m[r28 - 4] := r28 + r29
-    SharedExp lhs = Location::memOf(Binary::get(opMinus,
-                                                 Location::regOf(REG_X86_ESP),
-                                                 Const::get(4)));
+    std::shared_ptr<Assign> ae(new Assign(lhs, Binary::get(opPlus, esp, ebp)));
+    ae->setNumber(1);
 
-    std::shared_ptr<Assign> ae(new Assign(lhs->clone(),
-                                Binary::get(opPlus,
-                                            Location::regOf(REG_X86_ESP),
-                                            Location::regOf(REG_X86_EBP))));
+    {
+        // Subtest 1: should do nothing
+        SharedStmt def1(new Assign(esp, esp));
+        def1->setNumber(12);
 
-    // Subtest 1: should do nothing
-    SharedExp r28   = Location::regOf(REG_X86_ESP);
-    SharedStmt def1(new Assign(r28->clone(), r28->clone()));
+        subscriptVarForStmt(def1, lhs, def1); // Should do nothing
+        QCOMPARE(ae->toString(), QString("   1 *v* m[r28 - 4] := r28 + r29"));
+    }
 
-    def1->setNumber(12);
-    subscriptVarForStmt(def1, lhs, def1); // Should do nothing
-    QCOMPARE(ae->toString(), QString("   0 *v* m[r28 - 4] := r28 + r29"));
+    {
+        // Subtest 2: Ordinary substitution, on LHS and RHS
+        SharedStmt def1(new Assign(esp, esp));
+        def1->setNumber(12);
 
-    // m[r28 - 4]
+        subscriptVarForStmt(ae, esp, def1);
 
-    // Subtest 2: Ordinary substitution, on LHS and RHS
-    subscriptVarForStmt(ae, r28, def1);
-    QCOMPARE(ae->toString(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+        QCOMPARE(ae->toString(), QString("   1 *v* m[r28{12} - 4] := r28{12} + r29"));
+    }
 
-    // Subtest 3: change to a different definition
-    // 99: r28 := 0
-    // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
-    SharedStmt def3(new Assign(Location::regOf(REG_X86_ESP), Const::get(0)));
-    def3->setNumber(99);
-    subscriptVarForStmt(ae, r28, def3);
-    QCOMPARE(ae->toString(), QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+    {
+        // Subtest 3: try to change to a different definition
+        // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
+
+        // 99: r28 := 0
+        SharedStmt def3(new Assign(esp, Const::get(0)));
+        def3->setNumber(99);
+
+        subscriptVarForStmt(ae, esp, def3);
+
+        QCOMPARE(ae->toString(), QString("   1 *v* m[r28{12} - 4] := r28{12} + r29"));
+    }
 }
 
 
