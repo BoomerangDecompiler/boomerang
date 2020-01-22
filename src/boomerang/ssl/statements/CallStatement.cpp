@@ -929,7 +929,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
 }
 
 
-bool CallStatement::doEllipsisProcessing(Prog *)
+bool CallStatement::doEllipsisProcessing()
 {
     // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
     if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {

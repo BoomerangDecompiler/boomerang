@@ -217,11 +217,11 @@ public:
     SharedExp bypassRef(const std::shared_ptr<RefExp> &r, bool &changed);
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the
-    /// number of parameters if needed, and return true if any signature parameters added This
+    /// number of parameters if needed, and return true if any signature parameters added. This
     /// function has two jobs. One is to truncate the list of arguments based on the format string.
     /// The second is to add parameter types to the signature.
     /// If -Td is used, type analysis will be rerun with these changes.
-    bool doEllipsisProcessing(Prog *prog);
+    bool doEllipsisProcessing();
 
     /// Attempt to convert this call, if indirect, to a direct call.
     /// NOTE: at present, we igore the possibility that some other statement

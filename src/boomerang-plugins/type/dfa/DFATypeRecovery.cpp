@@ -538,7 +538,7 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
             continue;
         }
 
-        ch |= c->doEllipsisProcessing(proc->getProg());
+        ch |= c->doEllipsisProcessing();
     }
 
     if (ch) {
