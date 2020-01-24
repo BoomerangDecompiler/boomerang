@@ -343,6 +343,8 @@ void CallStatement::simplify()
 
 SharedConstType CallStatement::getTypeForExp(SharedConstExp e) const
 {
+    assert(e != nullptr);
+
     // The defines "cache" what the destination proc is defining
     std::shared_ptr<const Assignment> asgn = m_defines.findOnLeft(e);
 
@@ -500,7 +502,7 @@ void CallStatement::setSigArguments()
     }
 
     // Clone here because each call to procDest could have a different signature,
-    // modified by ellipsisProcessing()
+    // modified by doEllipsisProcessing()
     m_signature = m_procDest->getSignature()->clone();
     m_procDest->addCaller(shared_from_this()->as<CallStatement>());
 
@@ -526,10 +528,8 @@ void CallStatement::setSigArguments()
 
         asgn->setProc(m_proc);
         asgn->setFragment(m_fragment);
-        // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         asgn->setNumber(m_number);
 
-        // as->setParent(this);
         m_arguments.append(asgn);
     }
 
@@ -660,7 +660,7 @@ void CallStatement::setNumArguments(int n)
         SharedExp a   = m_procDest->getSignature()->getArgumentExp(i);
         SharedType ty = m_procDest->getSignature()->getParamType(i);
 
-        if ((ty == nullptr) && oldSize) {
+        if (ty == nullptr && oldSize != 0) {
             ty = m_procDest->getSignature()->getParamType(oldSize - 1);
         }
 
@@ -760,8 +760,8 @@ bool CallStatement::isChildless() const
         return false;
     }
 
-    // Early in the decompile process, recursive calls are treated as childless, so they use and
-    // define all
+    // Early in the decompile process, recursive calls are treated as childless,
+    // so they use and define all
     if (static_cast<UserProc *>(m_procDest)->isEarlyRecursive()) {
         return true;
     }
@@ -782,7 +782,7 @@ void CallStatement::addDefine(const std::shared_ptr<ImplicitAssign> &asgn)
 }
 
 
-void CallStatement::removeDefine(SharedExp e)
+bool CallStatement::removeDefine(SharedExp e)
 {
     for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
         SharedStmt s = *ss;
@@ -790,11 +790,12 @@ void CallStatement::removeDefine(SharedExp e)
         assert(s->isAssignment());
         if (*s->as<Assignment>()->getLeft() == *e) {
             m_defines.erase(ss);
-            return;
+            return true;
         }
     }
 
     LOG_WARN("Could not remove define %1 from call %2", e, shared_from_this());
+    return false;
 }
 
 
@@ -815,6 +816,7 @@ void CallStatement::setDefines(const StatementList &defines)
 
 SharedExp CallStatement::findDefFor(SharedExp e) const
 {
+    assert(e != nullptr);
     return m_defCol.findDefFor(e);
 }
 
@@ -824,9 +826,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
     std::unique_ptr<StatementList> result(new StatementList);
 
     if (m_procDest) {
-        auto sig = m_procDest->getSignature();
-
-        SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
+        const SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
 
         for (SharedStmt dd : m_defines) {
             SharedExp lhs = dd->as<Assignment>()->getLeft();
@@ -843,9 +843,9 @@ std::unique_ptr<StatementList> CallStatement::calcResults() const
         }
     }
     else {
-        // For a call with no destination at this late stage, use everything live at the call except
-        // for the stack pointer register. Needs to be sorted
-        auto sig        = m_proc->getSignature();
+        // For a call with no destination at this late stage, use every variable live at the call
+        // except for the stack pointer register. Needs to be sorted.
+        const auto sig  = m_proc->getSignature();
         const RegNum sp = sig->getStackRegister();
 
         for (SharedExp loc : m_useCol) {

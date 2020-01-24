@@ -57,10 +57,10 @@ bool DefCollector::hasDefOf(const SharedExp &e) const
 
 SharedExp DefCollector::findDefFor(const SharedExp &e) const
 {
-    for (std::shared_ptr<Assign> def : m_defs) {
-        SharedExp lhs = def->getLeft();
+    assert(e != nullptr);
 
-        if (*lhs == *e) {
+    for (std::shared_ptr<Assign> def : m_defs) {
+        if (*def->getLeft() == *e) {
             return def->getRight();
         }
     }

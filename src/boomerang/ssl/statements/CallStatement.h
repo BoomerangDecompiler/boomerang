@@ -173,7 +173,8 @@ public:
     void addDefine(const std::shared_ptr<ImplicitAssign> &as);
 
     /// Temporarily needed for ad-hoc type analysis
-    void removeDefine(SharedExp e);
+    /// \returns true if removed successfully
+    bool removeDefine(SharedExp e);
 
     /// Get list of locations defined by this call
     const StatementList &getDefines() const { return m_defines; }

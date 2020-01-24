@@ -17,12 +17,16 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/signature/X86Signature.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/passes/PassManager.h"
 
 
 void CallStatementTest::testClone()
@@ -234,13 +238,73 @@ void CallStatementTest::testSearchAndReplace()
 
 void CallStatementTest::testSimplify()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(
+            Binary::get(opPlus, Const::get(0x800), Const::get(0x800))));
+        QVERIFY(call->isComputed());
+
+        call->simplify();
+
+        QVERIFY(call->getDest() != nullptr);
+        QCOMPARE(*call->getDest(), *Const::get(0x1000));
+        QVERIFY(!call->isComputed());
+    }
+
+    {
+        StatementList args, defs;
+        args.append(std::make_shared<Assign>(ecx, Binary::get(opPlus, Const::get(40), Const::get(2))));
+        defs.append(args.front()->clone());
+
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setArguments(args);
+        call->setDefines(defs);
+        call->simplify();
+
+        QCOMPARE(call->getArguments().toString(), "   0 *v* r25 := 42");
+        QCOMPARE(call->getDefines().toString(),   "   0 *v* r25 := 42");
+    }
 }
 
 
 void CallStatementTest::testTypeForExp()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        SharedConstType ty = call->getTypeForExp(ecx);
+        QVERIFY(ty != nullptr);
+        QCOMPARE(*ty, *VoidType::get());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        SharedConstType ty = call->getTypeForExp(Terminal::get(opPC));
+        QVERIFY(ty != nullptr);
+        QCOMPARE(*ty, *PointerType::get(VoidType::get()));
+    }
+
+    {
+        StatementList defs;
+        defs.append(std::make_shared<Assign>(IntegerType::get(32, Sign::Signed), ecx, Const::get(0)));
+
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDefines(defs);
+
+        SharedConstType ty = call->getTypeForExp(Const::get(0));
+        QVERIFY(ty != nullptr);
+        QCOMPARE(*ty, *VoidType::get());
+
+        ty = call->getTypeForExp(ecx->clone()); // verify it is not comparing by address
+        QVERIFY(ty != nullptr);
+        QCOMPARE(*ty, *IntegerType::get(32, Sign::Signed));
+    }
+
+    QSKIP("TODO: setTypeForExp");
 }
 
 
@@ -306,13 +370,127 @@ void CallStatementTest::testToString()
 
 void CallStatementTest::testArguments()
 {
-    QSKIP("TODO");
+    Prog prog("test", &m_project);
+    UserProc *srcProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x2000)));
+        QVERIFY(call->getArguments().empty());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x2000)));
+        call->setArguments(StatementList());
+        QVERIFY(call->getArguments().empty());
+    }
+
+    {
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, ecx));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x2000)));
+
+        call->setArguments(args);
+
+        QVERIFY(!call->getArguments().empty());
+        QCOMPARE(call->getArguments().toString(), "   0 *v* r25 := r25");
+
+        QCOMPARE(call->getArguments().front()->getProc(), call->getProc());
+        QCOMPARE(call->getArguments().front()->getNumber(), call->getNumber());
+        QCOMPARE(call->getArguments().front()->getFragment(), call->getFragment());
+    }
+
+    {
+        BasicBlock *bb = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+        IRFragment *frag = srcProc->getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb);
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, ecx));
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x2000)));
+        call->setFragment(frag);
+        call->setProc(srcProc);
+        call->setNumber(42);
+
+        call->setArguments(args);
+
+        QVERIFY(!call->getArguments().empty());
+        QCOMPARE(call->getArguments().toString(), "  42 *v* r25 := r25");
+
+        QCOMPARE(call->getArguments().front()->getProc(), call->getProc());
+        QCOMPARE(call->getArguments().front()->getNumber(), call->getNumber());
+        QCOMPARE(call->getArguments().front()->getFragment(), call->getFragment());
+    }
 }
 
 
 void CallStatementTest::testSetSigArguments()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    Prog prog("test", &m_project);
+    UserProc *srcProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+
+    LibProc *destLibProc = prog.getOrCreateLibraryProc("desLibProc");
+    destLibProc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "destLibProc"));
+    destLibProc->getSignature()->addParameter("param0", ecx, IntegerType::get(32, Sign::Signed));
+
+    UserProc *destUserProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x2000)));
+    destUserProc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "destUserProc"));
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        call->setSigArguments();
+
+        QVERIFY(call->getArguments().empty());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
+        call->setSigArguments();
+        QVERIFY(call->getArguments().empty());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setProc(srcProc);
+        call->setDestProc(destUserProc);
+
+        call->setSigArguments();
+
+        QCOMPARE(destUserProc->getCallers().size(), 1);
+        QCOMPARE(*destUserProc->getCallers().begin(), call);
+
+        QVERIFY(call->getSignature() != nullptr);
+        QCOMPARE(*call->getSignature(), *destUserProc->getSignature());
+        QVERIFY(call->getArguments().empty());
+    }
+
+    {
+        BasicBlock *bb = prog.getCFG()->createBB(BBType::Fall, createInsns(Address(0x1000), 1));
+        IRFragment *frag = srcProc->getCFG()->createFragment(FragType::Fall, createRTLs(Address(0x1000), 1, 1), bb);
+
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setProc(srcProc);
+        call->setDestProc(destLibProc);
+        call->setNumber(42);
+        call->setFragment(frag);
+
+        call->setSigArguments();
+
+        QCOMPARE(destLibProc->getCallers().size(), 1);
+        QCOMPARE(*destLibProc->getCallers().begin(), call);
+
+        QVERIFY(call->getSignature() != nullptr);
+        QCOMPARE(*call->getSignature(), *destLibProc->getSignature());
+
+        QVERIFY(call->getArguments().size() == 1);
+        QCOMPARE(call->getArguments().front()->getProc(), srcProc);
+        QCOMPARE(call->getArguments().front()->getFragment(), frag);
+        QCOMPARE(call->getArguments().front()->toString(), "  42 *i32* r25 := r25");
+    }
 }
 
 
@@ -330,19 +508,48 @@ void CallStatementTest::testArgumentExp()
 
 void CallStatementTest::testNumArguments()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QCOMPARE(call->getNumArguments(), 0);
+
+    call->getArguments().append(std::make_shared<Assign>(ecx, ecx));
+    QCOMPARE(call->getNumArguments(), 1);
+
+    QSKIP("TODO: setNumArguments");
 }
 
 
-void CallStatementTest::testRemoveArguments()
+void CallStatementTest::testRemoveArgument()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    call->getArguments().append(std::make_shared<Assign>(ecx, ecx));
+    QCOMPARE(call->getNumArguments(), 1);
+
+    call->removeArgument(0);
+
+    QCOMPARE(call->getNumArguments(), 0);
 }
 
 
 void CallStatementTest::testArgumentType()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    call->getArguments().append(std::make_shared<Assign>(ecx, ecx));
+
+    SharedType ty = call->getArgumentType(0);
+    QVERIFY(ty != nullptr);
+    QCOMPARE(*ty, *VoidType::get());
+
+    call->setArgumentType(0, IntegerType::get(32, Sign::Signed));
+
+    ty = call->getArgumentType(0);
+    QVERIFY(ty != nullptr);
+    QCOMPARE(*ty, *IntegerType::get(32, Sign::Signed));
 }
 
 
@@ -417,48 +624,164 @@ void CallStatementTest::testEliminateDuplicateArgs()
 
 void CallStatementTest::testDestProc()
 {
-    QSKIP("TODO");
+    Prog prog("test", &m_project);
+    LibProc *destProc = prog.getOrCreateLibraryProc("destProc");
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QCOMPARE(call->getDestProc(), nullptr);
+
+    call->setDestProc(destProc);
+
+    QCOMPARE(call->getDestProc(), destProc);
 }
 
 
 void CallStatementTest::testReturnAfterCall()
 {
-    QSKIP("TODO");
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QVERIFY(!call->isReturnAfterCall());
+    call->setReturnAfterCall(false);
+    QVERIFY(!call->isReturnAfterCall());
+    call->setReturnAfterCall(true);
+    QVERIFY(call->isReturnAfterCall());
 }
+
 
 void CallStatementTest::testIsChildless()
 {
-    QSKIP("TODO");
+    Prog prog("test", &m_project);
+    LibProc *destProc = prog.getOrCreateLibraryProc("destProc");
+
+    UserProc *destUserProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+
+    BasicBlock *bb = prog.getCFG()->createBB(BBType::Ret, createInsns(Address(0x1000), 1));
+    IRFragment *frag = destUserProc->getCFG()->createFragment(FragType::Ret, createRTLs(Address(0x1000), 1, 0), bb);
+    std::shared_ptr<ReturnStatement> calleeRet(new ReturnStatement);
+    frag->getRTLs()->back()->append(calleeRet);
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        QVERIFY(call->isChildless());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDestProc(destProc);
+        QVERIFY(!call->isChildless());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDestProc(destUserProc);
+        QVERIFY(call->isChildless());
+    }
+
+    {
+        destUserProc->setStatus(ProcStatus::FinalDone);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDestProc(destUserProc);
+        call->setCalleeReturn(calleeRet);
+
+        QVERIFY(!call->isChildless());
+    }
 }
 
 
 void CallStatementTest::testIsCallToMemOffset()
 {
-    QSKIP("TODO");
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QVERIFY(!call->isCallToMemOffset());
+
+    call->setDest(Location::regOf(REG_X86_ECX));
+    QVERIFY(!call->isCallToMemOffset());
+
+    call->setDest(Address(0x2000));
+    QVERIFY(!call->isCallToMemOffset());
+
+    call->setDest(Location::memOf(Location::regOf(REG_X86_ECX)));
+    QVERIFY(!call->isCallToMemOffset());
+
+    call->setDest(Location::memOf(Const::get(0x2000)));
+    QVERIFY(call->isCallToMemOffset());
 }
 
 
 void CallStatementTest::testAddDefine()
 {
-    QSKIP("TODO");
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QVERIFY(call->getDefines().empty());
+
+    call->addDefine(std::make_shared<ImplicitAssign>(ecx));
+    QVERIFY(call->getDefines().size() == 1);
+    QCOMPARE(call->getDefines().toString(), "   0 *v* r25 := -");
 }
 
 
 void CallStatementTest::testRemoveDefine()
 {
-    QSKIP("TODO");
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    QVERIFY(!call->removeDefine(ecx));
+
+    call->addDefine(std::make_shared<ImplicitAssign>(ecx));
+    QVERIFY(!call->removeDefine(eax));
+    QCOMPARE(call->getDefines().toString(), "   0 *v* r25 := -");
+
+    call->addDefine(std::make_shared<ImplicitAssign>(ecx));
+    QVERIFY(call->removeDefine(ecx));
+    QCOMPARE(call->getDefines().toString(), "   0 *v* r25 := -");
+
+    QVERIFY(call->removeDefine(ecx));
+    QCOMPARE(call->getDefines().toString(), "");
 }
 
 
 void CallStatementTest::testSetDefines()
 {
-    QSKIP("TODO");
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+    {
+        StatementList defs;
+        call->setDefines(defs);
+        QVERIFY(call->getDefines().empty());
+    }
+
+    {
+        StatementList defs;
+        defs.append(std::make_shared<ImplicitAssign>(ecx));
+        call->setDefines(defs);
+        QVERIFY(!call->getDefines().empty());
+        QCOMPARE(call->getDefines().toString(), "   0 *v* r25 := -");
+    }
+
+    {
+        StatementList defs;
+        call->setDefines(defs);
+        QVERIFY(call->getDefines().empty());
+    }
 }
 
 
 void CallStatementTest::testFindDefFor()
 {
-    QSKIP("TODO");
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    DefCollector *defCol = call->getDefCollector();
+
+    QVERIFY(call->findDefFor(ecx) == nullptr);
+
+    defCol->collectDef(std::make_shared<Assign>(ecx, eax));
+    QVERIFY(call->findDefFor(ecx) != nullptr);
+    QCOMPARE(*call->findDefFor(ecx), *eax);
 }
 
 

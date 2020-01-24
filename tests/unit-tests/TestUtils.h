@@ -100,6 +100,7 @@ QString getFullSamplePath(const QString& relpath);
 
 void compareLongStrings(const QString& actual, const QString& expected);
 
+char *toString(const Type &ty);
 char *toString(const Exp& exp);
 char *toString(const SharedConstExp& exp);
 char *toString(const SharedConstStmt &stmt);

@@ -52,12 +52,14 @@ void GotoStatement::setDest(SharedExp pd)
 {
     m_dest = pd;
     assert(m_dest != nullptr);
+    setIsComputed(!m_dest->isConst());
 }
 
 
 void GotoStatement::setDest(Address addr)
 {
     m_dest = Const::get(addr);
+    m_isComputed = false;
 }
 
 
@@ -142,6 +144,8 @@ void GotoStatement::simplify()
         m_dest = m_dest->simplifyArith();
         m_dest = m_dest->simplify();
         assert(m_dest != nullptr);
+
+        m_isComputed = !m_dest->isConst();
     }
 }
 

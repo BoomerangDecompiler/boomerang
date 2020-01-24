@@ -34,7 +34,7 @@ private slots:
     void testUpdateArguments();
     void testArgumentExp(); // get/setArgumentExp
     void testNumArguments(); // get/setNumArguments
-    void testRemoveArguments();
+    void testRemoveArgument();
     void testArgumentType(); // get/setArgumentType
     void testEliminateDuplicateArgs();
 
@@ -54,6 +54,7 @@ private slots:
     void testLocaliseComp();
     void testBypassRef();
     void testDoEllipsisProcessing();
+    void testDoEllipsisProcessing_data();
     void testTryConvertToDirect();
 
 };

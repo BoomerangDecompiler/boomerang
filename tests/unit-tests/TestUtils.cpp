@@ -74,6 +74,12 @@ char *toString(const Exp& exp)
 }
 
 
+char *toString(const Type& ty)
+{
+    return QTest::toString(ty.toString());
+}
+
+
 char *toString(const LocationSet& locSet)
 {
     QString tgt;
