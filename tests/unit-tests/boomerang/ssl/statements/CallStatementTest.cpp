@@ -21,9 +21,11 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/LocationSet.h"
@@ -836,7 +838,185 @@ void CallStatementTest::testBypassRef()
 
 void CallStatementTest::testDoEllipsisProcessing()
 {
-    QSKIP("TODO");
+    Prog prog("test", &m_project);
+    UserProc *srcProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+    LibProc *destProc = prog.getOrCreateLibraryProc("destProc");
+
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDestProc(destProc);
+        call->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
+        QVERIFY(!call->doEllipsisProcessing()); // does not have ellipsis
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setDestProc(destProc);
+        call->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "objc_msgSend"));
+        QVERIFY(!call->doEllipsisProcessing()); // does not have args
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "test");
+        sig->setHasEllipsis(true);
+
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "test");
+        sig->setHasEllipsis(true);
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, ecx));
+        args.append(std::make_shared<Assign>(eax, ecx));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, Unary::get(opAddrOf, RefExp::get(Location::memOf(eax), nullptr))));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        destProc->setName("sprintf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "sprintf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(eax, ecx));
+        args.append(std::make_shared<Assign>(ecx, RefExp::get(ecx, nullptr)));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        std::shared_ptr<Assign> def(new Assign(ecx, Const::get("foo")));
+
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, RefExp::get(ecx, def)));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(call->doEllipsisProcessing());
+    }
+
+    {
+        std::shared_ptr<Assign> def(new Assign(ecx, Const::get(5)));
+
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, RefExp::get(ecx, def)));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    {
+        std::shared_ptr<ImplicitAssign> def(new ImplicitAssign(ecx));
+
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, RefExp::get(ecx, def)));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(!call->doEllipsisProcessing());
+    }
+
+    // TODO Test if def is a phi
+
+    {
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(ecx, Const::get("foo")));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(call->doEllipsisProcessing());
+    }
+
+    {
+        destProc->setName("printf");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
+        sig->setHasEllipsis(true);
+
+        sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(Location::param("fmt"), Const::get("%d%i")));
+
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+        call->setProc(srcProc);
+
+        QVERIFY(call->doEllipsisProcessing());
+
+        QCOMPARE(call->getNumArguments(), 3);
+        QCOMPARE(call->getArguments().toString(), "   0 *v* fmt := \"%d%i\",\t   0 *i32* m[r28{-} + 8] := m[r28{-} + 8]{-},\t   0 *i32* m[r28{-} + 12] := m[r28{-} + 12]{-}");
+    }
 }
 
 

@@ -920,7 +920,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
     }
     else {
         // Was using the defines to decide if something is preserved, but consider sp+4 for stack
-        // based machines Have to use the proven information for the callee (if any)
+        // based machines. Have to use the proven information for the callee (if any)
         if (m_procDest == nullptr) {
             return r->shared_from_this(); // Childless callees transmit nothing
         }
@@ -928,15 +928,16 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
         // FIXME: temporary HACK! Ignores alias issues.
         if (!m_procDest->isLib() &&
             static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
+
             SharedExp ret = localiseExp(base->clone()); // Assume that it is proved as preserved
             changed       = true;
 
-        LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
-                     base, m_number, ret);
-        return ret;
-            }
+            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
+                base, m_number, ret);
+            return ret;
+        }
 
-            proven = m_procDest->getProven(base); // e.g. r28+4
+        proven = m_procDest->getProven(base); // e.g. r28+4
     }
 
     if (proven == nullptr) {
@@ -958,29 +959,32 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
 
 bool CallStatement::doEllipsisProcessing()
 {
-    // if (getDestProc() == nullptr || !getDestProc()->getSignature()->hasEllipsis())
-    if ((getDestProc() == nullptr) || !m_signature->hasEllipsis()) {
+    if (!m_procDest || !m_signature) {
+        return false;
+    }
+    else if (!m_signature->hasEllipsis()) {
         return doObjCEllipsisProcessing(nullptr);
     }
 
     // functions like printf almost always have too many args
-    QString name(getDestProc()->getName());
+    const QString calleeName = m_procDest->getName();
     int formatstrIdx = -1;
 
-    if (((name == "printf") || (name == "scanf"))) {
+    if (getNumArguments() > 0 && (calleeName == "printf" || calleeName == "scanf")) {
         formatstrIdx = 0;
     }
-    else if ((name == "sprintf") || (name == "fprintf") || (name == "sscanf")) {
+    else if (getNumArguments() > 1 && (calleeName == "sprintf" || calleeName == "fprintf" || calleeName == "sscanf")) {
         formatstrIdx = 1;
     }
-    else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
+    else if (getNumArguments() > 0) {
         formatstrIdx = getNumArguments() - 1;
     }
-    else {
+
+    if (!Util::inRange(formatstrIdx, 0, getNumArguments())) {
         return false;
     }
 
-    LOG_VERBOSE("Ellipsis processing for %1", name);
+    LOG_VERBOSE("Ellipsis processing for %1", calleeName);
 
     QString formatStr;
     SharedExp formatExp = getArgumentExp(formatstrIdx);
@@ -1008,9 +1012,8 @@ bool CallStatement::doEllipsisProcessing()
 
         if (def->isAssign()) {
             // This would be unusual; propagation would normally take care of this
-            SharedExp rhs = def->as<Assign>()->getRight();
-
-            if ((rhs == nullptr) || !rhs->isStrConst()) {
+            const SharedExp rhs = def->as<Assign>()->getRight();
+            if (!rhs || !rhs->isStrConst()) {
                 return false;
             }
 
@@ -1061,7 +1064,7 @@ bool CallStatement::doEllipsisProcessing()
     int n = 1; // Count the format string itself (may also be "format" more arguments)
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
-    const bool isScanf = name.contains("scanf");
+    const bool isScanf = calleeName.contains("scanf");
     int p_idx          = 0;
 
     // TODO: use qregularexpression to match scanf arguments
@@ -1175,7 +1178,6 @@ bool CallStatement::doEllipsisProcessing()
 
     setNumArguments(formatstrIdx + n);
     m_signature->setHasEllipsis(false); // So we don't do this again
-
 
     return true;
 }
@@ -1316,13 +1318,11 @@ bool CallStatement::tryConvertToDirect()
 
 bool CallStatement::doObjCEllipsisProcessing(const QString &formatStr)
 {
-    Function *_proc = getDestProc();
-
-    if (!_proc) {
+    if (!m_procDest) {
         return false;
     }
 
-    QString name(_proc->getName());
+    const QString name = m_procDest->getName();
 
     if (name == "objc_msgSend") {
         if (!formatStr.isEmpty()) {
@@ -1351,10 +1351,10 @@ bool CallStatement::doObjCEllipsisProcessing(const QString &formatStr)
 
                 if (!(ty->isPointer() && ty->as<PointerType>()->getPointsTo()->isChar() &&
                       e->isIntConst())) {
-                    Address addr = Address(e->access<Const>()->getInt());
+                    const Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);
 
-                    if (_proc->getProg()->isInStringsSection(addr)) {
+                    if (m_procDest->getProg()->isInStringsSection(addr)) {
                         LOG_MSG("Making arg %1 of call c*", i);
                         setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;
