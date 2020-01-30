@@ -3898,6 +3898,12 @@ INSTRUCTION "SHL.rm32.reg8" (dest, src) {
     SALFLAGS32(dest, tmp1, src)
 };
 
+INSTRUCTION "SHL.rm32.imm8" (dest, src) {
+    *32* tmp1 := dest
+    *32* dest := dest << (src & 0x1F)
+    SALFLAGS32(dest, tmp1, src)
+};
+
 INSTRUCTION "SHL.rm32.imm32" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest << (src & 0x1F)
@@ -4011,6 +4017,12 @@ INSTRUCTION "SHR.rm16.imm16" (dest, src) {
 };
 
 INSTRUCTION "SHR.rm32.reg8" (dest, src) {
+    *32* tmp1 := dest
+    *32* dest := dest >> (src & 0x1F)
+    SHRFLAGS32(dest, tmp1, src)
+};
+
+INSTRUCTION "SHR.rm32.imm8" (dest, src) {
     *32* tmp1 := dest
     *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)

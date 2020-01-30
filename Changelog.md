@@ -11,6 +11,7 @@ v0.6.0 (in development)
 - Fixed: Wrong decompilation of `*(char *)foo = 0`.
 - Fixed: Missing semantics for 16-bit x86 `lcall` instruction.
 - Fixed: Missing semantics for 16-bit x86 `mul` instruction.
+- Fixed: Missing semantics for x86 `shl` and `shr` variants.
 - Fixed: Non-deterministic naming of locals in decompilation output.
 - Fixed: Non-deterministic decompilation of mutually recursive functions.
 - Fixed: When --decode-only is specified, the -gd switch has no effect.
