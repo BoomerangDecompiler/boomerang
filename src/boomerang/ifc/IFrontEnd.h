@@ -41,17 +41,18 @@ public:
     [[nodiscard]] virtual bool disassembleEntryPoints() = 0;
 
     /// Disassemble all functions until there are no un-disassembled functions left.
-    /// \returns true if decoded successfully.
+    /// \returns true on success.
     [[nodiscard]] virtual bool disassembleAll() = 0;
 
     /// Disassemble the funnction beginning at address \p addr.
     /// Creates the function if it does not yet exist.
-    /// \returns true iff decoded successfully.
+    /// \returns true on success.
     [[nodiscard]] virtual bool disassembleFunctionAtAddr(Address addr) = 0;
 
     /// Disassemble a single procedure (or a fragment thereof), starting at \p addr.
+    /// Does not assume \p addr is the start of \p proc.
     /// \param proc the procedure object
-    /// \param addr the entry address of \p proc
+    /// \param addr the address to start disassembling from
     /// \returns true for a good decode (no illegal instructions)
     [[nodiscard]] virtual bool disassembleProc(UserProc *proc, Address addr) = 0;
 
