@@ -86,7 +86,7 @@ public:
     QString replayFile;  ///< file with commands to execute in interactive mode
     QString sslFileName; ///< Use this SSL file instead of one of the hard-coded ones.
 
-    /// A vector which contains all know entrypoints for the Prog.
+    /// Contains all known entrypoints for the Prog.
     std::vector<Address> m_entryPoints;
 
     /// A vector containing the names of all symbol files to load.
