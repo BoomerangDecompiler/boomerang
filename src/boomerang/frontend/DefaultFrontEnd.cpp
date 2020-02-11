@@ -309,231 +309,232 @@ bool DefaultFrontEnd::disassembleProc(UserProc *proc, Address addr)
                 }
 
                 s->simplify();
+                assert(s->isAssignment() || (std::next(ss) == sl.end()));
             }
 
-            for (SharedStmt s : sl) {
-                switch (s->getKind()) {
-                case StmtType::Goto: {
-                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
-                    assert(jump != nullptr);
-                    const Address jumpDest = jump->getFixedDest();
-                    sequentialDecode       = false;
+            if (sl.empty()) {
+                addr += insn.m_size;
+                lastAddr = std::max(lastAddr, addr);
+                sequentialDecode = true;
+                continue;
+            }
 
-                    // computed unconditional jumps have CaseStatement as last statement
-                    // and not Goto
-                    if (jumpDest == Address::INVALID) {
-                        break;
-                    }
+            SharedStmt s = sl.back();
 
-                    // Static unconditional jump
-                    BasicBlock *currentBB = cfg->createBB(BBType::Oneway, bbInsns);
+            switch (s->getKind()) {
+            case StmtType::Goto: {
+                std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                assert(jump != nullptr);
+                const Address jumpDest = jump->getFixedDest();
+                sequentialDecode       = false;
 
-                    // Exit the switch now if the basic block already existed
-                    if (currentBB == nullptr) {
-                        break;
-                    }
+                // computed unconditional jumps have CaseStatement as last statement
+                // and not Goto
+                if (jumpDest == Address::INVALID) {
+                    break;
+                }
 
-                    // Check if this is a jump to an already existing function. If so, this is
-                    // actually a call that immediately returns afterwards
-                    Function *destProc = m_program->getFunctionByAddr(jumpDest);
-                    if (destProc && destProc != reinterpret_cast<Function *>(-1)) {
-                        sequentialDecode = false;
-                        break;
-                    }
+                // Static unconditional jump
+                BasicBlock *currentBB = cfg->createBB(BBType::Oneway, bbInsns);
 
-                    BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(jumpDest);
-                    if (sym && sym->isFunction()) {
-                        sequentialDecode = false;
-                        break;
-                    }
-                    else if (jumpDest <
-                             m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                        // Add the out edge if it is to a destination within the procedure
-                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
-                        cfg->addEdge(currentBB, jumpDest);
-                    }
-                    else {
-                        LOG_WARN("Goto instruction at address %1 branches beyond end of "
-                                 "section, to %2",
-                                 addr, jumpDest);
-                    }
-                } break;
+                // Exit the switch now if the basic block already existed
+                if (currentBB == nullptr) {
+                    break;
+                }
 
-                case StmtType::Case: {
-                    // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
-                    // to be a switch stmt
-                    cfg->createBB(BBType::CompJump, bbInsns);
+                // Check if this is a jump to an already existing function. If so, this is
+                // actually a call that immediately returns afterwards
+                Function *destProc = m_program->getFunctionByAddr(jumpDest);
+                if (destProc && destProc != reinterpret_cast<Function *>(-1)) {
                     sequentialDecode = false;
-                } break;
+                    break;
+                }
 
-                case StmtType::Branch: {
-                    std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
-                    BasicBlock *currentBB               = cfg->createBB(BBType::Twoway, bbInsns);
+                BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(jumpDest);
+                if (sym && sym->isFunction()) {
+                    sequentialDecode = false;
+                    break;
+                }
+                else if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                    // Add the out edge if it is to a destination within the procedure
+                    m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
+                    cfg->addEdge(currentBB, jumpDest);
+                }
+                else {
+                    LOG_WARN("Goto instruction at address %1 branches beyond end of "
+                             "section, to %2",
+                             addr, jumpDest);
+                }
+            } break;
 
-                    // Stop decoding sequentially if the basic block already existed otherwise
-                    // complete the basic block
+            case StmtType::Case: {
+                // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
+                // to be a switch stmt
+                cfg->createBB(BBType::CompJump, bbInsns);
+                sequentialDecode = false;
+            } break;
+
+            case StmtType::Branch: {
+                std::shared_ptr<GotoStatement> jump = s->as<GotoStatement>();
+                BasicBlock *currentBB               = cfg->createBB(BBType::Twoway, bbInsns);
+
+                // Stop decoding sequentially if the basic block already existed otherwise
+                // complete the basic block
+                if (currentBB == nullptr) {
+                    sequentialDecode = false;
+                    break;
+                }
+
+                // Add the out edge if it is to a destination within the section
+                const Address jumpDest = jump->getFixedDest();
+
+                if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
+                    m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
+                    cfg->addEdge(currentBB, jumpDest);
+                }
+                else {
+                    LOG_WARN("Branch instruction at address %1 branches beyond end of "
+                             "section, to %2",
+                             addr, jumpDest);
+                    currentBB->setType(BBType::Oneway);
+                }
+
+                // Add the fall-through outedge
+                cfg->addEdge(currentBB, addr + insn.m_size);
+            } break;
+
+            case StmtType::Call: {
+                std::shared_ptr<CallStatement> call = s->as<CallStatement>();
+
+                // Check for a dynamic linked library function
+                if (refersToImportedFunction(call->getDest())) {
+                    // Dynamic linked proc pointers are treated as static.
+                    const Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
+                    const QString name       = m_program->getBinaryFile()
+                                             ->getSymbols()
+                                             ->findSymbolByAddress(linkedAddr)
+                                             ->getName();
+
+                    Function *function = proc->getProg()->getOrCreateLibraryProc(name);
+                    call->setDestProc(function);
+                    call->setIsComputed(false);
+
+                    if (function->isNoReturn() || isNoReturnCallDest(function->getName())) {
+                        sequentialDecode = false;
+                    }
+                }
+
+                const Address functionAddr = getAddrOfLibraryThunk(call, proc);
+                if (functionAddr != Address::INVALID) {
+                    // Yes, it's a library function. Look up its name.
+                    QString name = m_program->getBinaryFile()
+                                       ->getSymbols()
+                                       ->findSymbolByAddress(functionAddr)
+                                       ->getName();
+
+                    // Assign the proc to the call
+                    Function *p = m_program->getOrCreateLibraryProc(name);
+
+                    if (call->getDestProc()) {
+                        // prevent unnecessary __imp procs
+                        m_program->removeFunction(call->getDestProc()->getName());
+                    }
+
+                    call->setDestProc(p);
+                    call->setIsComputed(false);
+                    call->setDest(Location::memOf(Const::get(functionAddr)));
+
+                    if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
+                        sequentialDecode = false;
+                    }
+                }
+
+                // Treat computed and static calls separately
+                if (call->isComputed()) {
+                    BasicBlock *currentBB = cfg->createBB(BBType::CompCall, bbInsns);
+
+                    // Stop decoding sequentially if the basic block already
+                    // existed otherwise complete the basic block
                     if (currentBB == nullptr) {
                         sequentialDecode = false;
+                    }
+                    else {
+                        cfg->addEdge(currentBB, addr + insn.m_size);
+                        bbInsns.clear(); // start a new BB
+                        sequentialDecode = true;
+                    }
+                }
+                else {
+                    // Static call
+                    const Address callAddr = call->getFixedDest();
+
+                    // Calls with 0 offset (i.e. call the next instruction) are simply
+                    // pushing the PC to the stack. Treat these as non-control flow
+                    // instructions and continue.
+                    if (callAddr == addr + insn.m_size) {
                         break;
                     }
 
-                    // Add the out edge if it is to a destination within the section
-                    const Address jumpDest = jump->getFixedDest();
+                    // Record the called address as the start of a new procedure if it
+                    // didn't already exist.
+                    if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
+                        (m_program->getFunctionByAddr(callAddr) == nullptr)) {
+                        if (m_program->getProject()->getSettings()->traceDecoder) {
+                            LOG_MSG("p%1", callAddr);
+                        }
+                    }
 
-                    if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
-                        m_targetQueue.pushAddress(cfg, jumpDest, currentBB);
-                        cfg->addEdge(currentBB, jumpDest);
+                    // Check if this is the _exit or exit function. May prevent us from
+                    // attempting to decode invalid instructions, and getting invalid stack
+                    // height errors
+                    QString procName = m_program->getSymbolNameByAddr(callAddr);
+
+                    if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
+                        Address a = call->getDest()->access<Const, 1>()->getAddr();
+                        procName  = m_program->getBinaryFile()
+                                       ->getSymbols()
+                                       ->findSymbolByAddress(a)
+                                       ->getName();
+                    }
+
+                    if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
+                        // Make sure it has a return appended (so there is only one exit
+                        // from the function)
+                        cfg->createBB(BBType::Call, bbInsns);
+                        sequentialDecode = false;
                     }
                     else {
-                        LOG_WARN("Branch instruction at address %1 branches beyond end of "
-                                 "section, to %2",
-                                 addr, jumpDest);
-                        currentBB->setType(BBType::Oneway);
-                    }
+                        // Create the new basic block
+                        BasicBlock *currentBB = cfg->createBB(BBType::Call, bbInsns);
 
-                    // Add the fall-through outedge
-                    cfg->addEdge(currentBB, addr + insn.m_size);
-                } break;
-
-                case StmtType::Call: {
-                    std::shared_ptr<CallStatement> call = s->as<CallStatement>();
-
-                    // Check for a dynamic linked library function
-                    if (refersToImportedFunction(call->getDest())) {
-                        // Dynamic linked proc pointers are treated as static.
-                        const Address linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                        const QString name       = m_program->getBinaryFile()
-                                                 ->getSymbols()
-                                                 ->findSymbolByAddress(linkedAddr)
-                                                 ->getName();
-
-                        Function *function = proc->getProg()->getOrCreateLibraryProc(name);
-                        call->setDestProc(function);
-                        call->setIsComputed(false);
-
-                        if (function->isNoReturn() || isNoReturnCallDest(function->getName())) {
-                            sequentialDecode = false;
-                        }
-                    }
-
-                    const Address functionAddr = getAddrOfLibraryThunk(call, proc);
-                    if (functionAddr != Address::INVALID) {
-                        // Yes, it's a library function. Look up its name.
-                        QString name = m_program->getBinaryFile()
-                                           ->getSymbols()
-                                           ->findSymbolByAddress(functionAddr)
-                                           ->getName();
-
-                        // Assign the proc to the call
-                        Function *p = m_program->getOrCreateLibraryProc(name);
-
-                        if (call->getDestProc()) {
-                            // prevent unnecessary __imp procs
-                            m_program->removeFunction(call->getDestProc()->getName());
-                        }
-
-                        call->setDestProc(p);
-                        call->setIsComputed(false);
-                        call->setDest(Location::memOf(Const::get(functionAddr)));
-
-                        if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
-                            sequentialDecode = false;
-                        }
-                    }
-
-                    // Treat computed and static calls separately
-                    if (call->isComputed()) {
-                        BasicBlock *currentBB = cfg->createBB(BBType::CompCall, bbInsns);
-
-                        // Stop decoding sequentially if the basic block already
-                        // existed otherwise complete the basic block
-                        if (currentBB == nullptr) {
-                            sequentialDecode = false;
-                        }
-                        else {
+                        // Add the fall through edge if the block didn't
+                        // already exist
+                        if (currentBB != nullptr) {
                             cfg->addEdge(currentBB, addr + insn.m_size);
-                            bbInsns.clear(); // start a new BB
-                            sequentialDecode = true;
                         }
+
+                        // start a new bb
+                        bbInsns.clear();
+                        sequentialDecode = true;
                     }
-                    else {
-                        // Static call
-                        const Address callAddr = call->getFixedDest();
-
-                        // Calls with 0 offset (i.e. call the next instruction) are simply
-                        // pushing the PC to the stack. Treat these as non-control flow
-                        // instructions and continue.
-                        if (callAddr == addr + insn.m_size) {
-                            break;
-                        }
-
-                        // Record the called address as the start of a new procedure if it
-                        // didn't already exist.
-                        if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
-                            (m_program->getFunctionByAddr(callAddr) == nullptr)) {
-                            if (m_program->getProject()->getSettings()->traceDecoder) {
-                                LOG_MSG("p%1", callAddr);
-                            }
-                        }
-
-                        // Check if this is the _exit or exit function. May prevent us from
-                        // attempting to decode invalid instructions, and getting invalid stack
-                        // height errors
-                        QString procName = m_program->getSymbolNameByAddr(callAddr);
-
-                        if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
-                            Address a = call->getDest()->access<Const, 1>()->getAddr();
-                            procName  = m_program->getBinaryFile()
-                                           ->getSymbols()
-                                           ->findSymbolByAddress(a)
-                                           ->getName();
-                        }
-
-                        if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
-                            // Make sure it has a return appended (so there is only one exit
-                            // from the function)
-                            cfg->createBB(BBType::Call, bbInsns);
-                            sequentialDecode = false;
-                        }
-                        else {
-                            // Create the new basic block
-                            BasicBlock *currentBB = cfg->createBB(BBType::Call, bbInsns);
-
-                            // Add the fall through edge if the block didn't
-                            // already exist
-                            if (currentBB != nullptr) {
-                                cfg->addEdge(currentBB, addr + insn.m_size);
-                            }
-
-                            // start a new bb
-                            bbInsns.clear();
-                            sequentialDecode = true;
-                        }
-                    }
-                } break;
-
-                case StmtType::Ret: {
-                    cfg->createBB(BBType::Ret, bbInsns);
-                    sequentialDecode = false;
-                } break;
-
-                case StmtType::BoolAssign:
-                    // This is just an ordinary instruction; no control transfer
-                    // Fall through
-                    // FIXME: Do we need to do anything here?
-                case StmtType::Assign:
-                case StmtType::PhiAssign:
-                case StmtType::ImpAssign:
-                    // Do nothing
-                    break;
-                case StmtType::INVALID: assert(false); break;
                 }
+            } break;
 
-                // This can happen if a high-level statement (e.g. a return)
-                // is not the last statement in a rtl. Ignore the following statements.
-                if (!sequentialDecode) {
-                    break;
-                }
+            case StmtType::Ret: {
+                cfg->createBB(BBType::Ret, bbInsns);
+                sequentialDecode = false;
+            } break;
+
+            case StmtType::BoolAssign:
+                // This is just an ordinary instruction; no control transfer
+                // Fall through
+                // FIXME: Do we need to do anything here?
+            case StmtType::Assign:
+            case StmtType::PhiAssign:
+            case StmtType::ImpAssign:
+                // Do nothing
+                break;
+            case StmtType::INVALID: assert(false); break;
             }
 
             addr += insn.m_size;
