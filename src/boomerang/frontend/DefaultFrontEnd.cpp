@@ -314,7 +314,7 @@ bool DefaultFrontEnd::disassembleProc(UserProc *proc, Address addr)
 
             if (sl.empty()) {
                 addr += insn.m_size;
-                lastAddr = std::max(lastAddr, addr);
+                lastAddr         = std::max(lastAddr, addr);
                 sequentialDecode = true;
                 continue;
             }
