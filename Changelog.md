@@ -2,6 +2,7 @@ v0.6.0 (in development)
 -----------------------
 - Fixed: Crash when plugin interface constructor throws an exception.
 - Fixed: Crash when generating code for unions containing function pointers in some cases.
+- Fixed: Crash when encountering an unknown `printf` format specifier.
 - Fixed: Possible crash when assigning a BasicBlock to itself.
 - Fixed: Wrong decompilation of switch statements in some cases.
 - Fixed: When --decode-only is specified, the -gd switch has no effect.

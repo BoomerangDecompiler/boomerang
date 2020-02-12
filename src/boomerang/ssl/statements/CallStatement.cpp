@@ -1130,14 +1130,11 @@ bool CallStatement::doEllipsisProcessing()
             break;
         } while (1);
 
-        if (ch != '%') { // Don't count %%
-            n++;
-        }
-
         switch (ch) {
         case 'd':
         case 'i': // Signed integer
             addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
+            n++;
             break;
 
         case 'u':
@@ -1145,6 +1142,7 @@ bool CallStatement::doEllipsisProcessing()
         case 'X':
         case 'o': // Unsigned integer
             addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
+            n++;
             break;
 
         case 'f':
@@ -1156,18 +1154,22 @@ bool CallStatement::doEllipsisProcessing()
             // of these mean double
             // Note: may not be 64 bits for some archs
             addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);
+            n++;
             break;
 
         case 's': // String
             addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
+            n++;
             break;
 
         case 'c': // Char
             addSigParam(CharType::get(), isScanf);
+            n++;
             break;
 
         case 'p': // Pointer
             addSigParam(PointerType::get(VoidType::get()), isScanf);
+            n++;
             break;
 
         case '%': break; // Ignore %% (emits 1 percent char)
