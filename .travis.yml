@@ -1,6 +1,5 @@
 os: linux
 dist: bionic
-sudo: required
 language: cpp
 
 cache: ccache
@@ -13,7 +12,7 @@ install:
   - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-env:$TARGET tail -f /dev/null
 
 
-matrix:
+jobs:
   include:
     - name: macOS 10.13 + Unit Tests
       os: osx
