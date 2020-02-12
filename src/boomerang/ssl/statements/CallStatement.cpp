@@ -89,8 +89,8 @@ CallStatement &CallStatement::operator=(const CallStatement &other)
     GotoStatement::operator=(other);
 
     m_returnAfterCall = other.m_returnAfterCall;
-    m_procDest = other.m_procDest;
-    m_calleeReturn = other.m_calleeReturn;
+    m_procDest        = other.m_procDest;
+    m_calleeReturn    = other.m_calleeReturn;
 
     for (SharedStmt stmt : other.m_arguments) {
         m_arguments.append(stmt->clone());
@@ -928,12 +928,11 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
         // FIXME: temporary HACK! Ignores alias issues.
         if (!m_procDest->isLib() &&
             static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
-
             SharedExp ret = localiseExp(base->clone()); // Assume that it is proved as preserved
             changed       = true;
 
             LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
-                base, m_number, ret);
+                         base, m_number, ret);
             return ret;
         }
 
@@ -968,12 +967,13 @@ bool CallStatement::doEllipsisProcessing()
 
     // functions like printf almost always have too many args
     const QString calleeName = m_procDest->getName();
-    int formatstrIdx = -1;
+    int formatstrIdx         = -1;
 
     if (getNumArguments() > 0 && (calleeName == "printf" || calleeName == "scanf")) {
         formatstrIdx = 0;
     }
-    else if (getNumArguments() > 1 && (calleeName == "sprintf" || calleeName == "fprintf" || calleeName == "sscanf")) {
+    else if (getNumArguments() > 1 &&
+             (calleeName == "sprintf" || calleeName == "fprintf" || calleeName == "sscanf")) {
         formatstrIdx = 1;
     }
     else if (getNumArguments() > 0) {
@@ -1368,7 +1368,6 @@ bool CallStatement::doObjCEllipsisProcessing(const QString &formatStr)
 
     return false;
 }
-
 
 
 void CallStatement::addSigParam(SharedType ty, bool isScanf)

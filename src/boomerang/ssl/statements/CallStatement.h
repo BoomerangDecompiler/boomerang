@@ -33,7 +33,7 @@ public:
     CallStatement(Address dest);
     CallStatement(SharedExp dest);
     CallStatement(const CallStatement &other);
-    CallStatement(CallStatement &&other)      = default;
+    CallStatement(CallStatement &&other) = default;
 
     ~CallStatement() override;
 

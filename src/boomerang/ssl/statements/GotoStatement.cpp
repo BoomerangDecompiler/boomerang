@@ -57,7 +57,7 @@ void GotoStatement::setDest(SharedExp pd)
 
 void GotoStatement::setDest(Address addr)
 {
-    m_dest = Const::get(addr);
+    m_dest       = Const::get(addr);
     m_isComputed = false;
 }
 
