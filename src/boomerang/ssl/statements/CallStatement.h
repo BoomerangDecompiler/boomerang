@@ -233,9 +233,13 @@ public:
 private:
     bool doObjCEllipsisProcessing(const QString &formatStr);
 
+    /// Parses the format string and extracts all signature types.
+    /// \returns the number of new types added.
+    int parseFmtStr(const QString &fmtStr, bool isScanf);
+
     /// Private helper functions for the above
-    /// Helper function for makeArgAssign(?)
-    void addSigParam(SharedType ty, bool isScanf);
+    /// If addPointer is true, add type 'ty *' to the signature instead of type 'ty'
+    void addSigParam(SharedType ty, bool addPointer);
 
     /// Make an assign suitable for use as an argument from a callee context expression
     std::shared_ptr<Assign> makeArgAssign(SharedType ty, SharedExp e);

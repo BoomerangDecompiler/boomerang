@@ -1007,26 +1007,8 @@ void CallStatementTest::testDoEllipsisProcessing()
         sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
 
         StatementList args;
-        args.append(std::make_shared<Assign>(Location::param("fmt"), Const::get(
-            "%d"
-            "%i"
-            "%u"
-            "%o"
-            "%x"
-            "%X"
-            "%f"
-//             "%F" // TODO
-            "%e"
-            "%E"
-            "%g"
-            "%G"
-//             "%a" // TODO
-//             "%A" // TODO
-            "%c"
-            "%s"
-            "%p"
-            "%%"
-        )));
+        args.append(std::make_shared<Assign>(Location::param("fmt"),
+            Const::get("%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%")));
 
         std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->setArguments(args);
@@ -1037,7 +1019,7 @@ void CallStatementTest::testDoEllipsisProcessing()
         QVERIFY(call->doEllipsisProcessing());
 
         const QString expected =
-            "   0 *v* fmt := \"%d%i%u%o%x%X%f%e%E%g%G%c%s%p%%\",\t"
+            "   0 *v* fmt := \"%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%\",\t"
             "   0 *i32* m[r28{-} + 8] := m[r28{-} + 8]{-},\t"    // %d
             "   0 *i32* m[r28{-} + 12] := m[r28{-} + 12]{-},\t"  // %i
             "   0 *u32* m[r28{-} + 16] := m[r28{-} + 16]{-},\t"  // %u
@@ -1045,15 +1027,18 @@ void CallStatementTest::testDoEllipsisProcessing()
             "   0 *u32* m[r28{-} + 24] := m[r28{-} + 24]{-},\t"  // %x
             "   0 *u32* m[r28{-} + 28] := m[r28{-} + 28]{-},\t"  // %X
             "   0 *f64* m[r28{-} + 32] := m[r28{-} + 32]{-},\t"  // %f (f64 beause printf)
-            "   0 *f64* m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %e
-            "   0 *f64* m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %E
-            "   0 *f64* m[r28{-} + 44] := m[r28{-} + 44]{-},\t"  // %g
-            "   0 *f64* m[r28{-} + 48] := m[r28{-} + 48]{-},\t"  // %G
-            "   0 *c* m[r28{-} + 52] := m[r28{-} + 52]{-},\t"    // %c
-            "   0 *[c]** m[r28{-} + 56] := m[r28{-} + 56]{-},\t" // %s
-            "   0 *v** m[r28{-} + 60] := m[r28{-} + 60]{-}";     // %p
+            "   0 *f64* m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %F (f64 beause printf)
+            "   0 *f64* m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %e
+            "   0 *f64* m[r28{-} + 44] := m[r28{-} + 44]{-},\t"  // %E
+            "   0 *f64* m[r28{-} + 48] := m[r28{-} + 48]{-},\t"  // %g
+            "   0 *f64* m[r28{-} + 52] := m[r28{-} + 52]{-},\t"  // %G
+            "   0 *f64* m[r28{-} + 56] := m[r28{-} + 56]{-},\t"  // %a
+            "   0 *f64* m[r28{-} + 60] := m[r28{-} + 60]{-},\t"  // %A
+            "   0 *c* m[r28{-} + 64] := m[r28{-} + 64]{-},\t"    // %c
+            "   0 *[c]** m[r28{-} + 68] := m[r28{-} + 68]{-},\t" // %s
+            "   0 *v** m[r28{-} + 72] := m[r28{-} + 72]{-}";     // %p
 
-        QCOMPARE(call->getNumArguments(), 15);
+        QCOMPARE(call->getNumArguments(), 18);
         QCOMPARE(call->getArguments().toString(), expected);
     }
 
@@ -1065,26 +1050,8 @@ void CallStatementTest::testDoEllipsisProcessing()
         sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
 
         StatementList args;
-        args.append(std::make_shared<Assign>(Location::param("fmt"), Const::get(
-            "%d"
-            "%i"
-            "%u"
-            "%o"
-            "%x"
-            "%X"
-            "%f"
-//             "%F" // TODO
-            "%e"
-            "%E"
-            "%g"
-            "%G"
-//             "%a" // TODO
-//             "%A" // TODO
-            "%c"
-            "%s"
-            "%p"
-            "%%"
-        )));
+        args.append(std::make_shared<Assign>(Location::param("fmt"),
+            Const::get("%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%")));
 
         std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
         call->setArguments(args);
@@ -1095,23 +1062,21 @@ void CallStatementTest::testDoEllipsisProcessing()
         QVERIFY(call->doEllipsisProcessing());
 
         const QString expected =
-            "   0 *v* fmt := \"%d%i%u%o%x%X%f%e%E%g%G%c%s%p%%\",\t"
+            "   0 *v* fmt := \"%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%\",\t"
             "   0 *i32** m[r28{-} + 8] := m[r28{-} + 8]{-},\t"    // %d
             "   0 *i32** m[r28{-} + 12] := m[r28{-} + 12]{-},\t"  // %i
             "   0 *u32** m[r28{-} + 16] := m[r28{-} + 16]{-},\t"  // %u
             "   0 *u32** m[r28{-} + 20] := m[r28{-} + 20]{-},\t"  // %o
             "   0 *u32** m[r28{-} + 24] := m[r28{-} + 24]{-},\t"  // %x
-            "   0 *u32** m[r28{-} + 28] := m[r28{-} + 28]{-},\t"  // %X
-            "   0 *f32** m[r28{-} + 32] := m[r28{-} + 32]{-},\t"  // %f (f32 beause scanf)
-            "   0 *f32** m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %e
-            "   0 *f32** m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %E
-            "   0 *f32** m[r28{-} + 44] := m[r28{-} + 44]{-},\t"  // %g
-            "   0 *f32** m[r28{-} + 48] := m[r28{-} + 48]{-},\t"  // %G
-            "   0 *c** m[r28{-} + 52] := m[r28{-} + 52]{-},\t"    // %c
-            "   0 *[c]*** m[r28{-} + 56] := m[r28{-} + 56]{-},\t" // %s
-            "   0 *v*** m[r28{-} + 60] := m[r28{-} + 60]{-}";     // %p
+            "   0 *f32** m[r28{-} + 28] := m[r28{-} + 28]{-},\t"  // %f (f32 beause scanf)
+            "   0 *f32** m[r28{-} + 32] := m[r28{-} + 32]{-},\t"  // %e
+            "   0 *f32** m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %g
+            "   0 *f32** m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %a
+            "   0 *c** m[r28{-} + 44] := m[r28{-} + 44]{-},\t"    // %c
+            "   0 *[c]*** m[r28{-} + 48] := m[r28{-} + 48]{-},\t" // %s
+            "   0 *v*** m[r28{-} + 52] := m[r28{-} + 52]{-}";     // %p
 
-        QCOMPARE(call->getNumArguments(), 15);
+        QCOMPARE(call->getNumArguments(), 13);
         QCOMPARE(call->getArguments().toString(), expected);
     }
 }

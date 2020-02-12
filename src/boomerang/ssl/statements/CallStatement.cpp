@@ -40,6 +40,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
+#include <QRegularExpression>
 #include <QTextStreamManipulator>
 
 
@@ -1060,131 +1061,173 @@ bool CallStatement::doEllipsisProcessing()
     }
 
     // actually have to parse it
-    // Format string is: % [flags] [width] [.precision] [size] type
-    int n = 1; // Count the format string itself (may also be "format" more arguments)
-    char ch;
-    // Set a flag if the name of the function is scanf/sscanf/fscanf
     const bool isScanf = calleeName.contains("scanf");
-    int p_idx          = 0;
+    const int n        = parseFmtStr(formatStr, isScanf);
 
-    // TODO: use qregularexpression to match scanf arguments
-    while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
-        p_idx++;               // Point past the %
-        bool veryLong = false; // %lld or %L
-
-        do {
-            ch = formatStr[p_idx++].toLatin1(); // Skip size and precisionA
-
-            switch (ch) {
-            case '*':
-                // Example: printf("Val: %*.*f\n", width, precision, val);
-                // There is an extra parameter for the width or precision
-                n++;
-
-                // This extra parameter is of type integer, never int*
-                // (so pass false as last argument)
-                addSigParam(IntegerType::get(STD_SIZE), false);
-                continue;
-
-            case '-':
-            case '+':
-            case '#':
-            case ' ':
-                // Flag. Ignore
-                continue;
-
-            case '.':
-                // Separates width and precision. Ignore.
-                continue;
-
-            case 'h':
-            case 'l':
-
-                // size of half or long. Argument is usually still one word. Ignore.
-                // Exception: %llx
-                // TODO: handle architectures where l implies two words
-                // TODO: at least h has implications for scanf
-                if (formatStr[p_idx] == 'l') {
-                    // %llx
-                    p_idx++; // Skip second l
-                    veryLong = true;
-                }
-
-                continue;
-
-            case 'L':
-                // long. TODO: handle L for long doubles.
-                // n++;        // At least chew up one more parameter so later types are correct
-                veryLong = true;
-                continue;
-
-            default:
-
-                if (('0' <= ch) && (ch <= '9')) {
-                    continue; // width or precision
-                }
-
-                break; // Else must be format type, handled below
-            }
-
-            break;
-        } while (1);
-
-        switch (ch) {
-        case 'd':
-        case 'i': // Signed integer
-            addSigParam(IntegerType::get(veryLong ? 64 : 32, Sign::Signed), isScanf);
-            n++;
-            break;
-
-        case 'u':
-        case 'x':
-        case 'X':
-        case 'o': // Unsigned integer
-            addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
-            n++;
-            break;
-
-        case 'f':
-        case 'g':
-        case 'G':
-        case 'e':
-        case 'E': // Various floating point formats
-            // Note that for scanf, %f means float, and %lf means double, whereas for printf, both
-            // of these mean double
-            // Note: may not be 64 bits for some archs
-            addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);
-            n++;
-            break;
-
-        case 's': // String
-            addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
-            n++;
-            break;
-
-        case 'c': // Char
-            addSigParam(CharType::get(), isScanf);
-            n++;
-            break;
-
-        case 'p': // Pointer
-            addSigParam(PointerType::get(VoidType::get()), isScanf);
-            n++;
-            break;
-
-        case '%': break; // Ignore %% (emits 1 percent char)
-
-        default:
-            LOG_ERROR("Unhandled format character %1 in format string for call %2", ch,
-                      shared_from_this());
-            break;
-        }
-    }
-
-    setNumArguments(formatstrIdx + n);
+    setNumArguments((formatstrIdx + 1) + n);
     m_signature->setHasEllipsis(false); // So we don't do this again
 
     return true;
+}
+
+
+int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
+{
+    QRegularExpression re("%(?<flags>[+-0 #]*)"
+                          "(?<width>[0-9\\.\\*]*)"
+                          "(?<mod>[hlLzjt]*)"
+                          "(?<spec>[%diufFeEgGxXaAoscpn])");
+
+    auto it = re.globalMatch(fmtStr);
+    int n   = 0;
+
+    while (it.hasNext()) {
+        auto match = it.next();
+
+        const QString mod = match.captured("mod");
+        const char spec   = match.captured("spec")[0].toLatin1();
+
+        switch (spec) {
+        case 'd':
+        case 'i':
+            if (mod == "") {
+                addSigParam(IntegerType::get(32, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "hh") {
+                addSigParam(IntegerType::get(8, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "h") {
+                addSigParam(IntegerType::get(16, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "l") {
+                addSigParam(IntegerType::get(32, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "ll") {
+                addSigParam(IntegerType::get(64, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "j") {
+                addSigParam(IntegerType::get(32, Sign::Signed), isScanf);
+                n++;
+            }
+            else if (mod == "z") {
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Unsigned), isScanf);
+                n++; // size_t
+            }
+            else if (mod == "t") {
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Signed), isScanf);
+                n++; // ptrdiff_t
+            }
+            break;
+
+        case 'X':
+            if (isScanf) {
+                break; // not valid for scanf
+            }
+            // fallthrough
+        case 'u':
+        case 'o':
+        case 'x':
+            if (mod == "") {
+                addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "hh") {
+                addSigParam(IntegerType::get(8, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "h") {
+                addSigParam(IntegerType::get(16, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "l") {
+                addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "ll") {
+                addSigParam(IntegerType::get(64, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "j") {
+                addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
+                n++;
+            }
+            else if (mod == "z") {
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Unsigned), isScanf);
+                n++; // size_t
+            }
+            else if (mod == "t") {
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Signed), isScanf);
+                n++; // ptrdiff_t
+            }
+            break;
+
+        case 'A':
+        case 'E':
+        case 'F':
+        case 'G':
+            if (isScanf) {
+                break; // these are not valid for scanf
+            }
+            // fallthrough
+        case 'a':
+        case 'f':
+        case 'e':
+        case 'g':
+            if (mod == "") {
+                addSigParam(FloatType::get(isScanf ? 32 : 64), isScanf);
+                n++;
+            }
+            else if (mod == "L") {
+                addSigParam(FloatType::get(128), isScanf);
+                n++;
+            }
+            else if (mod == "l" && isScanf) {
+                addSigParam(FloatType::get(64), true);
+                n++;
+            }
+            break;
+
+        case 'c':
+            if (mod == "") {
+                addSigParam(CharType::get(), isScanf);
+                n++;
+            }
+            // TODO: handle %lc
+            break;
+
+        case 's':
+            if (mod == "") {
+                addSigParam(PointerType::get(ArrayType::get(CharType::get())), false);
+                n++;
+            }
+            // TODO: handle %ls
+            break;
+
+        case 'p':
+            if (mod == "") {
+                addSigParam(PointerType::get(VoidType::get()), isScanf);
+                n++;
+            }
+            break;
+
+        case 'n':
+            if (mod == "") {
+                addSigParam(IntegerType::get(32, Sign::Signed), true);
+                n++;
+            }
+            // TODO: %hhn, %hn etc.
+            break;
+
+        case '%': break;
+        }
+    }
+
+    return n;
 }
 
 
