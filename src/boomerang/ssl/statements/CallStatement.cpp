@@ -1078,9 +1078,11 @@ bool CallStatement::doEllipsisProcessing()
             switch (ch) {
             case '*':
                 // Example: printf("Val: %*.*f\n", width, precision, val);
-                n++; // There is an extra parameter for the width or precision
-                // This extra parameter is of type integer, never int* (so pass false as last
-                // argument)
+                // There is an extra parameter for the width or precision
+                n++;
+
+                // This extra parameter is of type integer, never int*
+                // (so pass false as last argument)
                 addSigParam(IntegerType::get(STD_SIZE), false);
                 continue;
 
@@ -1171,8 +1173,9 @@ bool CallStatement::doEllipsisProcessing()
         case '%': break; // Ignore %% (emits 1 percent char)
 
         default:
-            LOG_WARN("Unhandled format character %1 in format string for call %2", ch,
-                     shared_from_this());
+            LOG_ERROR("Unhandled format character %1 in format string for call %2", ch,
+                      shared_from_this());
+            break;
         }
     }
 
