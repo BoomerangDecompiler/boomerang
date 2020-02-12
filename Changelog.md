@@ -20,6 +20,7 @@ v0.6.0 (in development)
 - Improved: Instruction semantics definition format.
 - Improved: Dot file output (-gd) now also outputs machine instructions (not just IR).
 - Improved: CMake configuration speed.
+- Improved: Unit test coverage.
 - Changed: Renamed pentium -> x86.
 - Removed: SPARC support.
 - Removed: Deprecated '-p N' switch.
