@@ -25,11 +25,15 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/LocationSet.h"
 
+
+Q_DECLARE_METATYPE(std::vector<SharedType>)
 
 void CallStatementTest::testClone()
 {
@@ -842,7 +846,6 @@ void CallStatementTest::testBypassRef()
 void CallStatementTest::testDoEllipsisProcessing()
 {
     Prog prog("test", &m_project);
-    UserProc *srcProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
     LibProc *destProc = prog.getOrCreateLibraryProc("destProc");
 
     const SharedExp eax = Location::regOf(REG_X86_EAX);
@@ -998,87 +1001,180 @@ void CallStatementTest::testDoEllipsisProcessing()
 
         QVERIFY(call->doEllipsisProcessing());
     }
+}
 
-    {
-        destProc->setName("printf");
-        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "printf");
-        sig->setHasEllipsis(true);
 
-        sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
+void CallStatementTest::testDoEllipsisProcessingFmt()
+{
+    QFETCH(QString, calleeName);
+    QFETCH(QString, fmtStr);
+    QFETCH(std::vector<SharedType>, types);
 
-        StatementList args;
-        args.append(std::make_shared<Assign>(Location::param("fmt"),
-            Const::get("%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%")));
+    Prog prog("test", &m_project);
+    UserProc *srcProc = static_cast<UserProc *>(prog.getOrCreateFunction(Address(0x1000)));
+    LibProc *destProc = prog.getOrCreateLibraryProc(calleeName);
 
-        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
-        call->setArguments(args);
-        call->setDestProc(destProc);
-        call->setSignature(sig);
-        call->setProc(srcProc);
+    std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, calleeName);
+    sig->setHasEllipsis(true);
 
-        QVERIFY(call->doEllipsisProcessing());
+    sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
 
-        const QString expected =
-            "   0 *v* fmt := \"%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%\",\t"
-            "   0 *i32* m[r28{-} + 8] := m[r28{-} + 8]{-},\t"    // %d
-            "   0 *i32* m[r28{-} + 12] := m[r28{-} + 12]{-},\t"  // %i
-            "   0 *u32* m[r28{-} + 16] := m[r28{-} + 16]{-},\t"  // %u
-            "   0 *u32* m[r28{-} + 20] := m[r28{-} + 20]{-},\t"  // %o
-            "   0 *u32* m[r28{-} + 24] := m[r28{-} + 24]{-},\t"  // %x
-            "   0 *u32* m[r28{-} + 28] := m[r28{-} + 28]{-},\t"  // %X
-            "   0 *f64* m[r28{-} + 32] := m[r28{-} + 32]{-},\t"  // %f (f64 beause printf)
-            "   0 *f64* m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %F (f64 beause printf)
-            "   0 *f64* m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %e
-            "   0 *f64* m[r28{-} + 44] := m[r28{-} + 44]{-},\t"  // %E
-            "   0 *f64* m[r28{-} + 48] := m[r28{-} + 48]{-},\t"  // %g
-            "   0 *f64* m[r28{-} + 52] := m[r28{-} + 52]{-},\t"  // %G
-            "   0 *f64* m[r28{-} + 56] := m[r28{-} + 56]{-},\t"  // %a
-            "   0 *f64* m[r28{-} + 60] := m[r28{-} + 60]{-},\t"  // %A
-            "   0 *c* m[r28{-} + 64] := m[r28{-} + 64]{-},\t"    // %c
-            "   0 *[c]** m[r28{-} + 68] := m[r28{-} + 68]{-},\t" // %s
-            "   0 *v** m[r28{-} + 72] := m[r28{-} + 72]{-}";     // %p
+    StatementList args;
+    args.append(std::make_shared<Assign>(Location::param("fmt"), Const::get(fmtStr)));
 
-        QCOMPARE(call->getNumArguments(), 18);
-        QCOMPARE(call->getArguments().toString(), expected);
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    call->setArguments(args);
+    call->setDestProc(destProc);
+    call->setSignature(sig);
+    call->setProc(srcProc);
+
+    QVERIFY(call->doEllipsisProcessing());
+
+    QString expected = "   0 *v* fmt := \"" + fmtStr + "\"";
+
+    if (!types.empty()) {
+        for (int i = 0; i < (int)types.size(); ++i) {
+            const QString memOf = "m[r28{-} + " + QString::number(8+4*i) + "]";
+
+            expected += ",\t";
+            expected += "   0 *" + types[i]->toString() + "* " + memOf + " := " + memOf + "{-}";
+        }
     }
 
-    {
-        destProc->setName("scanf");
-        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::X86, CallConv::C, "scanf");
-        sig->setHasEllipsis(true);
+    QCOMPARE(call->getArguments().toString(), expected);
+    QCOMPARE(call->getNumArguments(), (int)types.size() + 1);
+}
 
-        sig->addParameter(Location::param("fmt"), PointerType::get(CharType::get()));
 
-        StatementList args;
-        args.append(std::make_shared<Assign>(Location::param("fmt"),
-            Const::get("%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%")));
+#define TEST_FMTSTR(fname, fmtStr, types) \
+    QTest::newRow(fname "(\"" fmtStr "\", ...)") << QString(fname) << QString(fmtStr) << std::vector<SharedType> types;
 
-        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
-        call->setArguments(args);
-        call->setDestProc(destProc);
-        call->setSignature(sig);
-        call->setProc(srcProc);
+void CallStatementTest::testDoEllipsisProcessingFmt_data()
+{
+    QTest::addColumn<QString>("calleeName");
+    QTest::addColumn<QString>("fmtStr");
+    QTest::addColumn<std::vector<SharedType>>("types");
 
-        QVERIFY(call->doEllipsisProcessing());
+    // printf
+    TEST_FMTSTR("printf", "%d",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%i",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%hhd",  ({ IntegerType::get(8,  Sign::Signed) }));
+    TEST_FMTSTR("printf", "%hd",   ({ IntegerType::get(16, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%ld",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%lld",  ({ IntegerType::get(64, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%jd",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%zd",   ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%td",   ({ IntegerType::get(32, Sign::Signed) }));
 
-        const QString expected =
-            "   0 *v* fmt := \"%d %i %u %o %x %X %f %F %e %E %g %G %a %A %c %s %p %%\",\t"
-            "   0 *i32** m[r28{-} + 8] := m[r28{-} + 8]{-},\t"    // %d
-            "   0 *i32** m[r28{-} + 12] := m[r28{-} + 12]{-},\t"  // %i
-            "   0 *u32** m[r28{-} + 16] := m[r28{-} + 16]{-},\t"  // %u
-            "   0 *u32** m[r28{-} + 20] := m[r28{-} + 20]{-},\t"  // %o
-            "   0 *u32** m[r28{-} + 24] := m[r28{-} + 24]{-},\t"  // %x
-            "   0 *f32** m[r28{-} + 28] := m[r28{-} + 28]{-},\t"  // %f (f32 beause scanf)
-            "   0 *f32** m[r28{-} + 32] := m[r28{-} + 32]{-},\t"  // %e
-            "   0 *f32** m[r28{-} + 36] := m[r28{-} + 36]{-},\t"  // %g
-            "   0 *f32** m[r28{-} + 40] := m[r28{-} + 40]{-},\t"  // %a
-            "   0 *c** m[r28{-} + 44] := m[r28{-} + 44]{-},\t"    // %c
-            "   0 *[c]*** m[r28{-} + 48] := m[r28{-} + 48]{-},\t" // %s
-            "   0 *v*** m[r28{-} + 52] := m[r28{-} + 52]{-}";     // %p
+    TEST_FMTSTR("printf", "%u",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%o",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%x",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%X",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%hhu",  ({ IntegerType::get(8,  Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%hu",   ({ IntegerType::get(16, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%lu",   ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%llu",  ({ IntegerType::get(64, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%ju",   ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%zu",   ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%tu",   ({ IntegerType::get(32, Sign::Signed) }));
 
-        QCOMPARE(call->getNumArguments(), 13);
-        QCOMPARE(call->getArguments().toString(), expected);
-    }
+    TEST_FMTSTR("printf", "%f",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%F",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%e",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%E",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%g",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%G",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%a",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%A",    ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%Lf",   ({ FloatType::get(128) }));
+
+    TEST_FMTSTR("printf", "%c",    ({ CharType::get() }));
+//     TEST_FMTSTR("printf", "%lc",   ({ IntegerType::get(32) })); // wint_t
+
+    TEST_FMTSTR("printf", "%s",    ({ PointerType::get(ArrayType::get(CharType::get())) }));
+
+    TEST_FMTSTR("printf", "%p",    ({ PointerType::get(VoidType::get()) }));
+
+    TEST_FMTSTR("printf", "%n",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%hhn",  ({ PointerType::get(IntegerType::get(8, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%hn",   ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%ln",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%lln",  ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%jn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("printf", "%zn",   ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+//     TEST_FMTSTR("printf", "%tn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+
+    // printf flags
+    TEST_FMTSTR("printf", "%-d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%+d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "% d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%#d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%0d",   ({ IntegerType::get(32, Sign::Signed) }));
+
+    // printf width / precision
+    TEST_FMTSTR("printf", "%10d",  ({ IntegerType::get(32, Sign::Signed) }));
+//     TEST_FMTSTR("printf", "%*u",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Unsigned) }));
+
+    TEST_FMTSTR("printf", "%.10G",  ({ FloatType::get(64) }));
+//     TEST_FMTSTR("printf", "%.*G",   ({ IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
+
+    TEST_FMTSTR("printf", "%3.14G",  ({ FloatType::get(64) }));
+//     TEST_FMTSTR("printf", "%*.*G",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
+
+    TEST_FMTSTR("printf", "%%",     ({ }));
+
+    // scanf
+    TEST_FMTSTR("scanf", "%d",      ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%i",      ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%hhd",    ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%hd",     ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%ld",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%lld",    ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%jd",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%zd",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%td",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+
+    TEST_FMTSTR("scanf", "%u",      ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%o",      ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%x",      ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%hhu",    ({ PointerType::get(IntegerType::get(8,  Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%hu",     ({ PointerType::get(IntegerType::get(16, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%lu",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%llu",    ({ PointerType::get(IntegerType::get(64, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%ju",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%zu",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%tu",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+
+    TEST_FMTSTR("scanf", "%a",      ({ PointerType::get(FloatType::get(32))  }));
+    TEST_FMTSTR("scanf", "%e",      ({ PointerType::get(FloatType::get(32))  }));
+    TEST_FMTSTR("scanf", "%f",      ({ PointerType::get(FloatType::get(32))  }));
+    TEST_FMTSTR("scanf", "%g",      ({ PointerType::get(FloatType::get(32))  }));
+    TEST_FMTSTR("scanf", "%lf",     ({ PointerType::get(FloatType::get(64))  }));
+    TEST_FMTSTR("scanf", "%Lf",     ({ PointerType::get(FloatType::get(128)) }));
+
+    TEST_FMTSTR("scanf", "%c",      ({ PointerType::get(CharType::get()) }));
+    TEST_FMTSTR("scanf", "%s",      ({ PointerType::get(ArrayType::get(CharType::get())) }));
+//     TEST_FMTSTR("scanf", "%[]",     ({ PointerType::get(CharType::get()) }));
+//     TEST_FMTSTR("scanf", "%[baz]",  ({ PointerType::get(CharType::get()) }));
+//     TEST_FMTSTR("scanf", "%[^]",    ({ PointerType::get(CharType::get()) }));
+//     TEST_FMTSTR("scanf", "%[^baz]", ({ PointerType::get(CharType::get()) }));
+
+    TEST_FMTSTR("scanf", "%p",      ({ PointerType::get(PointerType::get(VoidType::get())) }));
+
+    TEST_FMTSTR("scanf", "%n",      ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%hhn",    ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%hn",     ({ PointerType::get(IntegerType::get(15, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%ln",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%lln",    ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%jn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%zn",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+//     TEST_FMTSTR("scanf", "%tn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+
+    TEST_FMTSTR("scanf", "%%",      ({ }));
+
+//     TEST_FMTSTR("scanf", "%*d",     ({ }));
+    TEST_FMTSTR("scanf", "%10d",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+//     TEST_FMTSTR("scanf", "%*10ld",  ({ }));
 }
 
 

@@ -54,6 +54,7 @@ private slots:
     void testLocaliseComp();
     void testBypassRef();
     void testDoEllipsisProcessing();
+    void testDoEllipsisProcessingFmt();
+    void testDoEllipsisProcessingFmt_data();
     void testTryConvertToDirect();
-
 };
