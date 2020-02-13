@@ -1073,10 +1073,18 @@ bool CallStatement::doEllipsisProcessing()
 
 int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
 {
-    QRegularExpression re("%(?<flags>[+-0 #]*)"
-                          "(?<width>[0-9\\.\\*]*)"
-                          "(?<mod>[hlLzjt]*)"
-                          "(?<spec>[%diufFeEgGxXaAoscpn])");
+    // clang-format off
+    const QRegularExpression re(
+        "%("                                 // '%' followed by either ...
+          "(?<flags>[+-0 #]*)"               //   flags (opt), ...
+          "(?<width>([0-9\\*]*))"            //   width (opt, digits or *), ...
+          "(?<prec>((\\.[0-9\\*]+)?))"       //   precision (opt, dot followed by digits or *), ...
+          "(?<mod>[hlLzjt]*)"                //   size modifier (opt), and ...
+          "(?<spec>([%diufFeEgGxXaAoscpn]))" //   the actual specifier, ...
+        "|"                                  // or ...
+          "(?<list>l?\\[\\^?[^\\]]+\\])"     //   a list of characters to (not) match (scanf only)
+        ")");
+    // clang-format on
 
     auto it = re.globalMatch(fmtStr);
     int n   = 0;
@@ -1084,8 +1092,39 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
     while (it.hasNext()) {
         auto match = it.next();
 
-        const QString mod = match.captured("mod");
-        const char spec   = match.captured("spec")[0].toLatin1();
+        const QString width = match.captured("width");
+        const QString prec  = match.captured("prec");
+        const QString mod   = match.captured("mod");
+        const QString list  = match.captured("list");
+
+        const char spec = match.captured("spec")[0].toLatin1();
+
+        if (isScanf && list != "") {
+            if (list[0] == "l") {
+                addSigParam(ArrayType::get(IntegerType::get(16, Sign::Signed)), true); // wchar_t
+                n++;
+            }
+            else {
+                addSigParam(ArrayType::get(CharType::get()), true);
+                n++;
+            }
+
+            continue;
+        }
+
+        if (isScanf && width.startsWith("*")) { // We have something like %*3d. No output parameter.
+            continue;
+        }
+
+        if (width == "*") {
+            addSigParam(IntegerType::get(32, Sign::Signed), false);
+            n++;
+        }
+
+        if (prec == ".*") {
+            addSigParam(IntegerType::get(32, Sign::Signed), false);
+            n++;
+        }
 
         switch (spec) {
         case 'd':
@@ -1220,7 +1259,34 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
                 addSigParam(IntegerType::get(32, Sign::Signed), true);
                 n++;
             }
-            // TODO: %hhn, %hn etc.
+            else if (mod == "hh") {
+                addSigParam(IntegerType::get(8, Sign::Signed), true);
+                n++;
+            }
+            else if (mod == "h") {
+                addSigParam(IntegerType::get(16, Sign::Signed), true);
+                n++;
+            }
+            else if (mod == "l") {
+                addSigParam(IntegerType::get(32, Sign::Signed), true);
+                n++;
+            }
+            else if (mod == "ll") {
+                addSigParam(IntegerType::get(64, Sign::Signed), true);
+                n++;
+            }
+            else if (mod == "j") {
+                addSigParam(IntegerType::get(32, Sign::Signed), true);
+                n++;
+            }
+            else if (mod == "z") {
+                addSigParam(IntegerType::get(32, Sign::Unsigned), true);
+                n++;
+            }
+            else if (mod == "t") {
+                addSigParam(IntegerType::get(32, Sign::Signed), true);
+                n++;
+            }
             break;
 
         case '%': break;

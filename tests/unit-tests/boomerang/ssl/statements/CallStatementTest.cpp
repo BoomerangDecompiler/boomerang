@@ -1096,13 +1096,13 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     TEST_FMTSTR("printf", "%p",    ({ PointerType::get(VoidType::get()) }));
 
     TEST_FMTSTR("printf", "%n",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%hhn",  ({ PointerType::get(IntegerType::get(8, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%hn",   ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%ln",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%lln",  ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%jn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("printf", "%zn",   ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
-//     TEST_FMTSTR("printf", "%tn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%hhn",  ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%hn",   ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%ln",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%lln",  ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%jn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%zn",   ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("printf", "%tn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
 
     // printf flags
     TEST_FMTSTR("printf", "%-d",   ({ IntegerType::get(32, Sign::Signed) }));
@@ -1113,13 +1113,13 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
 
     // printf width / precision
     TEST_FMTSTR("printf", "%10d",  ({ IntegerType::get(32, Sign::Signed) }));
-//     TEST_FMTSTR("printf", "%*u",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%*u",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Unsigned) }));
 
     TEST_FMTSTR("printf", "%.10G",  ({ FloatType::get(64) }));
-//     TEST_FMTSTR("printf", "%.*G",   ({ IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%.*G",   ({ IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
 
     TEST_FMTSTR("printf", "%3.14G",  ({ FloatType::get(64) }));
-//     TEST_FMTSTR("printf", "%*.*G",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%*.*G",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
 
     TEST_FMTSTR("printf", "%%",     ({ }));
 
@@ -1154,27 +1154,27 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
 
     TEST_FMTSTR("scanf", "%c",      ({ PointerType::get(CharType::get()) }));
     TEST_FMTSTR("scanf", "%s",      ({ PointerType::get(ArrayType::get(CharType::get())) }));
-//     TEST_FMTSTR("scanf", "%[]",     ({ PointerType::get(CharType::get()) }));
-//     TEST_FMTSTR("scanf", "%[baz]",  ({ PointerType::get(CharType::get()) }));
-//     TEST_FMTSTR("scanf", "%[^]",    ({ PointerType::get(CharType::get()) }));
-//     TEST_FMTSTR("scanf", "%[^baz]", ({ PointerType::get(CharType::get()) }));
+    TEST_FMTSTR("scanf", "%[baz]",  ({ PointerType::get(ArrayType::get(CharType::get())) }));
+    TEST_FMTSTR("scanf", "%[^baz]", ({ PointerType::get(ArrayType::get(CharType::get())) }));
+//     TEST_FMTSTR("scanf", "%l[baz]", ({ PointerType::get(ArrayType::get(CharType::get())) }));
+//     TEST_FMTSTR("scanf", "%l[^baz]",({ PointerType::get(ArrayType::get(CharType::get())) }));
 
     TEST_FMTSTR("scanf", "%p",      ({ PointerType::get(PointerType::get(VoidType::get())) }));
 
     TEST_FMTSTR("scanf", "%n",      ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%hhn",    ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%hn",     ({ PointerType::get(IntegerType::get(15, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%ln",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%lln",    ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%jn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%zn",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
-//     TEST_FMTSTR("scanf", "%tn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%hhn",    ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%hn",     ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%ln",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%lln",    ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%jn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%zn",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("scanf", "%tn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
 
     TEST_FMTSTR("scanf", "%%",      ({ }));
 
-//     TEST_FMTSTR("scanf", "%*d",     ({ }));
+    TEST_FMTSTR("scanf", "%*d",     ({ }));
     TEST_FMTSTR("scanf", "%10d",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-//     TEST_FMTSTR("scanf", "%*10ld",  ({ }));
+    TEST_FMTSTR("scanf", "%*10ld",  ({ }));
 }
 
 
