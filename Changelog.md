@@ -19,6 +19,7 @@ v0.6.0 (in development)
 - Feature: Separate disassembly and lifting of machine instructions.
 - Improved: Instruction semantics definition format.
 - Improved: Dot file output (-gd) now also outputs machine instructions (not just IR).
+- Improved: Detection of types from format specifiers of `printf`-like and `scanf`-like functions.
 - Improved: CMake configuration speed.
 - Improved: Unit test coverage.
 - Changed: Renamed pentium -> x86.
