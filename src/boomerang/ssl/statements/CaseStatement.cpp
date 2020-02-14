@@ -113,8 +113,11 @@ SharedStmt CaseStatement::clone() const
 
     if (m_switchInfo) {
         ret->m_switchInfo.reset(new SwitchInfo);
-        *ret->m_switchInfo           = *m_switchInfo;
-        ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
+        *ret->m_switchInfo = *m_switchInfo;
+
+        if (m_switchInfo->switchExp) {
+            ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
+        }
     }
 
     return ret;
