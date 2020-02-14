@@ -446,8 +446,10 @@ void ReturnStatement::updateModifieds()
             continue; // Not in collector: delete it (don't copy it)
         }
 
+        // can happen e.g. when we can prove a function preserves an exp
+        // when we could not do this before, e.g. after propagation
         if (!m_proc->canBeReturn(lhs)) {
-            continue; // Filtered out: delete it
+            continue;
         }
 
         m_modifieds.append(asgn);
@@ -463,6 +465,8 @@ void ReturnStatement::updateModifieds()
 
 void ReturnStatement::updateReturns()
 {
+    assert(m_proc != nullptr);
+
     auto sig     = m_proc->getSignature();
     const int sp = sig->getStackRegister();
 
@@ -470,8 +474,8 @@ void ReturnStatement::updateReturns()
     m_returns.clear();
 
     // For each location in the modifieds, make sure that there is an assignment in the old returns,
-    // which will be filtered and sorted to become the new returns Ick... O(N*M) (N existing
-    // returns, M modifieds locations)
+    // which will be filtered and sorted to become the new returns
+    // Ick... O(N*M) (N existing returns, M modifieds locations)
     for (SharedStmt stmt : m_modifieds) {
         bool found    = false;
         SharedExp loc = stmt->as<Assignment>()->getLeft();
@@ -525,7 +529,7 @@ void ReturnStatement::updateReturns()
 
         if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() &&
             (*rhs->getSubExp1() == *lhs)) {
-            continue; // Filter out the preserveds
+            continue;
         }
 
         m_returns.append(asgn);

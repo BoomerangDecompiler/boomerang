@@ -125,7 +125,7 @@ public:
 protected:
     /// Native address of the (only) return instruction.
     /// Needed for branching to this only return statement
-    Address m_retAddr;
+    Address m_retAddr = Address::INVALID;
 
     /// The progression of return information is as follows:
     /// - First, reaching definitions are collected in the DefCollector \ref m_col.

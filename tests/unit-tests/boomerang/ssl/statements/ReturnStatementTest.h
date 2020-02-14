@@ -24,4 +24,12 @@ private slots:
     void testSearch();
     void testSearchAll();
     void testSearchAndReplace();
+    void testTypeForExp(); // get/setTypeForExp
+    void testSimplify();
+    void testGetNumReturns();
+    void testUpdateModifieds();
+    void testUpdateReturns();
+    void testAddReturn();
+    void testRemoveFromModifiedsAndReturns();
+    void testRetAddr(); // get/setRetAddr
 };
