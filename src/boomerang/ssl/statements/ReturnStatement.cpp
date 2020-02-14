@@ -39,6 +39,13 @@ ReturnStatement::~ReturnStatement()
 }
 
 
+ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
+{
+    assert(it != end());
+    return m_returns.erase(it);
+}
+
+
 SharedStmt ReturnStatement::clone() const
 {
     std::shared_ptr<ReturnStatement> ret(new ReturnStatement());
@@ -63,34 +70,29 @@ SharedStmt ReturnStatement::clone() const
 }
 
 
-ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
+void ReturnStatement::getDefinitions(LocationSet &ls, bool assumeABICompliance) const
 {
-    assert(it != end());
-    return m_returns.erase(it);
-}
-
-
-bool ReturnStatement::accept(StmtVisitor *visitor) const
-{
-    return visitor->visit(this);
-}
-
-
-void ReturnStatement::simplify()
-{
-    for (SharedStmt s : m_modifieds) {
-        s->simplify();
-    }
-
-    for (SharedStmt s : m_returns) {
-        s->simplify();
+    for (const SharedStmt &stmt : m_modifieds) {
+        stmt->getDefinitions(ls, assumeABICompliance);
     }
 }
 
 
-void ReturnStatement::addReturn(const std::shared_ptr<Assignment> &a)
+bool ReturnStatement::definesLoc(SharedExp loc) const
 {
-    m_returns.append(a);
+    /// Does a ReturnStatement define anything?
+    /// Not really, the locations are already defined earlier in the procedure.
+    /// However, nothing comes after the return statement, so it doesn't hurt
+    /// to pretend it does, and this is a place to store the return type(s) for example.
+    /// FIXME: seems it would be cleaner to say that Return Statements don't define anything.
+
+    for (const SharedConstStmt &stmt : m_modifieds) {
+        if (stmt->definesLoc(loc)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 
@@ -105,6 +107,20 @@ bool ReturnStatement::search(const Exp &pattern, SharedExp &result) const
     }
 
     return false;
+}
+
+
+bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
+{
+    bool found = false;
+
+    for (SharedStmt ret : m_returns) {
+        if (ret->searchAll(pattern, result)) {
+            found = true;
+        }
+    }
+
+    return found;
 }
 
 
@@ -126,17 +142,63 @@ bool ReturnStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bo
 }
 
 
-bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
+SharedConstType ReturnStatement::getTypeForExp(SharedConstExp e) const
 {
-    bool found = false;
-
-    for (SharedStmt ret : m_returns) {
-        if (ret->searchAll(pattern, result)) {
-            found = true;
+    for (const SharedStmt &stmt : m_modifieds) {
+        if (*stmt->as<Assignment>()->getLeft() == *e) {
+            return stmt->as<Assignment>()->getType();
         }
     }
 
-    return found;
+    return nullptr;
+}
+
+
+SharedType ReturnStatement::getTypeForExp(SharedExp e)
+{
+    for (const SharedStmt &stmt : m_modifieds) {
+        if (*stmt->as<Assignment>()->getLeft() == *e) {
+            return stmt->as<Assignment>()->getType();
+        }
+    }
+
+    return nullptr;
+}
+
+
+void ReturnStatement::setTypeForExp(SharedExp e, SharedType ty)
+{
+    for (SharedStmt stmt : m_modifieds) {
+        if (*stmt->as<Assignment>()->getLeft() == *e) {
+            stmt->as<Assignment>()->setType(ty);
+            break;
+        }
+    }
+
+    for (SharedStmt stmt : m_returns) {
+        if (*stmt->as<Assignment>()->getLeft() == *e) {
+            stmt->as<Assignment>()->setType(ty);
+            return;
+        }
+    }
+}
+
+
+void ReturnStatement::simplify()
+{
+    for (SharedStmt s : m_modifieds) {
+        s->simplify();
+    }
+
+    for (SharedStmt s : m_returns) {
+        s->simplify();
+    }
+}
+
+
+bool ReturnStatement::accept(StmtVisitor *visitor) const
+{
+    return visitor->visit(this);
 }
 
 
@@ -234,89 +296,21 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 }
 
 
-bool ReturnStatement::definesLoc(SharedExp loc) const
-{
-    /// Does a ReturnStatement define anything?
-    /// Not really, the locations are already defined earlier in the procedure.
-    /// However, nothing comes after the return statement, so it doesn't hurt
-    /// to pretend it does, and this is a place to store the return type(s) for example.
-    /// FIXME: seems it would be cleaner to say that Return Statements don't define anything.
-
-    for (const SharedConstStmt &stmt : m_modifieds) {
-        if (stmt->definesLoc(loc)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-void ReturnStatement::getDefinitions(LocationSet &ls, bool assumeABICompliance) const
-{
-    for (const SharedStmt &stmt : m_modifieds) {
-        stmt->getDefinitions(ls, assumeABICompliance);
-    }
-}
-
-
-SharedConstType ReturnStatement::getTypeForExp(SharedConstExp e) const
-{
-    for (const SharedStmt &stmt : m_modifieds) {
-        if (*stmt->as<Assignment>()->getLeft() == *e) {
-            return stmt->as<Assignment>()->getType();
-        }
-    }
-
-    return nullptr;
-}
-
-
-SharedType ReturnStatement::getTypeForExp(SharedExp e)
-{
-    for (const SharedStmt &stmt : m_modifieds) {
-        if (*stmt->as<Assignment>()->getLeft() == *e) {
-            return stmt->as<Assignment>()->getType();
-        }
-    }
-
-    return nullptr;
-}
-
-
-void ReturnStatement::setTypeForExp(SharedExp e, SharedType ty)
-{
-    for (SharedStmt stmt : m_modifieds) {
-        if (*stmt->as<Assignment>()->getLeft() == *e) {
-            stmt->as<Assignment>()->setType(ty);
-            break;
-        }
-    }
-
-    for (SharedStmt stmt : m_returns) {
-        if (*stmt->as<Assignment>()->getLeft() == *e) {
-            stmt->as<Assignment>()->setType(ty);
-            return;
-        }
-    }
-}
-
-
-#define RETSTMT_COLS 120
-
 void ReturnStatement::print(OStream &os) const
 {
-    os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
+    const int RETSTMT_COLS = 120;
 
+    os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     os << "RET";
-    bool first      = true;
-    unsigned column = 19;
+
+    bool first = true;
+    int column = 19;
 
     for (const SharedConstStmt &stmt : m_returns) {
         QString tgt;
         OStream ost(&tgt);
         stmt->as<const Assignment>()->printCompact(ost);
-        unsigned len = tgt.length();
+        const int len = tgt.length();
 
         if (first) {
             first = false;
@@ -410,8 +404,8 @@ void ReturnStatement::updateModifieds()
     }
 
     // For each location in the collector, make sure that there is an assignment in the old
-    // modifieds, which will be filtered and sorted to become the new modifieds Ick... O(N*M) (N
-    // existing modifeds, M collected locations)
+    // modifieds, which will be filtered and sorted to become the new modifieds Ick... O(N*M)
+    // (N existing modifeds, M collected locations)
 
     for (SharedStmt stmt : m_col) {
         bool found                   = false;
@@ -543,7 +537,13 @@ void ReturnStatement::updateReturns()
 }
 
 
-void ReturnStatement::removeModified(SharedExp loc)
+void ReturnStatement::addReturn(const std::shared_ptr<Assignment> &a)
+{
+    m_returns.append(a);
+}
+
+
+void ReturnStatement::removeFromModifiedsAndReturns(SharedExp loc)
 {
     m_modifieds.removeFirstDefOf(loc);
     m_returns.removeFirstDefOf(loc);

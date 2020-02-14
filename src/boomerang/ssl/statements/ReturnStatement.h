@@ -41,28 +41,17 @@ public:
     const_iterator begin() const { return m_returns.begin(); }
     const_iterator end() const { return m_returns.end(); }
 
+    iterator erase(iterator it);
+
 public:
     /// \copydoc Statement::clone
     SharedStmt clone() const override;
 
-    iterator erase(iterator it);
+    /// \copydoc Statement::getDefinitions
+    void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
-    const StatementList &getModifieds() const { return m_modifieds; }
-    const StatementList &getReturns() const { return m_returns; }
-
-    size_t getNumReturns() const { return m_returns.size(); }
-
-    /// Update the modifieds, in case the signature and hence ordering and filtering has changed, or
-    /// the locations in the collector have changed. Does NOT remove preserveds (deferred until
-    /// updating returns).
-    void updateModifieds(); // Update modifieds from the collector
-
-    /// Update the returns, in case the signature and hence ordering
-    /// and filtering has changed, or the locations in the modifieds list
-    void updateReturns();
-
-    /// \copydoc Statement::print
-    void print(OStream &os) const override;
+    /// \copydoc Statement::definesLoc
+    bool definesLoc(SharedExp loc) const override;
 
     /// \copydoc Statement::search
     bool search(const Exp &, SharedExp &) const override;
@@ -72,15 +61,6 @@ public:
 
     /// \copydoc Statement::searchAndReplace
     bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
-
-    /// \copydoc Statement::getDefinitions
-    void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
-
-    /// Remove from modifieds AND from returns
-    void removeModified(SharedExp loc);
-
-    /// For testing only
-    void addReturn(const std::shared_ptr<Assignment> &a);
 
     /// \copydoc Statement::getTypeForExp
     SharedConstType getTypeForExp(SharedConstExp exp) const override;
@@ -106,40 +86,63 @@ public:
     /// \copydoc Statement::accept
     bool accept(StmtPartModifier *visitor) override;
 
-    /// \copydoc Statement::definesLoc
-    bool definesLoc(SharedExp loc) const override;
+    /// \copydoc Statement::print
+    void print(OStream &os) const override;
 
-    /// \returns pointer to the collector object
-    DefCollector *getCollector() { return &m_col; }
+    // modifieds / returns related
+public:
+    const StatementList &getModifieds() const { return m_modifieds; }
+    const StatementList &getReturns() const { return m_returns; }
 
+    size_t getNumReturns() const { return m_returns.size(); }
+
+    /// Update the modifieds, in case the signature and hence ordering and filtering has changed,
+    /// or the locations in the collector have changed. Does NOT remove preserveds
+    /// (deferred until updating returns).
+    void updateModifieds();
+
+    /// Update the returns, in case the signature and hence ordering
+    /// and filtering has changed, or the locations in the modifieds list
+    void updateReturns();
+
+    /// For testing only
+    void addReturn(const std::shared_ptr<Assignment> &a);
+
+    /// Remove from modifieds AND from returns
+    void removeFromModifiedsAndReturns(SharedExp loc);
+
+public:
     /// Get and set the native address for the first and only return statement
     Address getRetAddr() { return m_retAddr; }
     void setRetAddr(Address r) { m_retAddr = r; }
 
     /// Find definition for e (in the collector)
-    SharedExp findDefFor(SharedExp e) { return m_col.findDefFor(e); }
+    SharedExp findDefFor(SharedExp e) const { return m_col.findDefFor(e); }
+
+    /// \returns pointer to the collector object
+    DefCollector *getCollector() { return &m_col; }
 
 protected:
     /// Native address of the (only) return instruction.
     /// Needed for branching to this only return statement
     Address m_retAddr;
 
-    /**
-     * The progression of return information is as follows:
-     * First, reaching definitions are collected in the DefCollector col. These are not sorted or
-     * filtered. Second, some of those definitions make it to the modifieds list, which is sorted
-     * and filtered. These are the locations that are modified by the enclosing procedure. As
-     * locations are proved to be preserved (with NO modification, not even sp = sp+4), they are
-     * removed from this list. Defines in calls to the enclosing procedure are based on this list.
-     * Third, the modifications are initially copied to the returns list (also sorted and filtered,
-     * but the returns have RHS where the modifieds don't). Locations not live at any caller are
-     * removed from the returns, but not from the modifieds.
-     */
+    /// The progression of return information is as follows:
+    /// - First, reaching definitions are collected in the DefCollector \ref m_col.
+    ///   These are not sorted or filtered.
+    /// - Second, some of those definitions make it to the modifieds list, which is
+    ///   sorted and filtered. These are the locations that are modified by the enclosing procedure.
+    ///   As locations are proved to be preserved (with NO modification, not even sp = sp+4),
+    ///   they are removed from this list. Defines in calls to the enclosing procedure
+    ///   are based on this list.
+    /// - Third, the modifications are initially copied to the returns list (also sorted
+    ///   and filtered, but the returns have RHS where the modifieds don't). Locations not live
+    ///   at any caller are removed from the returns, but not from the modifieds.
     DefCollector m_col;
 
     /// A list of assignments that represents the locations modified by the enclosing procedure.
-    /// These assignments have no RHS? These transmit type information to callers Note that these
-    /// include preserved locations early on (?)
+    /// These assignments have no RHS? These transmit type information to callers.
+    /// Note that these include preserved locations early on (?)
     StatementList m_modifieds;
 
     /// A list of assignments of locations to expressions.

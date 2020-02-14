@@ -71,7 +71,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
             continue;
         }
 
-        proc->getRetStmt()->removeModified(lhs);
+        proc->getRetStmt()->removeFromModifiedsAndReturns(lhs);
     }
 
     return true;
