@@ -18,9 +18,9 @@
 
 void CaseStatementTest::testClone()
 {
-    {
-        SharedExp ecx = Location::regOf(REG_X86_ECX);
+    SharedExp ecx = Location::regOf(REG_X86_ECX);
 
+    {
         std::shared_ptr<CaseStatement> cs(new CaseStatement(ecx));
         SharedStmt clone = cs->clone();
 
@@ -34,6 +34,50 @@ void CaseStatementTest::testClone()
         QCOMPARE(*csClone->getDest(), *cs->getDest());
         QVERIFY(csClone->isComputed());
         QVERIFY(csClone->getSwitchInfo() == nullptr);
+    }
+
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(ecx));
+        std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+        cs->setSwitchInfo(std::move(si));
+
+        SharedStmt clone = cs->clone();
+
+        QVERIFY(&(*clone) != &(*cs));
+        QVERIFY(clone->isCase());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != cs->getID());
+
+        std::shared_ptr<CaseStatement> csClone = clone->as<CaseStatement>();
+        QVERIFY(csClone->getDest() != nullptr);
+        QCOMPARE(*csClone->getDest(), *cs->getDest());
+        QVERIFY(csClone->isComputed());
+        QVERIFY(csClone->getSwitchInfo() != nullptr);
+        QVERIFY(csClone->getSwitchInfo() != cs->getSwitchInfo());
+    }
+
+    {
+        std::shared_ptr<CaseStatement> cs(new CaseStatement(ecx));
+        std::unique_ptr<SwitchInfo> si(new SwitchInfo);
+        si->switchExp = ecx;
+        cs->setSwitchInfo(std::move(si));
+
+        SharedStmt clone = cs->clone();
+
+        QVERIFY(&(*clone) != &(*cs));
+        QVERIFY(clone->isCase());
+        QVERIFY(clone->getID() != (uint32)-1);
+        QVERIFY(clone->getID() != cs->getID());
+
+        std::shared_ptr<CaseStatement> csClone = clone->as<CaseStatement>();
+        QVERIFY(csClone->getDest() != nullptr);
+        QCOMPARE(*csClone->getDest(), *cs->getDest());
+        QVERIFY(csClone->isComputed());
+        QVERIFY(csClone->getSwitchInfo() != nullptr);
+        QVERIFY(csClone->getSwitchInfo() != cs->getSwitchInfo());
+        QVERIFY(csClone->getSwitchInfo()->switchExp != nullptr);
+        QVERIFY(csClone->getSwitchInfo()->switchExp != ecx);
+        QVERIFY(*csClone->getSwitchInfo()->switchExp == *ecx);
     }
 }
 
