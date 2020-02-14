@@ -1001,6 +1001,24 @@ void CallStatementTest::testDoEllipsisProcessing()
 
         QVERIFY(call->doEllipsisProcessing());
     }
+
+    // test for objc_msgSend
+    {
+        destProc->setName("objc_msgSend");
+        std::shared_ptr<Signature> sig = Signature::instantiate(Machine::PPC, CallConv::C, "objc_msgSend");
+        sig->setHasEllipsis(true);
+        std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+
+        StatementList args;
+        args.append(std::make_shared<Assign>(VoidType::get(), eax, Const::get(0x2000)));
+        args.append(std::make_shared<Assign>(VoidType::get(), ecx, Const::get("")));
+
+        call->setArguments(args);
+        call->setDestProc(destProc);
+        call->setSignature(sig);
+
+        QVERIFY(call->doEllipsisProcessing());
+    }
 }
 
 
@@ -1188,6 +1206,12 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     TEST_FMTSTR("scanf", "%*d",     ({ }));
     TEST_FMTSTR("scanf", "%10d",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
     TEST_FMTSTR("scanf", "%*10ld",  ({ }));
+
+    // Processing for objc
+    TEST_FMTSTR("objc_msgSend", "",        ({ }));
+    TEST_FMTSTR("objc_msgSend", ":",       ({ PointerType::get(VoidType::get()) }));
+    TEST_FMTSTR("objc_msgSend", "foo:bar", ({ PointerType::get(VoidType::get()) }));
+    TEST_FMTSTR("objc_msgSend", "::",      ({ PointerType::get(VoidType::get()), PointerType::get(VoidType::get()) }));
 }
 
 
