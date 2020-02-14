@@ -1064,6 +1064,8 @@ bool CallStatement::doEllipsisProcessing()
     const bool isScanf = calleeName.contains("scanf");
     const int n        = parseFmtStr(formatStr, isScanf);
 
+    assert(n >= 0);
+
     setNumArguments((formatstrIdx + 1) + n);
     m_signature->setHasEllipsis(false); // So we don't do this again
 
@@ -1096,8 +1098,7 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
         const QString prec  = match.captured("prec");
         const QString mod   = match.captured("mod");
         const QString list  = match.captured("list");
-
-        const char spec = match.captured("spec")[0].toLatin1();
+        const QString spec  = match.captured("spec");
 
         if (isScanf && list != "") {
             if (list[0] == "l") {
@@ -1112,7 +1113,8 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
             continue;
         }
 
-        if (isScanf && width.startsWith("*")) { // We have something like %*3d. No output parameter.
+        if (isScanf && width.startsWith("*")) {
+            // We have something like %*3d. No output parameter.
             continue;
         }
 
@@ -1126,7 +1128,7 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
             n++;
         }
 
-        switch (spec) {
+        switch (spec[0].toLatin1()) {
         case 'd':
         case 'i':
             if (mod == "") {
@@ -1153,13 +1155,13 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
                 addSigParam(IntegerType::get(32, Sign::Signed), isScanf);
                 n++;
             }
-            else if (mod == "z") {
+            else if (mod == "z") { // size_t
                 addSigParam(IntegerType::get(STD_SIZE, Sign::Unsigned), isScanf);
-                n++; // size_t
+                n++;
             }
-            else if (mod == "t") {
+            else if (mod == "t") { // ptrdiff_t
                 addSigParam(IntegerType::get(STD_SIZE, Sign::Signed), isScanf);
-                n++; // ptrdiff_t
+                n++;
             }
             break;
 
@@ -1195,13 +1197,13 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
                 addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
                 n++;
             }
-            else if (mod == "z") {
+            else if (mod == "z") { // size_t
                 addSigParam(IntegerType::get(STD_SIZE, Sign::Unsigned), isScanf);
-                n++; // size_t
+                n++;
             }
-            else if (mod == "t") {
+            else if (mod == "t") { // ptrdiff_t
                 addSigParam(IntegerType::get(STD_SIZE, Sign::Signed), isScanf);
-                n++; // ptrdiff_t
+                n++;
             }
             break;
 
@@ -1236,15 +1238,21 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
                 addSigParam(CharType::get(), isScanf);
                 n++;
             }
-            // TODO: handle %lc
+            else if (mod == "l") {
+                addSigParam(IntegerType::get(16, Sign::Signed), isScanf);
+                n++;
+            }
             break;
 
         case 's':
             if (mod == "") {
-                addSigParam(PointerType::get(ArrayType::get(CharType::get())), false);
+                addSigParam(ArrayType::get(CharType::get()), true);
                 n++;
             }
-            // TODO: handle %ls
+            else if (mod == "l") {
+                addSigParam(ArrayType::get(IntegerType::get(16, Sign::Signed)), true);
+                n++;
+            }
             break;
 
         case 'p':
@@ -1279,12 +1287,12 @@ int CallStatement::parseFmtStr(const QString &fmtStr, bool isScanf)
                 addSigParam(IntegerType::get(32, Sign::Signed), true);
                 n++;
             }
-            else if (mod == "z") {
-                addSigParam(IntegerType::get(32, Sign::Unsigned), true);
+            else if (mod == "z") { // size_t
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Unsigned), true);
                 n++;
             }
-            else if (mod == "t") {
-                addSigParam(IntegerType::get(32, Sign::Signed), true);
+            else if (mod == "t") { // ptrdiff_t
+                addSigParam(IntegerType::get(STD_SIZE, Sign::Signed), true);
                 n++;
             }
             break;

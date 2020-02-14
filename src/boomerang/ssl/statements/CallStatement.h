@@ -234,7 +234,7 @@ private:
     bool doObjCEllipsisProcessing(const QString &formatStr);
 
     /// Parses the format string and extracts all signature types.
-    /// \returns the number of new types added.
+    /// \returns the number of new types added, or -1 on failure.
     int parseFmtStr(const QString &fmtStr, bool isScanf);
 
     /// Private helper functions for the above

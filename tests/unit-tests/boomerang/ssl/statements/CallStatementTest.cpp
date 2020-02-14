@@ -1047,7 +1047,10 @@ void CallStatementTest::testDoEllipsisProcessingFmt()
 
 
 #define TEST_FMTSTR(fname, fmtStr, types) \
-    QTest::newRow(fname "(\"" fmtStr "\", ...)") << QString(fname) << QString(fmtStr) << std::vector<SharedType> types;
+    QTest::newRow(fname "(\"" fmtStr "\", ...)") \
+        << QString(fname) \
+        << QString(fmtStr) \
+        << std::vector<SharedType> types;
 
 void CallStatementTest::testDoEllipsisProcessingFmt_data()
 {
@@ -1055,71 +1058,73 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     QTest::addColumn<QString>("fmtStr");
     QTest::addColumn<std::vector<SharedType>>("types");
 
+    TEST_FMTSTR("printf", "%", ({ }));
+
     // printf
-    TEST_FMTSTR("printf", "%d",    ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%i",    ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%hhd",  ({ IntegerType::get(8,  Sign::Signed) }));
-    TEST_FMTSTR("printf", "%hd",   ({ IntegerType::get(16, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%ld",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%lld",  ({ IntegerType::get(64, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%jd",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%zd",   ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%td",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%d",     ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%i",     ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%hhd",   ({ IntegerType::get(8,  Sign::Signed) }));
+    TEST_FMTSTR("printf", "%hd",    ({ IntegerType::get(16, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%ld",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%lld",   ({ IntegerType::get(64, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%jd",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%zd",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%td",    ({ IntegerType::get(32, Sign::Signed) }));
 
-    TEST_FMTSTR("printf", "%u",    ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%o",    ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%x",    ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%X",    ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%hhu",  ({ IntegerType::get(8,  Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%hu",   ({ IntegerType::get(16, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%lu",   ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%llu",  ({ IntegerType::get(64, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%ju",   ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%zu",   ({ IntegerType::get(32, Sign::Unsigned) }));
-    TEST_FMTSTR("printf", "%tu",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%u",     ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%o",     ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%x",     ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%X",     ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%hhu",   ({ IntegerType::get(8,  Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%hu",    ({ IntegerType::get(16, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%lu",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%llu",   ({ IntegerType::get(64, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%ju",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%zu",    ({ IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%tu",    ({ IntegerType::get(32, Sign::Signed) }));
 
-    TEST_FMTSTR("printf", "%f",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%F",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%e",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%E",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%g",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%G",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%a",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%A",    ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%Lf",   ({ FloatType::get(128) }));
+    TEST_FMTSTR("printf", "%f",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%F",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%e",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%E",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%g",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%G",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%a",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%A",     ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%Lf",    ({ FloatType::get(128) }));
 
-    TEST_FMTSTR("printf", "%c",    ({ CharType::get() }));
-//     TEST_FMTSTR("printf", "%lc",   ({ IntegerType::get(32) })); // wint_t
+    TEST_FMTSTR("printf", "%c",     ({ CharType::get() }));
+    TEST_FMTSTR("printf", "%lc",    ({ IntegerType::get(16, Sign::Signed) })); // wint_t
 
-    TEST_FMTSTR("printf", "%s",    ({ PointerType::get(ArrayType::get(CharType::get())) }));
+    TEST_FMTSTR("printf", "%s",     ({ PointerType::get(ArrayType::get(CharType::get())) }));
 
-    TEST_FMTSTR("printf", "%p",    ({ PointerType::get(VoidType::get()) }));
+    TEST_FMTSTR("printf", "%p",     ({ PointerType::get(VoidType::get()) }));
 
-    TEST_FMTSTR("printf", "%n",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%hhn",  ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%hn",   ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%ln",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%lln",  ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%jn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
-    TEST_FMTSTR("printf", "%zn",   ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
-    TEST_FMTSTR("printf", "%tn",   ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%n",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%hhn",   ({ PointerType::get(IntegerType::get(8,  Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%hn",    ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%ln",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%lln",   ({ PointerType::get(IntegerType::get(64, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%jn",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("printf", "%zn",    ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
+    TEST_FMTSTR("printf", "%tn",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
 
     // printf flags
-    TEST_FMTSTR("printf", "%-d",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%+d",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "% d",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%#d",   ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%0d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%-d",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%+d",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "% d",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%#d",    ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%0d",    ({ IntegerType::get(32, Sign::Signed) }));
 
     // printf width / precision
-    TEST_FMTSTR("printf", "%10d",  ({ IntegerType::get(32, Sign::Signed) }));
-    TEST_FMTSTR("printf", "%*u",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Unsigned) }));
+    TEST_FMTSTR("printf", "%10d",   ({ IntegerType::get(32, Sign::Signed) }));
+    TEST_FMTSTR("printf", "%*u",    ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Unsigned) }));
 
     TEST_FMTSTR("printf", "%.10G",  ({ FloatType::get(64) }));
     TEST_FMTSTR("printf", "%.*G",   ({ IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
 
-    TEST_FMTSTR("printf", "%3.14G",  ({ FloatType::get(64) }));
-    TEST_FMTSTR("printf", "%*.*G",   ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%3.14G", ({ FloatType::get(64) }));
+    TEST_FMTSTR("printf", "%*.*G",  ({ IntegerType::get(32, Sign::Signed), IntegerType::get(32, Sign::Signed), FloatType::get(64) }));
 
     TEST_FMTSTR("printf", "%%",     ({ }));
 
@@ -1144,6 +1149,7 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     TEST_FMTSTR("scanf", "%ju",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
     TEST_FMTSTR("scanf", "%zu",     ({ PointerType::get(IntegerType::get(32, Sign::Unsigned)) }));
     TEST_FMTSTR("scanf", "%tu",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%X",      ({ }));
 
     TEST_FMTSTR("scanf", "%a",      ({ PointerType::get(FloatType::get(32))  }));
     TEST_FMTSTR("scanf", "%e",      ({ PointerType::get(FloatType::get(32))  }));
@@ -1151,13 +1157,19 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     TEST_FMTSTR("scanf", "%g",      ({ PointerType::get(FloatType::get(32))  }));
     TEST_FMTSTR("scanf", "%lf",     ({ PointerType::get(FloatType::get(64))  }));
     TEST_FMTSTR("scanf", "%Lf",     ({ PointerType::get(FloatType::get(128)) }));
+    TEST_FMTSTR("scanf", "%A",      ({ }));
+    TEST_FMTSTR("scanf", "%E",      ({ }));
+    TEST_FMTSTR("scanf", "%F",      ({ }));
+    TEST_FMTSTR("scanf", "%G",      ({ }));
 
     TEST_FMTSTR("scanf", "%c",      ({ PointerType::get(CharType::get()) }));
     TEST_FMTSTR("scanf", "%s",      ({ PointerType::get(ArrayType::get(CharType::get())) }));
+    TEST_FMTSTR("scanf", "%lc",     ({ PointerType::get(IntegerType::get(16, Sign::Signed)) }));
+    TEST_FMTSTR("scanf", "%ls",     ({ PointerType::get(ArrayType::get(IntegerType::get(16, Sign::Signed))) }));
     TEST_FMTSTR("scanf", "%[baz]",  ({ PointerType::get(ArrayType::get(CharType::get())) }));
     TEST_FMTSTR("scanf", "%[^baz]", ({ PointerType::get(ArrayType::get(CharType::get())) }));
-//     TEST_FMTSTR("scanf", "%l[baz]", ({ PointerType::get(ArrayType::get(CharType::get())) }));
-//     TEST_FMTSTR("scanf", "%l[^baz]",({ PointerType::get(ArrayType::get(CharType::get())) }));
+    TEST_FMTSTR("scanf", "%l[baz]", ({ PointerType::get(ArrayType::get(IntegerType::get(16, Sign::Signed))) }));
+    TEST_FMTSTR("scanf", "%l[^baz]",({ PointerType::get(ArrayType::get(IntegerType::get(16, Sign::Signed))) }));
 
     TEST_FMTSTR("scanf", "%p",      ({ PointerType::get(PointerType::get(VoidType::get())) }));
 
@@ -1171,6 +1183,7 @@ void CallStatementTest::testDoEllipsisProcessingFmt_data()
     TEST_FMTSTR("scanf", "%tn",     ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
 
     TEST_FMTSTR("scanf", "%%",      ({ }));
+    TEST_FMTSTR("scanf", "%%d",     ({ }));
 
     TEST_FMTSTR("scanf", "%*d",     ({ }));
     TEST_FMTSTR("scanf", "%10d",    ({ PointerType::get(IntegerType::get(32, Sign::Signed)) }));
