@@ -89,9 +89,6 @@ public:
     // Print to a static buffer (mainly for debugging)
     QString toString() const;
 
-    /// Is this RTL a call instruction?
-    bool isCall() const;
-
     /// Use this slow function when you can't be sure that the HL Statement is last
     SharedStmt getHlStmt() const;
 

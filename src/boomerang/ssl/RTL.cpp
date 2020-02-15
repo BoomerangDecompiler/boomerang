@@ -175,12 +175,6 @@ void RTL::simplify()
 }
 
 
-bool RTL::isCall() const
-{
-    return !empty() && back()->getKind() == StmtType::Call;
-}
-
-
 SharedStmt RTL::getHlStmt() const
 {
     for (auto rit = rbegin(); rit != rend(); ++rit) {
