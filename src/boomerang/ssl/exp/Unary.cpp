@@ -204,39 +204,6 @@ SharedType Unary::ascendType()
 }
 
 
-// match m[l1{} + K] pattern
-bool match_l1_K(SharedExp in, std::vector<SharedExp> &matches)
-{
-    if (!in->isMemOf()) {
-        return false;
-    }
-
-    auto as_bin = std::dynamic_pointer_cast<Binary>(in->getSubExp1());
-
-    if (!as_bin || (as_bin->getOper() != opPlus)) {
-        return false;
-    }
-
-    if (!as_bin->access<Exp, 2>()->isIntConst()) {
-        return false;
-    }
-
-    if (!as_bin->access<Exp, 1>()->isSubscript()) {
-        return false;
-    }
-
-    auto refexp = as_bin->access<RefExp, 1>();
-
-    if (!refexp->getSubExp1()->isLocation()) {
-        return false;
-    }
-
-    matches.push_back(refexp);
-    matches.push_back(as_bin->getSubExp2());
-    return true;
-}
-
-
 bool Unary::descendType(SharedType newType)
 {
     std::vector<SharedExp> matches;
@@ -270,25 +237,6 @@ bool Unary::descendType(SharedType newType)
             Prog *prog                = this->access<Location>()->getProc()->getProg();
             changed |= K2->descendType(prog->makeArrayType(K2->getAddr(), newType));
         }
-        //        else if (match_l1_K(shared_from_this(), matches)) {
-        //            // m[l1 + K]
-        //            auto l1           = matches[0]->access<Location, 1>();
-        //            SharedType l1Type = l1->ascendType();
-        //            const int K       = matches[1]->access<Const>()->getInt();
-        //
-        //             if (l1Type->resolvesToPointer()) {
-        //                 // This is a struct reference m[ptr + K]; ptr points to the struct and K
-        //                 is an
-        //                 // offset into it.
-        //                 // TODO
-        //             }
-        //             else {
-        //                 // K must be the pointer, so this is a global array
-        //                 // FIXME: finish this case
-        //             }
-        //
-        //             // FIXME: many other cases
-        //        }
         else {
             changed |= m_subExp1->descendType(PointerType::get(newType));
         }
