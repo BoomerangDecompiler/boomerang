@@ -24,14 +24,6 @@
 #include "boomerang/ssl/type/VoidType.h"
 
 
-#define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
-
-#define HELLO_X86    SAMPLE("x86/hello")
-#define FBRANCH_X86  SAMPLE("x86/fbranch")
-#define SUMARRAY_X86 SAMPLE("x86/sumarray")
-
-
-
 void GlobalTest::testContainsAddress()
 {
     Global glob1(VoidType::get(), Address(0x1000), "", nullptr);
@@ -48,7 +40,7 @@ void GlobalTest::testContainsAddress()
 
 void GlobalTest::testGetInitialValue()
 {
-    QVERIFY(m_project.loadBinaryFile(FBRANCH_X86));
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/fbranch")));
     Global *bssGlob = m_project.getProg()->createGlobal(Address(0x080496DC));
     QVERIFY(bssGlob != nullptr);
     QVERIFY(bssGlob->getInitialValue() == nullptr);
@@ -58,7 +50,7 @@ void GlobalTest::testGetInitialValue()
 void GlobalTest::testReadInitialValue()
 {
     {
-        QVERIFY(m_project.loadBinaryFile(FBRANCH_X86));
+        QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/fbranch")));
         Prog *prog = m_project.getProg();
         QVERIFY(prog != nullptr);
 
@@ -122,7 +114,7 @@ void GlobalTest::testReadInitialValue()
     }
 
     {
-        QVERIFY(m_project.loadBinaryFile(HELLO_X86));
+        QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/hello")));
         Prog *prog = m_project.getProg();
 
         // string constant
@@ -144,7 +136,7 @@ void GlobalTest::testReadInitialValue()
 
     {
         // arrays
-        QVERIFY(m_project.loadBinaryFile(SUMARRAY_X86));
+        QVERIFY(m_project.loadBinaryFile(SAMPLE("x86/sumarray")));
         Prog *prog = m_project.getProg();
 
         Global *intArrGlob = prog->createGlobal(Address(0x08049460), ArrayType::get(IntegerType::get(32)));

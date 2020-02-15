@@ -9,8 +9,18 @@
 #pragma endregion License
 #include "TypingStatement.h"
 
+#include "boomerang/ssl/type/Type.h"
 
-TypingStatement::TypingStatement(SharedType ty)
-    : m_type(ty)
+
+TypingStatement::TypingStatement(StmtType kind, SharedType ty)
+    : Statement(kind)
+    , m_type(ty)
+{
+}
+
+
+TypingStatement::TypingStatement(const TypingStatement &other)
+    : Statement(other)
+    , m_type(other.m_type->clone())
 {
 }

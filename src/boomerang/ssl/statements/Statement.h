@@ -100,7 +100,7 @@ class BOOMERANG_API Statement : public std::enable_shared_from_this<Statement>
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 public:
-    Statement();
+    Statement(StmtType kind);
     Statement(const Statement &other);
     Statement(Statement &&other) = default;
 
@@ -208,16 +208,16 @@ public:
     bool isCase() const { return m_kind == StmtType::Case; }
 
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
-    /// returns a set of locations defined by this statement in a LocationSet argument.
-    virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}
+    /// \returns a set of locations defined by this statement in a LocationSet argument.
+    virtual void getDefinitions(LocationSet &def, bool assumeABICompliance) const;
 
-    /// \returns true if this Statement defines loc
-    virtual bool definesLoc(SharedExp /*loc*/) const { return false; }
+    /// \returns true if this Statement defines \p loc
+    virtual bool definesLoc(SharedExp loc) const;
 
     /**
      * Display a text reprentation of this statement to the given stream
      * \note  Usually called from RTL::print, in which case the first 9
-     *        chars of the print have already been output to os
+     *        chars of the print have already been output to \p os
      * \param os - stream to write to
      */
     virtual void print(OStream &os) const = 0;
@@ -266,11 +266,13 @@ public:
      * \param force set to true to propagate even memofs (for switch analysis)
      * \returns true if a change
      */
-    bool propagateTo(Settings *settings, ExpIntMap *destCounts = nullptr, bool force = false);
+    bool propagateToThis(int propMaxDepth, const ExpIntMap *destCounts = nullptr,
+                         bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
-    bool propagateFlagsTo(Settings *settings);
+    /// \returns true if a change
+    bool propagateFlagsToThis();
 
     /// simpify internal expressions
     /// \sa ExpSimplifier
@@ -278,7 +280,7 @@ public:
 
     /// simplify internal address expressions (a[m[x]] -> x) etc
     /// Only Assignments override at present
-    virtual void simplifyAddr() {}
+    virtual void simplifyAddr();
 
     /// Meet the type associated with \p e with \p ty
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);
@@ -307,12 +309,6 @@ public:
 
     /// Set the type for the definition of \p e in this Statement to \p ty
     virtual void setTypeForExp(SharedExp exp, SharedType ty);
-
-    /// Propagate to e from definition statement def.
-    /// \returns true if a change made
-    /// \note this procedure does not control what part of this statement is propagated to
-    bool doPropagateTo(const SharedExp &e, const std::shared_ptr<Assignment> &def,
-                       Settings *settings);
 
 private:
     /// replace a use of def->getLeft() by def->getRight() in this statement

@@ -20,7 +20,6 @@
 class BOOMERANG_API Assign : public Assignment
 {
 public:
-    Assign();
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 
@@ -68,9 +67,6 @@ public:
 
     /// \copydoc Assignment::getRight
     SharedExp getRight() const override { return m_rhs; }
-
-    SharedExp &getRightRef() { return m_rhs; }
-    const SharedExp &getRightRef() const { return m_rhs; }
 
     /// set the rhs to something new
     void setRight(SharedExp e) { m_rhs = e; }

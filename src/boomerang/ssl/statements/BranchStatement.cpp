@@ -27,11 +27,23 @@
 #include <QTextStreamManipulator>
 
 
-BranchStatement::BranchStatement()
-    : m_jumpType(BranchType::JE)
+BranchStatement::BranchStatement(Address dest)
+    : GotoStatement(dest)
+    , m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
 {
+    m_kind = StmtType::Branch;
+}
+
+
+BranchStatement::BranchStatement(SharedExp dest)
+    : GotoStatement(dest)
+    , m_jumpType(BranchType::JE)
+    , m_cond(nullptr)
+    , m_isFloat(false)
+{
+    assert(dest != nullptr);
     m_kind = StmtType::Branch;
 }
 
@@ -117,22 +129,26 @@ void BranchStatement::setTakenFragment(IRFragment *destFrag)
 
 bool BranchStatement::search(const Exp &pattern, SharedExp &result) const
 {
+    if (GotoStatement::search(pattern, result)) {
+        return true;
+    }
+
     if (m_cond) {
         return m_cond->search(pattern, result);
     }
 
-    result = nullptr;
     return false;
 }
 
 
 bool BranchStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
-    GotoStatement::searchAndReplace(pattern, replace, cc);
-    bool change = false;
+    bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
     if (m_cond) {
-        m_cond = m_cond->searchReplaceAll(pattern, replace, change);
+        bool thisChange = false;
+        m_cond          = m_cond->searchReplaceAll(pattern, replace, thisChange);
+        change |= thisChange;
     }
 
     return change;
@@ -141,11 +157,13 @@ bool BranchStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bo
 
 bool BranchStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
+    bool found = GotoStatement::searchAll(pattern, result);
+
     if (m_cond) {
-        return m_cond->searchAll(pattern, result);
+        found |= m_cond->searchAll(pattern, result);
     }
 
-    return false;
+    return found;
 }
 
 
@@ -154,10 +172,7 @@ void BranchStatement::print(OStream &os) const
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     os << "BRANCH ";
 
-    if (m_dest == nullptr) {
-        os << "*no dest*";
-    }
-    else if (!m_dest->isIntConst()) {
+    if (!m_dest->isIntConst()) {
         os << m_dest;
     }
     else {
@@ -202,17 +217,10 @@ void BranchStatement::print(OStream &os) const
 
 SharedStmt BranchStatement::clone() const
 {
-    std::shared_ptr<BranchStatement> ret(new BranchStatement);
+    std::shared_ptr<BranchStatement> ret(new BranchStatement(*this));
 
-    ret->m_dest       = m_dest->clone();
-    ret->m_isComputed = m_isComputed;
-    ret->m_jumpType   = m_jumpType;
-    ret->m_cond       = m_cond ? m_cond->clone() : nullptr;
-    ret->m_isFloat    = m_isFloat;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+    ret->m_dest = m_dest->clone();
+    ret->m_cond = m_cond ? m_cond->clone() : nullptr;
 
     return ret;
 }
@@ -244,7 +252,7 @@ bool BranchStatement::accept(StmtExpVisitor *v)
     }
 
     // Destination will always be a const for X86, so the below will never be used in practice
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -261,8 +269,8 @@ bool BranchStatement::accept(StmtPartModifier *v)
     bool visitChildren = true;
     v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->acceptModifier(v->mod);
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
     }
 
     if (m_cond && visitChildren) {
@@ -280,8 +288,8 @@ bool BranchStatement::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<BranchStatement>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_dest && visitChildren) {
-            m_dest = m_dest->acceptModifier(v->m_mod);
+        if (visitChildren) {
+            setDest(m_dest->acceptModifier(v->m_mod));
         }
 
         if (m_cond && visitChildren) {

@@ -26,7 +26,8 @@
 class BOOMERANG_API BranchStatement : public GotoStatement
 {
 public:
-    BranchStatement();
+    BranchStatement(Address dest);
+    BranchStatement(SharedExp dest);
     BranchStatement(const BranchStatement &other) = default;
     BranchStatement(BranchStatement &&other)      = default;
 
@@ -53,6 +54,9 @@ public:
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
+
+    BranchType getCondType() const { return m_jumpType; }
+    bool isFloatBranch() const { return m_isFloat; }
 
     /**
      * Sets the type of conditional jump.

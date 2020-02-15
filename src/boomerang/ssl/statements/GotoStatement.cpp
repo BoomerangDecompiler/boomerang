@@ -20,19 +20,20 @@
 #include <QTextStreamManipulator>
 
 
-GotoStatement::GotoStatement()
-    : m_dest(nullptr)
+GotoStatement::GotoStatement(Address jumpDest)
+    : Statement(StmtType::Goto)
     , m_isComputed(false)
 {
-    m_kind = StmtType::Goto;
+    m_dest = Const::get(jumpDest);
 }
 
 
-GotoStatement::GotoStatement(Address jumpDest)
-    : m_isComputed(false)
+GotoStatement::GotoStatement(SharedExp dest)
+    : Statement(StmtType::Goto)
+    , m_dest(dest)
+    , m_isComputed(!dest->isConst())
 {
-    m_kind = StmtType::Goto;
-    m_dest = Const::get(jumpDest);
+    assert(m_dest != nullptr);
 }
 
 
@@ -43,23 +44,21 @@ GotoStatement::~GotoStatement()
 
 Address GotoStatement::getFixedDest() const
 {
-    if (!m_dest || !m_dest->isIntConst()) {
-        return Address::INVALID;
-    }
-
-    return m_dest->access<Const>()->getAddr();
+    return m_dest->isIntConst() ? m_dest->access<Const>()->getAddr() : Address::INVALID;
 }
 
 
 void GotoStatement::setDest(SharedExp pd)
 {
     m_dest = pd;
+    assert(m_dest != nullptr);
 }
 
 
 void GotoStatement::setDest(Address addr)
 {
-    m_dest = Const::get(addr);
+    m_dest       = Const::get(addr);
+    m_isComputed = false;
 }
 
 
@@ -75,50 +74,24 @@ const SharedExp GotoStatement::getDest() const
 }
 
 
-void GotoStatement::adjustFixedDest(int delta)
-{
-    // Ensure that the destination is fixed.
-    if (!m_dest || !m_dest->isIntConst()) {
-        LOG_ERROR("Can't adjust destination of non-static CTI");
-        return;
-    }
-
-    auto theConst = m_dest->access<Const>();
-    theConst->setAddr(theConst->getAddr() + delta);
-}
-
-
 bool GotoStatement::search(const Exp &pattern, SharedExp &result) const
 {
-    result = nullptr;
-
-    if (m_dest) {
-        return m_dest->search(pattern, result);
-    }
-
-    return false;
+    return m_dest->search(pattern, result);
 }
 
 
 bool GotoStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
     bool change = false;
-
-    if (m_dest) {
-        m_dest = m_dest->searchReplaceAll(pattern, replace, change);
-    }
-
+    m_dest      = m_dest->searchReplaceAll(pattern, replace, change);
+    assert(m_dest != nullptr);
     return change;
 }
 
 
 bool GotoStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
-    if (m_dest) {
-        return m_dest->searchAll(pattern, result);
-    }
-
-    return false;
+    return m_dest->searchAll(pattern, result);
 }
 
 
@@ -127,10 +100,7 @@ void GotoStatement::print(OStream &os) const
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     os << "GOTO ";
 
-    if (m_dest == nullptr) {
-        os << "*no dest*";
-    }
-    else if (!m_dest->isIntConst()) {
+    if (!m_dest->isIntConst()) {
         m_dest->print(os);
     }
     else {
@@ -153,14 +123,9 @@ bool GotoStatement::isComputed() const
 
 SharedStmt GotoStatement::clone() const
 {
-    std::shared_ptr<GotoStatement> ret(new GotoStatement);
+    std::shared_ptr<GotoStatement> ret(new GotoStatement(*this));
 
-    ret->m_dest       = m_dest->clone();
-    ret->m_isComputed = m_isComputed;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+    ret->m_dest = m_dest->clone();
 
     return ret;
 }
@@ -177,6 +142,7 @@ void GotoStatement::simplify()
     if (isComputed()) {
         m_dest = m_dest->simplifyArith();
         m_dest = m_dest->simplify();
+        assert(m_dest != nullptr);
     }
 }
 
@@ -190,7 +156,7 @@ bool GotoStatement::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -203,10 +169,9 @@ bool GotoStatement::accept(StmtModifier *v)
     bool visitChildren = true;
     v->visit(shared_from_this()->as<GotoStatement>(), visitChildren);
 
-    if (v->m_mod) {
-        if (m_dest && visitChildren) {
-            m_dest = m_dest->acceptModifier(v->m_mod);
-        }
+    if (v->m_mod && visitChildren) {
+        m_dest = m_dest->acceptModifier(v->m_mod);
+        assert(m_dest != nullptr);
     }
 
     return true;
@@ -218,8 +183,9 @@ bool GotoStatement::accept(StmtPartModifier *v)
     bool visitChildren = true;
     v->visit(shared_from_this()->as<GotoStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
+    if (visitChildren) {
         m_dest = m_dest->acceptModifier(v->mod);
+        assert(m_dest != nullptr);
     }
 
     return true;

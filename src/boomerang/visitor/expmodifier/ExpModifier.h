@@ -54,8 +54,8 @@ public:
      *
      * \param[in]  exp           the expression to change
      * \param[out] visitChildren true to continue visiting children.
-     * \returns the modified expression. Note that this is not necessarily the same expression
-     * as \p exp, but an expression of the same type as \p exp.
+     * \returns The modified expression (must not be null). Note that this is not necessarily
+     * the same expression as \p exp, but an expression of the same type as \p exp.
      */
     virtual SharedExp preModify(const std::shared_ptr<Unary> &exp, bool &visitChildren);
 

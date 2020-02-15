@@ -515,13 +515,10 @@ ret_stmt:
 
 goto_stmt:
     KW_GOTO exp {
-        std::shared_ptr<GotoStatement> jump(new GotoStatement);
-        jump->setDest($2);
-        $$ = jump;
+        $$ = std::make_shared<GotoStatement>($2);
     }
   | exp THEN KW_GOTO exp {
-        std::shared_ptr<BranchStatement> jump(new BranchStatement);
-        jump->setDest($4);
+        std::shared_ptr<BranchStatement> jump(new BranchStatement($4));
         jump->setCondExpr($1);
         $$ = jump;
     }
@@ -529,9 +526,7 @@ goto_stmt:
 
 call_stmt:
     KW_CALL exp {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest($2);
-        $$ = call;
+        $$ = std::make_shared<CallStatement>($2);
     }
   ;
 

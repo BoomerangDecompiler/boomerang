@@ -30,17 +30,120 @@ BOOMERANG_ADD_TEST(
 )
 
 
-# BOOMERANG_ADD_TEST(
-#     NAME StatementTest
-#     SOURCES statements/StatementTest.h statements/StatementTest.cpp
-#     LIBRARIES
-#         ${DEBUG_LIB}
-#         boomerang
-#         ${CMAKE_THREAD_LIBS_INIT}
-#     DEPENDENCIES
-#         boomerang-ElfLoader
-#         boomerang-X86FrontEnd
-# )
+BOOMERANG_ADD_TEST(
+    NAME AssignTest
+    SOURCES statements/AssignTest.h statements/AssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME BoolAssignTest
+    SOURCES statements/BoolAssignTest.h statements/BoolAssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME BranchStatementTest
+    SOURCES statements/BranchStatementTest.h statements/BranchStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME CallStatementTest
+    SOURCES statements/CallStatementTest.h statements/CallStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME CaseStatementTest
+    SOURCES statements/CaseStatementTest.h statements/CaseStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME GotoStatementTest
+    SOURCES statements/GotoStatementTest.h statements/GotoStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME ImplicitAssignTest
+    SOURCES statements/ImplicitAssignTest.h statements/ImplicitAssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME PhiAssignTest
+    SOURCES statements/PhiAssignTest.h statements/PhiAssignTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME StatementHelperTest
+    SOURCES statements/StatementHelperTest.h statements/StatementHelperTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME StatementTest
+    SOURCES statements/StatementTest.h statements/StatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)
+
+
+BOOMERANG_ADD_TEST(
+    NAME ReturnStatementTest
+    SOURCES statements/ReturnStatementTest.h statements/ReturnStatementTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        ${CMAKE_THREAD_LIBS_INIT}
+    DEPENDENCIES
+        boomerang-ElfLoader
+        boomerang-X86FrontEnd
+)
 
 
 BOOMERANG_ADD_TEST(

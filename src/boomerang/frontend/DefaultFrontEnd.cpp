@@ -889,8 +889,7 @@ bool DefaultFrontEnd::liftBB(BasicBlock *currentBB, UserProc *proc,
                 assert(sym != nullptr);
 
                 QString func = sym->getName();
-                std::shared_ptr<CallStatement> call(new CallStatement);
-                call->setDest(jumpDest->clone());
+                std::shared_ptr<CallStatement> call(new CallStatement(jumpDest->clone()));
                 LibProc *lp = proc->getProg()->getOrCreateLibraryProc(func);
 
                 if (lp == nullptr) {
@@ -1226,8 +1225,7 @@ void DefaultFrontEnd::preprocessProcGoto(RTL::StmtList::iterator ss, Address des
     }
 
     if (proc != nullptr && proc != reinterpret_cast<Function *>(-1)) {
-        std::shared_ptr<CallStatement> call(new CallStatement);
-        call->setDest(dest);
+        std::shared_ptr<CallStatement> call(new CallStatement(dest));
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
 

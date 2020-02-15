@@ -74,6 +74,12 @@ char *toString(const Exp& exp)
 }
 
 
+char *toString(const Type& ty)
+{
+    return QTest::toString(ty.toString());
+}
+
+
 char *toString(const LocationSet& locSet)
 {
     QString tgt;
@@ -81,6 +87,19 @@ char *toString(const LocationSet& locSet)
     locSet.print(os);
 
     return QTest::toString(tgt);
+}
+
+
+char *toString(const std::list<SharedExp> &list)
+{
+    QString result = "{ ";
+
+    for (const SharedExp &elem : list) {
+        result += elem->toString() + " ";
+    }
+
+    result += "}";
+    return QTest::toString(result);
 }
 
 

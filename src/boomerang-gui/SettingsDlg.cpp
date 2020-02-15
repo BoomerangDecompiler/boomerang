@@ -67,8 +67,6 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ui->cbDotFile->setEditable(false);
     ui->spbPropMaxDepth->setRange(0, std::numeric_limits<int>::max());
     ui->spbPropMaxDepth->setValue(m_settings->propMaxDepth);
-    ui->spbNumToPropagate->setRange(-1, std::numeric_limits<int>::max());
-    ui->spbNumToPropagate->setValue(m_settings->numToPropagate);
 
     ITypeRecovery *rec = decompiler->getProject()->getTypeRecoveryEngine();
     ui->cbTypeRecoveryEngine->addItem("<None>", QVariant::fromValue<ITypeRecovery *>(nullptr));
@@ -132,7 +130,6 @@ void SettingsDlg::on_btnApply_clicked()
     // Decompile
     m_settings->dotFile         = ui->cbDotFile->currentData().value<QString>();
     m_settings->propMaxDepth    = ui->spbPropMaxDepth->value();
-    m_settings->numToPropagate  = ui->spbNumToPropagate->value();
     m_settings->useTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
                                       .value<ITypeRecovery *>() != nullptr;
 

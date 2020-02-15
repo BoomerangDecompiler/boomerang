@@ -103,6 +103,13 @@ void Function::removeFromModule()
 }
 
 
+void Function::setSignature(std::shared_ptr<Signature> sig)
+{
+    m_signature = sig;
+    assert(m_signature != nullptr);
+}
+
+
 void Function::removeParameterFromSignature(SharedExp e)
 {
     const int n = m_signature->findParam(e);

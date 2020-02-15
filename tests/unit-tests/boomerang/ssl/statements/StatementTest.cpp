@@ -15,6 +15,7 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/LowLevelCFG.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProcDecompiler.h"
@@ -33,10 +34,10 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/log/Log.h"
-
 
 #include <sstream>
 #include <map>
@@ -46,971 +47,639 @@
 #define GLOBAL1_X86    getFullSamplePath("x86/global1")
 
 
-void StatementTest::testEmpty()
+#define TEST_PROP(name, exp, canProp) \
+    do { \
+        QTest::newRow(name) << SharedExpWrapper(exp) << canProp; \
+    } while (false)
+
+
+SharedExp makeFlagCallArgs() { return Terminal::get(opNil); }
+
+template<typename Arg, typename... Args>
+SharedExp makeFlagCallArgs(Arg arg, Args... args) { return Binary::get(opList, arg, makeFlagCallArgs(args...)); }
+
+template<typename... Args>
+SharedExp makeFlagCall(const QString &name, Args... args) { return Binary::get(opFlagCall, Const::get(name), makeFlagCallArgs(args...)); }
+
+
+
+void StatementTest::testFragment()
 {
-    m_project.getSettings()->setOutputDirectory("./unit_test/");
+    Prog prog("testProg", &m_project);
+    BasicBlock *bb = prog.getCFG()->createBB(BBType::Oneway, createInsns(Address(0x1000), 1));
 
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
+    UserProc proc(Address(0x1000), "test", nullptr);
+    IRFragment *frag = proc.getCFG()->createFragment(FragType::Oneway, createRTLs(Address(0x1000), 1, 1), bb);
 
-    Prog *prog = m_project.getProg();
+    std::shared_ptr<ReturnStatement> ret(new ReturnStatement);
 
-    const auto& m = *prog->getModuleList().begin();
-    QVERIFY(m != nullptr);
-
-    // create UserProc
-    UserProc *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000123)));
-
-    // create CFG
-    ProcCFG                    *cfg   = proc->getCFG();
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { })));
-
-    BasicBlock *entryBB = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-    cfg->setEntryAndExitBB(entryBB);
-    proc->setDecoded(); // We manually "decoded"
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-    cfg->print(st);
-
-    QString expected = QString(
-            "Control Flow Graph:\n"
-            "Ret Fragment:\n"
-            "  in edges: \n"
-            "  out edges: \n"
-            "0x00000123\n\n"
-        );
-
-    QCOMPARE(actual, expected);
+    QVERIFY(ret->getFragment() == nullptr);
+    ret->setFragment(frag);
+    QVERIFY(ret->getFragment() == frag);
+    ret->setFragment(nullptr);
+    QVERIFY(ret->getFragment() == nullptr);
 }
 
 
-void StatementTest::testFlow()
+void StatementTest::testIsNull()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-
-    Prog *prog = m_project.getProg();
-
-    // create UserProc
-    UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
-
-    ProcCFG *cfg   = proc->getCFG();
-
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), std::make_shared<Const>(5)));
-    a1->setProc(proc);
-    a1->setNumber(1);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
-
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(2);
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), std::make_shared<Const>(5)));
-    a2->setProc(proc);
-    rs->addReturn(a2);
-
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { rs })));
-
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-    QVERIFY(ret);
-
-    // first was empty before
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first); // Also sets exitBB; important!
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    // The assignment to 5 gets propagated into the return, and the assignment
-    // to r24 is removed
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010    1 RET *v* r24 := 5\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=5\n"
-        "\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testKill()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    // create UserProc
-    QString  name  = "test";
-    UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, name));
-
-    // create CFG
-    ProcCFG              *cfg   = proc->getCFG();
-
-    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
-    e1->setNumber(1);
-    e1->setProc(proc);
-
-    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
-    e2->setNumber(2);
-    e2->setProc(proc);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { e1, e2 })));
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(3);
-
-    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
-    e->setProc(proc);
-    rs->addReturn(e);
-
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { rs })));
-
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=6\n\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testUse()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
-
-    ProcCFG *cfg   = proc->getCFG();
-
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
-    a1->setNumber(1);
-    a1->setProc(proc);
-
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
-    a2->setNumber(2);
-    a2->setProc(proc);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(3);
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_ESP), Const::get(1000)));
-    a->setProc(proc);
-    rs->addReturn(a);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { rs })));
-
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010    1 RET *v* r28 := 1000\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=5,   r28=5\n\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testUseOverKill()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Machine::X86, CallConv::C, "test"));
-    ProcCFG *cfg = proc->getCFG();
-
-    std::shared_ptr<Assign> e1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
-    e1->setNumber(1);
-    e1->setProc(proc);
-
-    std::shared_ptr<Assign> e2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
-    e2->setNumber(2);
-    e2->setProc(proc);
-
-    std::shared_ptr<Assign> e3(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
-    e3->setNumber(3);
-    e3->setProc(proc);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { e1, e2, e3 })));
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(4);
-    std::shared_ptr<Assign> e(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
-    e->setProc(proc);
-    rs->addReturn(e);
-
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { rs })));
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    // compare it to expected
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=6,   r28=6\n\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testUseOverBB()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    // create UserProc
-    UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
-    ProcCFG *cfg       = proc->getCFG();
-
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
-    a1->setNumber(1);
-    a1->setProc(proc);
-
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Const::get(6)));
-    a2->setNumber(2);
-    a2->setProc(proc);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<Assign> a3(new Assign(Location::regOf(REG_X86_ESP), Location::regOf(REG_X86_EAX)));
-    a3->setNumber(3);
-    a3->setProc(proc);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a3 })));
-
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(4);
-
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
-    a->setProc(proc);
-    rs->addReturn(a);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00001012), { rs })));
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010\n"
-        "0x00001012    1 RET *v* r24 := 0\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=6,   r28=6\n\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testUseKill()
-{
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    ProcCFG *cfg   = proc->getCFG();
-
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5)));
-    a1->setNumber(1);
-    a1->setProc(proc);
-
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Binary::get(opPlus, Location::regOf(REG_X86_EAX), Const::get(1))));
-    a2->setNumber(2);
-    a2->setProc(proc);
-
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1, a2 })));
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    std::shared_ptr<ReturnStatement> rs(new ReturnStatement);
-    rs->setNumber(3);
-    std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_EAX), Const::get(0)));
-    a->setProc(proc);
-    rs->addReturn(a);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { rs })));
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-
-    first->addSuccessor(ret);
-    ret->addPredecessor(first);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001010 \n"
-        "0x00001000\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001000(0x00001000) \n"
-        "  out edges: \n"
-        "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r24=6\n\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testEndlessLoop()
-{
-    //
-    // BB1 -> BB2 _
-    //       ^_____|
-
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
-
-    UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
-    ProcCFG *cfg   = proc->getCFG();
-
-    // r[24] := 5
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_EAX), Const::get(5, IntegerType::get(32, Sign::Signed))));
-    a1->setProc(proc);
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
-
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-
-    // r24 := r24 + 1
-    std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_EAX), Binary::get(opPlus,
-                                                                       Location::regOf(REG_X86_EAX),
-                                                                       Const::get(1, IntegerType::get(32, Sign::Signed)))));
-    a2->setProc(proc);
-    bbRTLs.reset(new RTLList);
-    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a2 })));
-
-    BasicBlock *body = cfg->createBB(BBType::Oneway, std::move(bbRTLs));
-
-    first->addSuccessor(body);
-    body->addPredecessor(first);
-    body->addSuccessor(body);
-    body->addPredecessor(body);
-    cfg->setEntryAndExitBB(first);
-    proc->setDecoded();
-
-    // compute dataflow
-    proc->decompileRecursive();
-
-    QString     actual;
-    OStream st(&actual);
-
-    proc->numberStatements();
-    cfg->print(st);
-
-    // int i = 5; do { i++; } while (true);
-    // TODO: is the phi really needed?
-    QString expected = "Control Flow Graph:\n"
-                       "Fall Fragment:\n"
-                       "  in edges: \n"
-                       "  out edges: 0x00001010 \n"
-                       "0x00001000    1 *i32* r24 := 5\n"
-                       "Oneway Fragment:\n"
-                       "  in edges: 0x00001000(0x00001000) 0x00001010(0x00001010) \n"
-                       "  out edges: 0x00001010 \n"
-                       "0x00000000    2 *i32* r24 := phi{1 3}\n"
-                       "0x00001010    3 *i32* r24 := r24{2} + 1\n"
-                       "\n";
-
-    compareLongStrings(actual, expected);
-}
-
-
-void StatementTest::testLocationSet()
-{
-    LocationSet ls;
-
     {
-        ls.insert(Location::regOf(REG_X86_AL));
-        ls.insert(Location::regOf(REG_X86_AH));
-        ls.insert(Location::regOf(REG_X86_EDI));
-        ls.insert(Location::regOf(REG_X86_EAX));
-        ls.insert(Location::regOf(REG_X86_AH)); // do not insert twice
-
-        QCOMPARE(ls.size(), 4);
-
-        auto ii = ls.begin();
-        QVERIFY(**ii == *Location::regOf(REG_X86_AL));
-
-        std::advance(ii, 1);
-        QVERIFY(**ii == *Location::regOf(REG_X86_AH));
-
-        std::advance(ii, 1);
-        QVERIFY(**ii == *Location::regOf(REG_X86_EAX));
-
-        std::advance(ii, 1);
-        QVERIFY(**ii == *Location::regOf(REG_X86_EDI));
+        // %eax := -
+        std::shared_ptr<ImplicitAssign> imp(new ImplicitAssign(Location::regOf(REG_X86_EAX)));
+        QVERIFY(!imp->isNullStatement());
     }
 
     {
-        auto mof = Location::memOf(Binary::get(opPlus,
-                                            Location::regOf(REG_X86_DH),
-                                            Const::get(4)),
-                                nullptr); // m[r14 + 4]
-        ls.insert(mof->clone());
-        ls.insert(mof->clone());
-
-        QCOMPARE(ls.size(), 5);
-
-        auto ii = std::prev(ls.end());
-        QVERIFY(**ii == *mof);
-    }
-
-    LocationSet ls2 = ls;
-    QCOMPARE(ls2.size(), ls.size());
-
-    for (auto it1 = ls.begin(), it2 = ls2.begin(); it1 != ls.end(); ++it1, ++it2) {
-        QVERIFY(*it2 != *it1);
-        QVERIFY(**it2 == **it1);
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        QVERIFY(!asgn->isNullStatement());
     }
 
     {
-        std::shared_ptr<Assign> s10(new Assign(Const::get(0), Const::get(0)));
-        std::shared_ptr<Assign> s20(new Assign(Const::get(0), Const::get(0)));
-        s10->setNumber(10);
-        s20->setNumber(20);
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_EAX)));
+        QVERIFY(asgn->isNullStatement());
+    }
 
-        std::shared_ptr<RefExp> r1 = RefExp::get(Location::regOf(REG_X86_AL), s10);
-        std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(REG_X86_AL), s20);
-        ls.insert(r1); // ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
+    {
+        // 5 %eax := %eax{5}
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        std::shared_ptr<RefExp> ref = RefExp::get(Location::regOf(REG_X86_EAX), asgn);
+        asgn->setRight(ref);
 
-        QCOMPARE(ls.size(), 6);
-        SharedExp dummy;
-        QVERIFY(!ls.findDifferentRef(r1, dummy));
-        QVERIFY(ls.findDifferentRef(r2, dummy));
+        QVERIFY(asgn->isNullStatement());
+    }
 
-        SharedExp r8 = Location::regOf(REG_X86_AL);
-        QVERIFY(!ls.containsImplicit(r8));
+    {
+        // 5 %eax := %ecx{5}
+        std::shared_ptr<Assign> asgn(new Assign(Location::regOf(REG_X86_EAX), Location::regOf(REG_X86_ECX)));
+        std::shared_ptr<RefExp> ref = RefExp::get(Location::regOf(REG_X86_ECX), asgn);
+        asgn->setRight(ref);
 
-        std::shared_ptr<RefExp> r3(new RefExp(Location::regOf(REG_X86_AL), nullptr));
-        ls.insert(r3);
-        QVERIFY(ls.containsImplicit(r8));
-        ls.remove(r3);
-
-        std::shared_ptr<ImplicitAssign> zero(new ImplicitAssign(r8));
-        std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(REG_X86_AL), zero));
-        ls.insert(r4);
-
-        QVERIFY(ls.containsImplicit(r8));
+        QVERIFY(asgn->isNullStatement());
     }
 }
 
 
-void StatementTest::testWildLocationSet()
+void StatementTest::testCanPropagateToExp()
 {
-    Location rof12(opRegOf, Const::get(REG_X86_AH), nullptr);
-    Location rof13(opRegOf, Const::get(REG_X86_CH), nullptr);
-    std::shared_ptr<Assign> a10(new Assign);
-    std::shared_ptr<Assign> a20(new Assign);
+    QFETCH(SharedExpWrapper, exp);
+    QFETCH(bool, canPropagate);
 
-    a10->setNumber(10);
-    a20->setNumber(20);
-    std::shared_ptr<RefExp> r12_10(new RefExp(rof12.clone(), a10));
-    std::shared_ptr<RefExp> r12_20(new RefExp(rof12.clone(), a20));
-    std::shared_ptr<RefExp> r12_0(new RefExp(rof12.clone(), nullptr));
-    std::shared_ptr<RefExp> r13_10(new RefExp(rof13.clone(), a10));
-    std::shared_ptr<RefExp> r13_20(new RefExp(rof13.clone(), a20));
-    std::shared_ptr<RefExp> r13_0(new RefExp(rof13.clone(), nullptr));
-    std::shared_ptr<RefExp> r11_10(new RefExp(Location::regOf(REG_X86_BL), a10));
-    std::shared_ptr<RefExp> r24_10(new RefExp(Location::regOf(REG_X86_EAX), a10));
-
-    LocationSet ls;
-    ls.insert(r12_10);
-    ls.insert(r12_20);
-    ls.insert(r12_0);
-    ls.insert(r13_10);
-    ls.insert(r13_20);
-    ls.insert(r13_0);
-
-    std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), STMT_WILD));
-    QVERIFY(ls.contains(wildr12));
-    std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), STMT_WILD));
-    QVERIFY(ls.contains(wildr13));
-    std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(REG_X86_DL), STMT_WILD));
-    QVERIFY(!ls.contains(wildr10));
-
-    // Test findDifferentRef
-    SharedExp x;
-    QVERIFY(ls.findDifferentRef(r13_10, x));
-    QVERIFY(ls.findDifferentRef(r13_20, x));
-    QVERIFY(ls.findDifferentRef(r13_0, x));
-    QVERIFY(ls.findDifferentRef(r12_10, x));
-    QVERIFY(ls.findDifferentRef(r12_20, x));
-    QVERIFY(ls.findDifferentRef(r12_0, x));
-
-    // Next 4 should fail
-    QVERIFY(!ls.findDifferentRef(r11_10, x));
-    QVERIFY(!ls.findDifferentRef(r24_10, x));
-    ls.insert(r11_10);
-    ls.insert(r24_10);
-    QVERIFY(!ls.findDifferentRef(r11_10, x));
-    QVERIFY(!ls.findDifferentRef(r24_10, x));
+    QCOMPARE(Statement::canPropagateToExp(**exp), canPropagate);
 }
 
 
-void StatementTest::testRecursion()
+void StatementTest::testCanPropagateToExp_data()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_X86));
-    Prog *prog = m_project.getProg();
+    const SharedExp eax = Location::regOf(REG_X86_EAX);
+    const SharedExp ecx = Location::regOf(REG_X86_ECX);
 
-    UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
-    ProcCFG *cfg   = proc->getCFG();
+    const std::shared_ptr<Assign> asgn(new Assign(eax, ecx));
+    const std::shared_ptr<Assign> arrayAsgn(new Assign(ArrayType::get(IntegerType::get(32)), eax, ecx));
+    const std::shared_ptr<Assign> selfAsgn(new Assign(eax, eax));
+    const std::shared_ptr<Assign> selfRef(new Assign(eax, eax));
+    const std::shared_ptr<ImplicitAssign> ias(new ImplicitAssign(eax));
+    const std::shared_ptr<PhiAssign> phi(new PhiAssign(eax));
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    selfRef->setRight(RefExp::get(eax, selfRef));
 
-    // the fallthrough bb
-    {
-        // push bp
-        // r28 := r28 + -4
-        std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_ESP),
-                                Binary::get(opPlus,
-                                            Location::regOf(REG_X86_ESP),
-                                            Const::get(-4))));
-        a1->setProc(proc);
+    QTest::addColumn<SharedExpWrapper>("exp");
+    QTest::addColumn<bool>("canPropagate");
 
-        // m[r28] := r29
-        std::shared_ptr<Assign> a2(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)), Location::regOf(REG_X86_EBP)));
-        a2->setProc(proc);
-        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1004), { a1, a2 })));
-
-        // push arg+1
-        // r28 := r28 + -4
-        std::shared_ptr<Assign> a3 = a1->clone()->as<Assign>();
-        a3->setProc(proc);
-
-        // Reference our parameter. At esp+0 is this arg; at esp+4 is old ebp;
-        // esp+8 is return address; esp+12 is our arg
-        // m[r28] := m[r28+12] + 1
-        std::shared_ptr<Assign> a4(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)),
-                                Binary::get(opPlus,
-                                            Location::memOf(Binary::get(opPlus,
-                                                                        Location::regOf(REG_X86_ESP),
-                                                                        Const::get(12))),
-                                            Const::get(1))));
-
-        a4->setProc(proc);
-        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1006), { a3, a4 })));
-    }
-
-    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(bbRTLs));
-
-    // The call BB
-    bbRTLs.reset(new RTLList);
-    {
-        // r28 := r28 + -4
-        std::shared_ptr<Assign> a5(new Assign(Location::regOf(REG_X86_ESP), Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(-4))));
-        a5->setProc(proc);
-
-        // m[r28] := pc
-        std::shared_ptr<Assign> a6(new Assign(Location::memOf(Location::regOf(REG_X86_ESP)), Terminal::get(opPC)));
-        a6->setProc(proc);
-
-        // %pc := (%pc + 5) + 135893848
-        std::shared_ptr<Assign> a7(new Assign(Terminal::get(opPC),
-                    Binary::get(opPlus,
-                                Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
-                                Const::get(0x8199358))));
-        a7->setProc(proc);
-
-        std::shared_ptr<CallStatement> c(new CallStatement);
-        c->setDestProc(proc); // Just call self
-
-        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1008), { a5, a6, a7, c })));
-    }
-
-    BasicBlock *callbb = cfg->createBB(BBType::Call, std::move(bbRTLs));
-
-    first->addSuccessor(callbb);
-    callbb->addPredecessor(first);
-    callbb->addSuccessor(callbb);
-    callbb->addPredecessor(callbb);
-
-    // the ret bb
-    bbRTLs.reset(new RTLList);
-    {
-        std::shared_ptr<ReturnStatement> retStmt(new ReturnStatement);
-        // This ReturnStatement requires the following two sets of semantics to pass the
-        // tests for standard x86 calling convention
-        // pc = m[r28]
-        std::shared_ptr<Assign> a1(new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(REG_X86_ESP))));
-        // r28 = r28 + 4
-        std::shared_ptr<Assign> a2(new Assign(Location::regOf(REG_X86_ESP), Binary::get(opPlus, Location::regOf(REG_X86_ESP), Const::get(4))));
-
-        bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x100C), { a1, a2, retStmt })));
-    }
-
-    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(bbRTLs));
-
-    callbb->addSuccessor(ret);
-    ret->addPredecessor(callbb);
-    cfg->setEntryAndExitBB(first);
-
-    proc->setEntryAddress(Address(0x1004));
-
-    // decompile the "proc"
-    prog->addEntryPoint(Address(0x1004));
-    ProgDecompiler dcomp(prog);
-    dcomp.decompile();
-
-    proc->numberStatements();
-
-    // print cfg to a string
-    QString     actual;
-    OStream st(&actual);
-    cfg->print(st);
-
-    const QString expected =
-        "Control Flow Graph:\n"
-        "Fall Fragment:\n"
-        "  in edges: \n"
-        "  out edges: 0x00001008 \n"
-        "0x00000000    1 *union* r28 := -\n"
-        "              2 *32* r29 := -\n"
-        "              3 *v* m[r28{1} + 4] := -\n"
-        "0x00001004\n"
-        "0x00001006    4 *union* r28 := r28{1} - 8\n"
-        "Call Fragment:\n"
-        "  in edges: 0x00001006(0x00001004) 0x00001008(0x00001008) \n"
-        "  out edges: 0x00001008 0x0000100c \n"
-        "0x00000000    5 *union* r28 := phi{4 7}\n"
-        "0x00001008    6 *u32* m[r28{5} - 4] := %pc\n"
-        "              7 *union* r28 := CALL test(<all>)\n"
-        "              Reaching definitions: r28=r28{5} - 4,   r29=r29{2},   m[r28{1} + 4]=m[r28{1} + 4]{3},\n"
-        "                m[r28{1} - 4]=r29{2},   m[r28{1} - 8]=m[r28{1} + 4]{3} + 1\n"
-        "              Live variables: r28\n"
-        "Ret Fragment:\n"
-        "  in edges: 0x00001008(0x00001008) \n"
-        "  out edges: \n"
-        "0x0000100c    8 RET\n"
-        "              Modifieds: <None>\n"
-        "              Reaching definitions: r28=r28{7} + 4,   r29=r29{7},   m[r28{1} + 4]=m[r28{1} + 4]{7},\n"
-        "                m[r28{1} - 4]=m[r28{1} - 4]{7},   m[r28{1} - 8]=m[r28{1} - 8]{7},   <all>=<all>{7}\n"
-        "\n";
-
-    compareLongStrings(actual, expected);
+    TEST_PROP("%ecx",           ecx,                         false);
+    TEST_PROP("%ecx{-}",        RefExp::get(ecx, nullptr),   false);
+    TEST_PROP("%eax{ias}",      RefExp::get(eax, ias),       false);
+    TEST_PROP("%eax{selfAsgn}", RefExp::get(eax, selfAsgn),  false);
+    TEST_PROP("%eax{selfRef}",  RefExp::get(eax, selfRef),   false);
+    TEST_PROP("%eax{phi}",      RefExp::get(eax, phi),       false);
+    TEST_PROP("%eax{asgn}",     RefExp::get(eax, asgn),      true);
+    TEST_PROP("%eax{array}",    RefExp::get(eax, arrayAsgn), false);
 }
 
 
-void StatementTest::testClone()
+void StatementTest::testPropagateToThis()
 {
-    std::shared_ptr<Assign> a1(new Assign(Location::regOf(REG_X86_AL), Binary::get(opPlus, Location::regOf(REG_X86_CL), Const::get(99))));
-    std::shared_ptr<Assign> a2(new Assign(IntegerType::get(16, Sign::Signed), Location::param("x"), Location::param("y")));
-    std::shared_ptr<Assign> a3(new Assign(IntegerType::get(16, Sign::Unsigned), Location::param("z"), Location::param("q")));
+    SharedExp eax = Location::regOf(REG_X86_EAX);
+    SharedExp ecx = Location::regOf(REG_X86_ECX);
+    SharedExp edx = Location::regOf(REG_X86_EDX);
 
-    SharedStmt c1 = a1->clone();
-    SharedStmt c2 = a2->clone();
-    SharedStmt c3 = a3->clone();
+    {
+        SharedStmt asgn(new Assign(eax, ecx));
+        SharedStmt clone = asgn->clone();
 
-    QString original, clone;
-    OStream original_st(&original);
-    OStream clone_st(&clone);
+        QVERIFY(!asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), clone->toString());
+    }
 
-    a1->print(original_st);
-    a1.reset(); // And c1 should still stand!
-    c1->print(clone_st);
-    a2->print(original_st);
-    c2->print(clone_st);
-    a3->print(original_st);
-    c3->print(clone_st);
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(edx, Const::get(0x2000)));
 
-    QString expected("   0 *v* r8 := r9 + 99"
-                     "   0 *i16* x := y"
-                     "   0 *u16* z := q");
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(RefExp::get(eax, s10)),
+            Binary::get(opPlus,
+                        RefExp::get(ecx, s20),
+                        Location::memOf(RefExp::get(edx, s30)))));
 
-    QCOMPARE(original, expected);
-    QCOMPARE(clone, expected);
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Location::memOf(Const::get(0x2000))));
+
+        QVERIFY(asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(edx, Location::memOf(Const::get(2000))));
+
+        std::map<SharedExp, int, lessExpStar> destCounts;
+
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(RefExp::get(eax, s10)),
+            Binary::get(opPlus,
+                        RefExp::get(ecx, s20),
+                        Location::memOf(RefExp::get(edx, s30)))));
+
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Location::memOf(RefExp::get(edx, s30))));
+
+        QVERIFY(asgn->propagateToThis(3));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        std::shared_ptr<Assign> s10(new Assign(eax, Const::get(0x1000)));
+        std::shared_ptr<Assign> s20(new Assign(ecx, Const::get(0)));
+        std::shared_ptr<Assign> s30(new Assign(eax, Const::get(0x2000)));
+
+        SharedExp ref10 = RefExp::get(eax, s10);
+        SharedExp ref20 = RefExp::get(ecx, s20);
+        SharedExp ref30 = RefExp::get(edx, s30);
+
+        std::map<SharedExp, int, lessExpStar> destCounts;
+        destCounts[ref10] = 2;
+        destCounts[ref20] = 1;
+
+        std::shared_ptr<Assign> asgn(new Assign(
+            Location::memOf(ref10),
+            Binary::get(opPlus,
+                        Binary::get(opPlus,
+                                    ref20,
+                                    Location::memOf(ref10)),
+                        ref30)));
+
+        std::shared_ptr<Assign> expected(new Assign(
+            Location::memOf(Const::get(0x1000)),
+            Binary::get(opPlus,
+                        Location::memOf(Const::get(0x1000)),
+                        Const::get(0x2000))));
+
+        QVERIFY(asgn->propagateToThis(2, &destCounts));
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    // TODO: Check if multi-propagation respects the -l switch
+}
+
+
+void StatementTest::testPropagateFlagsToThis()
+{
+    SharedExp eax   = Location::regOf(REG_X86_EAX);
+    SharedExp ecx   = Location::regOf(REG_X86_ECX);
+    SharedExp edx   = Location::regOf(REG_X86_ECX);
+    SharedExp flags = Terminal::get(opFlags);
+    SharedExp st0   = Location::regOf(REG_X86_ST0);
+    SharedExp st1   = Location::regOf(REG_X86_ST1);
+
+    {
+        SharedStmt asgn(new Assign(eax, ecx));
+        asgn->setNumber(1);
+        SharedStmt clone = asgn->clone();
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), clone->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, Const::get(0)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new PhiAssign(flags));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
+        SharedStmt expected = asgn->clone();
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, ecx));
+        SharedStmt asgn(new Assign(eax, RefExp::get(flags, def)));
+        SharedStmt expected = asgn->clone();
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGSFL", st0, st1)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, makeFlagCall("SUBFLAGSFL", st0, st1)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLessUns, eax, ecx)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, edx, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, edx, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax,
+            Binary::get(opOr,
+                        Binary::get(opAnd,
+                                    Binary::get(opAnd, Binary::get(opLess, eax, Const::get(0)),
+                                                Binary::get(opGtrEq, ecx, Const::get(0))),
+                                    Binary::get(opGtrEq, edx, Const::get(0))),
+                        Binary::get(opAnd,
+                                    Binary::get(opAnd, Binary::get(opGtrEq, eax, Const::get(0)),
+                                                Binary::get(opLess, ecx, Const::get(0))),
+                                    Binary::get(opLess, edx, Const::get(0))))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("SUBFLAGS", eax, ecx, edx)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opLess, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opCF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("LOGICALFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opOF), def)));
+        SharedStmt expected(new Assign(eax, Const::get(0)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opZF), def)));
+        SharedStmt expected(new Assign(eax, Binary::get(opEquals, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opNF), def)));
+        SharedStmt expected(new Assign(eax,Binary::get(opLess, eax, Const::get(0))));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    {
+        SharedStmt def(new Assign(flags, makeFlagCall("INCDECFLAGS", eax)));
+        SharedStmt asgn(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+        SharedStmt expected(new Assign(eax, RefExp::get(Terminal::get(opDF), def)));
+
+        def->setNumber(1);
+        asgn->setNumber(2);
+        expected->setNumber(2);
+
+        QVERIFY(!asgn->propagateFlagsToThis());
+        QCOMPARE(asgn->toString(), expected->toString());
+    }
+
+    // TODO: Test replaceRef
 }
 
 
 void StatementTest::testIsAssign()
 {
-    QString     actual;
-    OStream st(&actual);
-    // r2 := 99
     std::shared_ptr<Assign> a(new Assign(Location::regOf(REG_X86_DX), Const::get(99)));
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
 
-    a->print(st);
-    QString expected("   0 *v* r2 := 99");
-
-    QCOMPARE(expected, actual);
     QVERIFY(a->isAssign());
-
-    CallStatement c;
-    QVERIFY(!c.isAssign());
+    QVERIFY(!call->isAssign());
 }
 
 
 void StatementTest::testIsFlagAssgn()
 {
     // FLAG addFlags(r2 , 99)
-    Assign fc(Terminal::get(opFlags),
-              Binary::get(opFlagCall, Const::get("addFlags"),
-                          Binary::get(opList, Location::regOf(REG_X86_DX), Const::get(99))));
-    CallStatement   call;
-    BranchStatement br;
-    Assign          as(Location::regOf(REG_X86_CL), Binary::get(opPlus, Location::regOf(REG_X86_DL), Const::get(4)));
+    std::shared_ptr<Assign> fc(new Assign(Terminal::get(opFlags),
+                                          Binary::get(opFlagCall,
+                                                      Const::get("addFlags"),
+                                                      Binary::get(opList,
+                                                                  Location::regOf(REG_X86_DX),
+                                                                  Const::get(99)))));
+    std::shared_ptr<CallStatement> call(new CallStatement(Address(0x1000)));
+    std::shared_ptr<BranchStatement> br(new BranchStatement(Address(0x1000)));
+    std::shared_ptr<Assign> as(new Assign(Location::regOf(REG_X86_CL),
+                                          Binary::get(opPlus,
+                                                      Location::regOf(REG_X86_DL),
+                                                      Const::get(4))));
 
-    QString     actual;
-    QString     expected("   0 *v* %flags := addFlags( r2, 99 )");
-    OStream ost(&actual);
-
-    fc.print(ost);
-    QCOMPARE(expected, actual);
-
-    QVERIFY(fc.isFlagAssign());
-    QVERIFY(!call.isFlagAssign());
-    QVERIFY(!br.isFlagAssign());
-    QVERIFY(!as.isFlagAssign());
+    QVERIFY(fc->isFlagAssign());
+    QVERIFY(!call->isFlagAssign());
+    QVERIFY(!br->isFlagAssign());
+    QVERIFY(!as->isFlagAssign());
 }
 
 
 void StatementTest::testAddUsedLocsAssign()
 {
-    // m[r28-4] := m[r28-8] * r26
-    std::shared_ptr<Assign> a(new Assign(Location::memOf(Binary::get(opMinus,
-                                         Location::regOf(REG_X86_ESP),
-                                         Const::get(4))),
-             Binary::get(opMult,
-                         Location::memOf(Binary::get(opMinus,
-                                                     Location::regOf(REG_X86_ESP),
-                                                     Const::get(8))),
-                         Location::regOf(REG_X86_EDX))));
-    a->setNumber(1);
+    {
+        // m[r28-4] := m[r28-8] * r26
+        std::shared_ptr<Assign> a(new Assign(
+            Location::memOf(Binary::get(opMinus,
+                                        Location::regOf(REG_X86_ESP),
+                                        Const::get(4))),
+            Binary::get(opMult,
+                        Location::memOf(Binary::get(opMinus,
+                                                    Location::regOf(REG_X86_ESP),
+                                                    Const::get(8))),
+                        Location::regOf(REG_X86_EDX))));
+        a->setNumber(1);
 
-    LocationSet l;
-    a->addUsedLocs(l);
+        LocationSet l;
+        a->addUsedLocs(l);
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QString expected = "r26,\tr28,\tm[r28 - 8]";
-    QCOMPARE(expected, actual);
+        QCOMPARE(l.toString(), "r26, r28, m[r28 - 8]");
+    }
 
-    l.clear();
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
-    g->setNumber(55);
-    g->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
-    g->addUsedLocs(l);
+    {
 
-    actual   = "";
-    expected = "r26,\tm[r26]";
-    l.print(ost);
+        std::shared_ptr<GotoStatement> g(new GotoStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
+        g->setNumber(55);
 
-    QCOMPARE(expected, actual);
+        LocationSet l;
+        g->addUsedLocs(l);
+
+        QCOMPARE(l.toString(), "r26, m[r26]");
+    }
 }
 
 
 void StatementTest::testAddUsedLocsBranch()
 {
     // BranchStatement with dest m[r26{99}]{55}, condition %flags
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
 
-    LocationSet     l;
-    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    std::shared_ptr<BranchStatement> b(new BranchStatement(Address(0x1000)));
     b->setNumber(99);
     b->setDest(RefExp::get(Location::memOf(RefExp::get(Location::regOf(REG_X86_EDX), b)), g));
     b->setCondExpr(Terminal::get(opFlags));
+
+    LocationSet l;
     b->addUsedLocs(l);
 
-    QString     actual;
-    QString     expected("r26{99},\tm[r26{99}]{55},\t%flags");
-    OStream ost(&actual);
-    l.print(ost);
-
-    QCOMPARE(actual, expected);
+    QCOMPARE(l.toString(), "r26{99}, m[r26{99}]{55}, %flags");
 }
 
 
 void StatementTest::testAddUsedLocsCase()
 {
     // CaseStatement with dest = m[r26], switchVar = m[r28 - 12]
-    LocationSet   l;
-    std::shared_ptr<CaseStatement> c(new CaseStatement);
+    std::shared_ptr<CaseStatement> c(new CaseStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
 
-    c->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
     std::unique_ptr<SwitchInfo> si(new SwitchInfo);
     si->switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(REG_X86_ESP), Const::get(12)));
     c->setSwitchInfo(std::move(si));
+
+    LocationSet l;
     c->addUsedLocs(l);
 
-    QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
-    QString actual;
-    OStream ost(&actual);
-    l.print(ost);
-
-    QCOMPARE(actual, expected);
+    QCOMPARE(l.toString(), "r26, r28, m[r28 - 12], m[r26]");
 }
 
 
 void StatementTest::testAddUsedLocsCall()
 {
     // CallStatement with dest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
-    LocationSet   l;
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
-
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x1000)));
     g->setNumber(55);
-    std::shared_ptr<CallStatement> ca(new CallStatement);
-    ca->setDest(Location::memOf(Location::regOf(REG_X86_EDX)));
+
+    std::shared_ptr<CallStatement> ca(new CallStatement(Location::memOf(Location::regOf(REG_X86_EDX))));
     StatementList argl;
+
     argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_AL), Location::memOf(Location::regOf(REG_X86_EBX))));
     argl.append(std::make_shared<Assign>(Location::regOf(REG_X86_CL), RefExp::get(Location::regOf(REG_X86_ESP), g)));
     ca->setArguments(argl);
+
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EDI)));
     ca->addDefine(std::make_shared<ImplicitAssign>(Location::regOf(REG_X86_EAX)));
+
+    LocationSet l;
     ca->addUsedLocs(l);
 
-    QString actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r26,\tr27,\tm[r26],\tm[r27],\tr28{55}"));
+    QCOMPARE(l.toString(), "r26, r27, m[r26], m[r27], r28{55}");
 }
 
 
 void StatementTest::testAddUsedLocsReturn()
 {
     // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
-    LocationSet   l;
-    std::shared_ptr<GotoStatement> g(new GotoStatement);
+    std::shared_ptr<GotoStatement> g(new GotoStatement(Address(0x0800)));
     g->setNumber(55);
 
-    std::shared_ptr<BranchStatement> b(new BranchStatement);
+    std::shared_ptr<BranchStatement> b(new BranchStatement(Address(0x0800)));
     b->setNumber(99);
 
     std::shared_ptr<ReturnStatement> r(new ReturnStatement);
@@ -1019,58 +688,57 @@ void StatementTest::testAddUsedLocsReturn()
     r->addReturn(std::make_shared<Assign>(
                      Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_X86_ECX), g), RefExp::get(Location::regOf(REG_X86_EDX), b))),
                      Const::get(5)));
+
+    LocationSet   l;
     r->addUsedLocs(l);
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25{55},\tr26{99}"));
+    QCOMPARE(l.toString(), "r24, r25{55}, r26{99}");
 }
 
 
 void StatementTest::testAddUsedLocsBool()
 {
-    // Boolstatement with condition m[r24] = r25, dest m[r26]
-    LocationSet l;
-    std::shared_ptr<BoolAssign> bs(new BoolAssign(8));
+    {
+        // Boolstatement with condition m[r24] = r25, dest m[r26]
+        SharedExp lhs = Location::memOf(Location::regOf(REG_X86_EDX));
+        SharedExp cond = Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX));
 
-    bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(REG_X86_EAX)), Location::regOf(REG_X86_ECX)));
-    bs->setLeft(Location::memOf(Location::regOf(REG_X86_EDX)));
-    bs->addUsedLocs(l);
+        std::shared_ptr<BoolAssign> bs(new BoolAssign(lhs, BranchType::JE, cond));
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25,\tr26,\tm[r24]"));
+        LocationSet l;
+        bs->addUsedLocs(l);
 
-    l.clear();
+        QCOMPARE(l.toString(), "r24, r25, r26, m[r24]");
+    }
 
-    // m[local21 + 16] := phi{0, 372}
-    SharedExp base = Location::memOf(Binary::get(opPlus, Location::local("local21", nullptr), Const::get(16)));
-    std::shared_ptr<Assign> s372(new Assign(base, Const::get(0)));
-    s372->setNumber(372);
+    {
+        // m[local21 + 16] := phi{0, 372}
+        SharedExp base = Location::memOf(Binary::get(opPlus, Location::local("local21", nullptr), Const::get(16)));
+        std::shared_ptr<Assign> s372(new Assign(base, Const::get(0)));
+        s372->setNumber(372);
 
-    std::shared_ptr<PhiAssign> pa(new PhiAssign(base));
-    pa->putAt(nullptr, nullptr, base); // 0
-    pa->putAt(nullptr, s372, base);    // 1
-    pa->addUsedLocs(l);
-    // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
+        std::shared_ptr<PhiAssign> pa(new PhiAssign(base));
+        pa->putAt(nullptr, nullptr, base); // 0
+        pa->putAt(nullptr, s372, base);    // 1
 
-    actual   = "";
-    l.print(ost);
-    QCOMPARE(actual, QString("local21,\tm[local21 + 16]{372}"));
+        LocationSet l;
+        pa->addUsedLocs(l);
+
+        // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
+        QCOMPARE(l.toString(), "local21, m[local21 + 16]{372}");
+    }
 
     // m[r28{-} - 4] := -
-    l.clear();
-    auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
+    {
+        auto ia = std::make_shared<ImplicitAssign>(Location::memOf(Binary::get(opMinus,
                                                RefExp::get(Location::regOf(REG_X86_ESP), nullptr),
                                                Const::get(4))));
 
-    ia->addUsedLocs(l);
+        LocationSet l;
+        ia->addUsedLocs(l);
 
-    actual   = "";
-    l.print(ost);
-    QCOMPARE(actual, QString("r28{-}"));
+        QCOMPARE(l.toString(), "r28{-}");
+    }
 }
 
 
@@ -1085,8 +753,8 @@ void StatementTest::testBypass()
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);
 
-    fe->decodeEntryPointsRecursive();
-    fe->disassembleAll();
+    QVERIFY(fe->disassembleEntryPoints());
+    QVERIFY(fe->disassembleAll());
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);
@@ -1097,9 +765,6 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's an X86Signature (needed for bypassing)
 
-    // Number the statements
-    proc->numberStatements();
-
     PassManager::get()->executePass(PassID::StatementInit, proc);
     PassManager::get()->executePass(PassID::Dominators, proc);
 
@@ -1107,6 +772,8 @@ void StatementTest::testBypass()
     // because otherwise definitions of calls get ignored.
     PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
+
+    proc->numberStatements();
 
     // Find various needed statements
     StatementList stmts;
@@ -1125,8 +792,7 @@ void StatementTest::testBypass()
     s19->bypass();        // r28 should bypass the call
     QCOMPARE(s19->toString(), "  19 *32* r28 := r28{15} + 20");
 
-    // Second pass (should do nothing because r28{15} is the only reference to r28
-    // that reaches the call)
+    // should do nothing because r28{15} is the only reference to r28 that reaches the call
     s19->bypass();
     QCOMPARE(s19->toString(), "  19 *32* r28 := r28{15} + 20");
 }

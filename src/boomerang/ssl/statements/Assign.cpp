@@ -28,53 +28,37 @@
 
 
 Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)
-    : Assignment(lhs)
+    : Assignment(StmtType::Assign, lhs)
     , m_rhs(rhs)
     , m_guard(guard)
 {
-    m_kind = StmtType::Assign;
+    assert(m_lhs != nullptr);
+    assert(m_rhs != nullptr);
 }
 
 
 Assign::Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard)
-    : Assignment(ty, lhs)
+    : Assignment(StmtType::Assign, ty, lhs)
     , m_rhs(rhs)
     , m_guard(guard)
 {
-    m_kind = StmtType::Assign;
+    assert(m_lhs != nullptr);
+    assert(m_rhs != nullptr);
 }
 
 
 Assign::Assign(const Assign &other)
-    : Assignment(m_lhs->clone())
+    : Assignment(other)
 {
-    m_kind  = StmtType::Assign;
     m_rhs   = other.m_rhs->clone();
-    m_type  = nullptr;
-    m_guard = nullptr;
-
-    if (other.m_type) {
-        m_type = other.m_type->clone();
-    }
-
-    if (other.m_guard) {
-        m_guard = other.m_guard->clone();
-    }
+    m_type  = other.m_type ? other.m_type->clone() : nullptr;
+    m_guard = other.m_guard ? other.m_guard->clone() : nullptr;
 }
 
 
 SharedStmt Assign::clone() const
 {
-    std::shared_ptr<Assign> asgn = std::make_shared<Assign>(
-        m_type == nullptr ? nullptr : m_type->clone(), m_lhs->clone(), m_rhs->clone(),
-        m_guard == nullptr ? nullptr : m_guard->clone());
-
-    // Statement members
-    asgn->m_fragment = m_fragment;
-    asgn->m_proc     = m_proc;
-    asgn->m_number   = m_number;
-
-    return asgn;
+    return std::make_shared<Assign>(*this);
 }
 
 
@@ -102,9 +86,8 @@ void Assign::simplify()
     }
 
     // Perhaps the guard can go away
-    if (m_guard && (m_guard->isTrue() ||
-                    (m_guard->isIntConst() && (m_guard->access<Const>()->getInt() == 1)))) {
-        m_guard = nullptr; // No longer a guarded assignment
+    if (m_guard && m_guard->isTrue()) {
+        m_guard = nullptr;
     }
 
     if (m_lhs->isMemOf()) {
@@ -142,11 +125,7 @@ void Assign::printCompact(OStream &os) const
 
 bool Assign::search(const Exp &pattern, SharedExp &result) const
 {
-    if (m_lhs->search(pattern, result)) {
-        return true;
-    }
-
-    return m_rhs->search(pattern, result);
+    return m_lhs->search(pattern, result) || m_rhs->search(pattern, result);
 }
 
 
@@ -251,12 +230,4 @@ bool Assign::accept(StmtPartModifier *v)
     }
 
     return true;
-}
-
-
-Assign::Assign()
-    : Assignment(nullptr)
-    , m_rhs(nullptr)
-    , m_guard(nullptr)
-{
 }

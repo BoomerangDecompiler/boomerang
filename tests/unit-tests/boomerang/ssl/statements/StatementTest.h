@@ -22,23 +22,12 @@ class StatementTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
-    void testEmpty();
-    void testFlow();
-    void testKill();
-    void testUse();
-    void testUseOverKill();
-    void testUseOverBB();
-    void testUseKill();
-    void testLocationSet();
-    void testWildLocationSet();
-
-    void testEndlessLoop();
-
-    /// Test push of argument (X86 style), then call self
-    void testRecursion();
-
-    /// Test cloning of Assigns (and exps)
-    void testClone();
+    void testFragment();
+    void testIsNull();
+    void testCanPropagateToExp();
+    void testCanPropagateToExp_data();
+    void testPropagateToThis();
+    void testPropagateFlagsToThis();
 
     /// Test assignment test
     void testIsAssign();

@@ -18,6 +18,7 @@ class StmtSubscripterTest : public BoomerangTest
     Q_OBJECT
 
 private:
+    /// Subscript \p e by \p e{def} in \p stmt
     void subscriptVarForStmt(const SharedStmt &stmt, SharedExp e, const SharedStmt &def);
 
 private slots:

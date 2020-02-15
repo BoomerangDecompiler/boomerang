@@ -538,6 +538,10 @@ bool Prog::isReadOnly(Address a) const
 
 bool Prog::isInStringsSection(Address a) const
 {
+    if (!m_binaryFile || !m_binaryFile->getImage()) {
+        return false;
+    }
+
     const BinarySection *si = static_cast<const BinarySection *>(
         m_binaryFile->getImage()->getSectionByAddr(a));
     return si && si->isAttributeInRange("StringsSection", a, a + 1);

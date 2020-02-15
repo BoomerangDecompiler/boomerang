@@ -2,6 +2,8 @@ v0.6.0 (in development)
 -----------------------
 - Fixed: Crash when plugin interface constructor throws an exception.
 - Fixed: Crash when generating code for unions containing function pointers in some cases.
+- Fixed: Crash when encountering an unknown `printf` format specifier.
+- Fixed: Crash when decompiling binaries containing the Objective-C `objc_msgSend` function.
 - Fixed: Possible crash when assigning a BasicBlock to itself.
 - Fixed: Wrong decompilation of switch statements in some cases.
 - Fixed: When --decode-only is specified, the -gd switch has no effect.
@@ -19,9 +21,12 @@ v0.6.0 (in development)
 - Feature: Separate disassembly and lifting of machine instructions.
 - Improved: Instruction semantics definition format.
 - Improved: Dot file output (-gd) now also outputs machine instructions (not just IR).
+- Improved: Detection of types from format specifiers of `printf`-like and `scanf`-like functions.
 - Improved: CMake configuration speed.
+- Improved: Unit test coverage.
 - Changed: Renamed pentium -> x86.
 - Removed: SPARC support.
+- Removed: Deprecated '-p N' switch.
 
 v0.5.2 (2020-1-11)
 ------------------

@@ -24,10 +24,9 @@
 class BOOMERANG_API GotoStatement : public Statement
 {
 public:
-    GotoStatement();
-
     /// Construct a jump to a fixed address \p jumpDest
     GotoStatement(Address jumpDest);
+    GotoStatement(SharedExp dest);
     GotoStatement(const GotoStatement &other) = default;
     GotoStatement(GotoStatement &&other)      = default;
 
@@ -65,13 +64,6 @@ public:
     /// \returns Fixed destination address or Address::INVALID if there isn't one.
     /// For dynamic CTIs, returns Address::INVALID.
     Address getFixedDest() const;
-
-    /**
-     * Adjust the destination of this CTI by a given amount (i.e. a constant offset).
-     * Causes an error if this destination is not a fixed destination.
-     * \param delta the amount to add to the destination (can be negative)
-     */
-    void adjustFixedDest(int delta);
 
     /**
      * Sets the fact that this call is computed.

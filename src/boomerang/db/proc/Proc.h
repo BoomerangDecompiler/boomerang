@@ -76,7 +76,7 @@ public:
     void removeFromModule();
 
     std::shared_ptr<Signature> getSignature() const { return m_signature; }
-    void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
+    void setSignature(std::shared_ptr<Signature> sig);
 
     /// \returns the call statements that call this function.
     const CallerSet &getCallers() const { return m_callers; }

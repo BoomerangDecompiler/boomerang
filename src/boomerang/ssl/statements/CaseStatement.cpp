@@ -19,8 +19,9 @@
 #include <QTextStreamManipulator>
 
 
-CaseStatement::CaseStatement()
-    : m_switchInfo(nullptr)
+CaseStatement::CaseStatement(SharedExp dest)
+    : GotoStatement(dest)
+    , m_switchInfo(nullptr)
 {
     m_kind = StmtType::Case;
 }
@@ -28,8 +29,10 @@ CaseStatement::CaseStatement()
 
 CaseStatement::CaseStatement(const CaseStatement &other)
     : GotoStatement(other)
-    , m_switchInfo(new SwitchInfo(*other.m_switchInfo))
 {
+    if (other.m_switchInfo) {
+        m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    }
 }
 
 
@@ -42,7 +45,10 @@ CaseStatement &CaseStatement::operator=(const CaseStatement &other)
 {
     GotoStatement::operator=(other);
 
-    m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    if (other.m_switchInfo) {
+        m_switchInfo.reset(new SwitchInfo(*other.m_switchInfo));
+    }
+
     return *this;
 }
 
@@ -90,16 +96,7 @@ void CaseStatement::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     if (m_switchInfo == nullptr) {
-        os << "CASE [";
-
-        if (m_dest == nullptr) {
-            os << "*no dest*";
-        }
-        else {
-            os << m_dest;
-        }
-
-        os << "]";
+        os << "CASE [" << m_dest << "]";
     }
     else {
         os << "SWITCH(" << m_switchInfo->switchExp << ")\n";
@@ -109,21 +106,19 @@ void CaseStatement::print(OStream &os) const
 
 SharedStmt CaseStatement::clone() const
 {
-    std::shared_ptr<CaseStatement> ret(new CaseStatement());
+    std::shared_ptr<CaseStatement> ret(new CaseStatement(*this));
 
-    ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
+    ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
 
     if (m_switchInfo) {
         ret->m_switchInfo.reset(new SwitchInfo);
-        *ret->m_switchInfo           = *m_switchInfo;
-        ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
-    }
+        *ret->m_switchInfo = *m_switchInfo;
 
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
+        if (m_switchInfo->switchExp) {
+            ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
+        }
+    }
 
     return ret;
 }
@@ -137,10 +132,9 @@ bool CaseStatement::accept(StmtVisitor *visitor) const
 
 void CaseStatement::simplify()
 {
-    if (m_dest) {
-        m_dest = m_dest->simplify();
-    }
-    else if (m_switchInfo && m_switchInfo->switchExp) {
+    setDest(m_dest->simplify());
+
+    if (m_switchInfo && m_switchInfo->switchExp) {
         m_switchInfo->switchExp = m_switchInfo->switchExp->simplify();
     }
 }
@@ -155,7 +149,7 @@ bool CaseStatement::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_dest) {
+    if (ret) {
         ret = m_dest->acceptVisitor(v->ev);
     }
 
@@ -173,8 +167,8 @@ bool CaseStatement::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_dest && visitChildren) {
-            m_dest = m_dest->acceptModifier(v->m_mod);
+        if (visitChildren) {
+            setDest(m_dest->acceptModifier(v->m_mod));
         }
 
         if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
@@ -191,8 +185,8 @@ bool CaseStatement::accept(StmtPartModifier *v)
     bool visitChildren;
     v->visit(shared_from_this()->as<CaseStatement>(), visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->acceptModifier(v->mod);
+    if (visitChildren) {
+        setDest(m_dest->acceptModifier(v->mod));
     }
 
     if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {

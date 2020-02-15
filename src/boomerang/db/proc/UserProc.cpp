@@ -67,6 +67,8 @@ bool UserProc::isNoReturn() const
 
 SharedExp UserProc::getProven(SharedExp left)
 {
+    assert(left != nullptr);
+
     // Note: proven information is in the form r28 mapsto (r28 + 4)
     auto it = m_provenTrue.find(left);
 

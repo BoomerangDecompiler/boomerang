@@ -21,14 +21,13 @@
 class BOOMERANG_API BoolAssign : public Assignment
 {
 public:
-    /// \param size the size of the assignment
-    BoolAssign(int size);
-    BoolAssign(const BoolAssign &other) = default;
-    BoolAssign(BoolAssign &&other)      = default;
+    BoolAssign(SharedExp lhs, BranchType bt, SharedExp cond);
+    BoolAssign(const BoolAssign &other);
+    BoolAssign(BoolAssign &&other) = default;
 
     ~BoolAssign() override;
 
-    BoolAssign &operator=(const BoolAssign &other) = default;
+    BoolAssign &operator=(const BoolAssign &other);
     BoolAssign &operator=(BoolAssign &&other) = default;
 
 public:
@@ -71,16 +70,6 @@ public:
      */
     void setCondExpr(SharedExp pss);
 
-    // As above, no delete (for subscripting)
-    void setCondExprND(SharedExp e) { m_cond = e; }
-    int getSize() const { return m_size; } // Return the size of the assignment
-
-    /**
-     * Change this from an unsigned to a signed branch.
-     * \note Not sure if this is ever going to be used
-     */
-    void makeSigned();
-
     /// \copydoc Assignment::printCompact
     void printCompact(OStream &os) const override;
 
@@ -91,7 +80,7 @@ public:
     void getDefinitions(LocationSet &def, bool assumeABICompliance) const override;
 
     /// \copydoc Assignment::getRight
-    SharedExp getRight() const override { return getCondExpr(); }
+    SharedExp getRight() const override;
 
     /// \copydoc Statement::search
     bool search(const Exp &search, SharedExp &result) const override;
@@ -106,5 +95,4 @@ private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true
     SharedExp m_cond; ///< Exp representation of the high level condition: e.g. r[8] == 5
     bool m_isFloat;   ///< True if condition uses floating point CC
-    int m_size;       ///< The size of the dest
 };

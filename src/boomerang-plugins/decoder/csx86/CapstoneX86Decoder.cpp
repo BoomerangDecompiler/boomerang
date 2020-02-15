@@ -378,9 +378,8 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
         }
     }
     else if (insn.isInGroup(MIGroup::BoolAsgn)) {
-        std::shared_ptr<BoolAssign> bas(new BoolAssign(8));
-        bas->setCondExpr(rtl->front()->as<Assign>()->getRight()->clone());
-        bas->setLeft(rtl->front()->as<Assign>()->getLeft()->clone());
+        SharedExp lhs  = rtl->front()->as<Assign>()->getLeft()->clone();
+        SharedExp cond = rtl->front()->as<Assign>()->getRight()->clone();
 
         BranchType bt = BranchType::INVALID;
         switch (insn.m_id) {
@@ -403,7 +402,9 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(const MachineIn
         default: assert(false); break;
         }
 
+        std::shared_ptr<BoolAssign> bas(new BoolAssign(lhs, bt, cond));
         bas->setCondType(bt);
+
         if (rtl->size() > 1) {
             LOG_WARN(
                 "%1 additional statements in RTL for instruction '%2'; results may be inaccurate",
@@ -491,8 +492,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
 
         rtl->append(
             std::make_shared<Assign>(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
-        std::shared_ptr<BranchStatement> b(new BranchStatement);
-        b->setDest(insn.m_addr + insn.m_size);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(insn.m_addr + insn.m_size));
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
         rtl->append(b);
@@ -518,8 +518,7 @@ bool CapstoneX86Decoder::genBSFR(const MachineInstruction &insn, LiftedInstructi
 
         rtl->append(std::make_shared<Assign>(IntegerType::get(size), dest->clone(),
                                              Binary::get(incdec, dest->clone(), Const::get(1))));
-        std::shared_ptr<BranchStatement> b(new BranchStatement);
-        b->setDest(insn.m_addr + 2);
+        std::shared_ptr<BranchStatement> b(new BranchStatement(insn.m_addr + 2));
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals,
                                    Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),

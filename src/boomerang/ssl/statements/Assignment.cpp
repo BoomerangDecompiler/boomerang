@@ -24,8 +24,8 @@
 #include <QTextStreamManipulator>
 
 
-Assignment::Assignment(SharedExp lhs)
-    : TypingStatement(VoidType::get())
+Assignment::Assignment(StmtType kind, SharedExp lhs)
+    : TypingStatement(kind, VoidType::get())
     , m_lhs(lhs)
 {
     if (lhs && lhs->isRegOfConst()) {
@@ -40,15 +40,32 @@ Assignment::Assignment(SharedExp lhs)
 }
 
 
-Assignment::Assignment(SharedType ty, SharedExp lhs)
-    : TypingStatement(ty)
+Assignment::Assignment(StmtType kind, SharedType ty, SharedExp lhs)
+    : TypingStatement(kind, ty)
     , m_lhs(lhs)
+{
+}
+
+
+Assignment::Assignment(const Assignment &other)
+    : TypingStatement(other)
+    , m_lhs(other.m_lhs ? other.m_lhs->clone() : nullptr)
 {
 }
 
 
 Assignment::~Assignment()
 {
+}
+
+
+Assignment &Assignment::operator=(const Assignment &other)
+{
+    TypingStatement::operator=(other);
+
+    m_lhs = other.m_lhs ? other.m_lhs->clone() : nullptr;
+
+    return *this;
 }
 
 
@@ -80,10 +97,9 @@ void Assignment::setTypeForExp(SharedExp /*e*/, SharedType ty)
 
 bool Assignment::definesLoc(SharedExp loc) const
 {
-    if (m_lhs->getOper() == opAt) { // For foo@[x:y], match of foo==loc OR whole thing == loc
-        if (*m_lhs->getSubExp1() == *loc) {
-            return true;
-        }
+    // For foo@[x:y], match of foo==loc OR whole thing == loc
+    if (m_lhs->getOper() == opAt && *m_lhs->getSubExp1() == *loc) {
+        return true;
     }
 
     return *m_lhs == *loc;

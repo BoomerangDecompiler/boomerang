@@ -23,14 +23,22 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-BoolAssign::BoolAssign(int size)
-    : Assignment(nullptr)
-    , m_jumpType(BranchType::JE)
-    , m_cond(nullptr)
+BoolAssign::BoolAssign(SharedExp lhs, BranchType bt, SharedExp cond)
+    : Assignment(StmtType::BoolAssign, lhs)
+    , m_jumpType(bt)
+    , m_cond(cond)
     , m_isFloat(false)
-    , m_size(size)
 {
-    m_kind = StmtType::BoolAssign;
+    assert(m_cond != nullptr);
+}
+
+
+BoolAssign::BoolAssign(const BoolAssign &other)
+    : Assignment(other)
+    , m_jumpType(other.m_jumpType)
+    , m_cond(other.m_cond->clone())
+    , m_isFloat(other.m_isFloat)
+{
 }
 
 
@@ -39,27 +47,23 @@ BoolAssign::~BoolAssign()
 }
 
 
+BoolAssign &BoolAssign::operator=(const BoolAssign &other)
+{
+    Assignment::operator=(other);
+
+    m_jumpType = other.m_jumpType;
+    m_cond     = other.m_cond->clone();
+    m_isFloat  = other.m_isFloat;
+
+    return *this;
+}
+
+
 void BoolAssign::setCondType(BranchType cond, bool usesFloat /*= false*/)
 {
     m_jumpType = cond;
     m_isFloat  = usesFloat;
     setCondExpr(Terminal::get(opFlags));
-}
-
-
-void BoolAssign::makeSigned()
-{
-    // Make this into a signed branch
-    switch (m_jumpType) {
-    case BranchType::JUL: m_jumpType = BranchType::JSL; break;
-    case BranchType::JULE: m_jumpType = BranchType::JSLE; break;
-    case BranchType::JUGE: m_jumpType = BranchType::JSGE; break;
-    case BranchType::JUG: m_jumpType = BranchType::JSG; break;
-
-    default:
-        // Do nothing for other cases
-        break;
-    }
 }
 
 
@@ -72,6 +76,7 @@ SharedExp BoolAssign::getCondExpr() const
 void BoolAssign::setCondExpr(SharedExp pss)
 {
     m_cond = pss;
+    assert(m_cond != nullptr);
 }
 
 
@@ -101,37 +106,21 @@ void BoolAssign::printCompact(OStream &os) const
     case BranchType::INVALID: assert(false); break;
     }
 
-    os << ")";
+    os << ')';
 
     if (m_isFloat) {
         os << ", float";
     }
 
-    os << '\n';
-
-    if (m_cond) {
-        os << "High level: ";
-        m_cond->print(os);
-
-        os << "\n";
-    }
+    os << "\nHigh level: ";
+    m_cond->print(os);
+    os << "\n";
 }
 
 
 SharedStmt BoolAssign::clone() const
 {
-    std::shared_ptr<BoolAssign> ret(new BoolAssign(m_size));
-
-    ret->m_jumpType = m_jumpType;
-    ret->m_cond     = (m_cond) ? m_cond->clone() : nullptr;
-    ret->m_isFloat  = m_isFloat;
-    ret->m_size     = m_size;
-    // Statement members
-    ret->m_fragment = m_fragment;
-    ret->m_proc     = m_proc;
-    ret->m_number   = m_number;
-
-    return ret;
+    return std::make_shared<BoolAssign>(*this);
 }
 
 
@@ -143,9 +132,7 @@ bool BoolAssign::accept(StmtVisitor *visitor) const
 
 void BoolAssign::simplify()
 {
-    if (m_cond) {
-        condToRelational(m_cond, m_jumpType);
-    }
+    condToRelational(m_cond, m_jumpType);
 }
 
 
@@ -157,44 +144,46 @@ void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 
 bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 {
-    assert(m_lhs);
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
-    if (m_lhs->search(pattern, result)) {
-        return true;
-    }
-
-    assert(m_cond);
-    return m_cond->search(pattern, result);
+    return m_lhs->search(pattern, result) || m_cond->search(pattern, result);
 }
 
 
 bool BoolAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
+
     bool ch = false;
 
-    assert(m_lhs);
+    ch |= m_lhs->searchAll(pattern, result);
+    ch |= m_cond->searchAll(pattern, result);
 
-    if (m_lhs->searchAll(pattern, result)) {
-        ch = true;
-    }
-
-    assert(m_cond);
-    return m_cond->searchAll(pattern, result) || ch;
+    return ch;
 }
 
 
-bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
+bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool)
 {
-    Q_UNUSED(cc);
-
-    assert(m_cond);
-    assert(m_lhs);
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     bool chl = false, chr = false;
-    m_cond = m_cond->searchReplaceAll(pattern, replace, chl);
-    m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chr);
+    m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chl);
+    m_cond = m_cond->searchReplaceAll(pattern, replace, chr);
+
+    assert(m_lhs != nullptr);
+    assert(m_cond != nullptr);
 
     return chl || chr;
+}
+
+
+SharedExp BoolAssign::getRight() const
+{
+    return m_cond;
 }
 
 
@@ -207,7 +196,7 @@ bool BoolAssign::accept(StmtExpVisitor *v)
         return ret;
     }
 
-    if (ret && m_cond) {
+    if (ret) {
         ret = m_cond->acceptVisitor(v->ev);
     }
 
@@ -221,8 +210,9 @@ bool BoolAssign::accept(StmtModifier *v)
     v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
     if (v->m_mod) {
-        if (m_cond && visitChildren) {
+        if (visitChildren) {
             m_cond = m_cond->acceptModifier(v->m_mod);
+            assert(m_cond != nullptr);
         }
 
         if (visitChildren && m_lhs->isMemOf()) {
@@ -240,8 +230,9 @@ bool BoolAssign::accept(StmtPartModifier *v)
 
     v->visit(shared_from_this()->as<BoolAssign>(), visitChildren);
 
-    if (m_cond && visitChildren) {
+    if (visitChildren) {
         m_cond = m_cond->acceptModifier(v->mod);
+        assert(m_cond != nullptr);
     }
 
     if (m_lhs && visitChildren) {
