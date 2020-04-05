@@ -142,7 +142,7 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
              */
             const SharedExp flagsParam = condExp->access<Exp, 2, 1>();
 
-            if (flagsParam->isTemp() ||
+            if (!flagsParam || flagsParam->isTemp() ||
                 (flagsParam->isSubscript() && flagsParam->access<Exp, 1>()->isTemp())) {
                 return false;
             }
