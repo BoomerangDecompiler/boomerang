@@ -188,7 +188,7 @@ public:
     virtual bool isPreserved(SharedExp /*e*/) const { return false; }
 
     /// Set the locations defined by library calls
-    virtual void getLibraryDefines(StatementList & /*defs*/) {}
+    virtual void getLibraryDefines(StatementList & /*defs*/) { }
 
     /// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention
     /// objects are set up very late in the decompilation. Get the set of registers that are not

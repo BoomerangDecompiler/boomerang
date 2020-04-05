@@ -27,7 +27,7 @@ class QIODevice;
 class BOOMERANG_API IFileLoader
 {
 public:
-    IFileLoader(Project *) {}
+    IFileLoader(Project *) { }
     virtual ~IFileLoader() = default;
 
 public:

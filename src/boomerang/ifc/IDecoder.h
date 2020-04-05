@@ -30,7 +30,7 @@ class RTLInstDict;
 class BOOMERANG_API IDecoder
 {
 public:
-    IDecoder(Project *) {}
+    IDecoder(Project *) { }
     virtual ~IDecoder() = default;
 
 public:

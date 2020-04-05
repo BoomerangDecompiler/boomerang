@@ -31,7 +31,7 @@ class QString;
 class BOOMERANG_API ICodeGenerator
 {
 public:
-    ICodeGenerator(Project *) {}
+    ICodeGenerator(Project *) { }
     virtual ~ICodeGenerator() = default;
 
 public:
