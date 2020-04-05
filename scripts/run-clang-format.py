@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """A wrapper script around clang-format, suitable for linting multiple files
 and to use for continuous integration.
 
@@ -8,8 +8,6 @@ A diff output is produced and a sensible exit code is returned.
 
 Original source: https://github.com/Sarcasm/run-clang-format/blob/master/run-clang-format.py
 """
-
-from __future__ import print_function, unicode_literals
 
 import argparse
 import codecs
