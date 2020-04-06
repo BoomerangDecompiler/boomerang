@@ -56,7 +56,7 @@ public:
     PhiAssign(const PhiAssign &other) = delete;
     PhiAssign(PhiAssign &&other)      = delete;
 
-    ~PhiAssign() override { }
+    ~PhiAssign() override {}
 
     PhiAssign &operator=(const PhiAssign &other) = delete;
     PhiAssign &operator=(PhiAssign &&other) = delete;

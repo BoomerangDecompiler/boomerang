@@ -52,7 +52,7 @@ public:
     SharedExp getRight() const override { return nullptr; }
 
     /// \copydoc Statement::simplify
-    void simplify() override { }
+    void simplify() override {}
 
     /// \copydoc Statement::accept
     bool accept(StmtVisitor *visitor) const override;

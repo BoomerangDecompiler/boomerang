@@ -27,7 +27,7 @@ class Project;
 class BOOMERANG_API ISymbolProvider
 {
 public:
-    ISymbolProvider(Project *) { }
+    ISymbolProvider(Project *) {}
     virtual ~ISymbolProvider() = default;
 
 public:
