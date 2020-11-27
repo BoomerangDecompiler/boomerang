@@ -132,7 +132,6 @@ regression_tests = [
     "ppc/uns",
 
     "ppc/o4/banner",
-    "ppc/o4/branch",
     "ppc/o4/condcodexform",
     "ppc/o4/daysofxmas",
     "ppc/o4/fbranch",
@@ -261,6 +260,8 @@ smoke_tests = [
     "dos/MAX.EXE",
     "dos/STRLEN.EXE",
     "dos/TESTLONG.EXE",
+
+    "ppc/o4/branch",
 
     "windows/fbranch.exe",
     "windows/hello_release.exe",

@@ -1,0 +1,89 @@
+name: CI
+on: [push, pull_request]
+
+
+jobs:
+  #linux-gcc:
+    #name: Linux GCC 9
+    #runs-on: ubuntu-20.04
+    #steps:
+      #- name: Checkout
+        #uses: actions/checkout@v2
+      #- name: Get Dependencies
+        #shell: bash
+        #run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison
+      #- name: Configure
+        #run: |
+          #mkdir build
+          #cd build
+          #CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      #- name: Build
+        #run: |
+          #cd build
+          #make -j$(nproc) all
+      #- name: Run Unit Tests
+        #run: |
+          #cd build
+          #make test
+      #- name: Run Regression Tests
+        #run: |
+          #cd build
+          #make check
+
+  #linux-clang:
+    #name: Linux Clang 10
+    #runs-on: ubuntu-20.04
+    #steps:
+      #- name: Checkout
+        #uses: actions/checkout@v2
+      #- name: Get Dependencies
+        #shell: bash
+        #run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
+      #- name: Configure
+        #run: |
+          #mkdir build
+          #cd build
+          #CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      #- name: Build
+        #run: |
+          #cd build
+          #make -j$(nproc) all
+      #- name: Run Unit Tests
+        #run: |
+          #cd build
+          #make test
+      #- name: Run Regression Tests
+        #run: |
+          #cd build
+          #make check
+
+  windows-msvc:
+    name: Windows MSVC
+    runs-on: windows-2019
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: Install Capstone
+        uses: lukka/run-vcpkg@v4.1
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/../vcpkg/'
+          vcpkgArguments: '--disable-metrics capstone[core,x86,ppc]'
+          vcpkgGitCommitId: 6185aa76504a5025f36754324abf307cc776f3da
+          vcpkgTriplet: x64-windows
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Make build directory
+        run: mkdir build
+      - name: Install winflexbison
+        shell: powershell
+        run: |
+          cd build
+          ${{github.workspace}}\scripts\install-winflexbison.ps1
+      - name: Configure
+        run: cd build && cmake -A x64 -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/../vcpkg/scripts/buildsystems/vcpkg.cmake" -DBISON_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_bison.exe" -DFLEX_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_flex.exe" ..
+      - name: Build
+        run: |
+          cd build
+          msbuild.exe boomerang.sln /t:boomerang-cli /p:Configuration=Release
