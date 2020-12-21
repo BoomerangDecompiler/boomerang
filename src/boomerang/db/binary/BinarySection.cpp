@@ -16,6 +16,8 @@
 
 #include <QVariantMap>
 
+#include <stdexcept>
+
 
 struct VariantHolder
 {

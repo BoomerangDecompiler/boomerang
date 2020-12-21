@@ -36,6 +36,7 @@
 #include "boomerang/util/log/Log.h"
 
 #include <stack>
+#include <stdexcept>
 
 
 DefaultFrontEnd::DefaultFrontEnd(Project *project)

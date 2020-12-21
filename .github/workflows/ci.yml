@@ -3,59 +3,59 @@ on: [push, pull_request]
 
 
 jobs:
-  #linux-gcc:
-    #name: Linux GCC 9
-    #runs-on: ubuntu-20.04
-    #steps:
-      #- name: Checkout
-        #uses: actions/checkout@v2
-      #- name: Get Dependencies
-        #shell: bash
-        #run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison
-      #- name: Configure
-        #run: |
-          #mkdir build
-          #cd build
-          #CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
-      #- name: Build
-        #run: |
-          #cd build
-          #make -j$(nproc) all
-      #- name: Run Unit Tests
-        #run: |
-          #cd build
-          #make test
-      #- name: Run Regression Tests
-        #run: |
-          #cd build
-          #make check
+  linux-gcc:
+    name: Linux GCC 9
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        shell: bash
+        run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc) all
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
 
-  #linux-clang:
-    #name: Linux Clang 10
-    #runs-on: ubuntu-20.04
-    #steps:
-      #- name: Checkout
-        #uses: actions/checkout@v2
-      #- name: Get Dependencies
-        #shell: bash
-        #run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
-      #- name: Configure
-        #run: |
-          #mkdir build
-          #cd build
-          #CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
-      #- name: Build
-        #run: |
-          #cd build
-          #make -j$(nproc) all
-      #- name: Run Unit Tests
-        #run: |
-          #cd build
-          #make test
-      #- name: Run Regression Tests
-        #run: |
-          #cd build
-          #make check
+  linux-clang:
+    name: Linux Clang 10
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        shell: bash
+        run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc) all
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
 
   windows-msvc:
     name: Windows MSVC

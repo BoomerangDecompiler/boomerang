@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "Plugin.h"
 
+#include <stdexcept>
+
 
 Plugin::Plugin(Project *project, const QString &pluginPath)
     : m_pluginHandle(pluginPath)
