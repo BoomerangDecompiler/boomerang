@@ -65,7 +65,6 @@ regression_tests = [
     "OSX/o4/branch",
     "OSX/o4/condcodexform",
     "OSX/o4/daysofxmas",
-    "OSX/o4/fbranch",
     "OSX/o4/fib",
     "OSX/o4/fibo",
     "OSX/o4/fibo2",
@@ -134,7 +133,6 @@ regression_tests = [
     "ppc/o4/banner",
     "ppc/o4/condcodexform",
     "ppc/o4/daysofxmas",
-    "ppc/o4/fbranch",
     "ppc/o4/fib",
     "ppc/o4/fibo",
     "ppc/o4/fibo2",
@@ -260,6 +258,8 @@ smoke_tests = [
     "dos/MAX.EXE",
     "dos/STRLEN.EXE",
     "dos/TESTLONG.EXE",
+
+    "OSX/o4/fbranch",
 
     "ppc/o4/branch",
 
