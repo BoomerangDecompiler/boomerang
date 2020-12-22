@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          make -j$(nproc) all
+          make -j$(nproc) package
       - name: Run Unit Tests
         run: |
           cd build
@@ -60,7 +60,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          make -j$(nproc) all
+          make -j$(nproc) package
       - name: Run Unit Tests
         run: |
           cd build
@@ -92,7 +92,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          make -j$(sysctl -n hw.logicalcpu)
+          make -j$(sysctl -n hw.logicalcpu) package
       - name: Run Unit Tests
         run: |
           cd build
