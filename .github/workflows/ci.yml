@@ -142,7 +142,3 @@ jobs:
         run: |
           cd build
           cmake --build . --target RUN_TESTS
-      - name: Run Regression Tests
-        run: |
-          cd build
-          cmake --build . --target check
