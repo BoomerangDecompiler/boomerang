@@ -20,6 +20,7 @@
 #include <QFile>
 
 #include <cassert>
+#include <stdexcept>
 
 
 #define DOS_PAGE_SIZE (512)

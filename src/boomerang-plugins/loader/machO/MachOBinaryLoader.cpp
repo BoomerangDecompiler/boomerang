@@ -28,6 +28,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 
 
 #define DEBUG_MACHO_LOADER 0

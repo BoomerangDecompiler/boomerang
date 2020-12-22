@@ -20,6 +20,8 @@
 #include <QBuffer>
 #include <QFile>
 
+#include <stdexcept>
+
 
 namespace
 {

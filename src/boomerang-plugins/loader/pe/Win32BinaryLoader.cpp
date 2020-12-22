@@ -44,6 +44,8 @@ namespace dbghelp
 #include <QFile>
 #include <QString>
 
+#include <stdexcept>
+
 
 extern "C"
 {

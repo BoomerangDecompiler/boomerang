@@ -36,6 +36,8 @@
 #include "boomerang/util/ByteUtil.h"
 #include "boomerang/util/log/Log.h"
 
+#include <stdexcept>
+
 
 // index of the "then" branch of conditional jumps
 #define BTHEN 0

@@ -17,6 +17,8 @@
 
 #include <QFile>
 
+#include <stdexcept>
+
 
 #define ROM_HIGH Address(0x80000000)
 
