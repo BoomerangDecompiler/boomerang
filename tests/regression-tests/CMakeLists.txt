@@ -16,7 +16,7 @@ if (BOOMERANG_BUILD_REGRESSION_TESTS)
 
     # run regression suite by 'make check'
     add_custom_target(check
-        "${PYTHON_EXECUTABLE}" "./regression-tester.py" "$<TARGET_FILE:boomerang-cli>"
+        "${PYTHON_EXECUTABLE}" "-u" "./regression-tester.py" "$<TARGET_FILE:boomerang-cli>"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
         DEPENDS copy-regression-script
     )
