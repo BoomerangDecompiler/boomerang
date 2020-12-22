@@ -137,12 +137,12 @@ jobs:
       - name: Build
         run: |
           cd build
-          msbuild.exe boomerang.sln /t:boomerang-cli /p:Configuration=Release
+          cmake --build . --target PACKAGE
       - name: Run Unit Tests
         run: |
           cd build
-          msbuild.exe boomerang.sln /t:test /p:Configuration=Release
+          cmake --build . --target RUN_TESTS
       - name: Run Regression Tests
         run: |
           cd build
-          msbuild.exe boomerang.sln /t:check /p:Configuration=Release
+          cmake --build . --target check
