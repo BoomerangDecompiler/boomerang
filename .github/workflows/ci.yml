@@ -122,7 +122,6 @@ jobs:
       - name: Make build directory
         run: mkdir build
       - name: Install winflexbison
-        shell: powershell
         run: |
           cd build
           ${{github.workspace}}\scripts\install-winflexbison.ps1
@@ -132,3 +131,11 @@ jobs:
         run: |
           cd build
           msbuild.exe boomerang.sln /t:boomerang-cli /p:Configuration=Release
+      - name: Run Unit Tests
+        run: |
+          cd build
+          msbuild.exe boomerang.sln /t:test /p:Configuration=Release
+      - name: Run Regression Tests
+        run: |
+          cd build
+          msbuild.exe boomerang.sln /t:check /p:Configuration=Release
