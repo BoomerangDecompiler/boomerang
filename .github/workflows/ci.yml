@@ -137,7 +137,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          cmake --build . --target PACKAGE
+          cmake --build . --target PACKAGE --config RelWithDebInfo
       - name: Run Unit Tests
         run: |
           cd build
