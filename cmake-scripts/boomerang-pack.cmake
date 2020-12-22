@@ -8,21 +8,22 @@
 
 include(InstallRequiredSystemLibraries)
 
-if (WIN32 AND NOT UNIX)
-    set(CPACK_GENERATOR "ZIP;NSIS")
-else ()
-    set(CPACK_GENERATOR "ZIP;TGZ;DEB")
-endif()
 
 set(BOOMERANG_PKG_NAME "boomerang")
 
-if (WIN32 AND NOT UNIX)
+if (MINGW OR MSVC)
     set(BOOMERANG_PKG_PLATFORM "win")
-else ()
+    set(CPACK_GENERATOR "ZIP;NSIS")
+elseif (APPLE)
+    set(BOOMERANG_PKG_PLATFORM "mac")
+    set(CPACK_GENERATOR "ZIP;TGZ")
+elseif (UNIX)
     set(BOOMERANG_PKG_PLATFORM "linux")
+    set(CPACK_GENERATOR "ZIP;TGZ;DEB")
 endif ()
 
 math(EXPR BOOMERANG_PKG_BITNESS "${CMAKE_SIZEOF_VOID_P} * 8")
+
 
 # actual configuration
 set(CPACK_PACKAGE_NAME ${BOOMERANG_PKG_NAME})
