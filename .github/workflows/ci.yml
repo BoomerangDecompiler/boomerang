@@ -3,6 +3,19 @@ on: [push, pull_request]
 
 
 jobs:
+  clang-format:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends clang-format-10 python3
+      - name: Run clang-format
+        shell: bash
+        run: ./scripts/run-clang-format.py -r src/ -e */machO/objc/*
+
   linux-gcc:
     name: Linux GCC 9
     runs-on: ubuntu-20.04
