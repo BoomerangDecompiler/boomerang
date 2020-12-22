@@ -24,7 +24,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd build
-          make test
+          make test || ctest -V --rerun-failed
       - name: Run Regression Tests
         run: |
           cd build
@@ -51,7 +51,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd build
-          make test
+          make test || ctest -V --rerun-failed
       - name: Run Regression Tests
         run: |
           cd build
@@ -83,7 +83,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd build
-          make test
+          make test || ctest -V --rerun-failed
       - name: Run Regression Tests
         run: |
           cd build
