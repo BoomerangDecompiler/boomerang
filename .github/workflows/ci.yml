@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Get Dependencies
+      - name: Install Dependencies
         shell: bash
         run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
       - name: Configure
@@ -48,6 +48,38 @@ jobs:
         run: |
           cd build
           make -j$(nproc) all
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
+
+  mac:
+    name: macOS
+    runs-on: macOS-latest
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: Install Dependencies
+        run: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install capstone bison flex
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake \
+            -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex \
+            -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison \
+            -DBOOMERANG_BUILD_UNIT_TESTS=ON \
+            -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(sysctl -n hw.logicalcpu)
       - name: Run Unit Tests
         run: |
           cd build
