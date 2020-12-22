@@ -115,8 +115,6 @@ jobs:
           vcpkgArguments: '--disable-metrics capstone[core,x86,ppc]'
           vcpkgGitCommitId: 6185aa76504a5025f36754324abf307cc776f3da
           vcpkgTriplet: x64-windows
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
       - name: Checkout
         uses: actions/checkout@v2
       - name: Make build directory
