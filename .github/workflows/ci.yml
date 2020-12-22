@@ -126,7 +126,14 @@ jobs:
           cd build
           ${{github.workspace}}\scripts\install-winflexbison.ps1
       - name: Configure
-        run: cd build && cmake -A x64 -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/../vcpkg/scripts/buildsystems/vcpkg.cmake" -DBISON_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_bison.exe" -DFLEX_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_flex.exe" ..
+        run: |
+          cd build
+          cmake -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/../vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DBISON_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_bison.exe" `
+            -DFLEX_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_flex.exe" `
+            -DBOOMERANG_BUILD_UNIT_TESTS=ON `
+            -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
       - name: Build
         run: |
           cd build
