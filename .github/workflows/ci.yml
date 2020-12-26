@@ -72,6 +72,64 @@ jobs:
           cd build
           make check
 
+  linux-unit-test-coverage:
+    name: Linux Unit Test Coverage
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=Debug -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
+      - name: Build
+        run: cd build && make -j$(nproc)
+      - name: Run Unit Tests
+        run: cd build && make test
+      - name: Compile CodeCov reports
+        run: |
+          cd build
+          lcov --directory . --capture --output-file coverage.info
+          lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
+          lcov --list coverage.info
+      - name: Upload CodeCov reports
+        run: |
+          bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build"
+
+  linux-regression-test-coverage:
+    name: Linux Regression Test Coverage
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_REGRESSION_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
+      - name: Build
+        run: cd build && make -j$(nproc)
+      - name: Run Regression Tests
+        run: cd build && make check
+      - name: Compile CodeCov reports
+        run: |
+          cd build
+          lcov --directory . --capture --output-file coverage.info
+          lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
+          lcov --list coverage.info
+      - name: Upload CodeCov reports
+        run: |
+          bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F regresstests -s "$(pwd)/build"
+
   mac:
     name: macOS
     runs-on: macOS-latest

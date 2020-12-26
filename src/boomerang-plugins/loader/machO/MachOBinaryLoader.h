@@ -57,7 +57,7 @@ public:
 class ObjcAccessInterface
 {
 public:
-    virtual ~ObjcAccessInterface() {}
+    virtual ~ObjcAccessInterface() { }
 
     virtual std::map<QString, ObjcModule> &getObjcModules() = 0;
 };
