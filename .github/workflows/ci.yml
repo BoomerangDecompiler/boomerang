@@ -3,9 +3,9 @@ on: [push, pull_request]
 
 
 jobs:
-  clang-format:
+  check-code-formatting:
     name: Check Code Formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -19,6 +19,7 @@ jobs:
   linux-gcc:
     name: Linux GCC 9
     runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -46,6 +47,7 @@ jobs:
   linux-clang:
     name: Linux Clang 10
     runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -73,6 +75,7 @@ jobs:
   mac:
     name: macOS
     runs-on: macOS-latest
+    needs: [check-code-formatting]
     steps:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
@@ -105,6 +108,7 @@ jobs:
   windows-msvc:
     name: Windows MSVC
     runs-on: windows-2019
+    needs: [check-code-formatting]
     steps:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
