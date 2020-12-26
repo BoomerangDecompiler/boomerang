@@ -17,7 +17,7 @@ jobs:
         run: ./scripts/run-clang-format.py -r src/ -e */machO/objc/*
 
   linux-gcc:
-    name: Linux GCC 9
+    name: Linux GCC 10
     runs-on: ubuntu-20.04
     needs: [check-code-formatting]
     steps:
@@ -25,12 +25,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Get Dependencies
         shell: bash
-        run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-10 g++-10 cmake qt5-default libcapstone-dev flex bison
       - name: Configure
         run: |
           mkdir build
           cd build
-          CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
       - name: Build
         run: |
           cd build
@@ -43,6 +43,11 @@ jobs:
         run: |
           cd build
           make check
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux GCC 10 ZIP package
+          path: build/boomerang-*-linux64.zip
 
   linux-clang:
     name: Linux Clang 10
@@ -53,7 +58,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         shell: bash
-        run: sudo apt-get -y update && sudo apt-get install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
       - name: Configure
         run: |
           mkdir build
@@ -81,12 +86,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         shell: bash
-        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-9 g++-9 cmake qt5-default libcapstone-dev flex bison lcov
       - name: Configure
         run: |
           mkdir build
           cd build
-          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=Debug -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
+          CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=Debug -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
       - name: Build
         run: cd build && make -j$(nproc)
       - name: Run Unit Tests
@@ -162,6 +167,11 @@ jobs:
         run: |
           cd build
           make check
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: macOS ZIP package
+          path: build/boomerang-*-mac64.zip
 
   windows-msvc:
     name: Windows MSVC
@@ -202,3 +212,8 @@ jobs:
         run: |
           cd build
           cmake --build . --target RUN_TESTS
+      - name: Upload NSIS Installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows MSVC 2019 Installer
+          path: build/boomerang-*-win64.exe
