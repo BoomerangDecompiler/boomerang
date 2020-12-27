@@ -53,18 +53,6 @@ void BinarySectionTest::testResize()
 }
 
 
-void BinarySectionTest::testClearDefinedArea()
-{
-    BinarySection section(Address(0x1000), 0x1000, "testSection");
-    section.clearDefinedArea();
-    QVERIFY(!section.anyDefinedValues());
-
-    section.addDefinedArea(Address(0x1000), Address(0x0800));
-    section.clearDefinedArea();
-    QVERIFY(!section.anyDefinedValues());
-}
-
-
 void BinarySectionTest::testAddDefinedArea()
 {
     BinarySection section(Address(0x1000), 0x1000, "testSection");
@@ -76,13 +64,9 @@ void BinarySectionTest::testAddDefinedArea()
 void BinarySectionTest::testAttributes()
 {
     BinarySection section(Address(0x1000), 0x1000, "testSection");
-    QVariantMap varMap = section.getAttributesForRange(Address(0x1000), Address(0x2000));
-    QVERIFY(varMap.empty());
-
-    section.setAttributeForRange("ReadOnly", true, Address(0x1000), Address(0x1800));
-    varMap = section.getAttributesForRange(Address(0x1000), Address(0x2000));
-    QVERIFY(!varMap.empty());
-    QVERIFY(section.isAttributeInRange("ReadOnly", Address(0x1000), Address(0x2000)));
+    QVERIFY(!section.addressHasAttribute("ReadOnly", Address(0x1800)));
+    section.setAttributeForRange("ReadOnly", Address(0x1000), Address(0x1800));
+    QVERIFY(section.addressHasAttribute("ReadOnly", Address(0x1600)));
 }
 
 QTEST_GUILESS_MAIN(BinarySectionTest)

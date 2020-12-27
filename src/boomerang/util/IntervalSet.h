@@ -71,7 +71,6 @@ public:
         return m_data.insert(it, Interval<T>(minLower, maxUpper));
     }
 
-
     /**
      * Returns an iterator range containing all intervals between \p lower and \p upper
      */
@@ -81,6 +80,48 @@ public:
     }
 
     std::pair<iterator, iterator> equalRange(const Interval<T> &interval)
+    {
+        if (interval.lower() >= interval.upper()) {
+            return { end(), end() };
+        }
+
+        typename Data::iterator itLower = end();
+        typename Data::iterator itUpper = end();
+
+        // todo: speed up
+        for (iterator existingIt = begin(); existingIt != end(); ++existingIt) {
+            if (existingIt->lower() >= interval.upper()) {
+                return { end(), end() }; // no blocking intervals
+            }
+            else if (existingIt->upper() > interval.lower()) {
+                itLower = existingIt;
+                break;
+            }
+        }
+
+        if (itLower == end()) {
+            return { end(), end() };
+        }
+
+        for (iterator existingIt = std::next(itLower); existingIt != end(); ++existingIt) {
+            if (existingIt->lower() >= interval.upper()) {
+                itUpper = existingIt;
+                break;
+            }
+        }
+
+        return std::make_pair(itLower, itUpper);
+    }
+
+    /**
+     * Returns an iterator range containing all intervals between \p lower and \p upper
+     */
+    std::pair<const_iterator, const_iterator> equalRange(const T &lower, const T &upper) const
+    {
+        return equalRange(Interval<T>(lower, upper));
+    }
+
+    std::pair<const_iterator, const_iterator> equalRange(const Interval<T> &interval) const
     {
         if (interval.lower() >= interval.upper()) {
             return { end(), end() };

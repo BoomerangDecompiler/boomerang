@@ -544,7 +544,7 @@ bool Prog::isInStringsSection(Address a) const
 
     const BinarySection *si = static_cast<const BinarySection *>(
         m_binaryFile->getImage()->getSectionByAddr(a));
-    return si && si->isAttributeInRange("StringsSection", a, a + 1);
+    return si && si->addressHasAttribute("StringsSection", a);
 }
 
 

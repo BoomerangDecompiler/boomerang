@@ -260,7 +260,7 @@ bool BinaryImage::isReadOnly(Address addr) const
         return true;
     }
 
-    return section->isAttributeInRange("ReadOnly", addr, addr + 1);
+    return section->addressHasAttribute("ReadOnly", addr);
 }
 
 

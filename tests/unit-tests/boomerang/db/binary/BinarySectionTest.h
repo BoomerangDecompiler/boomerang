@@ -21,7 +21,6 @@ private slots:
     void testIsAddressBss();
     void testAnyDefinedValues();
     void testResize();
-    void testClearDefinedArea();
     void testAddDefinedArea();
 
     void testAttributes();

@@ -230,7 +230,7 @@ void BinaryImageTest::testIsReadOnly()
     QVERIFY(img.isReadOnly(Address(0x1800)));
     sect1->setReadOnly(false);
 
-    sect1->setAttributeForRange("ReadOnly", true, Address(0x1400), Address(0x2000));
+    sect1->setAttributeForRange("ReadOnly", Address(0x1400), Address(0x2000));
     QVERIFY(!img.isReadOnly(Address(0x1200)));
     QVERIFY(img.isReadOnly(Address(0x1800)));
 }

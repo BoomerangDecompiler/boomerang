@@ -14,29 +14,10 @@
 #include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 
-#include <QVariantMap>
-
-#include <stdexcept>
-
-
-struct VariantHolder
-{
-    mutable QMultiMap<QString, QVariant> val;
-    QVariantMap &get() const { return val; }
-    VariantHolder &operator+=(const VariantHolder &other)
-    {
-        val = val.unite(other.val);
-        return *this;
-    }
-
-    bool operator==(const VariantHolder &other) const { return val == other.val; }
-};
 
 class BinarySectionImpl
 {
 public:
-    void clearDefinedArea() { m_hasDefinedValue.clear(); }
-
     void addDefinedArea(Address from, Address to) { m_hasDefinedValue.insert(from, to); }
 
     bool isAddressBss(Address a) const
@@ -47,58 +28,25 @@ public:
         return !m_hasDefinedValue.isContained(a);
     }
 
-    void setAttributeForRange(const QString &name, const QVariant &val, Address from, Address to)
+    void setAttributeForRange(const QString &name, Address from, Address to)
     {
-        QVariantMap vmap;
-
-        vmap[name] = val;
-        VariantHolder map{ vmap };
-        m_attributeMap.insert(from, to, map);
+        m_attributeMap[name].insert(from, to);
     }
 
-    QVariant attributeInRange(const QString &attrib, Address from, Address to) const
+    bool addressHasAttribute(const QString &attrib, Address addr) const
     {
-        auto startIt = m_attributeMap.find(from);
-        auto endIt   = m_attributeMap.find(to);
+        auto it = m_attributeMap.find(attrib);
 
-        if (startIt == m_attributeMap.end()) {
-            return QVariant();
+        if (it == m_attributeMap.end()) {
+            return false;
         }
 
-        QList<QVariant> vals;
-
-        for (auto iter = startIt; iter != endIt; ++iter) {
-            if (iter->second.get().contains(attrib)) {
-                vals << iter->second.get()[attrib];
-            }
-        }
-
-        if (vals.size() == 1) {
-            return vals.front();
-        }
-
-        return QVariant(vals);
-    }
-
-    QVariantMap getAttributesForRange(Address from, Address to)
-    {
-        QMultiMap<QString, QVariant> res;
-        auto v = m_attributeMap.equalRange(from, to);
-
-        if (v.first == m_attributeMap.end()) {
-            return std::move(res);
-        }
-
-        for (auto iter = v.first; iter != v.second; ++iter) {
-            res.unite(iter->second.get());
-        }
-
-        return std::move(res);
+        return it->second.isContained(addr);
     }
 
 public:
     IntervalSet<Address> m_hasDefinedValue;
-    IntervalMap<Address, VariantHolder> m_attributeMap;
+    std::map<QString, IntervalSet<Address>> m_attributeMap;
 };
 
 
@@ -160,32 +108,19 @@ void BinarySection::resize(uint32_t sz)
 }
 
 
-void BinarySection::clearDefinedArea()
-{
-    m_impl->clearDefinedArea();
-}
-
-
 void BinarySection::addDefinedArea(Address from, Address to)
 {
     m_impl->addDefinedArea(from, to);
 }
 
 
-void BinarySection::setAttributeForRange(const QString &name, const QVariant &val, Address from,
-                                         Address to)
+void BinarySection::setAttributeForRange(const QString &name, Address from, Address to)
 {
-    m_impl->setAttributeForRange(name, val, from, to);
+    m_impl->setAttributeForRange(name, from, to);
 }
 
 
-QVariantMap BinarySection::getAttributesForRange(Address from, Address to)
+bool BinarySection::addressHasAttribute(const QString &attrName, Address addr) const
 {
-    return m_impl->getAttributesForRange(from, to);
-}
-
-
-bool BinarySection::isAttributeInRange(const QString &attrib, Address from, Address to) const
-{
-    return !m_impl->attributeInRange(attrib, from, to).isNull();
+    return m_impl->addressHasAttribute(attrName, addr);
 }

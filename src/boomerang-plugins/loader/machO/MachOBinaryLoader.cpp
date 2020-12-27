@@ -323,14 +323,15 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
             if ((0 == strcmp(sections[s_idx].sectname, "__cfstring")) ||
                 (0 == strcmp(sections[s_idx].sectname, "__cstring"))) {
                 sect->setAttributeForRange(
-                    "StringsSection", true, Address(BMMH(sections[s_idx].addr)),
+                    "StringsSection", Address(BMMH(sections[s_idx].addr)),
                     Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
             }
 
-            sect->setAttributeForRange(
-                "ReadOnly", (BMMH(sections[i].flags) & VM_PROT_WRITE) ? true : false,
-                Address(BMMH(sections[s_idx].addr)),
-                Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
+            if ((BMMH(sections[i].flags) & VM_PROT_WRITE) == 0) {
+                sect->setAttributeForRange(
+                    "ReadOnly", Address(BMMH(sections[s_idx].addr)),
+                    Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
+            }
         }
 
         DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file code=%4 data=%5 readonly=%6", a.value(),

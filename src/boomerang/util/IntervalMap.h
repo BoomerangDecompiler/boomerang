@@ -150,7 +150,7 @@ public:
 
     /**
      * \returns an iterator range containing all intervals between \p lower and \p upper.
-     * If there are no intervals between lower and upper, the function returns (end(), end).
+     * If there are no intervals between lower and upper, the function returns (end(), end()).
      */
     std::pair<const_iterator, const_iterator> equalRange(const Key &lower, const Key &upper) const
     {

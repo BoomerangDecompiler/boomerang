@@ -330,7 +330,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray &img)
             }
 
             if (par.sectionType == SHT_STRTAB) {
-                sect->setAttributeForRange("StringsSection", true, sect->getSourceAddr(),
+                sect->setAttributeForRange("StringsSection", sect->getSourceAddr(),
                                            sect->getSourceAddr() + sect->getSize());
             }
         }

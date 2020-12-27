@@ -15,10 +15,6 @@
 #include "boomerang/util/Types.h"
 
 #include <QString>
-#include <QVariant>
-
-
-class QVariant;
 
 
 /// File-format independent access to sections of binary files.
@@ -62,12 +58,10 @@ public:
     bool isAddressBss(Address addr) const;
 
     bool anyDefinedValues() const;
-    void clearDefinedArea();
     void addDefinedArea(Address from, Address to);
 
-    void setAttributeForRange(const QString &name, const QVariant &val, Address from, Address to);
-    QVariantMap getAttributesForRange(Address from, Address to);
-    bool isAttributeInRange(const QString &attrib, Address from, Address to) const;
+    void setAttributeForRange(const QString &attrName, Address from, Address to);
+    bool addressHasAttribute(const QString &attrName, Address addr) const;
 
 private:
     class BinarySectionImpl *m_impl;
