@@ -14,8 +14,8 @@ it is currently recommended to build the development version (`develop` branch) 
 
 |                  | **Build status** | **Test Coverage** |
 |------------------|------------------|-------------------|
-|    **develop**   | ![CI](https://github.com/ceeac/boomerang/workflows/CI/badge.svg?branch=develop) | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/develop.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
-|    **master**    | ![CI](https://github.com/ceeac/boomerang/workflows/CI/badge.svg?branch=master)  | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/master.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
+|    **develop**   | ![CI](https://github.com/BoomerangDecompiler/boomerang/workflows/CI/badge.svg?branch=develop) | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/develop.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
+|    **master**    | ![CI](https://github.com/BoomerangDecompiler/boomerang/workflows/CI/badge.svg?branch=master)  | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/master.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
 
 
 ### Building prerequisites
