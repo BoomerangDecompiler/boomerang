@@ -1,6 +1,6 @@
 # Boomerang Decompiler
 
-This is a fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
+This is a fork of [Boomerang](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
 Boomerang currently supports:
  - architectures: x86 (IA-32 only), PPC, ST20
  - file formats: ELF, PE, DOS MZ, DOS/4GW LE, Mach-O
