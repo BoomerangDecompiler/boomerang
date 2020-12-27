@@ -225,7 +225,7 @@ jobs:
         with:
           vcpkgDirectory: '${{ github.workspace }}/../vcpkg/'
           vcpkgArguments: '--disable-metrics capstone[core,x86,ppc]'
-          vcpkgGitCommitId: 6185aa76504a5025f36754324abf307cc776f3da
+          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
           vcpkgTriplet: x64-windows
       - name: Checkout
         uses: actions/checkout@v2
