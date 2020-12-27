@@ -26,7 +26,7 @@ class QString;
 class BOOMERANG_API ITypeRecovery
 {
 public:
-    ITypeRecovery(Project *) {}
+    ITypeRecovery(Project *) { }
 
     ITypeRecovery(const ITypeRecovery &other) = delete;
     ITypeRecovery(ITypeRecovery &&other)      = default;

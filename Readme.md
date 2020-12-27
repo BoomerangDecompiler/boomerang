@@ -1,6 +1,6 @@
 # Boomerang Decompiler
 
-This is a fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
+This is a fork of [Boomerang](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
 Boomerang currently supports:
  - architectures: x86 (IA-32 only), PPC, ST20
  - file formats: ELF, PE, DOS MZ, DOS/4GW LE, Mach-O
@@ -12,10 +12,10 @@ it is currently recommended to build the development version (`develop` branch) 
 
 ## Building
 
-| **Build status** | Linux/macOS | Windows | Test Coverage |
-|------------------|-------------|---------|---------------|
-|    **develop**   | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=develop)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches) | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/develop.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
-|    **master**    | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=master)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/master.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
+|                  | **Build status** | **Test Coverage** |
+|------------------|------------------|-------------------|
+|    **develop**   | ![CI](https://github.com/ceeac/boomerang/workflows/CI/badge.svg?branch=develop) | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/develop.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
+|    **master**    | ![CI](https://github.com/ceeac/boomerang/workflows/CI/badge.svg?branch=master)  | [![Codecov branch](https://img.shields.io/codecov/c/github/boomerangdecompiler/boomerang/master.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
 
 
 ### Building prerequisites

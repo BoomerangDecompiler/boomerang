@@ -19,6 +19,8 @@
 #include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/log/Log.h"
 
+#include <stdexcept>
+
 
 Project::Project()
     : m_settings(new Settings())

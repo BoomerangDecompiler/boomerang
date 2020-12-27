@@ -22,6 +22,8 @@
 #include <QBuffer>
 #include <QFile>
 
+#include <stdexcept>
+
 
 struct SectionParam
 {

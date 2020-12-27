@@ -302,8 +302,10 @@ bool Const::operator==(const Exp &other) const
     case opFuncConst: {
         const Function *const *myData    = std::get_if<Function *>(&m_value);
         const Function *const *otherData = std::get_if<Function *>(&otherConst.m_value);
+        const Function *const myFunc     = myData ? *myData : nullptr;
+        const Function *const otherFunc  = otherData ? *otherData : nullptr;
 
-        return myData && otherData && *myData == *otherData;
+        return myFunc && otherFunc && myFunc == otherFunc;
     }
     default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }

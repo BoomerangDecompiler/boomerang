@@ -26,7 +26,7 @@ class QString;
 class BOOMERANG_API IFrontEnd
 {
 public:
-    IFrontEnd(Project *) {}
+    IFrontEnd(Project *) { }
     virtual ~IFrontEnd() = default;
 
 public:

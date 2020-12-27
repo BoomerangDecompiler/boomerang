@@ -1,0 +1,259 @@
+name: CI
+on: [push, pull_request]
+
+
+jobs:
+  check-code-formatting:
+    name: Check Code Formatting
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends clang-format-10 python3
+      - name: Run clang-format
+        shell: bash
+        run: ./scripts/run-clang-format.py -r src/ -e */machO/objc/*
+
+  linux-gcc:
+    name: Linux GCC 10
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-10 g++-10 cmake qt5-default libcapstone-dev flex bison ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc) package
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test || ctest -V --rerun-failed
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux GCC 10 ZIP package
+          path: build/boomerang-*-linux64.zip
+
+  linux-clang:
+    name: Linux Clang 10
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=clang-10 CXX=clang++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc) package
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test || ctest -V --rerun-failed
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
+
+  linux-unit-test-coverage:
+    name: Linux Unit Test Coverage
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-9 g++-9 cmake qt5-default libcapstone-dev flex bison lcov ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-9 CXX=g++-9 cmake -DCMAKE_BUILD_TYPE=Debug -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
+      - name: Build
+        run: cd build && make -j$(nproc)
+      - name: Run Unit Tests
+        run: cd build && make test
+      - name: Compile CodeCov reports
+        run: |
+          cd build
+          lcov --directory . --capture --output-file coverage.info
+          lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
+          lcov --list coverage.info
+      - name: Upload CodeCov reports
+        run: |
+          bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build"
+
+  linux-regression-test-coverage:
+    name: Linux Regression Test Coverage
+    runs-on: ubuntu-20.04
+    needs: [check-code-formatting]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        shell: bash
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          CC=gcc-10 CXX=g++-10 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBOOMERANG_BUILD_REGRESSION_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON ..
+      - name: Build
+        run: cd build && make -j$(nproc)
+      - name: Run Regression Tests
+        run: cd build && make check
+      - name: Compile CodeCov reports
+        run: |
+          cd build
+          lcov --directory . --capture --output-file coverage.info
+          lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
+          lcov --list coverage.info
+      - name: Upload CodeCov reports
+        run: |
+          bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F regresstests -s "$(pwd)/build"
+
+  mac:
+    name: macOS
+    runs-on: macOS-latest
+    needs: [check-code-formatting]
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: Install Dependencies
+        run: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install capstone bison flex ccache
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake \
+            -DFLEX_EXECUTABLE=$(brew --prefix flex)/bin/flex \
+            -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison \
+            -DBOOMERANG_BUILD_UNIT_TESTS=ON \
+            -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          make -j$(sysctl -n hw.logicalcpu) package
+      - name: Run Unit Tests
+        run: |
+          cd build
+          make test || ctest -V --rerun-failed
+      - name: Run Regression Tests
+        run: |
+          cd build
+          make check
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: macOS ZIP package
+          path: build/boomerang-*-mac64.zip
+
+  windows-msvc:
+    name: Windows MSVC
+    runs-on: windows-2019
+    needs: [check-code-formatting]
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: Install Capstone
+        uses: lukka/run-vcpkg@v4.1
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/../vcpkg/'
+          vcpkgArguments: '--disable-metrics capstone[core,x86,ppc]'
+          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
+          vcpkgTriplet: x64-windows
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Make build directory
+        run: mkdir build
+      - name: Install winflexbison
+        run: |
+          cd build
+          ${{github.workspace}}\scripts\install-winflexbison.ps1
+      - name: Configure
+        run: |
+          cd build
+          cmake -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/../vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DBISON_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_bison.exe" `
+            -DFLEX_EXECUTABLE="${{github.workspace}}/build/winflexbison/win_flex.exe" `
+            -DBOOMERANG_BUILD_UNIT_TESTS=ON `
+            -DBOOMERANG_BUILD_REGRESSION_TESTS=ON ..
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --target PACKAGE --config RelWithDebInfo
+      - name: Run Unit Tests
+        run: |
+          cd build
+          cmake --build . --target RUN_TESTS
+      - name: Upload NSIS Installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows MSVC 2019 Installer
+          path: build/boomerang-*-win64.exe

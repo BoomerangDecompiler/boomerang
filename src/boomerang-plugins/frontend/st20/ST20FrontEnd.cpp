@@ -19,6 +19,8 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/log/Log.h"
 
+#include <stdexcept>
+
 
 ST20FrontEnd::ST20FrontEnd(Project *project)
     : DefaultFrontEnd(project)

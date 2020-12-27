@@ -12,6 +12,7 @@
 #include <QString>
 
 #include <cassert>
+#include <stdexcept>
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 #    include "Windows.h"

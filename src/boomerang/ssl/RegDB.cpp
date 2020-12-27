@@ -18,6 +18,7 @@
 #include "boomerang/util/log/Log.h"
 
 #include <stack>
+#include <stdexcept>
 
 
 RegDB::RegDB()

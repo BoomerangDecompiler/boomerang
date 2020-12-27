@@ -12,6 +12,7 @@
 #include "boomerang/db/module/Module.h"
 
 #include <cassert>
+#include <stdexcept>
 
 
 CodeWriter::WriteDest::WriteDest(const QString &outFileName)

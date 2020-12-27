@@ -13,6 +13,8 @@
 
 #include <QDir>
 
+#include <stdexcept>
+
 
 PluginManager::PluginManager(Project *project)
     : m_project(project)
