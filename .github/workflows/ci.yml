@@ -25,7 +25,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Get Dependencies
         shell: bash
-        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-10 g++-10 cmake qt5-default libcapstone-dev flex bison
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-10 g++-10 cmake qt5-default libcapstone-dev flex bison ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
       - name: Configure
         run: |
           mkdir build
@@ -58,7 +66,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         shell: bash
-        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential clang cmake qt5-default libcapstone-dev flex bison ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
       - name: Configure
         run: |
           mkdir build
@@ -86,7 +102,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         shell: bash
-        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-9 g++-9 cmake qt5-default libcapstone-dev flex bison lcov
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential gcc-9 g++-9 cmake qt5-default libcapstone-dev flex bison lcov ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
       - name: Configure
         run: |
           mkdir build
@@ -115,7 +139,15 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         shell: bash
-        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov
+        run: sudo apt -y update && sudo apt install -y --no-install-recommends build-essential cmake qt5-default libcapstone-dev flex bison lcov ccache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
       - name: Configure
         run: |
           mkdir build
@@ -143,9 +175,17 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
       - name: Install Dependencies
-        run: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install capstone bison flex
+        run: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install capstone bison flex ccache
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ccache:${{ github.job }}:${{ github.ref }}:${{ github.sha }}
+          restore-keys: |
+            ccache:${{ github.job }}:${{ github.ref }}
+            ccache:${{ github.job }}
       - name: Configure
         run: |
           mkdir build
