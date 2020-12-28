@@ -71,7 +71,7 @@ for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
 - Install [CMake](https://cmake.org/download/).
 - Install flex+bison via [winflexbison](https://github.com/lexxmark/winflexbison).
 - Download and install [Qt5](https://www.qt.io/download-open-source/). Please make sure to install the 64-bit Windows version for Visual Studio 2017.
-- Set the QTDIR environment variable. For example, if you have installed Qt 5.10.0 into C:\Qt, set QTDIR to "C:\Qt\5.10.0\msvc2017_64\" (without the quotes).
+- Set the QTDIR environment variable. For example, if you have installed Qt 5.12.0 into C:\Qt, set QTDIR to "C:\Qt\5.12.0\msvc2017_64\" (without the quotes).
 - Clone Boomerang using Git for Windows. Let's call the directory of the cloned repository $BOOMERANG_DIR.
 - Open cmake-gui and enter $BOOMERANG_DIR and $BOOMERANG_DIR/build into the "Where is the source code" and "Where to build the binaries" fields, respectively.
 - "Configure" Boomerang in cmake-gui. Make sure to select the "Visual Studio 15 2017 Win64" (i.e. 64-bit) generator.
