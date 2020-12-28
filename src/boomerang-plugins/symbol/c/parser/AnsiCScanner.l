@@ -107,15 +107,15 @@ loc.step();
 }
 
 "0"[xX]{hex}+{int_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc);
+    return AnsiC::parser::make_INT_CONSTANT(strtol(yytext, nullptr, 16), loc);
 }
 
 "0"{digit}+{int_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc);
+    return AnsiC::parser::make_INT_CONSTANT(strtol(yytext, nullptr,  8), loc);
 }
 
 {digit}+{int_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+    return AnsiC::parser::make_INT_CONSTANT(strtol(yytext, nullptr, 10), loc);
 }
 
 "L"?"'"(\\.|[^\\'])+"'" {
@@ -126,15 +126,15 @@ loc.step();
 }
 
 {digit}+{exp}{float_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc);
+    return AnsiC::parser::make_INT_CONSTANT(strtol(yytext, nullptr, 10), loc);
 }
 
 {digit}*"."{digit}+({exp})?{float_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+    return AnsiC::parser::make_FLOAT_CONSTANT(strtof(yytext, nullptr), loc);
 }
 
 {digit}+"."{digit}*({exp})?{float_suffix}? {
-    return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc);
+    return AnsiC::parser::make_FLOAT_CONSTANT(strtof(yytext, nullptr), loc);
 }
 
 

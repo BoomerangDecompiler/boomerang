@@ -131,8 +131,8 @@ struct Bound
 %token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
 
 %token<QString> IDENTIFIER STRING_LITERAL
-%token<int> CONSTANT
-
+%token<int> INT_CONSTANT
+%token<float> FLOAT_CONSTANT
 
 %type<SharedType> type
 %type<std::shared_ptr<Parameter>> param param_exp
@@ -256,7 +256,7 @@ type:
   | KW_DOUBLE                           { $$ = FloatType::get(64); }
   | KW_VOID                             { $$ = VoidType::get(); }
   | type STAR                           { $$ = PointerType::get($1); }
-  | type LBRACKET CONSTANT RBRACKET {
+  | type LBRACKET INT_CONSTANT RBRACKET {
         // This isn't C, but it makes defining pointers to arrays easier
         $$ = ArrayType::get($1, $3);
     }
@@ -289,10 +289,10 @@ type_ident_list:
   ;
 
 array_modifier:
-    LBRACKET CONSTANT RBRACKET                  { $$ = ArrayType::get(NULL, $2); }
-  | LBRACKET RBRACKET                           { $$ = ArrayType::get(NULL); }
-  | array_modifier LBRACKET CONSTANT RBRACKET   { $$ = ArrayType::get($1, $3); }
-  | array_modifier LBRACKET RBRACKET            { $$ = ArrayType::get($1); }
+    LBRACKET INT_CONSTANT RBRACKET                { $$ = ArrayType::get(NULL, $2); }
+  | LBRACKET RBRACKET                             { $$ = ArrayType::get(NULL); }
+  | array_modifier LBRACKET INT_CONSTANT RBRACKET { $$ = ArrayType::get($1, $3); }
+  | array_modifier LBRACKET RBRACKET              { $$ = ArrayType::get($1); }
   ;
 
 param_list:
@@ -308,11 +308,12 @@ param_exp:
   ;
 
 exp:
-    REGOF LBRACKET CONSTANT RBRACKET { $$ = Location::regOf($3); }
-  | MEMOF LBRACKET exp RBRACKET      { $$ = Location::memOf($3);  }
-  | exp PLUS exp                     { $$ = Binary::get(opPlus, $1, $3); }
-  | exp MINUS exp                    { $$ = Binary::get(opMinus, $1, $3); }
-  | CONSTANT                         { $$ = Const::get($1); }
+    REGOF LBRACKET INT_CONSTANT RBRACKET { $$ = Location::regOf($3); }
+  | MEMOF LBRACKET exp RBRACKET          { $$ = Location::memOf($3);  }
+  | exp PLUS exp                         { $$ = Binary::get(opPlus, $1, $3); }
+  | exp MINUS exp                        { $$ = Binary::get(opMinus, $1, $3); }
+  | INT_CONSTANT                         { $$ = Const::get($1); }
+  | FLOAT_CONSTANT                       { $$ = Const::get($1); }
   ;
 
 param:
@@ -430,19 +431,19 @@ convention:
   ;
 
 num_list:
-    CONSTANT COMMA num_list   { $$ = $3;  $$->push_front($1); }
-  | CONSTANT                  { $$.reset(new std::list<int>()); $$->push_back($1); }
-  | %empty                    { $$.reset(new std::list<int>()); }
+    INT_CONSTANT COMMA num_list { $$ = $3;  $$->push_front($1); }
+  | INT_CONSTANT                { $$.reset(new std::list<int>()); $$->push_back($1); }
+  | %empty                      { $$.reset(new std::list<int>()); }
   ;
 
 custom_options:
-    exp COLON                           { $$.reset(new CustomOptions()); $$->exp = $1; }
-  | KW_WITHSTACK LPAREN CONSTANT RPAREN { $$.reset(new CustomOptions()); $$->sp = $3; }
-  | %empty                              { $$.reset(new CustomOptions()); }
+    exp COLON                               { $$.reset(new CustomOptions()); $$->exp = $1; }
+  | KW_WITHSTACK LPAREN INT_CONSTANT RPAREN { $$.reset(new CustomOptions()); $$->sp = $3; }
+  | %empty                                  { $$.reset(new CustomOptions()); }
   ;
 
 symbol_decl:
-    CONSTANT type_ident SEMICOLON {
+    INT_CONSTANT type_ident SEMICOLON {
         std::shared_ptr<Symbol> sym(new Symbol(Address($1)));
         sym->name = $2->name;
         sym->ty = $2->ty;
@@ -451,8 +452,8 @@ symbol_decl:
     // Note: in practice, a function signature needs either a "symbolmods"
     // (__nodecode or __incomplete), or a calling convention
     // (__cdecl, __pascal, __thiscall, etc). This is because of the one-symbol
-    // lookahead limitation; the parser can't distinguish 123 int foo from 123 int foo()
-  | CONSTANT symbol_mods signature SEMICOLON {
+    // lookahead limitation; the parser can't distinguish "123 int foo" from "123 int foo()"
+  | INT_CONSTANT symbol_mods signature SEMICOLON {
         std::shared_ptr<Symbol> sym(new Symbol(Address($1)));
         sym->sig = $3;
         sym->mods = $2;
@@ -467,7 +468,7 @@ symbol_mods:
   ;
 
 symbol_ref_decl:
-    KW_SYMBOLREF CONSTANT IDENTIFIER SEMICOLON {
+    KW_SYMBOLREF INT_CONSTANT IDENTIFIER SEMICOLON {
         std::shared_ptr<SymbolRef> ref(new SymbolRef(Address($2), $3));
         drv.refs.push_back(ref);
     }

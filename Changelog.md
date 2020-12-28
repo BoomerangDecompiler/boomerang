@@ -17,6 +17,7 @@ v0.6.0 (in development)
 - Fixed: Non-deterministic naming of locals in decompilation output.
 - Fixed: Non-deterministic decompilation of mutually recursive functions.
 - Fixed: When --decode-only is specified, the -gd switch has no effect.
+- Fixed: Float constants (e.g. `3.14f`) allowed as array indices in signature files.
 - Feature: Added ability to specify call, return or jump semantics in SSL specification files.
 - Feature: Separate disassembly and lifting of machine instructions.
 - Improved: Instruction semantics definition format.
