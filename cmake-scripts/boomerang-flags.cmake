@@ -70,7 +70,8 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero -Walloca)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wfloat-conversion)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wcast-qual -Wfloat-conversion -Wdouble-promotion)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wmissing-variable-declarations)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
     BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret_cast<float*>(&int) otherwise
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise

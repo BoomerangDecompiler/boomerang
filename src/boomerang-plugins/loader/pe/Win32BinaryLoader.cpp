@@ -524,7 +524,7 @@ void Win32BinaryLoader::processIAT()
         Address paddr    = Address(READ4_LE(m_peHeader->Imagebase) + firstThunk);
 
         while (iatEntry != 0) {
-            if ((char *)iat > m_image + m_imageSize) {
+            if (reinterpret_cast<const char *>(iat) > m_image + m_imageSize) {
                 LOG_WARN("Cannot read IAT entry: entry extends past file size");
                 break;
             }

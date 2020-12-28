@@ -491,7 +491,7 @@ bool Prog::getFloatConstant(Address addr, double &value, int bits) const
         assert(bits == 32);
         float val;
         if (m_binaryFile->getImage()->readNativeFloat4(addr, val)) {
-            value = val;
+            value = static_cast<double>(val);
             return true;
         }
         else {

@@ -433,8 +433,9 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 if (con->isIntConst()) {
                     // Reinterpret as a float (and convert to double)
                     // con->setFlt(reinterpret_cast<float>(con->getInt()));
-                    int tmp = con->getInt();
-                    con->setFlt(*reinterpret_cast<float *>(&tmp));
+                    const int tmp = con->getInt();
+                    const float f = *reinterpret_cast<const float *>(&tmp);
+                    con->setFlt(static_cast<double>(f));
                     con->setOper(opFltConst);
                     con->setType(FloatType::get(64)); // TODO: why double ? float might do
                 }

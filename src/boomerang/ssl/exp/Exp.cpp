@@ -54,7 +54,7 @@
 
 
 // This to satisfy the compiler (never gets called!)
-SharedExp _dummy;
+static SharedExp _dummy;
 SharedExp &Exp::refSubExp1()
 {
     assert(false);
